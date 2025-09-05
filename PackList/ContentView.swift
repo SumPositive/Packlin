@@ -25,6 +25,9 @@ struct ContentView: View {
                             set: { isExpanded in
                                 if isExpanded {
                                     expandedTitles.insert(title.id)
+                                    if title.child.isEmpty {
+                                        addGroup(to: title)
+                                    }
                                 } else {
                                     expandedTitles.remove(title.id)
                                 }
@@ -38,6 +41,9 @@ struct ContentView: View {
                                     set: { isExpanded in
                                         if isExpanded {
                                             expandedGroups.insert(group.id)
+                                            if group.child.isEmpty {
+                                                addItem(to: group)
+                                            }
                                         } else {
                                             expandedGroups.remove(group.id)
                                         }
@@ -54,13 +60,28 @@ struct ContentView: View {
                                     }
                                 }
                             } label: {
-                                Text(group.name)
+                                HStack {
+                                    Text(group.name)
+                                    Spacer()
+                                    Button {
+                                        addItem(to: group)
+                                    } label: {
+                                        Image(systemName: "plus")
+                                    }
+                                    .buttonStyle(BorderlessButtonStyle())
+                                }
                             }
                         }
                     } label: {
                         HStack {
                             Text(title.name)
                             Spacer()
+                            Button {
+                                addGroup(to: title)
+                            } label: {
+                                Image(systemName: "plus")
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
                             Button {
                                 editingTitle = title
                             } label: {
@@ -72,11 +93,16 @@ struct ContentView: View {
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("Titles")
+            //.navigationTitle("Titles")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Titles")
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add Title") {
+                    Button {
                         addTitle()
+                    } label: {
+                        Image(systemName: "plus")
                     }
                 }
             }
@@ -89,6 +115,16 @@ struct ContentView: View {
     private func addTitle() {
         let newTitle = M1Title(name: "New Title")
         modelContext.insert(newTitle)
+    }
+
+    private func addGroup(to title: M1Title) {
+        let newGroup = M2Group(name: "New Group", parent: title)
+        modelContext.insert(newGroup)
+    }
+
+    private func addItem(to group: M2Group) {
+        let newItem = M3Item(name: "New Item", parent: group)
+        modelContext.insert(newItem)
     }
 }
 
