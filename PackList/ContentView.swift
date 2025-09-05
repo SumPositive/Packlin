@@ -63,7 +63,7 @@ struct ContentView: View {
                         .popover(item: Binding(
                             get: { editingTitle?.id == title.id ? editingTitle : nil },
                             set: { editingTitle = $0 }
-                        ), attachmentAnchor: .rect(.bounds), arrowEdge: .top) { title in
+                        ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) { title in
                             EditTitleView(title: title)
                                 .presentationCompactAdaptation(.none)
                         }
@@ -112,7 +112,7 @@ struct ContentView: View {
                                     .popover(item: Binding(
                                         get: { editingGroup?.id == group.id ? editingGroup : nil },
                                         set: { editingGroup = $0 }
-                                    ), attachmentAnchor: .rect(.bounds), arrowEdge: .top) { group in
+                                    ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) { group in
                                         EditGroupView(group: group)
                                             .presentationCompactAdaptation(.none)
                                     }
@@ -151,7 +151,7 @@ struct ContentView: View {
                                                 .popover(item: Binding(
                                                     get: { editingItem?.id == item.id ? editingItem : nil },
                                                     set: { editingItem = $0 }
-                                                ), attachmentAnchor: .rect(.bounds), arrowEdge: .top) { item in
+                                                ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) { item in
                                                     EditItemView(item: item)
                                                         .presentationCompactAdaptation(.none)
                                                 }
