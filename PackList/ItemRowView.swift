@@ -41,20 +41,23 @@ struct ItemRowView: View {
             VStack(alignment: .leading, spacing: 1){
                 Text(item.name.isEmpty ? "New Item" : item.name)
                     .lineLimit(3)
-                    .font(.headline)
-                    .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
+                    .font(FONT_NAME)
+                    .foregroundStyle(item.name.isEmpty ? .secondary : COLOR_NAME)
 
                 if !item.note.isEmpty {
                     Text(item.note)
                         .lineLimit(3)
-                        .font(.caption)
+                        .font(FONT_NOTE)
+                        .foregroundStyle(COLOR_NOTE)
                         .padding(.leading, 25)
                 }
 
                 HStack {
                     Spacer() // 右寄せにするため
-                    Text("個重量:\(item.weight)g　在庫数:\(item.stock)　必要数:\(item.need)")
-                        .font(.caption)
+                    //Text("個重量:\(item.weight)g　在庫数:\(item.stock)　必要数:\(item.need)")
+                    Text("\(item.weight)g／\(item.stock)／\(item.need)")
+                        .font(FONT_WEIGHT)
+                        .foregroundStyle(COLOR_WEIGHT)
                         .padding(.trailing, 8)
                 }
             }

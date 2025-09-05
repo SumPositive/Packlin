@@ -40,6 +40,17 @@ let COLOR_TITLE: Color = .secondary         // App Name
 //let COLOR_BACK_SETTING: Color = Color(.systemGray4)  // SettingView
 
 
+let COLOR_NAME: Color = .primary
+let COLOR_NOTE: Color = .secondary
+let COLOR_WEIGHT: Color = .secondary
+
+//-------------------------------------- Font関係
+let FONT_NAME: Font = .title3
+let FONT_NOTE: Font = .headline
+let FONT_WEIGHT: Font = .headline
+
+
+
 
 // Setting 初期値
 

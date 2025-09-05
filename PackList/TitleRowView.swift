@@ -53,13 +53,14 @@ struct TitleRowView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.name.isEmpty ? "New Title" : title.name)
                         .lineLimit(3)
-                        .font(.caption)
-                        .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
+                        .font(FONT_NAME)
+                        .foregroundStyle(title.name.isEmpty ? .secondary : COLOR_NAME)
                     
                     if !title.note.isEmpty {
                         Text(title.note)
                             .lineLimit(3)
-                            .font(.caption)
+                            .font(FONT_NOTE)
+                            .foregroundStyle(COLOR_NOTE)
                             .padding(.leading, 25)
                     }
                     
@@ -67,8 +68,10 @@ struct TitleRowView: View {
                         Image(systemName: allItemsChecked ? "checkmark.circle" : "circle.dotted")
                             .controlSize(.small)
                         Spacer() // 右寄せにするため
-                        Text("在庫:\(title.stockWeight)g　必要:\(title.needWeight)g")
-                            .font(.caption2)
+                        //Text("在庫:\(title.stockWeight)g　必要:\(title.needWeight)g")
+                        Text("\(title.stockWeight)g／\(title.needWeight)g")
+                            .font(FONT_WEIGHT)
+                            .foregroundStyle(COLOR_WEIGHT)
                             .padding(.trailing, 8)
                     }
                 }

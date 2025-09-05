@@ -52,12 +52,14 @@ struct GroupRowView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
                         .lineLimit(3)
-                        .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
+                        .font(FONT_NAME)
+                        .foregroundStyle(group.name.isEmpty ? .secondary : COLOR_NAME)
                     
                     if !group.note.isEmpty {
                         Text(group.note)
                             .lineLimit(3)
-                            .font(.caption)
+                            .font(FONT_NOTE)
+                            .foregroundStyle(COLOR_NOTE)
                             .padding(.leading, 25)
                     }
 
@@ -65,8 +67,10 @@ struct GroupRowView: View {
                         Image(systemName: allItemsChecked ? "checkmark.circle" : "circle.dotted")
                             .controlSize(.small)
                         Spacer() // 右寄せにするため
-                        Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
-                            .font(.caption)
+                        //Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
+                        Text("\(group.stockWeight)g／\(group.needWeight)g")
+                            .font(FONT_WEIGHT)
+                            .foregroundStyle(COLOR_WEIGHT)
                             .padding(.trailing, 8)
                     }
                 }
