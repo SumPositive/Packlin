@@ -11,6 +11,10 @@ struct GroupRowView: View {
     @State private var arrowEdge: Edge = .bottom
     private let rowHeight: CGFloat = 44
 
+    private var allItemsChecked: Bool {
+        !group.child.isEmpty && group.child.allSatisfy { $0.check }
+    }
+
     var body: some View {
         Group {
             HStack {
@@ -26,7 +30,7 @@ struct GroupRowView: View {
 
                 Image(systemName: "folder")
                     .padding(.trailing, 8)
-
+                
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
                         .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
@@ -38,6 +42,8 @@ struct GroupRowView: View {
                     }
 
                     HStack {
+                        Image(systemName: allItemsChecked ? "checkmark.circle" : "circle.dotted")
+                            .controlSize(.small)
                         Spacer() // 右寄せにするため
                         Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
                             .font(.caption)
@@ -46,7 +52,7 @@ struct GroupRowView: View {
                 }
                 Spacer()
                 Button { addItem() } label: {
-                    Image(systemName: "plus.app")
+                    Image(systemName: "plus.circle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }

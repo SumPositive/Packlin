@@ -12,14 +12,15 @@ struct ItemRowView: View {
 
     var body: some View {
         HStack {
+            
             Button {
                 item.check.toggle()
             } label: {
-                Image(systemName: item.check ? "location.app" : "app")
+                Image(systemName: item.check ? "checkmark.circle" : "circle.dotted")
             }
             .buttonStyle(BorderlessButtonStyle())
             .padding(.trailing, 8)
-            
+
             VStack(alignment: .leading, spacing: 1){
                 Text(item.name.isEmpty ? "New Item" : item.name)
                     .font(.headline)
@@ -111,42 +112,64 @@ struct EditItemView: View {
 
     var body: some View {
         VStack {
-            TextField("", text: $item.name, prompt: Text("New Item"))
-            TextField("Note", text: $item.note)
             HStack {
-                Text("Stock")
-                TextField("", value: stockBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                Stepper("", value: stockBinding, in: 0...Int.max)
-                    .labelsHidden()
+                Text("名称:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $item.name, prompt: Text("New Item"))
             }
             HStack {
-                Text("Need")
-                TextField("", value: needBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                Stepper("", value: needBinding, in: 0...Int.max)
-                    .labelsHidden()
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("Note", text: $item.note)
             }
             HStack {
-                Text("Weight")
+                Text("個重量:")
+                    .font(.caption)
                 TextField("", value: weightBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
+                Text("ｇ")
+                    .font(.caption)
+                    .padding(4)
                 Stepper("", value: weightBinding, in: 0...Int.max)
                     .labelsHidden()
             }
             HStack {
-                Spacer()
-                Button("Done") {
-                    try? context.save()
-                    dismiss()
-                }
+                Text("在庫数:")
+                    .font(.caption)
+                TextField("", value: stockBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                Text("個")
+                    .font(.caption)
+                    .padding(4)
+                Stepper("", value: stockBinding, in: 0...Int.max)
+                    .labelsHidden()
             }
+            HStack {
+                Text("必要数:")
+                    .font(.caption)
+                TextField("", value: needBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                Text("個")
+                    .font(.caption)
+                    .padding(4)
+                Stepper("", value: needBinding, in: 0...Int.max)
+                    .labelsHidden()
+            }
+//            HStack {
+//                Spacer()
+//                Button("Done") {
+//                    try? context.save()
+//                    dismiss()
+//                }
+//            }
         }
         .padding()
-        .frame(minWidth: 200)
+        .frame(minWidth: 300)
     }
 }
 

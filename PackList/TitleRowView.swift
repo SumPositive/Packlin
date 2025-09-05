@@ -11,6 +11,11 @@ struct TitleRowView: View {
     @State private var arrowEdge: Edge = .bottom
     private let rowHeight: CGFloat = 44
 
+    private var allItemsChecked: Bool {
+        let items = title.child.flatMap { $0.child }
+        return !items.isEmpty && items.allSatisfy { $0.check }
+    }
+
     var body: some View {
         Group {
             HStack {
@@ -38,8 +43,10 @@ struct TitleRowView: View {
                     }
                     
                     HStack {
+                        Image(systemName: allItemsChecked ? "checkmark.circle" : "circle.dotted")
+                            .controlSize(.small)
                         Spacer() // 右寄せにするため
-                        Text("在庫重量:\(title.stockWeight)g　必要重量:\(title.needWeight)g")
+                        Text("在庫:\(title.stockWeight)g　必要:\(title.needWeight)g")
                             .font(.caption2)
                             .padding(.trailing, 8)
                     }
