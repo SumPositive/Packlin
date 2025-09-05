@@ -30,14 +30,16 @@ struct ContentView: View {
                                 Image(systemName: expandedTitles.contains(title.id) ? "chevron.down" : "chevron.right")
                             }
                             .buttonStyle(BorderlessButtonStyle())
-
+                            // Title
+                            Image(systemName: "bag")
                             Text(title.name.isEmpty ? "New Title" : title.name)
                                 .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
                             Spacer()
                             Button {
                                 addGroup(to: title)
                             } label: {
-                                Image(systemName: "plus")
+                                // +Group
+                                Image(systemName: "folder.badge.plus")
                             }
                             .buttonStyle(BorderlessButtonStyle())
                         }
@@ -62,14 +64,16 @@ struct ContentView: View {
                                             Image(systemName: expandedGroups.contains(group.id) ? "chevron.down" : "chevron.right")
                                         }
                                         .buttonStyle(BorderlessButtonStyle())
-
+                                        // Group
+                                        Image(systemName: "folder")
                                         Text(group.name.isEmpty ? "New Group" : group.name)
                                             .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
                                         Spacer()
                                         Button {
                                             addItem(to: group)
                                         } label: {
-                                            Image(systemName: "plus")
+                                            // ＋Item
+                                            Image(systemName: "plus.app")
                                         }
                                         .buttonStyle(BorderlessButtonStyle())
                                     }
@@ -92,6 +96,8 @@ struct ContentView: View {
                                         } else {
                                             ForEach(group.child) { item in
                                                 HStack {
+                                                    // Item
+                                                    Image(systemName: "app")
                                                     Text(item.name.isEmpty ? "New Item" : item.name)
                                                         .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
                                                     Spacer()
@@ -120,13 +126,18 @@ struct ContentView: View {
             //.navigationTitle("Titles")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Text("Titles")
+                    Button {
+                        //Info  addTitle()
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         addTitle()
                     } label: {
-                        Image(systemName: "plus")
+                        // ＋Title
+                        Image(systemName: "bag.badge.plus")
                     }
                 }
             }
