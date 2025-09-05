@@ -27,8 +27,11 @@ struct GroupRowView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
                         .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
-                    Text("在庫重量:\(group.stockWeight)g　必要重量:\(group.needWeight)g")
-                        .font(.caption2)
+                    HStack {
+                        Spacer()
+                        Text("在庫重量:\(group.stockWeight)g　必要重量:\(group.needWeight)g")
+                            .font(.caption2)
+                    }
                 }
                 Spacer()
                 Button { addItem() } label: {
