@@ -29,7 +29,7 @@ struct TitleRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 
-                Image(systemName: allItemsChecked ? "location.app" : "bag")
+                Image(systemName: "bag")
                     .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
@@ -43,8 +43,10 @@ struct TitleRowView: View {
                     }
                     
                     HStack {
+                        Image(systemName: allItemsChecked ? "checkmark.circle" : "circle.dotted")
+                            .controlSize(.small)
                         Spacer() // 右寄せにするため
-                        Text("在庫重量:\(title.stockWeight)g　必要重量:\(title.needWeight)g")
+                        Text("在庫:\(title.stockWeight)g　必要:\(title.needWeight)g")
                             .font(.caption2)
                             .padding(.trailing, 8)
                     }
