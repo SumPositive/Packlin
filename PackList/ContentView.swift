@@ -14,67 +14,24 @@ struct ContentView: View {
     @State private var expandedTitles: Set<PersistentIdentifier> = []
     @State private var expandedGroups: Set<PersistentIdentifier> = []
     @State private var editingTitle: M1Title?
+    @State private var editingGroup: M2Group?
+    @State private var editingItem: M3Item?
 
     var body: some View {
         NavigationView {
             List {
                 ForEach(titles) { title in
-                    DisclosureGroup(
-                        isExpanded: Binding(
-                            get: { expandedTitles.contains(title.id) },
-                            set: { isExpanded in
-                                if isExpanded {
-                                    expandedTitles.insert(title.id)
-                                    if title.child.isEmpty {
-                                        addGroup(to: title)
-                                    }
-                                } else {
-                                    expandedTitles.remove(title.id)
-                                }
-                            }
-                        )
-                    ) {
-                        ForEach(title.child) { group in
-                            DisclosureGroup(
-                                isExpanded: Binding(
-                                    get: { expandedGroups.contains(group.id) },
-                                    set: { isExpanded in
-                                        if isExpanded {
-                                            expandedGroups.insert(group.id)
-                                            if group.child.isEmpty {
-                                                addItem(to: group)
-                                            }
-                                        } else {
-                                            expandedGroups.remove(group.id)
-                                        }
-                                    }
-                                )
-                            ) {
-                                if group.child.isEmpty {
-                                    Text(" ")
-                                        .padding(.leading)
-                                } else {
-                                    ForEach(group.child) { item in
-                                        Text(item.name)
-                                            .padding(.leading)
-                                    }
-                                }
-                            } label: {
-                                HStack {
-                                    Text(group.name)
-                                    Spacer()
-                                    Button {
-                                        addItem(to: group)
-                                    } label: {
-                                        Image(systemName: "plus")
-                                    }
-                                    .buttonStyle(BorderlessButtonStyle())
-                                }
-                            }
-                        }
-                    } label: {
+                    VStack(alignment: .leading, spacing: 0) {
                         HStack {
-                            Text(title.name)
+                            Button {
+                                toggleTitle(title)
+                            } label: {
+                                Image(systemName: expandedTitles.contains(title.id) ? "chevron.down" : "chevron.right")
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+
+                            Text(title.name.isEmpty ? "New Title" : title.name)
+                                .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
                             Spacer()
                             Button {
                                 addGroup(to: title)
@@ -82,12 +39,54 @@ struct ContentView: View {
                                 Image(systemName: "plus")
                             }
                             .buttonStyle(BorderlessButtonStyle())
-                            Button {
-                                editingTitle = title
-                            } label: {
-                                Image(systemName: "pencil")
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture { editingTitle = title }
+
+                        if expandedTitles.contains(title.id) {
+                            ForEach(title.child) { group in
+                                VStack(alignment: .leading, spacing: 0) {
+                                    HStack {
+                                        Button {
+                                            toggleGroup(group)
+                                        } label: {
+                                            Image(systemName: expandedGroups.contains(group.id) ? "chevron.down" : "chevron.right")
+                                        }
+                                        .buttonStyle(BorderlessButtonStyle())
+
+                                        Text(group.name.isEmpty ? "New Group" : group.name)
+                                            .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
+                                        Spacer()
+                                        Button {
+                                            addItem(to: group)
+                                        } label: {
+                                            Image(systemName: "plus")
+                                        }
+                                        .buttonStyle(BorderlessButtonStyle())
+                                    }
+                                    .padding(.leading)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { editingGroup = group }
+
+                                    if expandedGroups.contains(group.id) {
+                                        if group.child.isEmpty {
+                                            Text(" ")
+                                                .padding(.leading, 40)
+                                        } else {
+                                            ForEach(group.child) { item in
+                                                HStack {
+                                                    Text(item.name.isEmpty ? "New Item" : item.name)
+                                                        .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
+                                                    Spacer()
+                                                }
+                                                .padding(.leading, 40)
+                                                .contentShape(Rectangle())
+                                                .onTapGesture { editingItem = item }
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                            .buttonStyle(BorderlessButtonStyle())
                         }
                     }
                 }
@@ -110,21 +109,49 @@ struct ContentView: View {
         .sheet(item: $editingTitle) { title in
             EditTitleView(title: title)            // バインディングは子で作る
         }
+        .sheet(item: $editingGroup) { group in
+            EditGroupView(group: group)
+        }
+        .sheet(item: $editingItem) { item in
+            EditItemView(item: item)
+        }
     }
 
     private func addTitle() {
-        let newTitle = M1Title(name: "New Title")
+        let newTitle = M1Title(name: "")
         modelContext.insert(newTitle)
     }
 
     private func addGroup(to title: M1Title) {
-        let newGroup = M2Group(name: "New Group", parent: title)
+        let newGroup = M2Group(name: "", parent: title)
         modelContext.insert(newGroup)
     }
 
     private func addItem(to group: M2Group) {
-        let newItem = M3Item(name: "New Item", parent: group)
+        let newItem = M3Item(name: "", parent: group)
         modelContext.insert(newItem)
+    }
+
+    private func toggleTitle(_ title: M1Title) {
+        if expandedTitles.contains(title.id) {
+            expandedTitles.remove(title.id)
+        } else {
+            expandedTitles.insert(title.id)
+            if title.child.isEmpty {
+                addGroup(to: title)
+            }
+        }
+    }
+
+    private func toggleGroup(_ group: M2Group) {
+        if expandedGroups.contains(group.id) {
+            expandedGroups.remove(group.id)
+        } else {
+            expandedGroups.insert(group.id)
+            if group.child.isEmpty {
+                addItem(to: group)
+            }
+        }
     }
 }
 
@@ -138,7 +165,7 @@ struct EditTitleView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Name", text: $title.name)
+                TextField("", text: $title.name, prompt: Text("New Title"))
                 TextField("Note", text: $title.note)
             }
             .navigationTitle("Edit Title")
@@ -146,6 +173,59 @@ struct EditTitleView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         try? context.save() // 必要なら保存
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct EditGroupView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+
+    @Bindable var group: M2Group
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("", text: $group.name, prompt: Text("New Group"))
+                TextField("Note", text: $group.note)
+            }
+            .navigationTitle("Edit Group")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        try? context.save()
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct EditItemView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+
+    @Bindable var item: M3Item
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("", text: $item.name, prompt: Text("New Item"))
+                TextField("Note", text: $item.note)
+                Stepper("Stock: \(item.stock)", value: $item.stock)
+                Stepper("Need: \(item.need)", value: $item.need)
+                TextField("Weight", value: $item.weight, format: .number)
+            }
+            .navigationTitle("Edit Item")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        try? context.save()
                         dismiss()
                     }
                 }
