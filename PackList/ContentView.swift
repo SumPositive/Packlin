@@ -19,54 +19,50 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(titles) { title in
-                    DisclosureGroup(
-                        isExpanded: Binding(
-                            get: { expandedTitles.contains(title.id) },
-                            set: { isExpanded in
-                                if isExpanded {
-                                    expandedTitles.insert(title.id)
-                                } else {
-                                    expandedTitles.remove(title.id)
-                                }
-                            }
-                        )
-                    ) {
-                        ForEach(title.child) { group in
-                            DisclosureGroup(
-                                isExpanded: Binding(
-                                    get: { expandedGroups.contains(group.id) },
-                                    set: { isExpanded in
-                                        if isExpanded {
-                                            expandedGroups.insert(group.id)
-                                        } else {
-                                            expandedGroups.remove(group.id)
-                                        }
-                                    }
-                                )
-                            ) {
-                                if group.child.isEmpty {
-                                    Text(" ")
-                                        .padding(.leading)
-                                } else {
-                                    ForEach(group.child) { item in
-                                        Text(item.name)
-                                            .padding(.leading)
-                                    }
-                                }
-                            } label: {
-                                Text(group.name)
-                            }
-                        }
-                    } label: {
+                    VStack(alignment: .leading, spacing: 0) {
                         HStack {
-                            Text(title.name)
-                            Spacer()
                             Button {
-                                editingTitle = title
+                                toggleTitleExpansion(title)
                             } label: {
-                                Image(systemName: "pencil")
+                                Image(systemName: expandedTitles.contains(title.id) ? "chevron.down" : "chevron.right")
                             }
                             .buttonStyle(BorderlessButtonStyle())
+                            Text(title.name)
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editingTitle = title
+                        }
+
+                        if expandedTitles.contains(title.id) {
+                            ForEach(title.child) { group in
+                                VStack(alignment: .leading, spacing: 0) {
+                                    HStack {
+                                        Button {
+                                            toggleGroupExpansion(group)
+                                        } label: {
+                                            Image(systemName: expandedGroups.contains(group.id) ? "chevron.down" : "chevron.right")
+                                        }
+                                        .buttonStyle(BorderlessButtonStyle())
+                                        Text(group.name)
+                                        Spacer()
+                                    }
+                                    .padding(.leading)
+
+                                    if expandedGroups.contains(group.id) {
+                                        if group.child.isEmpty {
+                                            Text(" ")
+                                                .padding(.leading, 32)
+                                        } else {
+                                            ForEach(group.child) { item in
+                                                Text(item.name)
+                                                    .padding(.leading, 32)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -89,6 +85,22 @@ struct ContentView: View {
     private func addTitle() {
         let newTitle = M1Title(name: "New Title")
         modelContext.insert(newTitle)
+    }
+
+    private func toggleTitleExpansion(_ title: M1Title) {
+        if expandedTitles.contains(title.id) {
+            expandedTitles.remove(title.id)
+        } else {
+            expandedTitles.insert(title.id)
+        }
+    }
+
+    private func toggleGroupExpansion(_ group: M2Group) {
+        if expandedGroups.contains(group.id) {
+            expandedGroups.remove(group.id)
+        } else {
+            expandedGroups.insert(group.id)
+        }
     }
 }
 
