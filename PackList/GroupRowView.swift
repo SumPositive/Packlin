@@ -5,11 +5,22 @@ import UIKit
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
+    let isNew: Bool
+    @Binding var lastAddedGroupID: M2Group.ID?
     @State private var isExpanded = false
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var lastAddedItemID: M3Item.ID?
+    @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
+
+    init(group: M2Group, isNew: Bool = false, lastAddedGroupID: Binding<M2Group.ID?> = .constant(nil)) {
+        self.group = group
+        self.isNew = isNew
+        self._lastAddedGroupID = lastAddedGroupID
+        _isHighlighted = State(initialValue: isNew)
+    }
 
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check }
@@ -74,6 +85,7 @@ struct GroupRowView: View {
                 }
             }
             .contentShape(Rectangle())
+            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -89,6 +101,15 @@ struct GroupRowView: View {
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
             }
+            .onAppear {
+                if isNew {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            isHighlighted = false
+                        }
+                    }
+                }
+            }
 
             if isExpanded {
                 if group.child.isEmpty {
@@ -96,7 +117,7 @@ struct GroupRowView: View {
                         .padding(.leading, 40)
                 } else {
                     ForEach(group.child) { item in
-                        ItemRowView(item: item)
+                        ItemRowView(item: item, isNew: item.id == lastAddedItemID, lastAddedItemID: $lastAddedItemID)
                     }
                 }
             }
@@ -107,6 +128,10 @@ struct GroupRowView: View {
         let newItem = M3Item(name: "", parent: group)
         modelContext.insert(newItem)
         group.child.append(newItem)
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
+        }
     }
 
     private func deleteGroup() {
@@ -128,6 +153,10 @@ struct GroupRowView: View {
         for item in group.child {
             copyItem(item, to: newGroup)
         }
+        lastAddedGroupID = newGroup.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedGroupID = nil
+        }
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
@@ -137,6 +166,10 @@ struct GroupRowView: View {
             parent.child.insert(newItem, at: index + 1)
         } else {
             parent.child.append(newItem)
+        }
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
         }
     }
 

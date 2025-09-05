@@ -5,11 +5,22 @@ import UIKit
 struct TitleRowView: View {
     @Environment(\.modelContext) private var modelContext
     let title: M1Title
+    let isNew: Bool
+    @Binding var lastAddedTitleID: M1Title.ID?
     @State private var isExpanded = false
     @State private var editingTitle: M1Title?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var lastAddedGroupID: M2Group.ID?
+    @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
+
+    init(title: M1Title, isNew: Bool = false, lastAddedTitleID: Binding<M1Title.ID?> = .constant(nil)) {
+        self.title = title
+        self.isNew = isNew
+        self._lastAddedTitleID = lastAddedTitleID
+        _isHighlighted = State(initialValue: isNew)
+    }
 
     private var allItemsChecked: Bool {
         let items = title.child.flatMap { $0.child }
@@ -74,6 +85,7 @@ struct TitleRowView: View {
                 }
             }
             .contentShape(Rectangle())
+            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -89,10 +101,19 @@ struct TitleRowView: View {
                 EditTitleView(title: title)
                     .presentationCompactAdaptation(.none)
             }
+            .onAppear {
+                if isNew {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            isHighlighted = false
+                        }
+                    }
+                }
+            }
 
             if isExpanded {
                 ForEach(title.child) { group in
-                    GroupRowView(group: group)
+                    GroupRowView(group: group, isNew: group.id == lastAddedGroupID, lastAddedGroupID: $lastAddedGroupID)
                 }
             }
         }
@@ -102,6 +123,10 @@ struct TitleRowView: View {
         let newGroup = M2Group(name: "", parent: title)
         modelContext.insert(newGroup)
         title.child.append(newGroup)
+        lastAddedGroupID = newGroup.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedGroupID = nil
+        }
     }
 
     private func deleteTitle() {
@@ -124,6 +149,10 @@ struct TitleRowView: View {
         for group in title.child {
             copyGroup(group, to: newTitle)
         }
+        lastAddedTitleID = newTitle.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedTitleID = nil
+        }
     }
 
     private func copyGroup(_ group: M2Group, to parent: M1Title) {
@@ -136,6 +165,10 @@ struct TitleRowView: View {
         }
         for item in group.child {
             copyItem(item, to: newGroup)
+        }
+        lastAddedGroupID = newGroup.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedGroupID = nil
         }
     }
 

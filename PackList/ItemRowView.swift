@@ -5,10 +5,20 @@ import UIKit
 struct ItemRowView: View {
     @Environment(\.modelContext) private var modelContext
     let item: M3Item
+    let isNew: Bool
+    @Binding var lastAddedItemID: M3Item.ID?
     @State private var editingItem: M3Item?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
+
+    init(item: M3Item, isNew: Bool = false, lastAddedItemID: Binding<M3Item.ID?> = .constant(nil)) {
+        self.item = item
+        self.isNew = isNew
+        self._lastAddedItemID = lastAddedItemID
+        _isHighlighted = State(initialValue: isNew)
+    }
 
     var body: some View {
         HStack {
@@ -53,6 +63,7 @@ struct ItemRowView: View {
             }
         }
         .contentShape(Rectangle())
+        .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
         .background(
             GeometryReader { proxy in
                 Color.clear
@@ -68,6 +79,15 @@ struct ItemRowView: View {
             EditItemView(item: item)
                 .presentationCompactAdaptation(.none)
         }
+        .onAppear {
+            if isNew {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation {
+                        isHighlighted = false
+                    }
+                }
+            }
+        }
     }
 
     private func deleteItem() {
@@ -82,6 +102,10 @@ struct ItemRowView: View {
             parent.child.insert(newItem, at: index + 1)
         } else {
             parent.child.append(newItem)
+        }
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
         }
     }
 
