@@ -8,7 +8,7 @@ final class M3Item {
     var check: Bool // チェック
     var stock: Int  // 在庫数
     var need: Int   // 必要数
-    var weight: Int // 質量(g)
+    var weight: Int // 重量(g)
 
     @Relationship(inverse: \M2Group.child) var parent: M2Group?
 
