@@ -118,3 +118,26 @@ struct GroupRowView: View {
         return bottomSpace > topSpace ? .top : .bottom
     }
 }
+
+struct EditGroupView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @Bindable var group: M2Group
+    
+    var body: some View {
+        VStack {
+            TextField("", text: $group.name, prompt: Text("New Group"))
+            TextField("Note", text: $group.note)
+            HStack {
+                Spacer()
+                Button("Done") {
+                    try? context.save()
+                    dismiss()
+                }
+            }
+        }
+        .padding()
+        .frame(minWidth: 200)
+    }
+}
+

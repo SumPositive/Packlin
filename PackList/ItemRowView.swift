@@ -70,3 +70,30 @@ struct ItemRowView: View {
         return bottomSpace > topSpace ? .top : .bottom
     }
 }
+
+
+struct EditItemView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @Bindable var item: M3Item
+    
+    var body: some View {
+        VStack {
+            TextField("", text: $item.name, prompt: Text("New Item"))
+            TextField("Note", text: $item.note)
+            Stepper("Stock: \(item.stock)", value: $item.stock)
+            Stepper("Need: \(item.need)", value: $item.need)
+            TextField("Weight", value: $item.weight, format: .number)
+            HStack {
+                Spacer()
+                Button("Done") {
+                    try? context.save()
+                    dismiss()
+                }
+            }
+        }
+        .padding()
+        .frame(minWidth: 200)
+    }
+}
+

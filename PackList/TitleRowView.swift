@@ -126,3 +126,26 @@ struct TitleRowView: View {
         return bottomSpace > topSpace ? .top : .bottom
     }
 }
+
+struct EditTitleView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @Bindable var title: M1Title
+    
+    var body: some View {
+        VStack {
+            TextField("", text: $title.name, prompt: Text("New Title"))
+            TextField("Note", text: $title.note)
+            HStack {
+                Spacer()
+                Button("Done") {
+                    try? context.save()
+                    dismiss()
+                }
+            }
+        }
+        .padding()
+        .frame(minWidth: 200)
+    }
+}
+
