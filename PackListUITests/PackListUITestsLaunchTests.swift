@@ -2,7 +2,7 @@
 //  PackListUITestsLaunchTests.swift
 //  PackListUITests
 //
-//  Created by Sum Positive on 2025/09/05.
+//  Created by sumpo on 2025/09/05.
 //
 
 import XCTest

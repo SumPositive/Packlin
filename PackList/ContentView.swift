@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  PackList
 //
-//  Created by Sum Positive on 2025/09/05.
+//  Created by sumpo on 2025/09/05.
 //
 
 import SwiftUI
