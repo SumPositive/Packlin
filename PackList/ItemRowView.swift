@@ -15,16 +15,23 @@ struct ItemRowView: View {
             Button {
                 item.check.toggle()
             } label: {
-                Image(systemName: item.check ? "checkmark.app" : "app")
+                Image(systemName: item.check ? "location.app" : "app")
             }
             .buttonStyle(BorderlessButtonStyle())
 
-            Text(item.name.isEmpty ? "New Item" : item.name)
-                .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
-            Spacer()
-            Text("\(item.stock)")
-            Text("\(item.need)")
-            Text("\(item.weight)")
+            VStack(alignment: .leading, spacing: 1){
+                Text(item.name.isEmpty ? "New Item" : item.name)
+                    .font(.headline)
+                    .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
+
+                if !item.note.isEmpty {
+                    Text(item.note)
+                        .font(.caption)
+                }
+
+                Text("重量:\(item.weight)g　在庫:\(item.stock)　必要:\(item.need)")
+                    .font(.caption2)
+            }
         }
         .frame(height: rowHeight)
         .padding(.leading, 40)
