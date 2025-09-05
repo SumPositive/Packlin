@@ -11,6 +11,10 @@ struct GroupRowView: View {
     @State private var arrowEdge: Edge = .bottom
     private let rowHeight: CGFloat = 44
 
+    private var allItemsChecked: Bool {
+        !group.child.isEmpty && group.child.allSatisfy { $0.check }
+    }
+
     var body: some View {
         Group {
             HStack {
@@ -24,7 +28,7 @@ struct GroupRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
 
-                Image(systemName: "folder")
+                Image(systemName: allItemsChecked ? "location.app" : "folder")
                     .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {

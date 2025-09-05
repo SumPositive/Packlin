@@ -11,6 +11,11 @@ struct TitleRowView: View {
     @State private var arrowEdge: Edge = .bottom
     private let rowHeight: CGFloat = 44
 
+    private var allItemsChecked: Bool {
+        let items = title.child.flatMap { $0.child }
+        return !items.isEmpty && items.allSatisfy { $0.check }
+    }
+
     var body: some View {
         Group {
             HStack {
@@ -24,7 +29,7 @@ struct TitleRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 
-                Image(systemName: "bag")
+                Image(systemName: allItemsChecked ? "location.app" : "bag")
                     .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
