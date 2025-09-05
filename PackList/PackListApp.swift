@@ -12,12 +12,25 @@ import SwiftData
 struct PackListApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
+            Title.self,
+            Group.self,
             Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let context = container.mainContext
+            let descriptor = FetchDescriptor<Title>()
+            let existing = try context.fetch(descriptor)
+            if existing.isEmpty {
+                let title = Title(name: "New Title", note: "新しいPackListのタイトルを追加する")
+                let group = Group(name: "New Group", parent: title)
+                _ = Item(name: "New Item", parent: group)
+                context.insert(title)
+                try context.save()
+            }
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -30,3 +43,4 @@ struct PackListApp: App {
         .modelContainer(sharedModelContainer)
     }
 }
+

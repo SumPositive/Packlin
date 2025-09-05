@@ -10,52 +10,43 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var titles: [Title]
+    @State private var selectedTitle: Title?
+    @State private var selectedGroup: Group?
 
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+            List(titles, selection: $selectedTitle) { title in
+                Text(title.name)
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+        } content: {
+            if let selectedTitle {
+                List(selectedTitle.child, selection: $selectedGroup) { group in
+                    Text(group.name)
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            } else {
+                Text("Select a title")
             }
         } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            if let selectedGroup {
+                List(selectedGroup.child) { item in
+                    HStack {
+                        Text(item.name)
+                        Spacer()
+                        Text("lack: \(item.lack)")
+                    }
+                }
+            } else {
+                Text("Select a group")
             }
         }
     }
 }
+
+
+
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
+
