@@ -24,8 +24,12 @@ struct TitleRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 Image(systemName: "bag")
-                Text(title.name.isEmpty ? "New Title" : title.name)
-                    .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title.name.isEmpty ? "New Title" : title.name)
+                        .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
+                    Text("在庫重量:\(title.stockWeight)g　必要重量:\(title.needWeight)g")
+                        .font(.caption2)
+                }
                 Spacer()
                 Button { addGroup() } label: {
                     Image(systemName: "folder.badge.plus")
