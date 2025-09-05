@@ -12,9 +12,9 @@ import SwiftData
 struct PackListApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            E1Title.self,
-            E2Group.self,
-            E3Item.self,
+            M1Title.self,
+            M2Group.self,
+            M3Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

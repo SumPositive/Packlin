@@ -10,10 +10,10 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: [SortDescriptor(\E1Title.createdAt, order: .reverse)]) private var titles: [E1Title]
+    @Query(sort: [SortDescriptor(\M1Title.createdAt, order: .reverse)]) private var titles: [M1Title]
     @State private var expandedTitles: Set<PersistentIdentifier> = []
     @State private var expandedGroups: Set<PersistentIdentifier> = []
-    @State private var editingTitle: E1Title?
+    @State private var editingTitle: M1Title?
 
     var body: some View {
         NavigationView {
@@ -81,27 +81,43 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(item: $editingTitle) { $title in
-            NavigationView {
-                Form {
-                    TextField("Name", text: $title.name)
-                    TextField("Note", text: $title.note)
-                }
-                .navigationTitle("Edit Title")
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { editingTitle = nil }
+        .sheet(item: $editingTitle) { title in
+            EditTitleView(title: title)            // バインディングは子で作る
+        }
+    }
+
+    private func addTitle() {
+        let newTitle = M1Title(name: "New Title")
+        modelContext.insert(newTitle)
+    }
+}
+
+// 子ビュー（編集フォーム）
+struct EditTitleView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    
+    @Bindable var title: M1Title   // ← これでプロパティにバインディングできる
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Name", text: $title.name)
+                TextField("Note", text: $title.note)
+            }
+            .navigationTitle("Edit Title")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        try? context.save() // 必要なら保存
+                        dismiss()
                     }
                 }
             }
         }
     }
-
-    private func addTitle() {
-        let newTitle = E1Title(name: "New Title")
-        modelContext.insert(newTitle)
-    }
 }
+
 
 #Preview {
     ContentView()
