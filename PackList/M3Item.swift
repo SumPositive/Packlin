@@ -2,13 +2,13 @@ import Foundation
 import SwiftData
 
 @Model
-final class Item {
+final class M3Item {
     var name: String
     var note: String
     var stock: Int
     var need: Int
     var weight: Double
-    @Relationship(inverse: \Group.child) var parent: Group?
+    @Relationship(inverse: \M2Group.child) var parent: M2Group?
 
     var lack: Int { max(need - stock, 0) }
 
@@ -17,7 +17,7 @@ final class Item {
          stock: Int = 0,
          need: Int = 0,
          weight: Double = 0,
-         parent: Group? = nil) {
+         parent: M2Group? = nil) {
         self.name = name
         self.note = note
         self.stock = stock
