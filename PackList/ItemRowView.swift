@@ -12,10 +12,19 @@ struct ItemRowView: View {
 
     var body: some View {
         HStack {
-            Image(systemName: "app")
+            Button {
+                item.check.toggle()
+            } label: {
+                Image(systemName: item.check ? "checkmark.app" : "app")
+            }
+            .buttonStyle(BorderlessButtonStyle())
+
             Text(item.name.isEmpty ? "New Item" : item.name)
                 .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
             Spacer()
+            Text("\(item.stock)")
+            Text("\(item.need)")
+            Text("\(item.weight)")
         }
         .frame(height: rowHeight)
         .padding(.leading, 40)
@@ -76,14 +85,45 @@ struct EditItemView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var item: M3Item
-    
+
+    private var stockBinding: Binding<Int> {
+        Binding(get: { item.stock }, set: { item.stock = max(0, $0) })
+    }
+    private var needBinding: Binding<Int> {
+        Binding(get: { item.need }, set: { item.need = max(0, $0) })
+    }
+    private var weightBinding: Binding<Int> {
+        Binding(get: { item.weight }, set: { item.weight = max(0, $0) })
+    }
+
     var body: some View {
         VStack {
             TextField("", text: $item.name, prompt: Text("New Item"))
             TextField("Note", text: $item.note)
-            Stepper("Stock: \(item.stock)", value: $item.stock)
-            Stepper("Need: \(item.need)", value: $item.need)
-            TextField("Weight", value: $item.weight, format: .number)
+            HStack {
+                Text("Stock")
+                TextField("", value: stockBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                Stepper("", value: stockBinding, in: 0...Int.max)
+                    .labelsHidden()
+            }
+            HStack {
+                Text("Need")
+                TextField("", value: needBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                Stepper("", value: needBinding, in: 0...Int.max)
+                    .labelsHidden()
+            }
+            HStack {
+                Text("Weight")
+                TextField("", value: weightBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                Stepper("", value: weightBinding, in: 0...Int.max)
+                    .labelsHidden()
+            }
             HStack {
                 Spacer()
                 Button("Done") {
