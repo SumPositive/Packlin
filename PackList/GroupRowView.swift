@@ -106,6 +106,7 @@ struct GroupRowView: View {
     private func addItem() {
         let newItem = M3Item(name: "", parent: group)
         modelContext.insert(newItem)
+        group.child.append(newItem)
     }
 
     private func deleteGroup() {

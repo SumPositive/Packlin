@@ -101,6 +101,7 @@ struct TitleRowView: View {
     private func addGroup() {
         let newGroup = M2Group(name: "", parent: title)
         modelContext.insert(newGroup)
+        title.child.append(newGroup)
     }
 
     private func deleteTitle() {
