@@ -18,7 +18,8 @@ struct ItemRowView: View {
                 Image(systemName: item.check ? "location.app" : "app")
             }
             .buttonStyle(BorderlessButtonStyle())
-
+            .padding(.trailing, 8)
+            
             VStack(alignment: .leading, spacing: 1){
                 Text(item.name.isEmpty ? "New Item" : item.name)
                     .font(.headline)
@@ -27,10 +28,15 @@ struct ItemRowView: View {
                 if !item.note.isEmpty {
                     Text(item.note)
                         .font(.caption)
+                        .padding(.leading, 25)
                 }
 
-                Text("重量:\(item.weight)g　在庫:\(item.stock)　必要:\(item.need)")
-                    .font(.caption2)
+                HStack {
+                    Spacer() // 右寄せにするため
+                    Text("個重量:\(item.weight)g　在庫数:\(item.stock)　必要数:\(item.need)")
+                        .font(.caption)
+                        .padding(.trailing, 8)
+                }
             }
         }
         .frame(height: rowHeight)

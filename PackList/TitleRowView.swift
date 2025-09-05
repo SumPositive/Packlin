@@ -23,14 +23,25 @@ struct TitleRowView: View {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                
                 Image(systemName: "bag")
+                    .padding(.trailing, 8)
+
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.name.isEmpty ? "New Title" : title.name)
                         .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
+
+                    if !title.note.isEmpty {
+                        Text(title.note)
+                            .font(.caption)
+                            .padding(.leading, 25)
+                    }
+                    
                     HStack {
-                        Spacer()
+                        Spacer() // 右寄せにするため
                         Text("在庫重量:\(title.stockWeight)g　必要重量:\(title.needWeight)g")
                             .font(.caption2)
+                            .padding(.trailing, 8)
                     }
                 }
                 Spacer()

@@ -23,14 +23,25 @@ struct GroupRowView: View {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+
                 Image(systemName: "folder")
+                    .padding(.trailing, 8)
+
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
                         .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
+                    
+                    if !group.note.isEmpty {
+                        Text(group.note)
+                            .font(.caption)
+                            .padding(.leading, 25)
+                    }
+
                     HStack {
-                        Spacer()
-                        Text("在庫重量:\(group.stockWeight)g　必要重量:\(group.needWeight)g")
-                            .font(.caption2)
+                        Spacer() // 右寄せにするため
+                        Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
+                            .font(.caption)
+                            .padding(.trailing, 8)
                     }
                 }
                 Spacer()
