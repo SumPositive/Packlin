@@ -1,3 +1,10 @@
+//
+//  GroupRowView.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/05.
+//
+
 import SwiftUI
 import SwiftData
 import UIKit

@@ -1,3 +1,10 @@
+//
+//  TitleRowView.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/05.
+//
+
 import SwiftUI
 import SwiftData
 import UIKit
@@ -46,6 +53,7 @@ struct TitleRowView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.name.isEmpty ? "New Title" : title.name)
                         .lineLimit(3)
+                        .font(.caption)
                         .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
                     
                     if !title.note.isEmpty {

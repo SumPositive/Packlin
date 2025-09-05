@@ -1,0 +1,45 @@
+//
+//  Config.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/05.
+//
+
+import Foundation
+import SwiftUICore
+
+
+// MARK: - Global let value
+// 全モジュールで参照される固定値(let) （#define 同様の使い方）
+
+
+//-------------------------------------- Layout関係
+// CalcRollView 幅
+let APP_CALC_WIDTH_MIN : CGFloat = 320      // 最小（SEの幅、全機能が見切れず使用できる状態）
+let APP_CALC_WIDTH_MAX : CGFloat = 9999     // Free
+// CalcRollView 高さ
+let APP_CALC_HEIGHT_MIN : CGFloat = 150     // 最小（入力行と履歴1行が見える）
+let APP_CALC_HEIGHT_MAX : CGFloat = 9999    // Free
+
+
+//-------------------------------------- Color関係
+
+let COLOR_TITLE: Color = .secondary         // App Name
+//
+//let COLOR_CALC_ACTIVE: Color = .accentColor // Calc活性枠
+//let COLOR_CALC_INACTIVE: Color = .secondary // Calc非活性枠
+//let COLOR_NUMBER: Color = .primary          // 数値
+//let COLOR_ANSWER: Color = .accentColor      // 答え
+//let COLOR_OPERATOR: Color = .cyan           // 演算子
+//let COLOR_OPERATOR_WAIT: Color = .gray      // 待機演算子　右端の[.]や[)]
+//let COLOR_UNIT: Color = .secondary          // 単位
+//let COLOR_MEMO: Color = .purple             // メモ
+//let COLOR_WARN: Color = .red                // 危険！警告色
+//// 背景色
+//let COLOR_BACK_FORMULA: Color = Color(.systemGray6)  // FormulaView
+//let COLOR_BACK_SETTING: Color = Color(.systemGray4)  // SettingView
+
+
+
+// Setting 初期値
+

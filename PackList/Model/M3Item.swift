@@ -1,3 +1,10 @@
+//
+//  M3Item.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/05.
+//
+
 import Foundation
 import SwiftData
 
