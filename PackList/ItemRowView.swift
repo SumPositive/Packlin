@@ -33,11 +33,13 @@ struct ItemRowView: View {
 
             VStack(alignment: .leading, spacing: 1){
                 Text(item.name.isEmpty ? "New Item" : item.name)
+                    .lineLimit(3)
                     .font(.headline)
                     .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
 
                 if !item.note.isEmpty {
                     Text(item.note)
+                        .lineLimit(3)
                         .font(.caption)
                         .padding(.leading, 25)
                 }
@@ -50,7 +52,7 @@ struct ItemRowView: View {
                 }
             }
         }
-        .frame(height: rowHeight)
+        .frame(minHeight: rowHeight)
         .padding(.leading, 40)
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) { deleteItem() } label: {
@@ -78,6 +80,7 @@ struct ItemRowView: View {
         .popover(item: $editingItem, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { item in
             EditItemView(item: item)
                 .presentationCompactAdaptation(.none)
+                .background(Color.primary.opacity(0.2))
         }
         .onAppear {
             if isNew {
@@ -141,12 +144,16 @@ struct EditItemView: View {
                     .font(.caption)
                     .padding(4)
                 TextField("", text: $item.name, prompt: Text("New Item"))
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
             }
             HStack {
                 Text("メモ:")
                     .font(.caption)
                     .padding(4)
-                TextField("Note", text: $item.note)
+                TextField("", text: $item.note)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
             }
             HStack {
                 Text("個重量:")
@@ -154,6 +161,8 @@ struct EditItemView: View {
                 TextField("", value: weightBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
                 Text("ｇ")
                     .font(.caption)
                     .padding(4)
@@ -166,6 +175,8 @@ struct EditItemView: View {
                 TextField("", value: stockBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
                 Text("個")
                     .font(.caption)
                     .padding(4)
@@ -178,6 +189,8 @@ struct EditItemView: View {
                 TextField("", value: needBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
                 Text("個")
                     .font(.caption)
                     .padding(4)
@@ -194,6 +207,9 @@ struct EditItemView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onDisappear() {
+            try? context.save()
+        }
     }
 }
 

@@ -45,10 +45,12 @@ struct TitleRowView: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.name.isEmpty ? "New Title" : title.name)
+                        .lineLimit(3)
                         .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
-
+                    
                     if !title.note.isEmpty {
                         Text(title.note)
+                            .lineLimit(3)
                             .font(.caption)
                             .padding(.leading, 25)
                     }
@@ -73,7 +75,7 @@ struct TitleRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }
-            .frame(height: rowHeight)
+            .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) { deleteTitle() } label: {
                     Image(systemName: "trash")
@@ -100,6 +102,7 @@ struct TitleRowView: View {
             .popover(item: $editingTitle, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
                 EditTitleView(title: title)
                     .presentationCompactAdaptation(.none)
+                    .background(Color.primary.opacity(0.2))
             }
             .onAppear {
                 if isNew {
@@ -198,18 +201,37 @@ struct EditTitleView: View {
     
     var body: some View {
         VStack {
-            TextField("", text: $title.name, prompt: Text("New Title"))
-            TextField("Note", text: $title.note)
             HStack {
-                Spacer()
-                Button("Done") {
-                    try? context.save()
-                    dismiss()
-                }
+                Text("タイトル:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $title.name)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
             }
+            HStack {
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $title.note)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+            }
+//            HStack {
+//                Spacer()
+//                Button("Done") {
+//                    try? context.save()
+//                    dismiss()
+//                }
+//            }
         }
         .padding()
-        .frame(minWidth: 200)
+        .frame(minWidth: 300, maxHeight: 300)
+        .onDisappear() {
+            try? context.save()
+        }
     }
 }
 

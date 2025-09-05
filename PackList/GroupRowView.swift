@@ -44,10 +44,12 @@ struct GroupRowView: View {
                 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
+                        .lineLimit(3)
                         .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
                     
                     if !group.note.isEmpty {
                         Text(group.note)
+                            .lineLimit(3)
                             .font(.caption)
                             .padding(.leading, 25)
                     }
@@ -72,7 +74,7 @@ struct GroupRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }
-            .frame(height: rowHeight)
+            .frame(minHeight: rowHeight)
             .padding(.leading)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) { deleteGroup() } label: {
@@ -100,6 +102,7 @@ struct GroupRowView: View {
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
+                    .background(Color.primary.opacity(0.2))
             }
             .onAppear {
                 if isNew {
@@ -189,18 +192,37 @@ struct EditGroupView: View {
     
     var body: some View {
         VStack {
-            TextField("", text: $group.name, prompt: Text("New Group"))
-            TextField("Note", text: $group.note)
             HStack {
-                Spacer()
-                Button("Done") {
-                    try? context.save()
-                    dismiss()
-                }
+                Text("グループ名:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $group.name)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
             }
+            HStack {
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $group.note)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+            }
+//            HStack {
+//                Spacer()
+//                Button("Done") {
+//                    try? context.save()
+//                    dismiss()
+//                }
+//            }
         }
         .padding()
-        .frame(minWidth: 200)
+        .frame(minWidth: 300)
+        .onDisappear() {
+            try? context.save()
+        }
     }
 }
 

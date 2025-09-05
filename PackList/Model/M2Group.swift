@@ -17,3 +17,9 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
         self.parent = parent
     }
 }
+
+extension M2Group {
+    typealias ID = PersistentIdentifier
+    var id: ID { persistentModelID }
+}
+
