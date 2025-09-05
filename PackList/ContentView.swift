@@ -252,23 +252,39 @@ struct ContentView: View {
     private func copyTitle(_ title: M1Title) {
         let newTitle = M1Title(name: title.name, note: title.note, createdAt: title.createdAt.addingTimeInterval(-0.001))
         modelContext.insert(newTitle)
-    }
-
-    private func copyGroup(_ group: M2Group) {
-        guard let parent = group.parent else { return }
-        let newGroup = M2Group(name: group.name, note: group.note, parent: parent)
-        modelContext.insert(newGroup)
-        if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-            parent.child.insert(newGroup, at: index + 1)
+        for group in title.child {
+            copyGroup(group, to: newTitle)
         }
     }
 
-    private func copyItem(_ item: M3Item) {
-        guard let parent = item.parent else { return }
-        let newItem = M3Item(name: item.name, note: item.note, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+    private func copyGroup(_ group: M2Group, to parent: M1Title? = nil) {
+        let parentTitle = parent ?? group.parent
+        guard let parentTitle = parentTitle else { return }
+        let newGroup = M2Group(name: group.name, note: group.note, parent: parentTitle)
+        modelContext.insert(newGroup)
+        if parent != nil {
+            parentTitle.child.append(newGroup)
+        } else if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
+            parentTitle.child.insert(newGroup, at: index + 1)
+        } else {
+            parentTitle.child.append(newGroup)
+        }
+        for item in group.child {
+            copyItem(item, to: newGroup)
+        }
+    }
+
+    private func copyItem(_ item: M3Item, to parent: M2Group? = nil) {
+        let parentGroup = parent ?? item.parent
+        guard let parentGroup = parentGroup else { return }
+        let newItem = M3Item(name: item.name, note: item.note, stock: item.stock, need: item.need, weight: item.weight, parent: parentGroup)
         modelContext.insert(newItem)
-        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-            parent.child.insert(newItem, at: index + 1)
+        if parent != nil {
+            parentGroup.child.append(newItem)
+        } else if let index = parentGroup.child.firstIndex(where: { $0.id == item.id }) {
+            parentGroup.child.insert(newItem, at: index + 1)
+        } else {
+            parentGroup.child.append(newItem)
         }
     }
 }
