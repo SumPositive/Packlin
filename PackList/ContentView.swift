@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -16,6 +17,12 @@ struct ContentView: View {
     @State private var editingTitle: M1Title?
     @State private var editingGroup: M2Group?
     @State private var editingItem: M3Item?
+    @State private var titleFrames: [PersistentIdentifier: CGRect] = [:]
+    @State private var groupFrames: [PersistentIdentifier: CGRect] = [:]
+    @State private var itemFrames: [PersistentIdentifier: CGRect] = [:]
+    @State private var titleArrowEdge: Edge = .bottom
+    @State private var groupArrowEdge: Edge = .bottom
+    @State private var itemArrowEdge: Edge = .bottom
     private let rowHeight: CGFloat = 44
 
     var body: some View {
@@ -59,11 +66,23 @@ struct ContentView: View {
                             }
                         }
                         .contentShape(Rectangle())
-                        .onTapGesture { editingTitle = title }
+                        .background(
+                            GeometryReader { proxy in
+                                Color.clear
+                                    .onAppear { titleFrames[title.id] = proxy.frame(in: .global) }
+                                    .onChange(of: proxy.frame(in: .global)) { newFrame in
+                                        titleFrames[title.id] = newFrame
+                                    }
+                            }
+                        )
+                        .onTapGesture {
+                            titleArrowEdge = arrowEdge(for: titleFrames[title.id])
+                            editingTitle = title
+                        }
                         .popover(item: Binding(
                             get: { editingTitle?.id == title.id ? editingTitle : nil },
                             set: { editingTitle = $0 }
-                        ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) { title in
+                        ), attachmentAnchor: .rect(.bounds), arrowEdge: titleArrowEdge) { title in
                             EditTitleView(title: title)
                                 .presentationCompactAdaptation(.none)
                         }
@@ -108,11 +127,23 @@ struct ContentView: View {
                                         }
                                     }
                                     .contentShape(Rectangle())
-                                    .onTapGesture { editingGroup = group }
+                                    .background(
+                                        GeometryReader { proxy in
+                                            Color.clear
+                                                .onAppear { groupFrames[group.id] = proxy.frame(in: .global) }
+                                                .onChange(of: proxy.frame(in: .global)) { newFrame in
+                                                    groupFrames[group.id] = newFrame
+                                                }
+                                        }
+                                    )
+                                    .onTapGesture {
+                                        groupArrowEdge = arrowEdge(for: groupFrames[group.id])
+                                        editingGroup = group
+                                    }
                                     .popover(item: Binding(
                                         get: { editingGroup?.id == group.id ? editingGroup : nil },
                                         set: { editingGroup = $0 }
-                                    ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) { group in
+                                    ), attachmentAnchor: .rect(.bounds), arrowEdge: groupArrowEdge) { group in
                                         EditGroupView(group: group)
                                             .presentationCompactAdaptation(.none)
                                     }
@@ -147,11 +178,23 @@ struct ContentView: View {
                                                     }
                                                 }
                                                 .contentShape(Rectangle())
-                                                .onTapGesture { editingItem = item }
+                                                .background(
+                                                    GeometryReader { proxy in
+                                                        Color.clear
+                                                            .onAppear { itemFrames[item.id] = proxy.frame(in: .global) }
+                                                            .onChange(of: proxy.frame(in: .global)) { newFrame in
+                                                                itemFrames[item.id] = newFrame
+                                                            }
+                                                    }
+                                                )
+                                                .onTapGesture {
+                                                    itemArrowEdge = arrowEdge(for: itemFrames[item.id])
+                                                    editingItem = item
+                                                }
                                                 .popover(item: Binding(
                                                     get: { editingItem?.id == item.id ? editingItem : nil },
                                                     set: { editingItem = $0 }
-                                                ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) { item in
+                                                ), attachmentAnchor: .rect(.bounds), arrowEdge: itemArrowEdge) { item in
                                                     EditItemView(item: item)
                                                         .presentationCompactAdaptation(.none)
                                                 }
@@ -286,6 +329,14 @@ struct ContentView: View {
         } else {
             parentGroup.child.append(newItem)
         }
+    }
+
+    private func arrowEdge(for frame: CGRect?) -> Edge {
+        guard let frame = frame else { return .bottom }
+        let screenHeight = UIScreen.main.bounds.height
+        let topSpace = frame.minY
+        let bottomSpace = screenHeight - frame.maxY
+        return bottomSpace > topSpace ? .top : .bottom
     }
 }
 
