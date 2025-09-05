@@ -43,17 +43,10 @@ struct ContentView: View {
     }
 }
 
+
+
+
 #Preview {
-    let container = try! ModelContainer(
-        for: [Title.self, Group.self, Item.self],
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    let context = container.mainContext
-    let title = Title(name: "Sample Title")
-    let group = Group(name: "Sample Group", parent: title)
-    title.child.append(group)
-    group.child.append(Item(name: "Sample Item", stock: 1, need: 2, weight: 0.5, parent: group))
-    context.insert(title)
-    return ContentView()
-        .modelContainer(container)
+    ContentView()
 }
+

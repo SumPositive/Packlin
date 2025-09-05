@@ -32,3 +32,4 @@ struct PackListApp: App {
         .modelContainer(sharedModelContainer)
     }
 }
+
