@@ -52,7 +52,12 @@ struct TitleRowView: View {
                     }
                 }
                 Spacer()
-                Button { addGroup() } label: {
+                Button {
+                    if !isExpanded {
+                        isExpanded = true
+                    }
+                    addGroup()
+                } label: {
                     Image(systemName: "folder.badge.plus")
                 }
                 .buttonStyle(BorderlessButtonStyle())

@@ -51,7 +51,12 @@ struct GroupRowView: View {
                     }
                 }
                 Spacer()
-                Button { addItem() } label: {
+                Button {
+                    if !isExpanded {
+                        isExpanded = true
+                    }
+                    addItem()
+                } label: {
                     Image(systemName: "plus.circle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
