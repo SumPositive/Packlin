@@ -30,3 +30,8 @@ final class M3Item {
         self.parent = parent
     }
 }
+
+extension M3Item {
+    typealias ID = PersistentIdentifier
+    var id: ID { persistentModelID }
+}

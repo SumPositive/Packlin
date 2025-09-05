@@ -5,11 +5,22 @@ import UIKit
 struct TitleRowView: View {
     @Environment(\.modelContext) private var modelContext
     let title: M1Title
+    let isNew: Bool
+    @Binding var lastAddedTitleID: M1Title.ID?
     @State private var isExpanded = false
     @State private var editingTitle: M1Title?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var lastAddedGroupID: M2Group.ID?
+    @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
+
+    init(title: M1Title, isNew: Bool = false, lastAddedTitleID: Binding<M1Title.ID?> = .constant(nil)) {
+        self.title = title
+        self.isNew = isNew
+        self._lastAddedTitleID = lastAddedTitleID
+        _isHighlighted = State(initialValue: isNew)
+    }
 
     private var allItemsChecked: Bool {
         let items = title.child.flatMap { $0.child }
@@ -34,10 +45,12 @@ struct TitleRowView: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.name.isEmpty ? "New Title" : title.name)
+                        .lineLimit(3)
                         .foregroundStyle(title.name.isEmpty ? .secondary : .primary)
-
+                    
                     if !title.note.isEmpty {
                         Text(title.note)
+                            .lineLimit(3)
                             .font(.caption)
                             .padding(.leading, 25)
                     }
@@ -52,12 +65,17 @@ struct TitleRowView: View {
                     }
                 }
                 Spacer()
-                Button { addGroup() } label: {
+                Button {
+                    if !isExpanded {
+                        isExpanded = true
+                    }
+                    addGroup()
+                } label: {
                     Image(systemName: "folder.badge.plus")
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }
-            .frame(height: rowHeight)
+            .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) { deleteTitle() } label: {
                     Image(systemName: "trash")
@@ -69,6 +87,7 @@ struct TitleRowView: View {
                 }
             }
             .contentShape(Rectangle())
+            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -83,11 +102,21 @@ struct TitleRowView: View {
             .popover(item: $editingTitle, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
                 EditTitleView(title: title)
                     .presentationCompactAdaptation(.none)
+                    .background(Color.primary.opacity(0.2))
+            }
+            .onAppear {
+                if isNew {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            isHighlighted = false
+                        }
+                    }
+                }
             }
 
             if isExpanded {
                 ForEach(title.child) { group in
-                    GroupRowView(group: group)
+                    GroupRowView(group: group, isNew: group.id == lastAddedGroupID, lastAddedGroupID: $lastAddedGroupID)
                 }
             }
         }
@@ -96,6 +125,11 @@ struct TitleRowView: View {
     private func addGroup() {
         let newGroup = M2Group(name: "", parent: title)
         modelContext.insert(newGroup)
+        title.child.append(newGroup)
+        lastAddedGroupID = newGroup.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedGroupID = nil
+        }
     }
 
     private func deleteTitle() {
@@ -118,6 +152,10 @@ struct TitleRowView: View {
         for group in title.child {
             copyGroup(group, to: newTitle)
         }
+        lastAddedTitleID = newTitle.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedTitleID = nil
+        }
     }
 
     private func copyGroup(_ group: M2Group, to parent: M1Title) {
@@ -130,6 +168,10 @@ struct TitleRowView: View {
         }
         for item in group.child {
             copyItem(item, to: newGroup)
+        }
+        lastAddedGroupID = newGroup.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedGroupID = nil
         }
     }
 
@@ -159,18 +201,37 @@ struct EditTitleView: View {
     
     var body: some View {
         VStack {
-            TextField("", text: $title.name, prompt: Text("New Title"))
-            TextField("Note", text: $title.note)
             HStack {
-                Spacer()
-                Button("Done") {
-                    try? context.save()
-                    dismiss()
-                }
+                Text("タイトル:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $title.name)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
             }
+            HStack {
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $title.note)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+            }
+//            HStack {
+//                Spacer()
+//                Button("Done") {
+//                    try? context.save()
+//                    dismiss()
+//                }
+//            }
         }
         .padding()
-        .frame(minWidth: 200)
+        .frame(minWidth: 300, maxHeight: 300)
+        .onDisappear() {
+            try? context.save()
+        }
     }
 }
 

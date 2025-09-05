@@ -5,11 +5,22 @@ import UIKit
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
+    let isNew: Bool
+    @Binding var lastAddedGroupID: M2Group.ID?
     @State private var isExpanded = false
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var lastAddedItemID: M3Item.ID?
+    @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
+
+    init(group: M2Group, isNew: Bool = false, lastAddedGroupID: Binding<M2Group.ID?> = .constant(nil)) {
+        self.group = group
+        self.isNew = isNew
+        self._lastAddedGroupID = lastAddedGroupID
+        _isHighlighted = State(initialValue: isNew)
+    }
 
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check }
@@ -33,10 +44,12 @@ struct GroupRowView: View {
                 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
+                        .lineLimit(3)
                         .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
                     
                     if !group.note.isEmpty {
                         Text(group.note)
+                            .lineLimit(3)
                             .font(.caption)
                             .padding(.leading, 25)
                     }
@@ -51,12 +64,17 @@ struct GroupRowView: View {
                     }
                 }
                 Spacer()
-                Button { addItem() } label: {
+                Button {
+                    if !isExpanded {
+                        isExpanded = true
+                    }
+                    addItem()
+                } label: {
                     Image(systemName: "plus.circle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }
-            .frame(height: rowHeight)
+            .frame(minHeight: rowHeight)
             .padding(.leading)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) { deleteGroup() } label: {
@@ -69,6 +87,7 @@ struct GroupRowView: View {
                 }
             }
             .contentShape(Rectangle())
+            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -83,6 +102,16 @@ struct GroupRowView: View {
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
+                    .background(Color.primary.opacity(0.2))
+            }
+            .onAppear {
+                if isNew {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            isHighlighted = false
+                        }
+                    }
+                }
             }
 
             if isExpanded {
@@ -91,7 +120,7 @@ struct GroupRowView: View {
                         .padding(.leading, 40)
                 } else {
                     ForEach(group.child) { item in
-                        ItemRowView(item: item)
+                        ItemRowView(item: item, isNew: item.id == lastAddedItemID, lastAddedItemID: $lastAddedItemID)
                     }
                 }
             }
@@ -101,6 +130,11 @@ struct GroupRowView: View {
     private func addItem() {
         let newItem = M3Item(name: "", parent: group)
         modelContext.insert(newItem)
+        group.child.append(newItem)
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
+        }
     }
 
     private func deleteGroup() {
@@ -122,6 +156,10 @@ struct GroupRowView: View {
         for item in group.child {
             copyItem(item, to: newGroup)
         }
+        lastAddedGroupID = newGroup.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedGroupID = nil
+        }
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
@@ -131,6 +169,10 @@ struct GroupRowView: View {
             parent.child.insert(newItem, at: index + 1)
         } else {
             parent.child.append(newItem)
+        }
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
         }
     }
 
@@ -150,18 +192,37 @@ struct EditGroupView: View {
     
     var body: some View {
         VStack {
-            TextField("", text: $group.name, prompt: Text("New Group"))
-            TextField("Note", text: $group.note)
             HStack {
-                Spacer()
-                Button("Done") {
-                    try? context.save()
-                    dismiss()
-                }
+                Text("グループ名:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $group.name)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
             }
+            HStack {
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextField("", text: $group.note)
+                    .lineLimit(3)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+            }
+//            HStack {
+//                Spacer()
+//                Button("Done") {
+//                    try? context.save()
+//                    dismiss()
+//                }
+//            }
         }
         .padding()
-        .frame(minWidth: 200)
+        .frame(minWidth: 300)
+        .onDisappear() {
+            try? context.save()
+        }
     }
 }
 
