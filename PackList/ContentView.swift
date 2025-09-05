@@ -229,14 +229,23 @@ struct ContentView: View {
     }
 
     private func deleteTitle(_ title: M1Title) {
+        // remove all groups and their items before deleting the title
+        for group in title.child {
+            deleteGroup(group)
+        }
         modelContext.delete(title)
     }
 
     private func deleteGroup(_ group: M2Group) {
+        // remove all items belonging to this group before deleting the group
+        for item in group.child {
+            modelContext.delete(item)
+        }
         modelContext.delete(group)
     }
 
     private func deleteItem(_ item: M3Item) {
+        // delete only the specified item
         modelContext.delete(item)
     }
 
