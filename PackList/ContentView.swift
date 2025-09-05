@@ -184,7 +184,7 @@ struct ContentView: View {
                         Image(systemName: "bag.badge.plus")
                     }
                 }
-                .frame(height: 40)
+                .frame(height: rowHeight)
                 .padding(.horizontal)
                 .background(.thinMaterial)
             }
