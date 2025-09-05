@@ -44,6 +44,20 @@ struct ContentView: View {
                             .buttonStyle(BorderlessButtonStyle())
                         }
                         .frame(height: rowHeight)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                deleteTitle(title)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                copyTitle(title)
+                            } label: {
+                                Image(systemName: "doc.on.doc")
+                            }
+                        }
                         .contentShape(Rectangle())
                         .onTapGesture { editingTitle = title }
                         .popover(item: Binding(
@@ -79,6 +93,20 @@ struct ContentView: View {
                                     }
                                     .frame(height: rowHeight)
                                     .padding(.leading)
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) {
+                                            deleteGroup(group)
+                                        } label: {
+                                            Image(systemName: "trash")
+                                        }
+                                    }
+                                    .swipeActions(edge: .leading) {
+                                        Button {
+                                            copyGroup(group)
+                                        } label: {
+                                            Image(systemName: "doc.on.doc")
+                                        }
+                                    }
                                     .contentShape(Rectangle())
                                     .onTapGesture { editingGroup = group }
                                     .popover(item: Binding(
@@ -102,10 +130,24 @@ struct ContentView: View {
                                                         .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
                                                     Spacer()
                                                 }
-                                                .frame(height: rowHeight)
-                                                .padding(.leading, 40)
-                                                .contentShape(Rectangle())
-                                                .onTapGesture { editingItem = item }
+                                                 .frame(height: rowHeight)
+                                                  .padding(.leading, 40)
+                                                  .swipeActions(edge: .trailing) {
+                                                      Button(role: .destructive) {
+                                                          deleteItem(item)
+                                                      } label: {
+                                                          Image(systemName: "trash")
+                                                      }
+                                                  }
+                                                  .swipeActions(edge: .leading) {
+                                                      Button {
+                                                          copyItem(item)
+                                                      } label: {
+                                                          Image(systemName: "doc.on.doc")
+                                                      }
+                                                  }
+                                                  .contentShape(Rectangle())
+                                                  .onTapGesture { editingItem = item }
                                                 .popover(item: Binding(
                                                     get: { editingItem?.id == item.id ? editingItem : nil },
                                                     set: { editingItem = $0 }
@@ -124,15 +166,17 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             //.navigationTitle("Titles")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+            .navigationBarHidden(true)
+            .safeAreaInset(edge: .top) {
+                HStack {
                     Button {
                         //Info  addTitle()
                     } label: {
                         Image(systemName: "info.circle")
                     }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                    Spacer()
+                    Text("モチメモ")
+                    Spacer()
                     Button {
                         addTitle()
                     } label: {
@@ -140,6 +184,9 @@ struct ContentView: View {
                         Image(systemName: "bag.badge.plus")
                     }
                 }
+                .frame(height: rowHeight)
+                .padding(.horizontal)
+                .background(.thinMaterial)
             }
         }
     }
@@ -178,6 +225,41 @@ struct ContentView: View {
             if group.child.isEmpty {
                 addItem(to: group)
             }
+        }
+    }
+
+    private func deleteTitle(_ title: M1Title) {
+        modelContext.delete(title)
+    }
+
+    private func deleteGroup(_ group: M2Group) {
+        modelContext.delete(group)
+    }
+
+    private func deleteItem(_ item: M3Item) {
+        modelContext.delete(item)
+    }
+
+    private func copyTitle(_ title: M1Title) {
+        let newTitle = M1Title(name: title.name, note: title.note, createdAt: title.createdAt.addingTimeInterval(-0.001))
+        modelContext.insert(newTitle)
+    }
+
+    private func copyGroup(_ group: M2Group) {
+        guard let parent = group.parent else { return }
+        let newGroup = M2Group(name: group.name, note: group.note, parent: parent)
+        modelContext.insert(newGroup)
+        if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+            parent.child.insert(newGroup, at: index + 1)
+        }
+    }
+
+    private func copyItem(_ item: M3Item) {
+        guard let parent = item.parent else { return }
+        let newItem = M3Item(name: item.name, note: item.note, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+        modelContext.insert(newItem)
+        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.insert(newItem, at: index + 1)
         }
     }
 }
