@@ -93,8 +93,11 @@ struct ContentView: View {
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("Titles")
+            //.navigationTitle("Titles")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Titles")
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         addTitle()
