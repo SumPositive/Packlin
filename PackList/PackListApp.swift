@@ -12,6 +12,8 @@ import SwiftData
 struct PackListApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
+            Title.self,
+            Group.self,
             Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
