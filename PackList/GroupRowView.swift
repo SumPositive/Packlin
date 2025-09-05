@@ -27,6 +27,8 @@ struct GroupRowView: View {
                 Text(group.name.isEmpty ? "New Group" : group.name)
                     .foregroundStyle(group.name.isEmpty ? .secondary : .primary)
                 Spacer()
+                Text("\(group.stockWeight) / \(group.needWeight) g")
+                    .monospacedDigit()
                 Button { addItem() } label: {
                     Image(systemName: "plus.app")
                 }
