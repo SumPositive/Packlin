@@ -166,18 +166,17 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             //.navigationTitle("Titles")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+            .navigationBarHidden(true)
+            .safeAreaInset(edge: .top) {
+                HStack {
                     Button {
                         //Info  addTitle()
                     } label: {
                         Image(systemName: "info.circle")
                     }
-                }
-                ToolbarItem(placement: .principal) {
+                    Spacer()
                     Text("モチメモ")
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                    Spacer()
                     Button {
                         addTitle()
                     } label: {
@@ -185,6 +184,9 @@ struct ContentView: View {
                         Image(systemName: "bag.badge.plus")
                     }
                 }
+                .frame(height: 40)
+                .padding(.horizontal)
+                .background(.thinMaterial)
             }
         }
     }
