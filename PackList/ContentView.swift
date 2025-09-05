@@ -22,7 +22,7 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(titles) { title in
-                    VStack(alignment: .leading, spacing: 0) {
+                    Group {
                         HStack {
                             Button {
                                 toggleTitle(title)
@@ -70,7 +70,7 @@ struct ContentView: View {
 
                         if expandedTitles.contains(title.id) {
                             ForEach(title.child) { group in
-                                VStack(alignment: .leading, spacing: 0) {
+                                Group {
                                     HStack {
                                         Button {
                                             toggleGroup(group)
@@ -130,24 +130,24 @@ struct ContentView: View {
                                                         .foregroundStyle(item.name.isEmpty ? .secondary : .primary)
                                                     Spacer()
                                                 }
-                                                 .frame(height: rowHeight)
-                                                  .padding(.leading, 40)
-                                                  .swipeActions(edge: .trailing) {
-                                                      Button(role: .destructive) {
-                                                          deleteItem(item)
-                                                      } label: {
-                                                          Image(systemName: "trash")
-                                                      }
-                                                  }
-                                                  .swipeActions(edge: .leading) {
-                                                      Button {
-                                                          copyItem(item)
-                                                      } label: {
-                                                          Image(systemName: "doc.on.doc")
-                                                      }
-                                                  }
-                                                  .contentShape(Rectangle())
-                                                  .onTapGesture { editingItem = item }
+                                                .frame(height: rowHeight)
+                                                .padding(.leading, 40)
+                                                .swipeActions(edge: .trailing) {
+                                                    Button(role: .destructive) {
+                                                        deleteItem(item)
+                                                    } label: {
+                                                        Image(systemName: "trash")
+                                                    }
+                                                }
+                                                .swipeActions(edge: .leading) {
+                                                    Button {
+                                                        copyItem(item)
+                                                    } label: {
+                                                        Image(systemName: "doc.on.doc")
+                                                    }
+                                                }
+                                                .contentShape(Rectangle())
+                                                .onTapGesture { editingItem = item }
                                                 .popover(item: Binding(
                                                     get: { editingItem?.id == item.id ? editingItem : nil },
                                                     set: { editingItem = $0 }
