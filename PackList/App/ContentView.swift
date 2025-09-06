@@ -34,7 +34,7 @@ struct ContentView: View {
                     Spacer()
                     Button { addTitle() }
                     label: {
-                        Image(systemName: "bag.badge.plus")
+                        Image(systemName: "plus.message")
                     }
                 }
                 .frame(height: rowHeight)

@@ -46,7 +46,7 @@ struct GroupRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
 
-                Image(systemName: "folder")
+                Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .padding(.trailing, 8)
                 
                 VStack(alignment: .leading, spacing: 1) {
@@ -64,8 +64,6 @@ struct GroupRowView: View {
                     }
 
                     HStack {
-                        Image(systemName: allItemsChecked ? "checkmark.circle" : "circle.dotted")
-                            .controlSize(.small)
                         Spacer() // 右寄せにするため
                         //Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
                         Text("\(group.stockWeight)g／\(group.needWeight)g")

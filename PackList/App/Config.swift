@@ -15,11 +15,25 @@ import SwiftUICore
 
 //-------------------------------------- Layout関係
 // CalcRollView 幅
-let APP_CALC_WIDTH_MIN : CGFloat = 320      // 最小（SEの幅、全機能が見切れず使用できる状態）
-let APP_CALC_WIDTH_MAX : CGFloat = 9999     // Free
+let APP_WIDTH_MIN : CGFloat = 320      // 最小（SEの幅、全機能が見切れず使用できる状態）
+let APP_WIDTH_MAX : CGFloat = 9999     // Free
 // CalcRollView 高さ
-let APP_CALC_HEIGHT_MIN : CGFloat = 150     // 最小（入力行と履歴1行が見える）
-let APP_CALC_HEIGHT_MAX : CGFloat = 9999    // Free
+let APP_HEIGHT_MIN : CGFloat = 150     // 最小（入力行と履歴1行が見える）
+let APP_HEIGHT_MAX : CGFloat = 9999    // Free
+
+
+//-------------------------------------- MAX関係
+
+let APP_MAX_TITLE_ROWS : Int = 50
+let APP_MAX_GROUP_ROWS : Int = 50
+let APP_MAX_ITEM_ROWS : Int  = 100
+
+let APP_MAX_NAME_LEN : Int = 50
+let APP_MAX_MEMO_LEN : Int = 50
+
+let APP_MAX_WEIGHT_NUM : Int = 999999
+let APP_MAX_STOCK_NUM : Int  = 999
+let APP_MAX_NEED_NUM : Int   = 999
 
 
 //-------------------------------------- Color関係
