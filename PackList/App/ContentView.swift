@@ -10,15 +10,15 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: [SortDescriptor(\M1Title.createdAt, order: .reverse)]) private var titles: [M1Title]
-    @State private var lastAddedTitleID: M1Title.ID?
+    @Query(sort: [SortDescriptor(\M1Pack.createdAt, order: .reverse)]) private var packs: [M1Pack]
+    @State private var lastAddedPackID: M1Pack.ID?
     private let rowHeight: CGFloat = 44
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(titles) { title in
-                    TitleRowView(title: title, isNew: title.id == lastAddedTitleID, lastAddedTitleID: $lastAddedTitleID)
+                ForEach(packs) { pack in
+                    PackRowView(pack: pack, isNew: pack.id == lastAddedPackID, lastAddedPackID: $lastAddedPackID)
                 }
             }
             .listStyle(.plain)
@@ -32,7 +32,7 @@ struct ContentView: View {
                     Spacer()
                     Text("モチメモ")
                     Spacer()
-                    Button { addTitle() }
+                    Button { addPack() }
                     label: {
                         Image(systemName: "plus.message")
                     }
@@ -44,12 +44,12 @@ struct ContentView: View {
         }
     }
 
-    private func addTitle() {
-        let newTitle = M1Title(name: "")
-        modelContext.insert(newTitle)
-        lastAddedTitleID = newTitle.id
+    private func addPack() {
+        let newPack = M1Pack(name: "")
+        modelContext.insert(newPack)
+        lastAddedPackID = newPack.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedTitleID = nil
+            lastAddedPackID = nil
         }
     }
 }

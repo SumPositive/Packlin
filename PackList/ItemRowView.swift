@@ -32,8 +32,14 @@ struct ItemRowView: View {
             
             Button {
                 item.check.toggle()
+                if item.check {
+                    item.stock = item.need
+                }else{
+                    item.stock = 0
+                }
             } label: {
-                Image(systemName: item.check ? "checkmark.circle" : "circle.dotted")
+                Image(systemName: item.check ? "checkmark.circle"
+                      : 0 < item.need ? "circle" : "circle.dotted")
             }
             .buttonStyle(BorderlessButtonStyle())
             .padding(.trailing, 8)
@@ -44,21 +50,29 @@ struct ItemRowView: View {
                     .font(FONT_NAME)
                     .foregroundStyle(item.name.isEmpty ? .secondary : COLOR_NAME)
 
-                if !item.note.isEmpty {
-                    Text(item.note)
+                if !item.memo.isEmpty {
+                    Text(item.memo)
                         .lineLimit(3)
-                        .font(FONT_NOTE)
-                        .foregroundStyle(COLOR_NOTE)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(COLOR_MEMO)
                         .padding(.leading, 25)
                 }
 
                 HStack {
                     Spacer() // 右寄せにするため
                     //Text("個重量:\(item.weight)g　在庫数:\(item.stock)　必要数:\(item.need)")
-                    Text("\(item.weight)g／\(item.stock)／\(item.need)")
+                    Text("\(item.weight)g")
                         .font(FONT_WEIGHT)
                         .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.trailing, 8)
+                        .padding(.trailing, 4)
+                    Text("［\(item.stock)／\(item.need)］")
+                        .font(FONT_STOCK)
+                        .foregroundStyle(COLOR_WEIGHT)
+                        .padding(.trailing, 4)
+                    Text("\(item.stock * item.weight)g／\(item.need * item.weight)g")
+                        .font(FONT_WEIGHT)
+                        .foregroundStyle(COLOR_WEIGHT)
+                        .padding(.trailing, 40)
                 }
             }
         }
@@ -109,7 +123,7 @@ struct ItemRowView: View {
 
     private func copyItem() {
         guard let parent = item.parent else { return }
-        let newItem = M3Item(name: item.name, note: item.note, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
         modelContext.insert(newItem)
         if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
             parent.child.insert(newItem, at: index + 1)
@@ -153,7 +167,7 @@ struct EditItemView: View {
                 Text("名称:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $item.name, prompt: Text("New Item"))
+                TextField("", text: $item.name, prompt: Text("New Item name"))
                     .background(Color.white.opacity(0.7))
                     .padding(4)
             }
@@ -161,7 +175,7 @@ struct EditItemView: View {
                 Text("メモ:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $item.note)
+                TextField("", text: $item.memo)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
             }

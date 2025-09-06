@@ -1,5 +1,5 @@
 //
-//  TitleRowView.swift
+//  PackRowView.swift
 //  PackList
 //
 //  Created by sumpo on 2025/09/05.
@@ -9,28 +9,28 @@ import SwiftUI
 import SwiftData
 import UIKit
 
-struct TitleRowView: View {
+struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
-    let title: M1Title
+    let pack: M1Pack
     let isNew: Bool
-    @Binding var lastAddedTitleID: M1Title.ID?
+    @Binding var lastAddedPackID: M1Pack.ID?
     @State private var isExpanded = false
-    @State private var editingTitle: M1Title?
+    @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
     @State private var lastAddedGroupID: M2Group.ID?
     @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
 
-    init(title: M1Title, isNew: Bool = false, lastAddedTitleID: Binding<M1Title.ID?> = .constant(nil)) {
-        self.title = title
+    init(pack: M1Pack, isNew: Bool = false, lastAddedPackID: Binding<M1Pack.ID?> = .constant(nil)) {
+        self.pack = pack
         self.isNew = isNew
-        self._lastAddedTitleID = lastAddedTitleID
+        self._lastAddedPackID = lastAddedPackID
         _isHighlighted = State(initialValue: isNew)
     }
 
     private var allItemsChecked: Bool {
-        let items = title.child.flatMap { $0.child }
+        let items = pack.child.flatMap { $0.child }
         return !items.isEmpty && items.allSatisfy { $0.check }
     }
 
@@ -39,7 +39,7 @@ struct TitleRowView: View {
             HStack {
                 Button {
                     isExpanded.toggle()
-                    if isExpanded && title.child.isEmpty {
+                    if isExpanded && pack.child.isEmpty {
                         addGroup()
                     }
                 } label: {
@@ -51,26 +51,30 @@ struct TitleRowView: View {
                     .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(title.name.isEmpty ? "New Title" : title.name)
+                    Text(pack.name.isEmpty ? "New Pack" : pack.name)
                         .lineLimit(3)
                         .font(FONT_NAME)
-                        .foregroundStyle(title.name.isEmpty ? .secondary : COLOR_NAME)
+                        .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
                     
-                    if !title.note.isEmpty {
-                        Text(title.note)
+                    if !pack.memo.isEmpty {
+                        Text(pack.memo)
                             .lineLimit(3)
-                            .font(FONT_NOTE)
-                            .foregroundStyle(COLOR_NOTE)
+                            .font(FONT_MEMO)
+                            .foregroundStyle(COLOR_MEMO)
                             .padding(.leading, 25)
                     }
                     
                     HStack {
                         Spacer() // 右寄せにするため
                         //Text("在庫:\(title.stockWeight)g　必要:\(title.needWeight)g")
-                        Text("\(title.stockWeight)g／\(title.needWeight)g")
+//                        Text("［\(pack.stock)／\(pack.need)］")
+//                            .font(FONT_STOCK)
+//                            .foregroundStyle(COLOR_WEIGHT)
+//                            .padding(.trailing, 4)
+                        Text("\(pack.stockWeight)g／\(pack.needWeight)g")
                             .font(FONT_WEIGHT)
                             .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.trailing, 8)
+                            .padding(.trailing, 4)
                     }
                 }
                 Spacer()
@@ -86,12 +90,12 @@ struct TitleRowView: View {
             }
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
-                Button(role: .destructive) { deleteTitle() } label: {
+                Button(role: .destructive) { deletePack() } label: {
                     Image(systemName: "trash")
                 }
             }
             .swipeActions(edge: .leading) {
-                Button { copyTitle() } label: {
+                Button { copyPack() } label: {
                     Image(systemName: "doc.on.doc")
                 }
             }
@@ -106,10 +110,10 @@ struct TitleRowView: View {
             )
             .onTapGesture {
                 arrowEdge = arrowEdge(for: frame)
-                editingTitle = title
+                editingPack = pack
             }
-            .popover(item: $editingTitle, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
-                EditTitleView(title: title)
+            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
+                EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
@@ -124,28 +128,30 @@ struct TitleRowView: View {
             }
 
             if isExpanded {
-                ForEach(title.child) { group in
-                    GroupRowView(group: group, isNew: group.id == lastAddedGroupID, lastAddedGroupID: $lastAddedGroupID)
+                ForEach(pack.child) { group in
+                    GroupRowView(group: group,
+                                   isNew: group.id == lastAddedGroupID,
+                                   lastAddedGroupID: $lastAddedGroupID)
                 }
             }
         }
     }
 
     private func addGroup() {
-        let newGroup = M2Group(name: "", parent: title)
+        let newGroup = M2Group(name: "", parent: pack)
         modelContext.insert(newGroup)
-        title.child.append(newGroup)
+        pack.child.append(newGroup)
         lastAddedGroupID = newGroup.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedGroupID = nil
         }
     }
 
-    private func deleteTitle() {
-        for group in title.child {
+    private func deletePack() {
+        for group in pack.child {
             deleteGroup(group)
         }
-        modelContext.delete(title)
+        modelContext.delete(pack)
     }
 
     private func deleteGroup(_ group: M2Group) {
@@ -155,20 +161,20 @@ struct TitleRowView: View {
         modelContext.delete(group)
     }
 
-    private func copyTitle() {
-        let newTitle = M1Title(name: title.name, note: title.note, createdAt: title.createdAt.addingTimeInterval(-0.001))
+    private func copyPack() {
+        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001))
         modelContext.insert(newTitle)
-        for group in title.child {
+        for group in pack.child {
             copyGroup(group, to: newTitle)
         }
-        lastAddedTitleID = newTitle.id
+        lastAddedPackID = newTitle.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedTitleID = nil
+            lastAddedPackID = nil
         }
     }
 
-    private func copyGroup(_ group: M2Group, to parent: M1Title) {
-        let newGroup = M2Group(name: group.name, note: group.note, parent: parent)
+    private func copyGroup(_ group: M2Group, to parent: M1Pack) {
+        let newGroup = M2Group(name: group.name, memo: group.memo, parent: parent)
         modelContext.insert(newGroup)
         if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
             parent.child.insert(newGroup, at: index + 1)
@@ -185,7 +191,7 @@ struct TitleRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        let newItem = M3Item(name: item.name, note: item.note, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
         modelContext.insert(newItem)
         if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
             parent.child.insert(newItem, at: index + 1)
@@ -203,18 +209,18 @@ struct TitleRowView: View {
     }
 }
 
-struct EditTitleView: View {
+struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-    @Bindable var title: M1Title
+    @Bindable var pack: M1Pack
     
     var body: some View {
         VStack {
             HStack {
-                Text("タイトル:")
+                Text("名称:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $title.name)
+                TextField("", text: $pack.name, prompt: Text("New Pack name"))
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
@@ -223,7 +229,7 @@ struct EditTitleView: View {
                 Text("メモ:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $title.note)
+                TextField("", text: $pack.memo)
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)

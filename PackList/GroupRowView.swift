@@ -55,21 +55,25 @@ struct GroupRowView: View {
                         .font(FONT_NAME)
                         .foregroundStyle(group.name.isEmpty ? .secondary : COLOR_NAME)
                     
-                    if !group.note.isEmpty {
-                        Text(group.note)
+                    if !group.memo.isEmpty {
+                        Text(group.memo)
                             .lineLimit(3)
-                            .font(FONT_NOTE)
-                            .foregroundStyle(COLOR_NOTE)
+                            .font(FONT_MEMO)
+                            .foregroundStyle(COLOR_MEMO)
                             .padding(.leading, 25)
                     }
 
                     HStack {
                         Spacer() // 右寄せにするため
                         //Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
+//                        Text("［\(group.stock)／\(group.need)］")
+//                            .font(FONT_STOCK)
+//                            .foregroundStyle(COLOR_WEIGHT)
+//                            .padding(.trailing, 4)
                         Text("\(group.stockWeight)g／\(group.needWeight)g")
                             .font(FONT_WEIGHT)
                             .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.trailing, 8)
+                            .padding(.trailing, 4)
                     }
                 }
                 Spacer()
@@ -155,7 +159,7 @@ struct GroupRowView: View {
 
     private func copyGroup() {
         guard let parentTitle = group.parent else { return }
-        let newGroup = M2Group(name: group.name, note: group.note, parent: parentTitle)
+        let newGroup = M2Group(name: group.name, memo: group.memo, parent: parentTitle)
         modelContext.insert(newGroup)
         if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
             parentTitle.child.insert(newGroup, at: index + 1)
@@ -172,7 +176,7 @@ struct GroupRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        let newItem = M3Item(name: item.name, note: item.note, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
         modelContext.insert(newItem)
         if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
             parent.child.insert(newItem, at: index + 1)
@@ -202,10 +206,10 @@ struct EditGroupView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("グループ名:")
+                Text("名称:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $group.name)
+                TextField("", text: $group.name, prompt: Text("New Group name"))
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
@@ -214,7 +218,7 @@ struct EditGroupView: View {
                 Text("メモ:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $group.note)
+                TextField("", text: $group.memo)
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)

@@ -24,8 +24,8 @@ let APP_HEIGHT_MAX : CGFloat = 9999    // Free
 
 //-------------------------------------- MAX関係
 
-let APP_MAX_TITLE_ROWS : Int = 50
-let APP_MAX_GROUP_ROWS : Int = 50
+let APP_MAX_PACK_ROWS : Int = 50
+let APP_MAX_PART_ROWS : Int = 50
 let APP_MAX_ITEM_ROWS : Int  = 100
 
 let APP_MAX_NAME_LEN : Int = 50
@@ -55,12 +55,13 @@ let COLOR_TITLE: Color = .secondary         // App Name
 
 
 let COLOR_NAME: Color = .primary
-let COLOR_NOTE: Color = .secondary
+let COLOR_MEMO: Color = .secondary
 let COLOR_WEIGHT: Color = .secondary
 
 //-------------------------------------- Font関係
 let FONT_NAME: Font = .title3
-let FONT_NOTE: Font = .headline
+let FONT_MEMO: Font = .headline
+let FONT_STOCK: Font = .title3
 let FONT_WEIGHT: Font = .headline
 
 
