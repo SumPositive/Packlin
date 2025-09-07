@@ -20,13 +20,17 @@ struct PackRowView: View {
     @State private var arrowEdge: Edge = .bottom
     @State private var lastAddedGroupID: M2Group.ID?
     @State private var isHighlighted: Bool
-    @State private var draggingItem: M3Item?
+    @Binding var draggingItem: M3Item?
     private let rowHeight: CGFloat = 44
 
-    init(pack: M1Pack, isNew: Bool = false, lastAddedPackID: Binding<M1Pack.ID?> = .constant(nil)) {
+    init(pack: M1Pack,
+         isNew: Bool = false,
+         lastAddedPackID: Binding<M1Pack.ID?> = .constant(nil),
+         draggingItem: Binding<M3Item?> = .constant(nil)) {
         self.pack = pack
         self.isNew = isNew
         self._lastAddedPackID = lastAddedPackID
+        self._draggingItem = draggingItem
         _isHighlighted = State(initialValue: isNew)
     }
 

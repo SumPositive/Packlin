@@ -12,13 +12,17 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\M1Pack.createdAt, order: .reverse)]) private var packs: [M1Pack]
     @State private var lastAddedPackID: M1Pack.ID?
+    @State private var draggingItem: M3Item?
     private let rowHeight: CGFloat = 44
 
     var body: some View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    PackRowView(pack: pack, isNew: pack.id == lastAddedPackID, lastAddedPackID: $lastAddedPackID)
+                    PackRowView(pack: pack,
+                                isNew: pack.id == lastAddedPackID,
+                                lastAddedPackID: $lastAddedPackID,
+                                draggingItem: $draggingItem)
                 }
             }
             .listStyle(.plain)
