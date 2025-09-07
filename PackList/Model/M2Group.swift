@@ -37,7 +37,7 @@ extension M2Group {
 
     /// 子アイテムの order を連番に整理する
     func normalizeItemOrder() {
-        //child = child.sorted { $0.order < $1.order }
+        child = child.sorted { $0.order < $1.order }
         for (index, item) in child.enumerated() {
             item.order = index
         }

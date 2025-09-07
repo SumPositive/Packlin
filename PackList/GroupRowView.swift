@@ -196,16 +196,21 @@ struct GroupRowView: View {
             let newGroup = cloneGroup(template, parent: parent)
             modelContext.insert(newGroup)
             withAnimation {
-                if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-                    parent.child.insert(newGroup, at: index + 1)
+                var groups = parent.child.sorted { $0.order < $1.order }
+                if let index = groups.firstIndex(where: { $0.id == group.id }) {
+                    groups.insert(newGroup, at: index + 1)
                 } else {
-                    parent.child.append(newGroup)
+                    groups.append(newGroup)
                 }
-                parent.normalizeGroupOrder()
+                for (index, g) in groups.enumerated() {
+                    g.order = index
+                }
+                parent.child = groups
             }
         } else if let templateItem = RowClipboard.item {
             isExpanded = true
             let newItem = cloneItem(templateItem, parent: group)
+            newItem.order = group.nextItemOrder()
             modelContext.insert(newItem)
             withAnimation {
                 group.child.append(newItem)
