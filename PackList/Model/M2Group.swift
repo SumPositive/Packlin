@@ -26,7 +26,7 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     var stockWeight: Int { child.reduce(0) { $0 + $1.weight * $1.stock } }
     var needWeight: Int { child.reduce(0) { $0 + $1.weight * $1.need } }
 
-    init(id: ID = hashedShortUUID(), name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
+    init(id: ID = shortUUID(), name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
         self.id = id
         self.name = name
         self.memo = memo

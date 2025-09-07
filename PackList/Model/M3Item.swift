@@ -25,7 +25,7 @@ final class M3Item {
 
     var lack: Int { max(need - stock, 0) }
 
-    init(id: ID = hashedShortUUID(),
+    init(id: ID = shortUUID(),
          name: String,
          memo: String = "",
          check: Bool = false,

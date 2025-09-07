@@ -134,11 +134,11 @@ struct ItemRowView: View {
 
     private func duplicateItem() {
         guard let parent = item.parent else { return }
-        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order + 1, parent: parent)
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order, parent: parent)
         modelContext.insert(newItem)
         withAnimation {
             if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-                parent.child.insert(newItem, at: index + 1)
+                parent.child.insert(newItem, at: index)
             } else {
                 parent.child.append(newItem)
             }

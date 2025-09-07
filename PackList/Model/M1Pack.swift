@@ -27,7 +27,7 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
-    init(id: ID = hashedShortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+    init(id: ID = shortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
         self.id = id
         self.name = name
         self.memo = memo
