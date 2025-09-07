@@ -10,11 +10,14 @@ import SwiftData
 
 @Model
 final class M1Pack {
+    typealias ID = PersistentIdentifier        // publicで再エクスポート
+    var id: ID { persistentModelID }           // publicなid を用意
+    var order: Int
+
     var name: String
     var memo: String
 
     var createdAt: Date
-    var order: Int
 
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
 
@@ -31,12 +34,6 @@ final class M1Pack {
         self.order = order
     }
     
-}
-
-extension M1Pack {
-    typealias ID = PersistentIdentifier        // ← public で再エクスポート
-    var id: ID { persistentModelID }           // ← public な id を用意（任意）
-
     /// 子グループの order を連番に整理する
     func normalizeGroupOrder() {
         child = child.sorted { $0.order < $1.order }

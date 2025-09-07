@@ -10,13 +10,16 @@ import SwiftData
 
 @Model
 final class M3Item {
+    typealias ID = PersistentIdentifier
+    var id: ID { persistentModelID }
+    var order: Int // 表示順
+
     var name: String
     var memo: String
     var check: Bool // チェック
     var stock: Int  // 在庫数
     var need: Int   // 必要数
     var weight: Int // 重量(g)
-    var order: Int // 表示順
 
     @Relationship(inverse: \M2Group.child) var parent: M2Group?
 
@@ -41,7 +44,3 @@ final class M3Item {
     }
 }
 
-extension M3Item {
-    typealias ID = PersistentIdentifier
-    var id: ID { persistentModelID }
-}

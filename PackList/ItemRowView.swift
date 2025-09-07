@@ -52,6 +52,7 @@ struct ItemRowView: View {
                         .foregroundStyle(COLOR_MEMO)
                         .padding(.leading, 25)
                 }
+                Text("\(item.order)   \(item.id)")
 
                 HStack {
                     Spacer() // 右寄せにするため
