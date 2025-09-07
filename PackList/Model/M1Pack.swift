@@ -27,11 +27,7 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
-    static func newID() -> ID {
-        String(format: "%010d", Int.random(in: 0..<1_000_000_0000))
-    }
-
-    init(id: ID = Self.newID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+    init(id: ID = hashedShortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
         self.id = id
         self.name = name
         self.memo = memo

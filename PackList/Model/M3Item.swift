@@ -25,11 +25,7 @@ final class M3Item {
 
     var lack: Int { max(need - stock, 0) }
 
-    static func newID() -> ID {
-        String(format: "%010d", Int.random(in: 0..<1_000_000_0000))
-    }
-
-    init(id: ID = Self.newID(),
+    init(id: ID = hashedShortUUID(),
          name: String,
          memo: String = "",
          check: Bool = false,
