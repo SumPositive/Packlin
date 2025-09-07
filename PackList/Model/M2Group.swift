@@ -10,9 +10,12 @@ import SwiftData
 
 @Model
 final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を付与することになった。"M"はModel
+    typealias ID = PersistentIdentifier
+    var id: ID { persistentModelID }
+    var order: Int
+
     var name: String
     var memo: String
-    var order: Int
 
     @Relationship(inverse: \M1Pack.child) var parent: M1Pack?
     @Relationship(deleteRule: .cascade) var child: [M3Item] = []
@@ -29,15 +32,10 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
         self.order = order
         self.parent = parent
     }
-}
-
-extension M2Group {
-    typealias ID = PersistentIdentifier
-    var id: ID { persistentModelID }
 
     /// 子アイテムの order を連番に整理する
     func normalizeItemOrder() {
-        //child = child.sorted { $0.order < $1.order }
+        child = child.sorted { $0.order < $1.order }
         for (index, item) in child.enumerated() {
             item.order = index
         }

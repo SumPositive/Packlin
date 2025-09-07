@@ -18,7 +18,6 @@ struct PackRowView: View {
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-    @State private var lastAddedGroupID: M2Group.ID?
     @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
 
@@ -150,12 +149,12 @@ struct PackRowView: View {
 
             if isExpanded {
                 ForEach(sortedGroups) { group in
-                    GroupRowView(group: group,
-                                   isNew: group.id == lastAddedGroupID,
-                                   lastAddedGroupID: $lastAddedGroupID)
+                    GroupRowView(group: group)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
                 .onMove(perform: moveGroup)
                 .environment(\.editMode, .constant(.active))
+                .animation(.default, value: pack.child)
             }
         }
     }
@@ -163,11 +162,9 @@ struct PackRowView: View {
     private func addGroup() {
         let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
         modelContext.insert(newGroup)
-        pack.child.append(newGroup)
-        pack.normalizeGroupOrder()
-        lastAddedGroupID = newGroup.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedGroupID = nil
+        withAnimation {
+            pack.child.append(newGroup)
+            pack.normalizeGroupOrder()
         }
     }
 
@@ -232,18 +229,16 @@ struct PackRowView: View {
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
         let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
         modelContext.insert(newGroup)
-        if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-            parent.child.insert(newGroup, at: index + 1)
-        } else {
-            parent.child.append(newGroup)
+        withAnimation {
+            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+                parent.child.insert(newGroup, at: index + 1)
+            } else {
+                parent.child.append(newGroup)
+            }
+            parent.normalizeGroupOrder()
         }
-        parent.normalizeGroupOrder()
         for item in group.child {
             copyItem(item, to: newGroup)
-        }
-        lastAddedGroupID = newGroup.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedGroupID = nil
         }
     }
 

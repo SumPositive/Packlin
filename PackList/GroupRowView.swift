@@ -12,20 +12,14 @@ import UIKit
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
-    let isNew: Bool
-    @Binding var lastAddedGroupID: M2Group.ID?
     @State private var isExpanded = false
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-    @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
 
-    init(group: M2Group, isNew: Bool = false, lastAddedGroupID: Binding<M2Group.ID?> = .constant(nil)) {
+    init(group: M2Group) {
         self.group = group
-        self.isNew = isNew
-        self._lastAddedGroupID = lastAddedGroupID
-        _isHighlighted = State(initialValue: isNew)
     }
 
     private var allItemsChecked: Bool {
@@ -114,7 +108,6 @@ struct GroupRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
-            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -133,16 +126,6 @@ struct GroupRowView: View {
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
-            .onAppear {
-                if isNew {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation {
-                            isHighlighted = false
-                        }
-                    }
-                }
-            }
-
             if isExpanded {
                 if group.child.isEmpty {
                     Text(" ")
@@ -150,9 +133,11 @@ struct GroupRowView: View {
                 } else {
                     ForEach(sortedItems) { item in
                         ItemRowView(item: item)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
                     .onMove(perform: moveItem)
                     .environment(\.editMode, .constant(.active))
+                    .animation(.default, value: group.child)
                 }
             }
         }
@@ -165,8 +150,10 @@ struct GroupRowView: View {
     private func addItem() {
         let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
         modelContext.insert(newItem)
-        group.child.append(newItem)
-        group.normalizeItemOrder()
+        withAnimation {
+            group.child.append(newItem)
+            group.normalizeItemOrder()
+        }
     }
 
     private func deleteGroup() {
@@ -185,18 +172,16 @@ struct GroupRowView: View {
         guard let parentTitle = group.parent else { return }
         let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
         modelContext.insert(newGroup)
-        if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
-            parentTitle.child.insert(newGroup, at: index + 1)
-        } else {
-            parentTitle.child.append(newGroup)
+        withAnimation {
+            if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
+                parentTitle.child.insert(newGroup, at: index + 1)
+            } else {
+                parentTitle.child.append(newGroup)
+            }
+            parentTitle.normalizeGroupOrder()
         }
-        parentTitle.normalizeGroupOrder()
         for item in group.child {
             copyItem(item, to: newGroup)
-        }
-        lastAddedGroupID = newGroup.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedGroupID = nil
         }
     }
 
@@ -210,22 +195,27 @@ struct GroupRowView: View {
         if let template = RowClipboard.group, let parent = group.parent {
             let newGroup = cloneGroup(template, parent: parent)
             modelContext.insert(newGroup)
-            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-                parent.child.insert(newGroup, at: index + 1)
-            } else {
-                parent.child.append(newGroup)
-            }
-            parent.normalizeGroupOrder()
-            lastAddedGroupID = newGroup.id
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                lastAddedGroupID = nil
+            withAnimation {
+                var groups = parent.child.sorted { $0.order < $1.order }
+                if let index = groups.firstIndex(where: { $0.id == group.id }) {
+                    groups.insert(newGroup, at: index + 1)
+                } else {
+                    groups.append(newGroup)
+                }
+                for (index, g) in groups.enumerated() {
+                    g.order = index
+                }
+                parent.child = groups
             }
         } else if let templateItem = RowClipboard.item {
             isExpanded = true
             let newItem = cloneItem(templateItem, parent: group)
+            newItem.order = group.nextItemOrder()
             modelContext.insert(newItem)
-            group.child.append(newItem)
-            group.normalizeItemOrder()
+            withAnimation {
+                group.child.append(newItem)
+                group.normalizeItemOrder()
+            }
         }
     }
 
