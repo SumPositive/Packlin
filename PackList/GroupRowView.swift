@@ -18,7 +18,6 @@ struct GroupRowView: View {
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-    @State private var lastAddedItemID: M3Item.ID?
     @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
 
@@ -150,7 +149,7 @@ struct GroupRowView: View {
                         .padding(.leading, 40)
                 } else {
                     ForEach(sortedItems) { item in
-                        ItemRowView(item: item, isNew: item.id == lastAddedItemID, lastAddedItemID: $lastAddedItemID)
+                        ItemRowView(item: item)
                     }
                     .onMove(perform: moveItem)
                     .environment(\.editMode, .constant(.active))
@@ -168,10 +167,6 @@ struct GroupRowView: View {
         modelContext.insert(newItem)
         group.child.append(newItem)
         group.normalizeItemOrder()
-        lastAddedItemID = newItem.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedItemID = nil
-        }
     }
 
     private func deleteGroup() {
@@ -231,10 +226,6 @@ struct GroupRowView: View {
             modelContext.insert(newItem)
             group.child.append(newItem)
             group.normalizeItemOrder()
-            lastAddedItemID = newItem.id
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                lastAddedItemID = nil
-            }
         }
     }
 
@@ -243,10 +234,6 @@ struct GroupRowView: View {
         modelContext.insert(newItem)
         parent.child.append(newItem)
         parent.normalizeItemOrder()
-        lastAddedItemID = newItem.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedItemID = nil
-        }
     }
 
     private func moveItem(from source: IndexSet, to destination: Int) {
