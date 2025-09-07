@@ -192,13 +192,10 @@ struct PackRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
         modelContext.insert(newItem)
-        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-            parent.child.insert(newItem, at: index + 1)
-        } else {
-            parent.child.append(newItem)
-        }
+        parent.child.append(newItem)
+        parent.normalizeItemOrder()
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {

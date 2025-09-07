@@ -16,6 +16,7 @@ final class M3Item {
     var stock: Int  // 在庫数
     var need: Int   // 必要数
     var weight: Int // 重量(g)
+    var order: Int // 表示順
 
     @Relationship(inverse: \M2Group.child) var parent: M2Group?
 
@@ -27,6 +28,7 @@ final class M3Item {
          stock: Int = 0,
          need: Int = 0,
          weight: Int = 0,
+         order: Int = 0,
          parent: M2Group? = nil) {
         self.name = name
         self.memo = memo
@@ -34,6 +36,7 @@ final class M3Item {
         self.stock = stock
         self.need = need
         self.weight = weight
+        self.order = order
         self.parent = parent
     }
 }
