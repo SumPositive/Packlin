@@ -31,8 +31,13 @@ struct ContentView: View {
                         Image(systemName: "info.circle")
                     }
                     if let undoManager, undoManager.canUndo {
-                        Button { undoManager.undo() }
-                        label: {
+                        Button {
+                            modelContext.undoManager = undoManager
+                            undoManager.undo()
+                            undoManager.removeAllActions()
+                            try? modelContext.save()
+                            modelContext.undoManager = nil
+                        } label: {
                             Image(systemName: "arrow.uturn.backward")
                         }
                     }
