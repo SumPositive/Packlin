@@ -209,6 +209,24 @@ struct EditItemView: View {
     var body: some View {
         VStack {
             HStack {
+                Button("Cut") {
+                    copyToClipboard()
+                    deleteItem()
+                    dismiss()
+                }
+                Button("Copy") {
+                    copyToClipboard()
+                }
+                Button("Paste") {
+                    pasteFromClipboard()
+                }
+                .disabled(RowClipboard.item == nil)
+                Button("Duplicate") {
+                    duplicateItem()
+                }
+                Spacer()
+            }
+            HStack {
                 Text("名称:")
                     .font(.caption)
                     .padding(4)
@@ -279,6 +297,48 @@ struct EditItemView: View {
         .onDisappear() {
             try? context.save()
         }
+    }
+
+    private func copyToClipboard() {
+        RowClipboard.pack = nil
+        RowClipboard.group = nil
+        RowClipboard.item = cloneItem(item)
+    }
+
+    private func pasteFromClipboard() {
+        guard let template = RowClipboard.item, let parent = item.parent else { return }
+        let newItem = cloneItem(template, parent: parent)
+        context.insert(newItem)
+        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.insert(newItem, at: index + 1)
+        } else {
+            parent.child.append(newItem)
+        }
+        parent.normalizeItemOrder()
+        try? context.save()
+    }
+
+    private func duplicateItem() {
+        guard let parent = item.parent else { return }
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order + 1, parent: parent)
+        context.insert(newItem)
+        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.insert(newItem, at: index + 1)
+        } else {
+            parent.child.append(newItem)
+        }
+        parent.normalizeItemOrder()
+        try? context.save()
+    }
+
+    private func deleteItem() {
+        if let parent = item.parent,
+           let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.remove(at: index)
+            parent.normalizeItemOrder()
+        }
+        context.delete(item)
+        try? context.save()
     }
 }
 
