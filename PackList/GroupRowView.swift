@@ -133,18 +133,25 @@ struct GroupRowView: View {
                     Text(" ")
                         .padding(.leading, 40)
                 } else {
-                    ForEach(group.child) { item in
+                    ForEach(sortedItems) { item in
                         ItemRowView(item: item, isNew: item.id == lastAddedItemID, lastAddedItemID: $lastAddedItemID)
                     }
+                    .onMove(perform: moveItem)
+                    .environment(\.editMode, .constant(.active))
                 }
             }
         }
     }
 
+    private var sortedItems: [M3Item] {
+        group.child.sorted { $0.order < $1.order }
+    }
+
     private func addItem() {
-        let newItem = M3Item(name: "", parent: group)
+        let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
         modelContext.insert(newItem)
         group.child.append(newItem)
+        group.normalizeItemOrder()
         lastAddedItemID = newItem.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedItemID = nil
@@ -181,17 +188,23 @@ struct GroupRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, parent: parent)
+        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
         modelContext.insert(newItem)
-        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-            parent.child.insert(newItem, at: index + 1)
-        } else {
-            parent.child.append(newItem)
-        }
+        parent.child.append(newItem)
+        parent.normalizeItemOrder()
         lastAddedItemID = newItem.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedItemID = nil
         }
+    }
+
+    private func moveItem(from source: IndexSet, to destination: Int) {
+        var items = sortedItems
+        items.move(fromOffsets: source, toOffset: destination)
+        for (index, item) in items.enumerated() {
+            item.order = index
+        }
+        group.child = items
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {
