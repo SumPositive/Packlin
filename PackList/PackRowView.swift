@@ -104,6 +104,15 @@ struct PackRowView: View {
                     Image(systemName: "doc.on.doc")
                 }
             }
+            .contextMenu {
+                Button("Copy") { copyToClipboard() }
+                Button("Paste") { pasteFromClipboard() }
+                    .disabled(RowClipboard.pack == nil)
+                Button("Cut") {
+                    copyToClipboard()
+                    deletePack()
+                }
+            }
             .contentShape(Rectangle())
             .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
@@ -183,6 +192,31 @@ struct PackRowView: View {
             copyGroup(group, to: newTitle)
         }
         lastAddedPackID = newTitle.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedPackID = nil
+        }
+    }
+
+    private func copyToClipboard() {
+        RowClipboard.group = nil
+        RowClipboard.item = nil
+        RowClipboard.pack = clonePack(pack)
+    }
+
+    private func pasteFromClipboard() {
+        guard let template = RowClipboard.pack else { return }
+        let descriptor = FetchDescriptor<M1Pack>()
+        let packs = (try? modelContext.fetch(descriptor)) ?? []
+        let newPack = clonePack(template)
+        modelContext.insert(newPack)
+        var all = packs
+        if let index = packs.firstIndex(where: { $0.id == pack.id }) {
+            all.insert(newPack, at: index + 1)
+        } else {
+            all.append(newPack)
+        }
+        M1Pack.normalizePackOrder(all)
+        lastAddedPackID = newPack.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedPackID = nil
         }

@@ -89,6 +89,15 @@ struct ItemRowView: View {
                 Image(systemName: "doc.on.doc")
             }
         }
+        .contextMenu {
+            Button("Copy") { copyToClipboard() }
+            Button("Paste") { pasteFromClipboard() }
+                .disabled(RowClipboard.item == nil)
+            Button("Cut") {
+                copyToClipboard()
+                deleteItem()
+            }
+        }
         .contentShape(Rectangle())
         .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
         .background(
@@ -130,6 +139,28 @@ struct ItemRowView: View {
     private func copyItem() {
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order + 1, parent: parent)
+        modelContext.insert(newItem)
+        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.insert(newItem, at: index + 1)
+        } else {
+            parent.child.append(newItem)
+        }
+        parent.normalizeItemOrder()
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
+        }
+    }
+
+    private func copyToClipboard() {
+        RowClipboard.pack = nil
+        RowClipboard.group = nil
+        RowClipboard.item = cloneItem(item)
+    }
+
+    private func pasteFromClipboard() {
+        guard let template = RowClipboard.item, let parent = item.parent else { return }
+        let newItem = cloneItem(template, parent: parent)
         modelContext.insert(newItem)
         if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
             parent.child.insert(newItem, at: index + 1)

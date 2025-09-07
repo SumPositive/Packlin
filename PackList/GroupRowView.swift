@@ -100,6 +100,15 @@ struct GroupRowView: View {
                     Image(systemName: "doc.on.doc")
                 }
             }
+            .contextMenu {
+                Button("Copy") { copyToClipboard() }
+                Button("Paste") { pasteFromClipboard() }
+                    .disabled(RowClipboard.group == nil && RowClipboard.item == nil)
+                Button("Cut") {
+                    copyToClipboard()
+                    deleteGroup()
+                }
+            }
             .contentShape(Rectangle())
             .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
@@ -186,6 +195,39 @@ struct GroupRowView: View {
         lastAddedGroupID = newGroup.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedGroupID = nil
+        }
+    }
+
+    private func copyToClipboard() {
+        RowClipboard.pack = nil
+        RowClipboard.item = nil
+        RowClipboard.group = cloneGroup(group)
+    }
+
+    private func pasteFromClipboard() {
+        if let template = RowClipboard.group, let parent = group.parent {
+            let newGroup = cloneGroup(template, parent: parent)
+            modelContext.insert(newGroup)
+            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+                parent.child.insert(newGroup, at: index + 1)
+            } else {
+                parent.child.append(newGroup)
+            }
+            parent.normalizeGroupOrder()
+            lastAddedGroupID = newGroup.id
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                lastAddedGroupID = nil
+            }
+        } else if let templateItem = RowClipboard.item {
+            isExpanded = true
+            let newItem = cloneItem(templateItem, parent: group)
+            modelContext.insert(newItem)
+            group.child.append(newItem)
+            group.normalizeItemOrder()
+            lastAddedItemID = newItem.id
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                lastAddedItemID = nil
+            }
         }
     }
 
