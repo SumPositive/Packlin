@@ -154,9 +154,10 @@ struct ItemRowView: View {
     private func pasteFromClipboard() {
         guard let clipItem = RowClipboard.item, let parent = item.parent else { return }
         let newItem = cloneItem(clipItem, parent: parent)
+        newItem.order = item.order
         modelContext.insert(newItem)
         withAnimation {
-            // 現在行(index)を求めその下に追加する
+            // 現在行(index)を求めその行に追加する
             if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
                 // index位置に追加
                 parent.child.insert(newItem, at: index)
