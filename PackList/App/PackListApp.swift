@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct PackListApp: App {
+    @State private var undoManager = UndoManager()
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             M1Pack.self,
@@ -39,6 +40,7 @@ struct PackListApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.undoManager, undoManager)
         }
         .modelContainer(sharedModelContainer)
     }
