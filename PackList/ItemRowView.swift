@@ -125,6 +125,7 @@ struct ItemRowView: View {
         undoManager?.beginUndoGrouping()
         modelContext.delete(item)
         undoManager?.endUndoGrouping()
+        try? modelContext.save()
         modelContext.undoManager = nil
     }
 

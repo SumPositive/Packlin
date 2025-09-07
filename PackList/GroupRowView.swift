@@ -161,6 +161,7 @@ struct GroupRowView: View {
         }
         modelContext.delete(group)
         undoManager?.endUndoGrouping()
+        try? modelContext.save()
         modelContext.undoManager = nil
     }
 

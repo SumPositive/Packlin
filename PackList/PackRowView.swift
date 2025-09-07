@@ -158,6 +158,7 @@ struct PackRowView: View {
         }
         modelContext.delete(pack)
         undoManager?.endUndoGrouping()
+        try? modelContext.save()
         modelContext.undoManager = nil
     }
 
