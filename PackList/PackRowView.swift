@@ -11,6 +11,7 @@ import UIKit
 
 struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.undoManager) private var undoManager
     let pack: M1Pack
     let isNew: Bool
     @Binding var lastAddedPackID: M1Pack.ID?
@@ -149,10 +150,15 @@ struct PackRowView: View {
     }
 
     private func deletePack() {
+        modelContext.undoManager = undoManager
+        undoManager?.removeAllActions()
+        undoManager?.beginUndoGrouping()
         for group in pack.child {
             deleteGroup(group)
         }
         modelContext.delete(pack)
+        undoManager?.endUndoGrouping()
+        modelContext.undoManager = nil
     }
 
     private func deleteGroup(_ group: M2Group) {
@@ -213,6 +219,7 @@ struct PackRowView: View {
 struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Environment(\.undoManager) private var undoManager
     @Bindable var pack: M1Pack
     
     var body: some View {
@@ -245,8 +252,15 @@ struct EditPackView: View {
         }
         .padding()
         .frame(minWidth: 300, maxHeight: 300)
+        .onAppear {
+            context.undoManager = undoManager
+            undoManager?.removeAllActions()
+            undoManager?.beginUndoGrouping()
+        }
         .onDisappear() {
+            undoManager?.endUndoGrouping()
             try? context.save()
+            context.undoManager = nil
         }
     }
 }

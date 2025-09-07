@@ -11,6 +11,7 @@ import UIKit
 
 struct ItemRowView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.undoManager) private var undoManager
     let item: M3Item
     let isNew: Bool
     @Binding var lastAddedItemID: M3Item.ID?
@@ -119,7 +120,12 @@ struct ItemRowView: View {
     }
 
     private func deleteItem() {
+        modelContext.undoManager = undoManager
+        undoManager?.removeAllActions()
+        undoManager?.beginUndoGrouping()
         modelContext.delete(item)
+        undoManager?.endUndoGrouping()
+        modelContext.undoManager = nil
     }
 
     private func copyItem() {
@@ -150,6 +156,7 @@ struct ItemRowView: View {
 struct EditItemView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Environment(\.undoManager) private var undoManager
     @Bindable var item: M3Item
 
     private var stockBinding: Binding<Int> {
@@ -232,8 +239,15 @@ struct EditItemView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onAppear {
+            context.undoManager = undoManager
+            undoManager?.removeAllActions()
+            undoManager?.beginUndoGrouping()
+        }
         .onDisappear() {
+            undoManager?.endUndoGrouping()
             try? context.save()
+            context.undoManager = nil
         }
     }
 }

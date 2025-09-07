@@ -11,6 +11,7 @@ import UIKit
 
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.undoManager) private var undoManager
     let group: M2Group
     let isNew: Bool
     @Binding var lastAddedGroupID: M2Group.ID?
@@ -152,10 +153,15 @@ struct GroupRowView: View {
     }
 
     private func deleteGroup() {
+        modelContext.undoManager = undoManager
+        undoManager?.removeAllActions()
+        undoManager?.beginUndoGrouping()
         for item in group.child {
             modelContext.delete(item)
         }
         modelContext.delete(group)
+        undoManager?.endUndoGrouping()
+        modelContext.undoManager = nil
     }
 
     private func copyGroup() {
@@ -202,6 +208,7 @@ struct GroupRowView: View {
 struct EditGroupView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Environment(\.undoManager) private var undoManager
     @Bindable var group: M2Group
     
     var body: some View {
@@ -234,8 +241,15 @@ struct EditGroupView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onAppear {
+            context.undoManager = undoManager
+            undoManager?.removeAllActions()
+            undoManager?.beginUndoGrouping()
+        }
         .onDisappear() {
+            undoManager?.endUndoGrouping()
             try? context.save()
+            context.undoManager = nil
         }
     }
 }
