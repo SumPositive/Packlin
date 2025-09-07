@@ -53,16 +53,33 @@ let COLOR_TITLE: Color = .secondary         // App Name
 //let COLOR_BACK_FORMULA: Color = Color(.systemGray6)  // FormulaView
 //let COLOR_BACK_SETTING: Color = Color(.systemGray4)  // SettingView
 
+//Color.primary        // テキスト用の主要カラー（ダーク/ライトで変化）
+//Color.secondary      // 補助的なテキストカラー
+//Color.accentColor    // アクセントカラー（アプリの強調色）
+//Color.background     // 背景色
+//Color.label          // テキストラベル用カラー
+//Color.systemRed      // システムの赤色
+//Color.systemBlue     // システムの青色
+//Color.systemGray     // システムのグレー
+
 
 let COLOR_NAME: Color = .primary
-let COLOR_MEMO: Color = .secondary
-let COLOR_WEIGHT: Color = .secondary
+let COLOR_NAME_EMPTY: Color = .secondary
+let COLOR_MEMO: Color = .primary
+let COLOR_WEIGHT: Color = .primary
 
 //-------------------------------------- Font関係
-let FONT_NAME: Font = .title3
-let FONT_MEMO: Font = .headline
-let FONT_STOCK: Font = .title3
-let FONT_WEIGHT: Font = .headline
+//Text("タイトル").font(.largeTitle)
+//Text("見出し").font(.title)
+//Text("サブ見出し").font(.title2)
+//Text("本文").font(.body)
+//Text("キャプション").font(.caption)
+//Text("脚注").font(.footnote)
+
+let FONT_NAME: Font = .title2
+let FONT_MEMO: Font = .body
+let FONT_WEIGHT: Font = .body
+let FONT_STOCK: Font = .title2
 
 
 

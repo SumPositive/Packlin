@@ -60,17 +60,18 @@ struct ItemRowView: View {
 
                 HStack {
                     Spacer() // 右寄せにするため
-                    //Text("個重量:\(item.weight)g　在庫数:\(item.stock)　必要数:\(item.need)")
-                    Text("\(item.weight)g")
-                        .font(FONT_WEIGHT)
-                        .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.trailing, 4)
-                    Text("［\(item.stock)／\(item.need)］")
+                    if 0 < item.weight {
+                        Text("［\(item.weight)g］")
+                            .font(FONT_WEIGHT)
+                            .foregroundStyle(COLOR_WEIGHT)
+
+                        Text("\(item.stock * item.weight)g／\(item.need * item.weight)g")
+                            .font(FONT_WEIGHT)
+                            .foregroundStyle(COLOR_WEIGHT)
+                            .padding(.trailing, 4)
+                    }
+                    Text("\(item.stock)／\(item.need)")
                         .font(FONT_STOCK)
-                        .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.trailing, 4)
-                    Text("\(item.stock * item.weight)g／\(item.need * item.weight)g")
-                        .font(FONT_WEIGHT)
                         .foregroundStyle(COLOR_WEIGHT)
                         .padding(.trailing, 40)
                 }

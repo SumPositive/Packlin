@@ -15,8 +15,8 @@ final class M1Pack {
     var createdAt: Date
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
     
-//    var stock: Int { child.reduce(0) { $0 + $1.stock } }
-//    var need: Int { child.reduce(0) { $0 + $1.need } }
+    var stock: Int { child.reduce(0) { $0 + $1.stock } }
+    var need: Int { child.reduce(0) { $0 + $1.need } }
 
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }

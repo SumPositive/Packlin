@@ -65,15 +65,16 @@ struct GroupRowView: View {
 
                     HStack {
                         Spacer() // 右寄せにするため
-                        //Text("在庫:\(group.stockWeight)g　必要:\(group.needWeight)g")
-//                        Text("［\(group.stock)／\(group.need)］")
+                        if 0 < group.stockWeight {
+                            Text("\(group.stockWeight)g／\(group.needWeight)g")
+                                .font(FONT_WEIGHT)
+                                .foregroundStyle(COLOR_WEIGHT)
+                                .padding(.trailing, 4)
+                        }
+//                        Text("\(group.stock)／\(group.need)")
 //                            .font(FONT_STOCK)
 //                            .foregroundStyle(COLOR_WEIGHT)
 //                            .padding(.trailing, 4)
-                        Text("\(group.stockWeight)g／\(group.needWeight)g")
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.trailing, 4)
                     }
                 }
                 Spacer()

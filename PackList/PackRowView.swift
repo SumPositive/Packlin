@@ -66,15 +66,16 @@ struct PackRowView: View {
                     
                     HStack {
                         Spacer() // 右寄せにするため
-                        //Text("在庫:\(title.stockWeight)g　必要:\(title.needWeight)g")
+                        if 0 < pack.stockWeight {
+                            Text("\(pack.stockWeight)g／\(pack.needWeight)g")
+                                .font(FONT_WEIGHT)
+                                .foregroundStyle(COLOR_WEIGHT)
+                                .padding(.trailing, 4)
+                        }
 //                        Text("［\(pack.stock)／\(pack.need)］")
 //                            .font(FONT_STOCK)
 //                            .foregroundStyle(COLOR_WEIGHT)
 //                            .padding(.trailing, 4)
-                        Text("\(pack.stockWeight)g／\(pack.needWeight)g")
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.trailing, 4)
                     }
                 }
                 Spacer()

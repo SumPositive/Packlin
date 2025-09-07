@@ -15,8 +15,8 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     @Relationship(inverse: \M1Pack.child) var parent: M1Pack?
     @Relationship(deleteRule: .cascade) var child: [M3Item] = []
 
-//    var stock: Int { child.reduce(0) { $0 + $1.stock } }
-//    var need: Int { child.reduce(0) { $0 + $1.need } }
+    var stock: Int { child.reduce(0) { $0 + $1.stock } }
+    var need: Int { child.reduce(0) { $0 + $1.need } }
 
     var stockWeight: Int { child.reduce(0) { $0 + $1.weight * $1.stock } }
     var needWeight: Int { child.reduce(0) { $0 + $1.weight * $1.need } }
