@@ -165,19 +165,21 @@ struct GroupRowView: View {
         if let parent = group.parent,
            let index = parent.child.firstIndex(where: { $0.id == group.id }) {
             parent.child.remove(at: index)
+            parent.normalizeGroupOrder()
         }
         modelContext.delete(group)
     }
 
     private func copyGroup() {
         guard let parentTitle = group.parent else { return }
-        let newGroup = M2Group(name: group.name, memo: group.memo, parent: parentTitle)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
         modelContext.insert(newGroup)
         if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
             parentTitle.child.insert(newGroup, at: index + 1)
         } else {
             parentTitle.child.append(newGroup)
         }
+        parentTitle.normalizeGroupOrder()
         for item in group.child {
             copyItem(item, to: newGroup)
         }
