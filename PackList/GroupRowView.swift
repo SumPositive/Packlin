@@ -101,7 +101,7 @@ struct GroupRowView: View {
                 }
             }
             .contentShape(Rectangle())
-            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
+            .background(isHighlighted ? Color.green.opacity(0.2) : COLOR_GROUP_ROW)
             .background(
                 GeometryReader { proxy in
                     Color.clear

@@ -67,6 +67,8 @@ let COLOR_NAME: Color = .primary
 let COLOR_NAME_EMPTY: Color = .secondary
 let COLOR_MEMO: Color = .primary
 let COLOR_WEIGHT: Color = .primary
+let COLOR_PACK_ROW: Color = Color(.systemGray6)
+let COLOR_GROUP_ROW: Color = Color(.systemGray5)
 
 //-------------------------------------- Font関係
 //Text("タイトル").font(.largeTitle)

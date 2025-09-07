@@ -101,7 +101,7 @@ struct PackRowView: View {
                 }
             }
             .contentShape(Rectangle())
-            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
+            .background(isHighlighted ? Color.green.opacity(0.2) : COLOR_PACK_ROW)
             .background(
                 GeometryReader { proxy in
                     Color.clear
