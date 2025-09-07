@@ -10,6 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.undoManager) private var undoManager
     @Query(sort: [SortDescriptor(\M1Pack.createdAt, order: .reverse)]) private var packs: [M1Pack]
     @State private var lastAddedPackID: M1Pack.ID?
     private let rowHeight: CGFloat = 44
@@ -28,6 +29,12 @@ struct ContentView: View {
                     Button { }
                     label: {
                         Image(systemName: "info.circle")
+                    }
+                    if let undoManager, undoManager.canUndo {
+                        Button { undoManager.undo() }
+                        label: {
+                            Image(systemName: "arrow.uturn.backward")
+                        }
                     }
                     Spacer()
                     Text("モチメモ")
