@@ -155,6 +155,10 @@ struct GroupRowView: View {
         for item in group.child {
             modelContext.delete(item)
         }
+        if let parent = group.parent,
+           let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+            parent.child.remove(at: index)
+        }
         modelContext.delete(group)
     }
 

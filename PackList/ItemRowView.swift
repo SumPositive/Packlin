@@ -119,6 +119,10 @@ struct ItemRowView: View {
     }
 
     private func deleteItem() {
+        if let parent = item.parent,
+           let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.remove(at: index)
+        }
         modelContext.delete(item)
     }
 
