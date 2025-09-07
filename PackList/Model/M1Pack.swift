@@ -12,7 +12,9 @@ import SwiftData
 final class M1Pack {
     var name: String
     var memo: String
+    
     var createdAt: Date
+    
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
     
     var stock: Int { child.reduce(0) { $0 + $1.stock } }

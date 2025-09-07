@@ -12,6 +12,7 @@ import SwiftData
 final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を付与することになった。"M"はModel
     var name: String
     var memo: String
+    
     @Relationship(inverse: \M1Pack.child) var parent: M1Pack?
     @Relationship(deleteRule: .cascade) var child: [M3Item] = []
 
