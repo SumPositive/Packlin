@@ -101,7 +101,6 @@ struct GroupRowView: View {
                 }
             }
             .contentShape(Rectangle())
-            .background(isHighlighted ? Color.green.opacity(0.2) : COLOR_GROUP_ROW)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -127,6 +126,8 @@ struct GroupRowView: View {
                     }
                 }
             }
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(isHighlighted ? Color.green.opacity(0.2) : COLOR_GROUP_ROW)
 
             if isExpanded {
                 if group.child.isEmpty {

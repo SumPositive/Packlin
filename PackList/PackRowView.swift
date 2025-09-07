@@ -101,7 +101,6 @@ struct PackRowView: View {
                 }
             }
             .contentShape(Rectangle())
-            .background(isHighlighted ? Color.green.opacity(0.2) : COLOR_PACK_ROW)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -127,6 +126,8 @@ struct PackRowView: View {
                     }
                 }
             }
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(isHighlighted ? Color.green.opacity(0.2) : COLOR_PACK_ROW)
 
             if isExpanded {
                 ForEach(pack.child) { group in
