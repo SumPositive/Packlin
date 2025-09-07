@@ -14,16 +14,21 @@ struct ItemRowView: View {
     let item: M3Item
     let isNew: Bool
     @Binding var lastAddedItemID: M3Item.ID?
+    @Binding var draggingItem: M3Item?
     @State private var editingItem: M3Item?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
     @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
 
-    init(item: M3Item, isNew: Bool = false, lastAddedItemID: Binding<M3Item.ID?> = .constant(nil)) {
+    init(item: M3Item,
+         isNew: Bool = false,
+         lastAddedItemID: Binding<M3Item.ID?> = .constant(nil),
+         draggingItem: Binding<M3Item?> = .constant(nil)) {
         self.item = item
         self.isNew = isNew
         self._lastAddedItemID = lastAddedItemID
+        self._draggingItem = draggingItem
         _isHighlighted = State(initialValue: isNew)
     }
 
@@ -101,6 +106,10 @@ struct ItemRowView: View {
         .onTapGesture {
             arrowEdge = arrowEdge(for: frame)
             editingItem = item
+        }
+        .onDrag {
+            draggingItem = item
+            return NSItemProvider(object: item.name as NSString)
         }
         .popover(item: $editingItem, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { item in
             EditItemView(item: item)

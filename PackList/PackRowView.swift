@@ -20,6 +20,7 @@ struct PackRowView: View {
     @State private var arrowEdge: Edge = .bottom
     @State private var lastAddedGroupID: M2Group.ID?
     @State private var isHighlighted: Bool
+    @State private var draggingItem: M3Item?
     private let rowHeight: CGFloat = 44
 
     init(pack: M1Pack, isNew: Bool = false, lastAddedPackID: Binding<M1Pack.ID?> = .constant(nil)) {
@@ -131,8 +132,9 @@ struct PackRowView: View {
             if isExpanded {
                 ForEach(pack.child) { group in
                     GroupRowView(group: group,
-                                   isNew: group.id == lastAddedGroupID,
-                                   lastAddedGroupID: $lastAddedGroupID)
+                                 isNew: group.id == lastAddedGroupID,
+                                 lastAddedGroupID: $lastAddedGroupID,
+                                 draggingItem: $draggingItem)
                 }
             }
         }

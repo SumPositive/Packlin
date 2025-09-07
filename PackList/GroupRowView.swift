@@ -8,12 +8,14 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
     let isNew: Bool
     @Binding var lastAddedGroupID: M2Group.ID?
+    @Binding var draggingItem: M3Item?
     @State private var isExpanded = false
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
@@ -22,10 +24,14 @@ struct GroupRowView: View {
     @State private var isHighlighted: Bool
     private let rowHeight: CGFloat = 44
 
-    init(group: M2Group, isNew: Bool = false, lastAddedGroupID: Binding<M2Group.ID?> = .constant(nil)) {
+    init(group: M2Group,
+         isNew: Bool = false,
+         lastAddedGroupID: Binding<M2Group.ID?> = .constant(nil),
+         draggingItem: Binding<M3Item?> = .constant(nil)) {
         self.group = group
         self.isNew = isNew
         self._lastAddedGroupID = lastAddedGroupID
+        self._draggingItem = draggingItem
         _isHighlighted = State(initialValue: isNew)
     }
 
@@ -134,13 +140,17 @@ struct GroupRowView: View {
                         .padding(.leading, 40)
                 } else {
                     ForEach(sortedItems) { item in
-                        ItemRowView(item: item, isNew: item.id == lastAddedItemID, lastAddedItemID: $lastAddedItemID)
+                        ItemRowView(item: item,
+                                    isNew: item.id == lastAddedItemID,
+                                    lastAddedItemID: $lastAddedItemID,
+                                    draggingItem: $draggingItem)
                     }
                     .onMove(perform: moveItem)
                     .environment(\.editMode, .constant(.active))
                 }
             }
         }
+        .onDrop(of: [.text], perform: dropItem)
     }
 
     private var sortedItems: [M3Item] {
@@ -205,6 +215,22 @@ struct GroupRowView: View {
             item.order = index
         }
         group.child = items
+    }
+
+    private func dropItem(_ providers: [NSItemProvider]) -> Bool {
+        guard let item = draggingItem else { return false }
+        defer { draggingItem = nil }
+        if item.parent?.id == group.id { return false }
+        if let source = item.parent,
+           let index = source.child.firstIndex(where: { $0.id == item.id }) {
+            source.child.remove(at: index)
+            source.normalizeItemOrder()
+        }
+        item.parent = group
+        item.order = group.nextItemOrder()
+        group.child.append(item)
+        group.normalizeItemOrder()
+        return true
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {
