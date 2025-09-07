@@ -95,23 +95,28 @@ struct PackRowView: View {
             }
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
-                Button(role: .destructive) { deletePack() } label: {
-                    Image(systemName: "trash")
-                }
-            }
-            .swipeActions(edge: .leading) {
-                Button { copyPack() } label: {
-                    Image(systemName: "doc.on.doc")
-                }
-            }
-            .contextMenu {
-                Button("Copy") { copyToClipboard() }
-                Button("Paste") { pasteFromClipboard() }
-                    .disabled(RowClipboard.pack == nil)
                 Button("Cut") {
                     copyToClipboard()
                     deletePack()
                 }
+                .tint(.red)
+            }
+            .swipeActions(edge: .leading) {
+                Button("Copy") {
+                    copyToClipboard()
+                }
+                .tint(.cyan)
+
+                Button("Paste") {
+                    pasteFromClipboard()
+                }
+                .disabled(RowClipboard.pack == nil)
+                .tint(.orange)
+
+                Button("Duplicate") {
+                    duplicatePack()
+                }
+                .tint(.green)
             }
             .contentShape(Rectangle())
             .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
@@ -119,7 +124,9 @@ struct PackRowView: View {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { frame = $0 }
+                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                            frame = newValue
+                        }
                 }
             )
             .onTapGesture {
@@ -182,7 +189,7 @@ struct PackRowView: View {
         modelContext.delete(group)
     }
 
-    private func copyPack() {
+    private func duplicatePack() {
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
         let newOrder = M1Pack.nextPackOrder(packs)

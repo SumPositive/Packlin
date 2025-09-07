@@ -34,9 +34,7 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
 extension M2Group {
     typealias ID = PersistentIdentifier
     var id: ID { persistentModelID }
-}
 
-extension M2Group {
     /// 子アイテムの order を連番に整理する
     func normalizeItemOrder() {
         child = child.sorted { $0.order < $1.order }

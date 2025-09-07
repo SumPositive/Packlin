@@ -36,9 +36,7 @@ final class M1Pack {
 extension M1Pack {
     typealias ID = PersistentIdentifier        // ← public で再エクスポート
     var id: ID { persistentModelID }           // ← public な id を用意（任意）
-}
 
-extension M1Pack {
     /// 子グループの order を連番に整理する
     func normalizeGroupOrder() {
         child = child.sorted { $0.order < $1.order }
