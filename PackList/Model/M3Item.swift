@@ -10,8 +10,8 @@ import SwiftData
 
 @Model
 final class M3Item {
-    typealias ID = PersistentIdentifier
-    var id: ID { persistentModelID }
+    typealias ID = UUID
+    @Attribute(.unique) var id: ID
     var order: Int // 表示順
 
     var name: String
@@ -25,7 +25,8 @@ final class M3Item {
 
     var lack: Int { max(need - stock, 0) }
 
-    init(name: String,
+    init(id: ID = ID(),
+         name: String,
          memo: String = "",
          check: Bool = false,
          stock: Int = 0,
@@ -33,6 +34,7 @@ final class M3Item {
          weight: Int = 0,
          order: Int = 0,
          parent: M2Group? = nil) {
+        self.id = id
         self.name = name
         self.memo = memo
         self.check = check

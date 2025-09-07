@@ -10,8 +10,8 @@ import SwiftData
 
 @Model
 final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を付与することになった。"M"はModel
-    typealias ID = PersistentIdentifier
-    var id: ID { persistentModelID }
+    typealias ID = UUID
+    @Attribute(.unique) var id: ID
     var order: Int
 
     var name: String
@@ -26,7 +26,8 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     var stockWeight: Int { child.reduce(0) { $0 + $1.weight * $1.stock } }
     var needWeight: Int { child.reduce(0) { $0 + $1.weight * $1.need } }
 
-    init(name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
+    init(id: ID = ID(), name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
+        self.id = id
         self.name = name
         self.memo = memo
         self.order = order
