@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class M3Item {
-    typealias ID = UUID
+    typealias ID = String
     @Attribute(.unique) var id: ID
     var order: Int // 表示順
 
@@ -25,7 +25,11 @@ final class M3Item {
 
     var lack: Int { max(need - stock, 0) }
 
-    init(id: ID = ID(),
+    static func newID() -> ID {
+        String(format: "%010d", Int.random(in: 0..<1_000_000_0000))
+    }
+
+    init(id: ID = Self.newID(),
          name: String,
          memo: String = "",
          check: Bool = false,
