@@ -91,14 +91,28 @@ struct GroupRowView: View {
             .frame(minHeight: rowHeight)
             .padding(.leading)
             .swipeActions(edge: .trailing) {
-                Button(role: .destructive) { deleteGroup() } label: {
-                    Image(systemName: "trash")
+                Button("Cut") {
+                    copyToClipboard()
+                    deleteGroup()
                 }
+                .tint(.red)
             }
             .swipeActions(edge: .leading) {
-                Button { copyGroup() } label: {
-                    Image(systemName: "doc.on.doc")
+                Button("Copy") {
+                    copyToClipboard()
                 }
+                .tint(.cyan)
+
+                Button("Paste") {
+                    pasteFromClipboard()
+                }
+                .disabled(RowClipboard.group == nil && RowClipboard.item == nil)
+                .tint(.orange)
+
+                Button("Duplicate") {
+                    duplicateGroup()
+                }
+                .tint(.green)
             }
             .contentShape(Rectangle())
             .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
@@ -106,7 +120,9 @@ struct GroupRowView: View {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { frame = $0 }
+                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                            frame = newValue
+                        }
                 }
             )
             .onTapGesture {
@@ -165,25 +181,60 @@ struct GroupRowView: View {
         if let parent = group.parent,
            let index = parent.child.firstIndex(where: { $0.id == group.id }) {
             parent.child.remove(at: index)
+            parent.normalizeGroupOrder()
         }
         modelContext.delete(group)
     }
 
-    private func copyGroup() {
+    private func duplicateGroup() {
         guard let parentTitle = group.parent else { return }
-        let newGroup = M2Group(name: group.name, memo: group.memo, parent: parentTitle)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
         modelContext.insert(newGroup)
         if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
             parentTitle.child.insert(newGroup, at: index + 1)
         } else {
             parentTitle.child.append(newGroup)
         }
+        parentTitle.normalizeGroupOrder()
         for item in group.child {
             copyItem(item, to: newGroup)
         }
         lastAddedGroupID = newGroup.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedGroupID = nil
+        }
+    }
+
+    private func copyToClipboard() {
+        RowClipboard.pack = nil
+        RowClipboard.item = nil
+        RowClipboard.group = cloneGroup(group)
+    }
+
+    private func pasteFromClipboard() {
+        if let template = RowClipboard.group, let parent = group.parent {
+            let newGroup = cloneGroup(template, parent: parent)
+            modelContext.insert(newGroup)
+            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+                parent.child.insert(newGroup, at: index + 1)
+            } else {
+                parent.child.append(newGroup)
+            }
+            parent.normalizeGroupOrder()
+            lastAddedGroupID = newGroup.id
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                lastAddedGroupID = nil
+            }
+        } else if let templateItem = RowClipboard.item {
+            isExpanded = true
+            let newItem = cloneItem(templateItem, parent: group)
+            modelContext.insert(newItem)
+            group.child.append(newItem)
+            group.normalizeItemOrder()
+            lastAddedItemID = newItem.id
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                lastAddedItemID = nil
+            }
         }
     }
 

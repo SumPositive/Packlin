@@ -80,14 +80,28 @@ struct ItemRowView: View {
         .frame(minHeight: rowHeight)
         .padding(.leading, 40)
         .swipeActions(edge: .trailing) {
-            Button(role: .destructive) { deleteItem() } label: {
-                Image(systemName: "trash")
+            Button("Cut") {
+                copyToClipboard()
+                deleteItem()
             }
+            .tint(.red)
         }
         .swipeActions(edge: .leading) {
-            Button { copyItem() } label: {
-                Image(systemName: "doc.on.doc")
+            Button("Copy") {
+                copyToClipboard()
             }
+            .tint(.cyan)
+
+            Button("Paste") {
+                pasteFromClipboard()
+            }
+            .disabled(RowClipboard.item == nil)
+            .tint(.orange)
+
+            Button("Duplicate") {
+                duplicateItem()
+            }
+            .tint(.green)
         }
         .contentShape(Rectangle())
         .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
@@ -95,7 +109,9 @@ struct ItemRowView: View {
             GeometryReader { proxy in
                 Color.clear
                     .onAppear { frame = proxy.frame(in: .global) }
-                    .onChange(of: proxy.frame(in: .global)) { frame = $0 }
+                    .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                        frame = newValue
+                    }
             }
         )
         .onTapGesture {
@@ -127,9 +143,31 @@ struct ItemRowView: View {
         modelContext.delete(item)
     }
 
-    private func copyItem() {
+    private func duplicateItem() {
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order + 1, parent: parent)
+        modelContext.insert(newItem)
+        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+            parent.child.insert(newItem, at: index + 1)
+        } else {
+            parent.child.append(newItem)
+        }
+        parent.normalizeItemOrder()
+        lastAddedItemID = newItem.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedItemID = nil
+        }
+    }
+
+    private func copyToClipboard() {
+        RowClipboard.pack = nil
+        RowClipboard.group = nil
+        RowClipboard.item = cloneItem(item)
+    }
+
+    private func pasteFromClipboard() {
+        guard let template = RowClipboard.item, let parent = item.parent else { return }
+        let newItem = cloneItem(template, parent: parent)
         modelContext.insert(newItem)
         if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
             parent.child.insert(newItem, at: index + 1)

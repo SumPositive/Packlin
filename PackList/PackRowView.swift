@@ -34,6 +34,10 @@ struct PackRowView: View {
         return !items.isEmpty && items.allSatisfy { $0.check }
     }
 
+    private var sortedGroups: [M2Group] {
+        pack.child.sorted { $0.order < $1.order }
+    }
+
     var body: some View {
         Group {
             HStack {
@@ -91,14 +95,28 @@ struct PackRowView: View {
             }
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
-                Button(role: .destructive) { deletePack() } label: {
-                    Image(systemName: "trash")
+                Button("Cut") {
+                    copyToClipboard()
+                    deletePack()
                 }
+                .tint(.red)
             }
             .swipeActions(edge: .leading) {
-                Button { copyPack() } label: {
-                    Image(systemName: "doc.on.doc")
+                Button("Copy") {
+                    copyToClipboard()
                 }
+                .tint(.cyan)
+
+                Button("Paste") {
+                    pasteFromClipboard()
+                }
+                .disabled(RowClipboard.pack == nil)
+                .tint(.orange)
+
+                Button("Duplicate") {
+                    duplicatePack()
+                }
+                .tint(.green)
             }
             .contentShape(Rectangle())
             .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
@@ -106,7 +124,9 @@ struct PackRowView: View {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { frame = $0 }
+                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                            frame = newValue
+                        }
                 }
             )
             .onTapGesture {
@@ -129,19 +149,22 @@ struct PackRowView: View {
             }
 
             if isExpanded {
-                ForEach(pack.child) { group in
+                ForEach(sortedGroups) { group in
                     GroupRowView(group: group,
                                    isNew: group.id == lastAddedGroupID,
                                    lastAddedGroupID: $lastAddedGroupID)
                 }
+                .onMove(perform: moveGroup)
+                .environment(\.editMode, .constant(.active))
             }
         }
     }
 
     private func addGroup() {
-        let newGroup = M2Group(name: "", parent: pack)
+        let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
         modelContext.insert(newGroup)
         pack.child.append(newGroup)
+        pack.normalizeGroupOrder()
         lastAddedGroupID = newGroup.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             lastAddedGroupID = nil
@@ -153,6 +176,10 @@ struct PackRowView: View {
             deleteGroup(group)
         }
         modelContext.delete(pack)
+        let descriptor = FetchDescriptor<M1Pack>()
+        if let packs = try? modelContext.fetch(descriptor) {
+            M1Pack.normalizePackOrder(packs)
+        }
     }
 
     private func deleteGroup(_ group: M2Group) {
@@ -162,8 +189,11 @@ struct PackRowView: View {
         modelContext.delete(group)
     }
 
-    private func copyPack() {
-        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001))
+    private func duplicatePack() {
+        let descriptor = FetchDescriptor<M1Pack>()
+        let packs = (try? modelContext.fetch(descriptor)) ?? []
+        let newOrder = M1Pack.nextPackOrder(packs)
+        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001), order: newOrder)
         modelContext.insert(newTitle)
         for group in pack.child {
             copyGroup(group, to: newTitle)
@@ -174,14 +204,40 @@ struct PackRowView: View {
         }
     }
 
+    private func copyToClipboard() {
+        RowClipboard.group = nil
+        RowClipboard.item = nil
+        RowClipboard.pack = clonePack(pack)
+    }
+
+    private func pasteFromClipboard() {
+        guard let template = RowClipboard.pack else { return }
+        let descriptor = FetchDescriptor<M1Pack>()
+        let packs = (try? modelContext.fetch(descriptor)) ?? []
+        let newPack = clonePack(template)
+        modelContext.insert(newPack)
+        var all = packs
+        if let index = packs.firstIndex(where: { $0.id == pack.id }) {
+            all.insert(newPack, at: index + 1)
+        } else {
+            all.append(newPack)
+        }
+        M1Pack.normalizePackOrder(all)
+        lastAddedPackID = newPack.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            lastAddedPackID = nil
+        }
+    }
+
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
-        let newGroup = M2Group(name: group.name, memo: group.memo, parent: parent)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
         modelContext.insert(newGroup)
         if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
             parent.child.insert(newGroup, at: index + 1)
         } else {
             parent.child.append(newGroup)
         }
+        parent.normalizeGroupOrder()
         for item in group.child {
             copyItem(item, to: newGroup)
         }
@@ -196,6 +252,15 @@ struct PackRowView: View {
         modelContext.insert(newItem)
         parent.child.append(newItem)
         parent.normalizeItemOrder()
+    }
+
+    private func moveGroup(from source: IndexSet, to destination: Int) {
+        var groups = sortedGroups
+        groups.move(fromOffsets: source, toOffset: destination)
+        for (index, group) in groups.enumerated() {
+            group.order = index
+        }
+        pack.child = groups
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {
