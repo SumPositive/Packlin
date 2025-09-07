@@ -150,7 +150,7 @@ struct GroupRowView: View {
                 }
             }
         }
-        .onDrop(of: [.text], perform: dropItem)
+        .onDrop(of: [.text], isTargeted: nil, perform: dropItem)
     }
 
     private var sortedItems: [M3Item] {
