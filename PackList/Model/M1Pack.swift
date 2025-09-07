@@ -10,8 +10,8 @@ import SwiftData
 
 @Model
 final class M1Pack {
-    typealias ID = PersistentIdentifier        // publicで再エクスポート
-    var id: ID { persistentModelID }           // publicなid を用意
+    typealias ID = String
+    @Attribute(.unique) var id: ID
     var order: Int
 
     var name: String
@@ -27,7 +27,8 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
-    init(name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+    init(id: ID = shortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+        self.id = id
         self.name = name
         self.memo = memo
         self.createdAt = createdAt
