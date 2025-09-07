@@ -17,6 +17,10 @@ struct ItemRowView: View {
     @State private var arrowEdge: Edge = .bottom
     private let rowHeight: CGFloat = 44
 
+    init(item: M3Item) {
+        self.item = item
+    }
+
 
     var body: some View {
         HStack {
@@ -113,13 +117,16 @@ struct ItemRowView: View {
                 .presentationCompactAdaptation(.none)
                 .background(Color.primary.opacity(0.2))
         }
+        .transition(.move(edge: .top).combined(with: .opacity))
     }
 
     private func deleteItem() {
         if let parent = item.parent,
            let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-            parent.child.remove(at: index)
-            parent.normalizeItemOrder()
+            withAnimation {
+                parent.child.remove(at: index)
+                parent.normalizeItemOrder()
+            }
         }
         modelContext.delete(item)
     }
@@ -128,12 +135,14 @@ struct ItemRowView: View {
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order + 1, parent: parent)
         modelContext.insert(newItem)
-        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-            parent.child.insert(newItem, at: index + 1)
-        } else {
-            parent.child.append(newItem)
+        withAnimation {
+            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+                parent.child.insert(newItem, at: index + 1)
+            } else {
+                parent.child.append(newItem)
+            }
+            parent.normalizeItemOrder()
         }
-        parent.normalizeItemOrder()
     }
 
     private func copyToClipboard() {
@@ -145,15 +154,17 @@ struct ItemRowView: View {
         guard let clipItem = RowClipboard.item, let parent = item.parent else { return }
         let newItem = cloneItem(clipItem, parent: parent)
         modelContext.insert(newItem)
-        // 現在行(index)を求めその下に追加する
-        if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-            // index位置に追加
-            parent.child.insert(newItem, at: index)
-        } else {
-            // 末尾に追加
-            parent.child.append(newItem)
+        withAnimation {
+            // 現在行(index)を求めその下に追加する
+            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+                // index位置に追加
+                parent.child.insert(newItem, at: index)
+            } else {
+                // 末尾に追加
+                parent.child.append(newItem)
+            }
+            parent.normalizeItemOrder()
         }
-        parent.normalizeItemOrder()
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {
