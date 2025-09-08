@@ -42,9 +42,9 @@ struct PackRowView: View {
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
-                .safeAreaInset(edge: .top) {
-                    Color.clear.frame(height: rowHeight)
-                }
+                // Offset group headers so they pin directly beneath the pack header
+                .offset(y: rowHeight)
+                .padding(.top, -rowHeight)
                 .animation(.default, value: pack.child)
             }
         } header: {
