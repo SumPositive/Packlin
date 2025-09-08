@@ -34,7 +34,17 @@ struct PackRowView: View {
     }
 
     var body: some View {
-        Group {
+        Section {
+            if isExpanded {
+                ForEach(sortedGroups) { group in
+                    GroupRowView(group: group)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                .onMove(perform: moveGroup)
+                .environment(\.editMode, .constant(.active))
+                .animation(.default, value: pack.child)
+            }
+        } header: {
             HStack {
                 Button {
                     isExpanded.toggle()
@@ -56,7 +66,7 @@ struct PackRowView: View {
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
-                    
+
                     if !pack.memo.isEmpty {
                         Text(pack.memo)
                             .lineLimit(3)
@@ -67,7 +77,7 @@ struct PackRowView: View {
                     if DEBUG_SHOW_ORDER_ID {
                         Text("pack (\(pack.order)) [\(pack.id)]")
                     }
-                    
+
                     HStack {
                         Spacer() // 右寄せにするため
                         if 0 < pack.stockWeight {
@@ -140,16 +150,6 @@ struct PackRowView: View {
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
-            }
-
-            if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
-                .animation(.default, value: pack.child)
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
