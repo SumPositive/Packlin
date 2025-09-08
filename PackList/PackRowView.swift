@@ -36,18 +36,12 @@ struct PackRowView: View {
     var body: some View {
         Section {
             if isExpanded {
-                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    ForEach(sortedGroups) { group in
-                        GroupRowView(group: group)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    }
+                ForEach(sortedGroups) { group in
+                    GroupRowView(group: group)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                // Offset group headers so they pin directly beneath the pack header
-                .offset(y: rowHeight)
-                .padding(.top, -rowHeight)
-                .padding(.bottom, rowHeight)
+                .onMove(perform: moveGroup)
                 .animation(.default, value: pack.child)
-                .listSectionSpacing(0)
             }
         }
         header: {

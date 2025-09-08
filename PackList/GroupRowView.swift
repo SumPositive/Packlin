@@ -39,6 +39,7 @@ struct GroupRowView: View {
                         ItemRowView(item: item)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
+                    .onMove(perform: moveItem)
                     .animation(.default, value: group.child)
                 }
             }
