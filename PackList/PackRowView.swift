@@ -40,8 +40,6 @@ struct PackRowView: View {
                     GroupRowView(group: group)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
                 .animation(.default, value: pack.child)
             }
         } header: {

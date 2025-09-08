@@ -15,14 +15,13 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(packs) { pack in
-                    PackRowView(pack: pack)
+            ScrollView {
+                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    ForEach(packs) { pack in
+                        PackRowView(pack: pack)
+                    }
                 }
-                .onMove(perform: movePack)
-                .environment(\.editMode, .constant(.active))
             }
-            .listStyle(.plain)
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
