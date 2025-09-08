@@ -15,17 +15,12 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    ForEach(packs) { pack in
-                        PackRowView(pack: pack)
-                    }
+            List {
+                ForEach(packs) { pack in
+                    PackRowView(pack: pack)
                 }
-                .listSectionSpacing(0)
+                .onMove(perform: movePack)
             }
-            .padding(.top, -8) // headerとPackList間の余白を無くす
-            .padding(.horizontal, 0)
-            .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
                     Button { }
@@ -43,7 +38,7 @@ struct ContentView: View {
                         }
                     }
                     .padding(.leading, 20)
-                    
+
                     Spacer()
                     Text("モチメモ")
                     Spacer()
@@ -65,9 +60,10 @@ struct ContentView: View {
                     .padding(.trailing, 8)
                 }
                 .frame(height: rowHeight)
-                .padding(.horizontal, 0)
-                .padding(.vertical, 0)
                 .background(.thinMaterial)
+            }
+            .toolbar {
+                EditButton()
             }
         }
     }
