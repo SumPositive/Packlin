@@ -45,6 +45,7 @@ struct PackRowView: View {
                 // Offset group headers so they pin directly beneath the pack header
                 .offset(y: rowHeight)
                 .padding(.top, -rowHeight)
+                .padding(.bottom, rowHeight)
                 .animation(.default, value: pack.child)
             }
         }
