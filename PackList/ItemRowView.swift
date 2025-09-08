@@ -104,6 +104,8 @@ struct ItemRowView: View {
             .tint(.green)
         }
         .contentShape(Rectangle())
+        // Ensure the row background is opaque
+        .background(Color(.systemBackground))
         .background(
             GeometryReader { proxy in
                 Color.clear
