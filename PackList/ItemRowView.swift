@@ -25,7 +25,16 @@ struct ItemRowView: View {
 
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(COLOR_ROW_PLAN)
+                .frame(width: 12)
+                .padding(.horizontal, 0)
+
+            Rectangle()
+                .fill(COLOR_ROW_GROUP)
+                .frame(width: 12)
+                .padding(.horizontal, 0)
             
             Button {
                 item.check.toggle()
@@ -39,7 +48,7 @@ struct ItemRowView: View {
                       : 0 < item.need ? "circle" : "circle.dotted")
             }
             .buttonStyle(BorderlessButtonStyle())
-            .padding(.trailing, 8)
+            .padding(.horizontal, 8)
 
             VStack(alignment: .leading, spacing: 1){
                 Text(item.name.isEmpty ? "New Item" : item.name)
@@ -77,9 +86,15 @@ struct ItemRowView: View {
                 }
             }
             .padding(.vertical, 4) // Row上下余白
+
+            Rectangle()
+                .fill(COLOR_ROW_GROUP)
+                .frame(width: 12)
+                .padding(.horizontal, 0)
         }
         .frame(minHeight: rowHeight)
-        .padding(.leading, 40)
+        .padding(.leading, 0)
+        .padding(.trailing, 8)
         .swipeActions(edge: .trailing) {
             Button("Cut") {
                 copyToClipboard()
@@ -190,6 +205,7 @@ struct EditItemView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var item: M3Item
+    @FocusState private var nameFieldIsFocused: Bool
 
     private var stockBinding: Binding<Int> {
         Binding(get: { item.stock }, set: { item.stock = max(0, $0) })
@@ -210,6 +226,7 @@ struct EditItemView: View {
                 TextField("", text: $item.name, prompt: Text("New Item name"))
                     .background(Color.white.opacity(0.7))
                     .padding(4)
+                    .focused($nameFieldIsFocused)
             }
             HStack {
                 Text("メモ:")
@@ -271,6 +288,11 @@ struct EditItemView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onAppear {
+            if item.name.isEmpty {
+                nameFieldIsFocused = true
+            }
+        }
         .onDisappear() {
             try? context.save()
         }

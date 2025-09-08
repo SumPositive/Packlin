@@ -51,7 +51,7 @@ struct PackRowView: View {
             }
         }
         header: {
-            HStack {
+            HStack(spacing: 0) {
                 Button {
                     isExpanded.toggle()
                     if isExpanded && pack.child.isEmpty {
@@ -59,9 +59,10 @@ struct PackRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .frame(width: 24, height: 24)
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
 
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                     .padding(.trailing, 8)
@@ -111,6 +112,8 @@ struct PackRowView: View {
                 .buttonStyle(BorderlessButtonStyle())
             }
             .frame(minHeight: rowHeight)
+            .padding(.leading, 0)
+            .padding(.trailing, 8)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -279,6 +282,7 @@ struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var pack: M1Pack
+    @FocusState private var nameFieldIsFocused: Bool
     
     var body: some View {
         VStack {
@@ -290,6 +294,7 @@ struct EditPackView: View {
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
+                    .focused($nameFieldIsFocused)
             }
             HStack {
                 Text("メモ:")
@@ -310,6 +315,11 @@ struct EditPackView: View {
         }
         .padding()
         .frame(minWidth: 300, maxHeight: 300)
+        .onAppear {
+            if pack.name.isEmpty {
+                nameFieldIsFocused = true
+            }
+        }
         .onDisappear() {
             try? context.save()
         }

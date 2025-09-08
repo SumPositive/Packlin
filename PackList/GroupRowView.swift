@@ -43,7 +43,12 @@ struct GroupRowView: View {
                 }
             }
         } header: {
-            HStack {
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(COLOR_ROW_PLAN)
+                    .frame(width: 12)
+                    .padding(.horizontal, 0)
+
                 Button {
                     isExpanded.toggle()
                     if isExpanded && group.child.isEmpty {
@@ -51,9 +56,10 @@ struct GroupRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .frame(width: 24, height: 24)
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
 
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .padding(.trailing, 8)
@@ -101,9 +107,15 @@ struct GroupRowView: View {
                     Image(systemName: "plus.circle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
+
+                Rectangle()
+                    .fill(COLOR_ROW_PLAN)
+                    .frame(width: 8)
+                    .padding(.horizontal, 0)
             }
             .frame(minHeight: rowHeight)
-            .padding(.leading)
+            .padding(.horizontal, 0)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -259,6 +271,7 @@ struct EditGroupView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var group: M2Group
+    @FocusState private var nameFieldIsFocused: Bool
     
     var body: some View {
         VStack {
@@ -270,6 +283,7 @@ struct EditGroupView: View {
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
+                    .focused($nameFieldIsFocused)
             }
             HStack {
                 Text("メモ:")
@@ -290,6 +304,11 @@ struct EditGroupView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onAppear {
+            if group.name.isEmpty {
+                nameFieldIsFocused = true
+            }
+        }
         .onDisappear() {
             try? context.save()
         }
