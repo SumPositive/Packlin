@@ -83,12 +83,14 @@ struct GroupRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("\(group.stock)／\(group.need)")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
+                        //    Text("\(group.stock)／\(group.need)")
+                        //        .font(FONT_STOCK)
+                        //        .foregroundStyle(COLOR_WEIGHT)
+                        //        .padding(.trailing, 4)
                     }
                 }
+                .padding(.vertical, 4) // Row上下余白
+
                 Spacer()
                 Button {
                     if !isExpanded {
@@ -128,7 +130,7 @@ struct GroupRowView: View {
             }
             .contentShape(Rectangle())
             // Ensure the row background is opaque
-            .background(Color(.green))
+            .background(COLOR_ROW_GROUP)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -145,7 +147,7 @@ struct GroupRowView: View {
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
+                    .background(COLOR_POPUP_BORDER)
             }
         }
     }

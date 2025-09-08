@@ -16,11 +16,12 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     ForEach(packs) { pack in
                         PackRowView(pack: pack)
                     }
                 }
+                .listSectionSpacing(0)
             }
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
@@ -63,6 +64,7 @@ struct ContentView: View {
                 }
                 .frame(height: rowHeight)
                 .padding(.horizontal)
+                .padding(.vertical, 0)
                 .background(.thinMaterial)
             }
         }
