@@ -12,10 +12,12 @@ import UIKit
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
+
     @State private var isExpanded = false
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+
     private let rowHeight: CGFloat = 44
 
     init(group: M2Group) {
@@ -55,7 +57,10 @@ struct GroupRowView: View {
                             .foregroundStyle(COLOR_MEMO)
                             .padding(.leading, 25)
                     }
-
+                    if DEBUG_SHOW_ORDER_ID {
+                        Text("group (\(group.order)) [\(group.id)]")
+                    }
+                    
                     HStack {
                         Spacer() // 右寄せにするため
                         if 0 < group.stockWeight {
@@ -186,34 +191,36 @@ struct GroupRowView: View {
     }
 
     private func copyToClipboard() {
-        RowClipboard.pack = nil
-        RowClipboard.item = nil
+        RowClipboard.clear()
         RowClipboard.group = cloneGroup(group)
     }
 
     private func pasteFromClipboard() {
-        if let template = RowClipboard.group, let parent = group.parent {
-            let newGroup = cloneGroup(template, parent: parent)
+        if let clip = RowClipboard.group, let parent = group.parent {
+            // GroupRowを現在行にペーストする、現在行は下になる
+            let newGroup = cloneGroup(clip, parent: parent)
+            newGroup.order = group.order
             modelContext.insert(newGroup)
             withAnimation {
-                var groups = parent.child.sorted { $0.order < $1.order }
-                if let index = groups.firstIndex(where: { $0.id == group.id }) {
-                    groups.insert(newGroup, at: index + 1)
+                // 現在行(index)を求めその行に追加する
+                if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+                    // index位置に追加
+                    parent.child.insert(newGroup, at: index)
                 } else {
-                    groups.append(newGroup)
+                    // 末尾に追加
+                    parent.child.append(newGroup)
                 }
-                for (index, g) in groups.enumerated() {
-                    g.order = index
-                }
-                parent.child = groups
+                parent.normalizeGroupOrder()
             }
-        } else if let templateItem = RowClipboard.item {
+        }
+        else if let clip = RowClipboard.item {
+            // ItemRowをGroupの最上行に挿入する
             isExpanded = true
-            let newItem = cloneItem(templateItem, parent: group)
-            newItem.order = group.nextItemOrder()
+            let newItem = cloneItem(clip, parent: group)
+            newItem.order = -1 // 最上行  group.nextItemOrder()
             modelContext.insert(newItem)
             withAnimation {
-                group.child.append(newItem)
+                group.child.insert(newItem, at: 0)
                 group.normalizeItemOrder()
             }
         }

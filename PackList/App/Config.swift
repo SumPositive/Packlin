@@ -12,6 +12,9 @@ import SwiftUICore
 // MARK: - Global let value
 // 全モジュールで参照される固定値(let) （#define 同様の使い方）
 
+//-------------------------------------- DEBUG
+let DEBUG_SHOW_ORDER_ID = true
+
 
 //-------------------------------------- Layout関係
 // CalcRollView 幅

@@ -12,9 +12,11 @@ import UIKit
 struct ItemRowView: View {
     @Environment(\.modelContext) private var modelContext
     let item: M3Item
+    
     @State private var editingItem: M3Item?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+   
     private let rowHeight: CGFloat = 44
 
     init(item: M3Item) {
@@ -52,8 +54,10 @@ struct ItemRowView: View {
                         .foregroundStyle(COLOR_MEMO)
                         .padding(.leading, 25)
                 }
-                Text("\(item.order)   \(item.id)")
-
+                if DEBUG_SHOW_ORDER_ID {
+                    Text("item (\(item.order)) [\(item.id)]")
+                }
+                
                 HStack {
                     Spacer() // 右寄せにするため
                     if 0 < item.weight {
@@ -152,8 +156,8 @@ struct ItemRowView: View {
     }
 
     private func pasteFromClipboard() {
-        guard let clipItem = RowClipboard.item, let parent = item.parent else { return }
-        let newItem = cloneItem(clipItem, parent: parent)
+        guard let clip = RowClipboard.item, let parent = item.parent else { return }
+        let newItem = cloneItem(clip, parent: parent)
         newItem.order = item.order
         modelContext.insert(newItem)
         withAnimation {

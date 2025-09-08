@@ -12,20 +12,16 @@ import UIKit
 struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
     let pack: M1Pack
-    let isNew: Bool
-    @Binding var lastAddedPackID: M1Pack.ID?
+    
     @State private var isExpanded = false
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-    @State private var isHighlighted: Bool
+   
     private let rowHeight: CGFloat = 44
 
-    init(pack: M1Pack, isNew: Bool = false, lastAddedPackID: Binding<M1Pack.ID?> = .constant(nil)) {
+    init(pack: M1Pack) {
         self.pack = pack
-        self.isNew = isNew
-        self._lastAddedPackID = lastAddedPackID
-        _isHighlighted = State(initialValue: isNew)
     }
 
     private var allItemsChecked: Bool {
@@ -65,6 +61,9 @@ struct PackRowView: View {
                             .font(FONT_MEMO)
                             .foregroundStyle(COLOR_MEMO)
                             .padding(.leading, 25)
+                    }
+                    if DEBUG_SHOW_ORDER_ID {
+                        Text("pack (\(pack.order)) [\(pack.id)]")
                     }
                     
                     HStack {
@@ -118,7 +117,6 @@ struct PackRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
-            .background(isHighlighted ? Color.green.opacity(0.2) : Color.clear)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -136,15 +134,6 @@ struct PackRowView: View {
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
-            }
-            .onAppear {
-                if isNew {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation {
-                            isHighlighted = false
-                        }
-                    }
-                }
             }
 
             if isExpanded {
@@ -195,10 +184,6 @@ struct PackRowView: View {
         for group in pack.child {
             copyGroup(group, to: newTitle)
         }
-        lastAddedPackID = newTitle.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedPackID = nil
-        }
     }
 
     private func copyToClipboard() {
@@ -208,21 +193,33 @@ struct PackRowView: View {
     }
 
     private func pasteFromClipboard() {
-        guard let template = RowClipboard.pack else { return }
-        let descriptor = FetchDescriptor<M1Pack>()
-        let packs = (try? modelContext.fetch(descriptor)) ?? []
-        let newPack = clonePack(template)
-        modelContext.insert(newPack)
-        var all = packs
-        if let index = packs.firstIndex(where: { $0.id == pack.id }) {
-            all.insert(newPack, at: index + 1)
-        } else {
-            all.append(newPack)
+        if let template = RowClipboard.pack {
+            // PackRowを現在行にペーストする、現在行は下になる
+            let newPack = clonePack(template)
+            newPack.order = pack.order
+            modelContext.insert(newPack)
+            // 現在行(index)を求めその行に追加する
+            let descriptor = FetchDescriptor<M1Pack>()
+            var packs = (try? modelContext.fetch(descriptor)) ?? []
+            if let index = packs.firstIndex(where: { $0.id == pack.id }) {
+                // index位置に追加
+                packs.insert(newPack, at: index)
+            } else {
+                // 末尾に追加
+                packs.append(newPack)
+            }
+            M1Pack.normalizePackOrder(packs)
         }
-        M1Pack.normalizePackOrder(all)
-        lastAddedPackID = newPack.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedPackID = nil
+        else if let clip = RowClipboard.group {
+            // GroupRowをPackの最上行に挿入する
+            isExpanded = true
+            let newGroup = cloneGroup(clip, parent: pack)
+            newGroup.order = -1 // 最上行
+            modelContext.insert(newGroup)
+            withAnimation {
+                pack.child.insert(newGroup, at: 0)
+                pack.normalizeGroupOrder()
+            }
         }
     }
 

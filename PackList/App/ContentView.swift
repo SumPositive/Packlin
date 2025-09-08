@@ -11,14 +11,13 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
-    @State private var lastAddedPackID: M1Pack.ID?
     private let rowHeight: CGFloat = 44
 
     var body: some View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    PackRowView(pack: pack, isNew: pack.id == lastAddedPackID, lastAddedPackID: $lastAddedPackID)
+                    PackRowView(pack: pack)
                 }
                 .onMove(perform: movePack)
                 .environment(\.editMode, .constant(.active))
@@ -73,10 +72,6 @@ struct ContentView: View {
     private func addPack() {
         let newPack = M1Pack(name: "", order: M1Pack.nextPackOrder(packs))
         modelContext.insert(newPack)
-        lastAddedPackID = newPack.id
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            lastAddedPackID = nil
-        }
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {
