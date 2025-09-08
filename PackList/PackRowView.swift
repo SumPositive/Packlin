@@ -92,7 +92,7 @@ struct PackRowView: View {
                         //        .padding(.trailing, 4)
                     }
                 }
-                .padding(.vertical, 4) // Row上下余白
+                .padding(.bottom, 4) // Row下余白のみ
 
                 Spacer()
                 Button {
@@ -107,7 +107,7 @@ struct PackRowView: View {
             }
             .frame(minHeight: rowHeight)
             .padding(.leading, 0)
-            .padding(.trailing, 8)
+            .padding(.trailing, 0)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -154,7 +154,7 @@ struct PackRowView: View {
                     .background(COLOR_POPUP_BORDER)
             }
         }
-        .padding(.leading, 0)
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     private func addGroup() {
