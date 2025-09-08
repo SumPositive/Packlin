@@ -23,6 +23,8 @@ struct ContentView: View {
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
+            .padding(.top, -8) // headerとPackList間の余白を無くす
+            .padding(.horizontal, 0)
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {

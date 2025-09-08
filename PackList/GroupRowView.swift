@@ -30,7 +30,12 @@ struct GroupRowView: View {
 
     var body: some View {
         Group {
-            HStack {
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(COLOR_ROW_PACK)
+                    .frame(width: 8)
+                    .padding(.horizontal, 0)
+                
                 Button {
                     isExpanded.toggle()
                     if isExpanded && group.child.isEmpty {
@@ -38,8 +43,10 @@ struct GroupRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
 
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .padding(.trailing, 8)
@@ -75,6 +82,8 @@ struct GroupRowView: View {
 //                            .padding(.trailing, 4)
                     }
                 }
+                .padding(.vertical, 4)
+
                 Spacer()
                 Button {
                     if !isExpanded {
@@ -85,9 +94,15 @@ struct GroupRowView: View {
                     Image(systemName: "plus.circle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
+
+//                Rectangle()
+//                    .fill(COLOR_ROW_PACK)
+//                    .frame(width: 8)
+//                    .padding(.horizontal, 0)
             }
             .frame(minHeight: rowHeight)
-            .padding(.leading)
+            .padding(.leading, 0)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -113,6 +128,7 @@ struct GroupRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
+            .background(COLOR_ROW_GROUP)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -131,10 +147,11 @@ struct GroupRowView: View {
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
+            
             if isExpanded {
                 if group.child.isEmpty {
                     Text(" ")
-                        .padding(.leading, 40)
+                        .padding(.leading, 0)
                 } else {
                     ForEach(sortedItems) { item in
                         ItemRowView(item: item)
@@ -146,6 +163,7 @@ struct GroupRowView: View {
                 }
             }
         }
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     private var sortedItems: [M3Item] {

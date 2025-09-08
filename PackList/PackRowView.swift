@@ -43,9 +43,11 @@ struct PackRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(BorderlessButtonStyle())
-                
+                .padding(.horizontal, 8)
+
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                     .padding(.trailing, 8)
 
@@ -80,6 +82,8 @@ struct PackRowView: View {
 //                            .padding(.trailing, 4)
                     }
                 }
+                .padding(.vertical, 4)
+
                 Spacer()
                 Button {
                     if !isExpanded {
@@ -90,6 +94,7 @@ struct PackRowView: View {
                     Image(systemName: "plus.rectangle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
             }
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
@@ -117,6 +122,7 @@ struct PackRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
+            .background(COLOR_ROW_PACK)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -146,6 +152,7 @@ struct PackRowView: View {
                 .animation(.default, value: pack.child)
             }
         }
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     private func addGroup() {

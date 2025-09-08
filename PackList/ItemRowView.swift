@@ -26,7 +26,17 @@ struct ItemRowView: View {
 
     var body: some View {
         HStack {
+            Rectangle()
+                .fill(COLOR_ROW_PACK)
+                .frame(width: 8)
+                .padding(.horizontal, 0)
             
+            Rectangle()
+                .fill(COLOR_ROW_GROUP)
+                .frame(width: 8)
+                .padding(.leading, -8)
+                .padding(.trailing, 8)
+
             Button {
                 item.check.toggle()
                 if item.check {
@@ -76,9 +86,10 @@ struct ItemRowView: View {
                         .padding(.trailing, 40)
                 }
             }
+            .padding(.vertical, 4)
         }
         .frame(minHeight: rowHeight)
-        .padding(.leading, 40)
+        .padding(.leading, 0)
         .swipeActions(edge: .trailing) {
             Button("Cut") {
                 copyToClipboard()
@@ -104,6 +115,7 @@ struct ItemRowView: View {
             .tint(.green)
         }
         .contentShape(Rectangle())
+        .background(COLOR_ROW_ITEM)
         .background(
             GeometryReader { proxy in
                 Color.clear
