@@ -42,6 +42,9 @@ struct PackRowView: View {
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
+                .safeAreaInset(edge: .top) {
+                    Color.clear.frame(height: rowHeight)
+                }
                 .animation(.default, value: pack.child)
             }
         } header: {
