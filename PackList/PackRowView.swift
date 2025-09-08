@@ -160,6 +160,7 @@ struct PackRowView: View {
                     .background(COLOR_POPUP_BORDER)
             }
         }
+        .contentMargins(.top, 0)
     }
 
     private func addGroup() {
