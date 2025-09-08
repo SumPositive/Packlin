@@ -29,7 +29,20 @@ struct GroupRowView: View {
     }
 
     var body: some View {
-        Group {
+        Section {
+            if isExpanded {
+                if group.child.isEmpty {
+                    Text(" ")
+                        .padding(.leading, 40)
+                } else {
+                    ForEach(sortedItems) { item in
+                        ItemRowView(item: item)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    .animation(.default, value: group.child)
+                }
+            }
+        } header: {
             HStack {
                 Button {
                     isExpanded.toggle()
@@ -38,18 +51,19 @@ struct GroupRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .frame(width: 24, height: 24)
                 }
                 .buttonStyle(BorderlessButtonStyle())
 
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .padding(.trailing, 8)
-                
+
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(group.name.isEmpty ? .secondary : COLOR_NAME)
-                    
+
                     if !group.memo.isEmpty {
                         Text(group.memo)
                             .lineLimit(3)
@@ -60,7 +74,7 @@ struct GroupRowView: View {
                     if DEBUG_SHOW_ORDER_ID {
                         Text("group (\(group.order)) [\(group.id)]")
                     }
-                    
+
                     HStack {
                         Spacer() // 右寄せにするため
                         if 0 < group.stockWeight {
@@ -69,12 +83,14 @@ struct GroupRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("\(group.stock)／\(group.need)")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
+                        //    Text("\(group.stock)／\(group.need)")
+                        //        .font(FONT_STOCK)
+                        //        .foregroundStyle(COLOR_WEIGHT)
+                        //        .padding(.trailing, 4)
                     }
                 }
+                .padding(.vertical, 4) // Row上下余白
+
                 Spacer()
                 Button {
                     if !isExpanded {
@@ -113,6 +129,8 @@ struct GroupRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
+            // Ensure the row background is opaque
+            .background(COLOR_ROW_GROUP)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -129,21 +147,7 @@ struct GroupRowView: View {
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-            }
-            if isExpanded {
-                if group.child.isEmpty {
-                    Text(" ")
-                        .padding(.leading, 40)
-                } else {
-                    ForEach(sortedItems) { item in
-                        ItemRowView(item: item)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    .onMove(perform: moveItem)
-                    .environment(\.editMode, .constant(.active))
-                    .animation(.default, value: group.child)
-                }
+                    .background(COLOR_POPUP_BORDER)
             }
         }
     }

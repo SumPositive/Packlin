@@ -76,6 +76,7 @@ struct ItemRowView: View {
                         .padding(.trailing, 40)
                 }
             }
+            .padding(.vertical, 4) // Row上下余白
         }
         .frame(minHeight: rowHeight)
         .padding(.leading, 40)
@@ -104,6 +105,8 @@ struct ItemRowView: View {
             .tint(.green)
         }
         .contentShape(Rectangle())
+        // Ensure the row background is opaque
+        .background(COLOR_ROW_ITEM)
         .background(
             GeometryReader { proxy in
                 Color.clear
@@ -120,7 +123,7 @@ struct ItemRowView: View {
         .popover(item: $editingItem, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { item in
             EditItemView(item: item)
                 .presentationCompactAdaptation(.none)
-                .background(Color.primary.opacity(0.2))
+                .background(COLOR_POPUP_BORDER)
         }
         .transition(.move(edge: .top).combined(with: .opacity))
     }

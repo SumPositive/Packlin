@@ -34,7 +34,23 @@ struct PackRowView: View {
     }
 
     var body: some View {
-        Group {
+        Section {
+            if isExpanded {
+                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    ForEach(sortedGroups) { group in
+                        GroupRowView(group: group)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
+                // Offset group headers so they pin directly beneath the pack header
+                .offset(y: rowHeight)
+                .padding(.top, -rowHeight)
+                .padding(.bottom, rowHeight)
+                .animation(.default, value: pack.child)
+                .listSectionSpacing(0)
+            }
+        }
+        header: {
             HStack {
                 Button {
                     isExpanded.toggle()
@@ -43,9 +59,10 @@ struct PackRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .frame(width: 24, height: 24)
                 }
                 .buttonStyle(BorderlessButtonStyle())
-                
+
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                     .padding(.trailing, 8)
 
@@ -54,7 +71,7 @@ struct PackRowView: View {
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
-                    
+
                     if !pack.memo.isEmpty {
                         Text(pack.memo)
                             .lineLimit(3)
@@ -65,7 +82,7 @@ struct PackRowView: View {
                     if DEBUG_SHOW_ORDER_ID {
                         Text("pack (\(pack.order)) [\(pack.id)]")
                     }
-                    
+
                     HStack {
                         Spacer() // 右寄せにするため
                         if 0 < pack.stockWeight {
@@ -74,12 +91,14 @@ struct PackRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("［\(pack.stock)／\(pack.need)］")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
+                        //    Text("［\(pack.stock)／\(pack.need)］")
+                        //        .font(FONT_STOCK)
+                        //        .foregroundStyle(COLOR_WEIGHT)
+                        //        .padding(.trailing, 4)
                     }
                 }
+                .padding(.vertical, 4) // Row上下余白
+
                 Spacer()
                 Button {
                     if !isExpanded {
@@ -117,6 +136,8 @@ struct PackRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
+            // Ensure the row background is opaque
+            .background(COLOR_ROW_PLAN)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -133,17 +154,7 @@ struct PackRowView: View {
             .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-            }
-
-            if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
-                .animation(.default, value: pack.child)
+                    .background(COLOR_POPUP_BORDER)
             }
         }
     }

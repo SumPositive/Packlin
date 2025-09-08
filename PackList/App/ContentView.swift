@@ -15,14 +15,15 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(packs) { pack in
-                    PackRowView(pack: pack)
+            ScrollView {
+                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    ForEach(packs) { pack in
+                        PackRowView(pack: pack)
+                    }
                 }
-                .onMove(perform: movePack)
-                .environment(\.editMode, .constant(.active))
+                .listSectionSpacing(0)
             }
-            .listStyle(.plain)
+            .padding(.top, -8) // headerとPackList間の余白を無くす
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
@@ -64,6 +65,7 @@ struct ContentView: View {
                 }
                 .frame(height: rowHeight)
                 .padding(.horizontal)
+                .padding(.vertical, 0)
                 .background(.thinMaterial)
             }
         }
