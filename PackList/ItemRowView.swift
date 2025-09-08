@@ -25,7 +25,16 @@ struct ItemRowView: View {
 
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(COLOR_ROW_PLAN)
+                .frame(width: 12)
+                .padding(.horizontal, 0)
+
+            Rectangle()
+                .fill(COLOR_ROW_GROUP)
+                .frame(width: 12)
+                .padding(.horizontal, 0)
             
             Button {
                 item.check.toggle()
@@ -39,7 +48,7 @@ struct ItemRowView: View {
                       : 0 < item.need ? "circle" : "circle.dotted")
             }
             .buttonStyle(BorderlessButtonStyle())
-            .padding(.trailing, 8)
+            .padding(.horizontal, 8)
 
             VStack(alignment: .leading, spacing: 1){
                 Text(item.name.isEmpty ? "New Item" : item.name)
@@ -77,9 +86,15 @@ struct ItemRowView: View {
                 }
             }
             .padding(.vertical, 4) // Row上下余白
+
+            Rectangle()
+                .fill(COLOR_ROW_GROUP)
+                .frame(width: 12)
+                .padding(.horizontal, 0)
         }
         .frame(minHeight: rowHeight)
-        .padding(.leading, 40)
+        .padding(.leading, 0)
+        .padding(.trailing, 8)
         .swipeActions(edge: .trailing) {
             Button("Cut") {
                 copyToClipboard()
