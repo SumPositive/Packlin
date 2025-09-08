@@ -97,7 +97,10 @@ struct PackRowView: View {
                         //        .padding(.trailing, 4)
                     }
                 }
-                .padding(.vertical, 4) // Row上下余白
+                // Remove top padding so the first pack row sits flush under the header
+                .padding(.top, 0)
+                // Keep bottom padding to maintain spacing between rows
+                .padding(.bottom, 4)
 
                 Spacer()
                 Button {
