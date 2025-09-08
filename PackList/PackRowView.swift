@@ -279,6 +279,7 @@ struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var pack: M1Pack
+    @FocusState private var nameFieldIsFocused: Bool
     
     var body: some View {
         VStack {
@@ -290,6 +291,7 @@ struct EditPackView: View {
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
+                    .focused($nameFieldIsFocused)
             }
             HStack {
                 Text("メモ:")
@@ -310,6 +312,11 @@ struct EditPackView: View {
         }
         .padding()
         .frame(minWidth: 300, maxHeight: 300)
+        .onAppear {
+            if pack.name.isEmpty {
+                nameFieldIsFocused = true
+            }
+        }
         .onDisappear() {
             try? context.save()
         }

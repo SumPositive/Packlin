@@ -190,6 +190,7 @@ struct EditItemView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var item: M3Item
+    @FocusState private var nameFieldIsFocused: Bool
 
     private var stockBinding: Binding<Int> {
         Binding(get: { item.stock }, set: { item.stock = max(0, $0) })
@@ -210,6 +211,7 @@ struct EditItemView: View {
                 TextField("", text: $item.name, prompt: Text("New Item name"))
                     .background(Color.white.opacity(0.7))
                     .padding(4)
+                    .focused($nameFieldIsFocused)
             }
             HStack {
                 Text("メモ:")
@@ -271,6 +273,11 @@ struct EditItemView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onAppear {
+            if item.name.isEmpty {
+                nameFieldIsFocused = true
+            }
+        }
         .onDisappear() {
             try? context.save()
         }

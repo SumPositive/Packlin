@@ -259,6 +259,7 @@ struct EditGroupView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var group: M2Group
+    @FocusState private var nameFieldIsFocused: Bool
     
     var body: some View {
         VStack {
@@ -270,6 +271,7 @@ struct EditGroupView: View {
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
+                    .focused($nameFieldIsFocused)
             }
             HStack {
                 Text("メモ:")
@@ -290,6 +292,11 @@ struct EditGroupView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        .onAppear {
+            if group.name.isEmpty {
+                nameFieldIsFocused = true
+            }
+        }
         .onDisappear() {
             try? context.save()
         }
