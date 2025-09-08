@@ -12,16 +12,21 @@ import UIKit
 struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
     let pack: M1Pack
-    
-    @State private var isExpanded = false
+    let isExpanded: Bool
+    let onExpand: () -> Void
+    let onCollapse: () -> Void
+
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-   
+
     private let rowHeight: CGFloat = 44
 
-    init(pack: M1Pack) {
+    init(pack: M1Pack, isExpanded: Bool, onExpand: @escaping () -> Void, onCollapse: @escaping () -> Void) {
         self.pack = pack
+        self.isExpanded = isExpanded
+        self.onExpand = onExpand
+        self.onCollapse = onCollapse
     }
 
     private var allItemsChecked: Bool {
@@ -29,17 +34,17 @@ struct PackRowView: View {
         return !items.isEmpty && items.allSatisfy { $0.check }
     }
 
-    private var sortedGroups: [M2Group] {
-        pack.child.sorted { $0.order < $1.order }
-    }
-
     var body: some View {
         Group {
             HStack {
                 Button {
-                    isExpanded.toggle()
-                    if isExpanded && pack.child.isEmpty {
-                        addGroup()
+                    if isExpanded {
+                        onCollapse()
+                    } else {
+                        onExpand()
+                        if pack.child.isEmpty {
+                            addGroup()
+                        }
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
@@ -87,7 +92,7 @@ struct PackRowView: View {
                 Spacer()
                 Button {
                     if !isExpanded {
-                        isExpanded = true
+                        onExpand()
                     }
                     addGroup()
                 } label: {
@@ -142,15 +147,6 @@ struct PackRowView: View {
                     .background(Color.primary.opacity(0.2))
             }
 
-            if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
-                .animation(.default, value: pack.child)
-            }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
@@ -219,7 +215,9 @@ struct PackRowView: View {
         }
         else if let clip = RowClipboard.group {
             // GroupRowをPackの最上行に挿入する
-            isExpanded = true
+            if !isExpanded {
+                onExpand()
+            }
             let newGroup = cloneGroup(clip, parent: pack)
             newGroup.order = -1 // 最上行
             modelContext.insert(newGroup)
@@ -251,15 +249,6 @@ struct PackRowView: View {
         modelContext.insert(newItem)
         parent.child.append(newItem)
         parent.normalizeItemOrder()
-    }
-
-    private func moveGroup(from source: IndexSet, to destination: Int) {
-        var groups = sortedGroups
-        groups.move(fromOffsets: source, toOffset: destination)
-        for (index, group) in groups.enumerated() {
-            group.order = index
-        }
-        pack.child = groups
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {

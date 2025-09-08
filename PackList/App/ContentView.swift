@@ -12,12 +12,37 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     private let rowHeight: CGFloat = 44
+    @State private var expandedPack: M1Pack?
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(packs) { pack in
-                    PackRowView(pack: pack)
+                if let expanded = expandedPack {
+                    Section {
+                        ForEach(sortedGroups(of: expanded)) { group in
+                            GroupRowView(group: group)
+                        }
+                        .onMove { indices, newOffset in
+                            moveGroup(in: expanded, from: indices, to: newOffset)
+                        }
+                        .environment(\.editMode, .constant(.active))
+                    } header: {
+                        PackRowView(
+                            pack: expanded,
+                            isExpanded: true,
+                            onExpand: { expandedPack = expanded },
+                            onCollapse: { expandedPack = nil }
+                        )
+                    }
+                }
+
+                ForEach(packs.filter { $0.id != expandedPack?.id }) { pack in
+                    PackRowView(
+                        pack: pack,
+                        isExpanded: false,
+                        onExpand: { expandedPack = pack },
+                        onCollapse: { expandedPack = nil }
+                    )
                 }
                 .onMove(perform: movePack)
                 .environment(\.editMode, .constant(.active))
@@ -82,6 +107,19 @@ struct ContentView: View {
         for (index, pack) in items.enumerated() {
             pack.order = index
         }
+    }
+
+    private func sortedGroups(of pack: M1Pack) -> [M2Group] {
+        pack.child.sorted { $0.order < $1.order }
+    }
+
+    private func moveGroup(in pack: M1Pack, from source: IndexSet, to destination: Int) {
+        var groups = sortedGroups(of: pack)
+        groups.move(fromOffsets: source, toOffset: destination)
+        for (index, group) in groups.enumerated() {
+            group.order = index
+        }
+        pack.child = groups
     }
 }
 
