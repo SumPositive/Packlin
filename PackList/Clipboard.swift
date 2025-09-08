@@ -51,8 +51,7 @@ func cloneItem(_ source: M3Item, parent: M2Group? = nil, parentItem: M3Item? = n
                          parentItem: parentItem,
                          isExpanded: source.isExpanded)
     for c in source.child {
-        let childItem = cloneItem(c, parent: parent, parentItem: newItem)
-        newItem.child.append(childItem)
+        _ = cloneItem(c, parent: parent, parentItem: newItem)
     }
     return newItem
 }
