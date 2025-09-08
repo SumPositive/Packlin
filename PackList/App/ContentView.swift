@@ -16,7 +16,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     ForEach(packs) { pack in
                         PackRowView(pack: pack)
                     }

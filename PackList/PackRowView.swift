@@ -36,7 +36,7 @@ struct PackRowView: View {
     var body: some View {
         Section {
             if isExpanded {
-                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     ForEach(sortedGroups) { group in
                         GroupRowView(group: group)
                             .transition(.move(edge: .top).combined(with: .opacity))
