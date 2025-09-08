@@ -47,6 +47,7 @@ struct PackRowView: View {
                 .padding(.top, -rowHeight)
                 .padding(.bottom, rowHeight)
                 .animation(.default, value: pack.child)
+                .listSectionSpacing(0)
             }
         }
         header: {

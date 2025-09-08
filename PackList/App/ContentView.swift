@@ -21,6 +21,7 @@ struct ContentView: View {
                         PackRowView(pack: pack)
                     }
                 }
+                .listSectionSpacing(0)
             }
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
