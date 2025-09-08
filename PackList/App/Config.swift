@@ -40,22 +40,6 @@ let APP_MAX_NEED_NUM : Int   = 999
 
 
 //-------------------------------------- Color関係
-
-let COLOR_TITLE: Color = .secondary         // App Name
-//
-//let COLOR_CALC_ACTIVE: Color = .accentColor // Calc活性枠
-//let COLOR_CALC_INACTIVE: Color = .secondary // Calc非活性枠
-//let COLOR_NUMBER: Color = .primary          // 数値
-//let COLOR_ANSWER: Color = .accentColor      // 答え
-//let COLOR_OPERATOR: Color = .cyan           // 演算子
-//let COLOR_OPERATOR_WAIT: Color = .gray      // 待機演算子　右端の[.]や[)]
-//let COLOR_UNIT: Color = .secondary          // 単位
-//let COLOR_MEMO: Color = .purple             // メモ
-//let COLOR_WARN: Color = .red                // 危険！警告色
-//// 背景色
-//let COLOR_BACK_FORMULA: Color = Color(.systemGray6)  // FormulaView
-//let COLOR_BACK_SETTING: Color = Color(.systemGray4)  // SettingView
-
 //Color.primary        // テキスト用の主要カラー（ダーク/ライトで変化）
 //Color.secondary      // 補助的なテキストカラー
 //Color.accentColor    // アクセントカラー（アプリの強調色）
@@ -65,15 +49,16 @@ let COLOR_TITLE: Color = .secondary         // App Name
 //Color.systemBlue     // システムの青色
 //Color.systemGray     // システムのグレー
 
+let COLOR_TITLE: Color = .secondary         // App Name
 
 let COLOR_NAME: Color = .primary
 let COLOR_NAME_EMPTY: Color = .secondary
 let COLOR_MEMO: Color = .primary
 let COLOR_WEIGHT: Color = .primary
 
-let COLOR_ROW_PLAN: Color = Color(.systemBackground)
-let COLOR_ROW_GROUP: Color = Color(.systemGray5)
-let COLOR_ROW_ITEM: Color = Color(.systemBackground)
+let COLOR_ROW_PACK: Color = Color(.systemGray6)
+let COLOR_ROW_GROUP: Color = Color(.systemBackground)
+let COLOR_ROW_ITEM: Color = Color(.systemGray6)
 let COLOR_POPUP_BORDER: Color = Color(.systemGray3)
 
 

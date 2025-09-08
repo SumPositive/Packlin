@@ -27,13 +27,13 @@ struct ItemRowView: View {
     var body: some View {
         HStack(spacing: 0) {
             Rectangle()
-                .fill(COLOR_ROW_PLAN)
-                .frame(width: 12)
+                .fill(COLOR_ROW_PACK)
+                .frame(width: 8)
                 .padding(.horizontal, 0)
 
             Rectangle()
                 .fill(COLOR_ROW_GROUP)
-                .frame(width: 12)
+                .frame(width: 8)
                 .padding(.horizontal, 0)
             
             Button {
@@ -89,12 +89,16 @@ struct ItemRowView: View {
 
             Rectangle()
                 .fill(COLOR_ROW_GROUP)
-                .frame(width: 12)
+                .frame(width: 8)
+                .padding(.horizontal, 0)
+
+            Rectangle()
+                .fill(COLOR_ROW_PACK)
+                .frame(width: 8)
                 .padding(.horizontal, 0)
         }
         .frame(minHeight: rowHeight)
-        .padding(.leading, 0)
-        .padding(.trailing, 8)
+        .padding(.horizontal, 0)
         .swipeActions(edge: .trailing) {
             Button("Cut") {
                 copyToClipboard()
@@ -120,7 +124,6 @@ struct ItemRowView: View {
             .tint(.green)
         }
         .contentShape(Rectangle())
-        // Ensure the row background is opaque
         .background(COLOR_ROW_ITEM)
         .background(
             GeometryReader { proxy in

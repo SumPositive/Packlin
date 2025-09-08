@@ -45,8 +45,8 @@ struct GroupRowView: View {
         } header: {
             HStack(spacing: 0) {
                 Rectangle()
-                    .fill(COLOR_ROW_PLAN)
-                    .frame(width: 12)
+                    .fill(COLOR_ROW_PACK)
+                    .frame(width: 8)
                     .padding(.horizontal, 0)
 
                 Button {
@@ -110,7 +110,7 @@ struct GroupRowView: View {
                 .padding(.horizontal, 8)
 
                 Rectangle()
-                    .fill(COLOR_ROW_PLAN)
+                    .fill(COLOR_ROW_PACK)
                     .frame(width: 8)
                     .padding(.horizontal, 0)
             }

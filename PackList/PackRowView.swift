@@ -140,7 +140,7 @@ struct PackRowView: View {
             }
             .contentShape(Rectangle())
             // Ensure the row background is opaque
-            .background(COLOR_ROW_PLAN)
+            .background(COLOR_ROW_PACK)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -160,6 +160,7 @@ struct PackRowView: View {
                     .background(COLOR_POPUP_BORDER)
             }
         }
+        .padding(.leading, 0)
     }
 
     private func addGroup() {
