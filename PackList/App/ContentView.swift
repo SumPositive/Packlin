@@ -17,8 +17,10 @@ struct ContentView: View {
         NavigationView {
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    ForEach(packs) { pack in
+                    ForEach(Array(packs.enumerated()), id: \.element.id) { index, pack in
                         PackRowView(pack: pack)
+                            // Remove the gap above the first pack row
+                            .padding(.top, index == 0 ? -8 : 0)
                     }
                 }
                 .listSectionSpacing(0)
