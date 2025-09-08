@@ -29,13 +29,28 @@ struct GroupRowView: View {
     }
 
     var body: some View {
-        Group {
+        Section {
+            if isExpanded {
+                if group.child.isEmpty {
+                    Text(" ")
+                        .padding(.leading, 0)
+                } else {
+                    ForEach(sortedItems) { item in
+                        ItemRowView(item: item)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    .onMove(perform: moveItem)
+                    .environment(\.editMode, .constant(.active))
+                    .animation(.default, value: group.child)
+                }
+            }
+        } header: {
             HStack(spacing: 0) {
                 Rectangle()
                     .fill(COLOR_ROW_PACK)
                     .frame(width: 8)
                     .padding(.horizontal, 0)
-                
+
                 Button {
                     isExpanded.toggle()
                     if isExpanded && group.child.isEmpty {
@@ -50,13 +65,13 @@ struct GroupRowView: View {
 
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .padding(.trailing, 8)
-                
+
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(group.name.isEmpty ? .secondary : COLOR_NAME)
-                    
+
                     if !group.memo.isEmpty {
                         Text(group.memo)
                             .lineLimit(3)
@@ -67,7 +82,7 @@ struct GroupRowView: View {
                     if DEBUG_SHOW_ORDER_ID {
                         Text("group (\(group.order)) [\(group.id)]")
                     }
-                    
+
                     HStack {
                         Spacer() // 右寄せにするため
                         if 0 < group.stockWeight {
@@ -146,21 +161,6 @@ struct GroupRowView: View {
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
-            }
-            
-            if isExpanded {
-                if group.child.isEmpty {
-                    Text(" ")
-                        .padding(.leading, 0)
-                } else {
-                    ForEach(sortedItems) { item in
-                        ItemRowView(item: item)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    .onMove(perform: moveItem)
-                    .environment(\.editMode, .constant(.active))
-                    .animation(.default, value: group.child)
-                }
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
