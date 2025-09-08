@@ -23,6 +23,7 @@ struct ContentView: View {
                 }
                 .listSectionSpacing(0)
             }
+            .padding(.top, -8) // headerとPackList間の余白を無くす
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
