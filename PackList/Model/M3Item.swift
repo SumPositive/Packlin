@@ -21,6 +21,11 @@ final class M3Item {
     var need: Int   // 必要数
     var weight: Int // 重量(g)
 
+    /// アイテムが展開されているか
+    var isExpanded: Bool = false
+
+    @Relationship(deleteRule: .cascade, inverse: \M3Item.parentItem) var child: [M3Item] = []
+    @Relationship(inverse: \M3Item.child) var parentItem: M3Item?
     @Relationship(inverse: \M2Group.child) var parent: M2Group?
 
     var lack: Int { max(need - stock, 0) }
@@ -33,7 +38,9 @@ final class M3Item {
          need: Int = 0,
          weight: Int = 0,
          order: Int = 0,
-         parent: M2Group? = nil) {
+         parent: M2Group? = nil,
+         parentItem: M3Item? = nil,
+         isExpanded: Bool = false) {
         self.id = id
         self.name = name
         self.memo = memo
@@ -43,6 +50,8 @@ final class M3Item {
         self.weight = weight
         self.order = order
         self.parent = parent
+        self.parentItem = parentItem
+        self.isExpanded = isExpanded
     }
 }
 

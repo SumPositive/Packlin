@@ -19,6 +19,9 @@ final class M1Pack {
 
     var createdAt: Date
 
+    /// パックが展開されているか
+    var isExpanded: Bool = false
+
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
 
     var stock: Int { child.reduce(0) { $0 + $1.stock } }
@@ -27,12 +30,18 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
-    init(id: ID = shortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+    init(id: ID = shortUUID(),
+         name: String,
+         memo: String = "",
+         createdAt: Date = Date(),
+         order: Int = 0,
+         isExpanded: Bool = false) {
         self.id = id
         self.name = name
         self.memo = memo
         self.createdAt = createdAt
         self.order = order
+        self.isExpanded = isExpanded
     }
     
     /// 子グループの order を連番に整理する

@@ -12,8 +12,6 @@ import UIKit
 struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
     let pack: M1Pack
-    
-    @State private var isExpanded = false
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
@@ -37,12 +35,12 @@ struct PackRowView: View {
         Group {
             HStack {
                 Button {
-                    isExpanded.toggle()
-                    if isExpanded && pack.child.isEmpty {
+                    pack.isExpanded.toggle()
+                    if pack.isExpanded && pack.child.isEmpty {
                         addGroup()
                     }
                 } label: {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    Image(systemName: pack.isExpanded ? "chevron.down" : "chevron.right")
                         .frame(width: 20, height: 20)
                 }
                 .buttonStyle(BorderlessButtonStyle())
@@ -86,8 +84,8 @@ struct PackRowView: View {
 
                 Spacer()
                 Button {
-                    if !isExpanded {
-                        isExpanded = true
+                    if !pack.isExpanded {
+                        pack.isExpanded = true
                     }
                     addGroup()
                 } label: {
@@ -142,7 +140,7 @@ struct PackRowView: View {
                     .background(Color.primary.opacity(0.2))
             }
 
-            if isExpanded {
+            if pack.isExpanded {
                 ForEach(sortedGroups) { group in
                     GroupRowView(group: group)
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -186,7 +184,11 @@ struct PackRowView: View {
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
         let newOrder = M1Pack.nextPackOrder(packs)
-        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001), order: newOrder)
+        let newTitle = M1Pack(name: pack.name,
+                              memo: pack.memo,
+                              createdAt: pack.createdAt.addingTimeInterval(-0.001),
+                              order: newOrder,
+                              isExpanded: pack.isExpanded)
         modelContext.insert(newTitle)
         for group in pack.child {
             copyGroup(group, to: newTitle)
@@ -219,7 +221,7 @@ struct PackRowView: View {
         }
         else if let clip = RowClipboard.group {
             // GroupRowをPackの最上行に挿入する
-            isExpanded = true
+            pack.isExpanded = true
             let newGroup = cloneGroup(clip, parent: pack)
             newGroup.order = -1 // 最上行
             modelContext.insert(newGroup)
@@ -231,7 +233,11 @@ struct PackRowView: View {
     }
 
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
-        let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
+        let newGroup = M2Group(name: group.name,
+                               memo: group.memo,
+                               order: parent.nextGroupOrder(),
+                               parent: parent,
+                               isExpanded: group.isExpanded)
         modelContext.insert(newGroup)
         withAnimation {
             if let index = parent.child.firstIndex(where: { $0.id == group.id }) {

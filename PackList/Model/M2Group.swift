@@ -17,6 +17,9 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     var name: String
     var memo: String
 
+    /// グループが展開されているか
+    var isExpanded: Bool = false
+
     @Relationship(inverse: \M1Pack.child) var parent: M1Pack?
     @Relationship(deleteRule: .cascade) var child: [M3Item] = []
 
@@ -26,12 +29,18 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     var stockWeight: Int { child.reduce(0) { $0 + $1.weight * $1.stock } }
     var needWeight: Int { child.reduce(0) { $0 + $1.weight * $1.need } }
 
-    init(id: ID = shortUUID(), name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
+    init(id: ID = shortUUID(),
+         name: String,
+         memo: String = "",
+         order: Int = 0,
+         parent: M1Pack? = nil,
+         isExpanded: Bool = false) {
         self.id = id
         self.name = name
         self.memo = memo
         self.order = order
         self.parent = parent
+        self.isExpanded = isExpanded
     }
 
     /// 子アイテムの order を連番に整理する

@@ -12,8 +12,6 @@ import UIKit
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
-
-    @State private var isExpanded = false
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
@@ -29,126 +27,8 @@ struct GroupRowView: View {
     }
 
     var body: some View {
-        Group {
-            HStack(spacing: 0) {
-                Rectangle()
-                    .fill(COLOR_ROW_PACK)
-                    .frame(width: 8)
-                    .padding(.horizontal, 0)
-                
-                Button {
-                    isExpanded.toggle()
-                    if isExpanded && group.child.isEmpty {
-                        addItem()
-                    }
-                } label: {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .frame(width: 20, height: 20)
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
-
-                Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-                    .padding(.trailing, 8)
-                
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(group.name.isEmpty ? "New Group" : group.name)
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(group.name.isEmpty ? .secondary : COLOR_NAME)
-                    
-                    if !group.memo.isEmpty {
-                        Text(group.memo)
-                            .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.leading, 25)
-                    }
-                    if DEBUG_SHOW_ORDER_ID {
-                        Text("group (\(group.order)) [\(group.id)]")
-                    }
-                    
-                    HStack {
-                        Spacer() // 右寄せにするため
-                        if 0 < group.stockWeight {
-                            Text("\(group.stockWeight)g／\(group.needWeight)g")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
-                        }
-//                        Text("\(group.stock)／\(group.need)")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
-                    }
-                }
-                .padding(.vertical, 4)
-
-                Spacer()
-                Button {
-                    if !isExpanded {
-                        isExpanded = true
-                    }
-                    addItem()
-                } label: {
-                    Image(systemName: "plus.circle")
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
-
-//                Rectangle()
-//                    .fill(COLOR_ROW_PACK)
-//                    .frame(width: 8)
-//                    .padding(.horizontal, 0)
-            }
-            .frame(minHeight: rowHeight)
-            .padding(.leading, 0)
-            .swipeActions(edge: .trailing) {
-                Button("Cut") {
-                    copyToClipboard()
-                    deleteGroup()
-                }
-                .tint(.red)
-            }
-            .swipeActions(edge: .leading) {
-                Button("Copy") {
-                    copyToClipboard()
-                }
-                .tint(.cyan)
-
-                Button("Paste") {
-                    pasteFromClipboard()
-                }
-                .disabled(RowClipboard.group == nil && RowClipboard.item == nil)
-                .tint(.orange)
-
-                Button("Duplicate") {
-                    duplicateGroup()
-                }
-                .tint(.green)
-            }
-            .contentShape(Rectangle())
-            .background(COLOR_ROW_GROUP)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
-                            frame = newValue
-                        }
-                }
-            )
-            .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingGroup = group
-            }
-            .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
-                EditGroupView(group: group)
-                    .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-            }
-            
-            if isExpanded {
+        Section {
+            if group.isExpanded {
                 if group.child.isEmpty {
                     Text(" ")
                         .padding(.leading, 0)
@@ -162,8 +42,130 @@ struct GroupRowView: View {
                     .animation(.default, value: group.child)
                 }
             }
+        } header: {
+            headerView
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+    }
+
+    private var headerView: some View {
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(COLOR_ROW_PACK)
+                .frame(width: 8)
+                .padding(.horizontal, 0)
+
+            Button {
+                group.isExpanded.toggle()
+                if group.isExpanded && group.child.isEmpty {
+                    addItem()
+                }
+            } label: {
+                Image(systemName: group.isExpanded ? "chevron.down" : "chevron.right")
+                    .frame(width: 20, height: 20)
+            }
+            .buttonStyle(BorderlessButtonStyle())
+            .padding(.horizontal, 8)
+
+            Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
+                .padding(.trailing, 8)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(group.name.isEmpty ? "New Group" : group.name)
+                    .lineLimit(3)
+                    .font(FONT_NAME)
+                    .foregroundStyle(group.name.isEmpty ? .secondary : COLOR_NAME)
+
+                if !group.memo.isEmpty {
+                    Text(group.memo)
+                        .lineLimit(3)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(COLOR_MEMO)
+                        .padding(.leading, 25)
+                }
+                if DEBUG_SHOW_ORDER_ID {
+                    Text("group (\(group.order)) [\(group.id)]")
+                }
+
+                HStack {
+                    Spacer() // 右寄せにするため
+                    if 0 < group.stockWeight {
+                        Text("\(group.stockWeight)g／\(group.needWeight)g")
+                            .font(FONT_WEIGHT)
+                            .foregroundStyle(COLOR_WEIGHT)
+                            .padding(.trailing, 4)
+                    }
+//                    Text("\(group.stock)／\(group.need)")
+//                        .font(FONT_STOCK)
+//                        .foregroundStyle(COLOR_WEIGHT)
+//                        .padding(.trailing, 4)
+                }
+            }
+            .padding(.vertical, 4)
+
+            Spacer()
+            Button {
+                if !group.isExpanded {
+                    group.isExpanded = true
+                }
+                addItem()
+            } label: {
+                Image(systemName: "plus.circle")
+            }
+            .buttonStyle(BorderlessButtonStyle())
+            .padding(.horizontal, 8)
+
+//            Rectangle()
+//                .fill(COLOR_ROW_PACK)
+//                .frame(width: 8)
+//                .padding(.horizontal, 0)
+        }
+        .frame(minHeight: rowHeight)
+        .padding(.leading, 0)
+        .swipeActions(edge: .trailing) {
+            Button("Cut") {
+                copyToClipboard()
+                deleteGroup()
+            }
+            .tint(.red)
+        }
+        .swipeActions(edge: .leading) {
+            Button("Copy") {
+                copyToClipboard()
+            }
+            .tint(.cyan)
+
+            Button("Paste") {
+                pasteFromClipboard()
+            }
+            .disabled(RowClipboard.group == nil && RowClipboard.item == nil)
+            .tint(.orange)
+
+            Button("Duplicate") {
+                duplicateGroup()
+            }
+            .tint(.green)
+        }
+        .contentShape(Rectangle())
+        .background(COLOR_ROW_GROUP)
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { frame = proxy.frame(in: .global) }
+                    .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                        frame = newValue
+                    }
+            }
+        )
+        .onTapGesture {
+            arrowEdge = arrowEdge(for: frame)
+            editingGroup = group
+        }
+        .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
+            EditGroupView(group: group)
+                .presentationCompactAdaptation(.none)
+                .background(Color.primary.opacity(0.2))
+        }
     }
 
     private var sortedItems: [M3Item] {
@@ -193,7 +195,11 @@ struct GroupRowView: View {
 
     private func duplicateGroup() {
         guard let parentTitle = group.parent else { return }
-        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
+        let newGroup = M2Group(name: group.name,
+                               memo: group.memo,
+                               order: parentTitle.nextGroupOrder(),
+                               parent: parentTitle,
+                               isExpanded: group.isExpanded)
         modelContext.insert(newGroup)
         withAnimation {
             if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {
@@ -233,7 +239,7 @@ struct GroupRowView: View {
         }
         else if let clip = RowClipboard.item {
             // ItemRowをGroupの最上行に挿入する
-            isExpanded = true
+            group.isExpanded = true
             let newItem = cloneItem(clip, parent: group)
             newItem.order = -1 // 最上行  group.nextItemOrder()
             modelContext.insert(newItem)
@@ -245,7 +251,15 @@ struct GroupRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
+        let newItem = M3Item(name: item.name,
+                             memo: item.memo,
+                             stock: item.stock,
+                             need: item.need,
+                             weight: item.weight,
+                             order: parent.nextItemOrder(),
+                             parent: parent,
+                             parentItem: item.parentItem,
+                             isExpanded: item.isExpanded)
         modelContext.insert(newItem)
         parent.child.append(newItem)
         parent.normalizeItemOrder()
