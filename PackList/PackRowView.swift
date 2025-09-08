@@ -34,32 +34,17 @@ struct PackRowView: View {
     }
 
     var body: some View {
-        Section {
-            if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                .onMove(perform: moveGroup)
-                .animation(.default, value: pack.child)
+        DisclosureGroup(isExpanded: $isExpanded) {
+            ForEach(sortedGroups) { group in
+                GroupRowView(group: group)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
-        }
-        header: {
+            .onMove(perform: moveGroup)
+            .animation(.default, value: pack.child)
+        } label: {
             HStack(spacing: 0) {
-                Button {
-                    isExpanded.toggle()
-                    if isExpanded && pack.child.isEmpty {
-                        addGroup()
-                    }
-                } label: {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .frame(width: 20, height: 20)
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
-
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                    .padding(.trailing, 8)
+                    .padding(.horizontal, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(pack.name.isEmpty ? "New Pack" : pack.name)
@@ -104,55 +89,56 @@ struct PackRowView: View {
                     Image(systemName: "plus.rectangle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
+                .padding(.trailing, 8)
             }
             .frame(minHeight: rowHeight)
             .padding(.leading, 0)
             .padding(.trailing, 0)
-            .swipeActions(edge: .trailing) {
-                Button("Cut") {
-                    copyToClipboard()
-                    deletePack()
-                }
-                .tint(.red)
+        }
+        .swipeActions(edge: .trailing) {
+            Button("Cut") {
+                copyToClipboard()
+                deletePack()
             }
-            .swipeActions(edge: .leading) {
-                Button("Copy") {
-                    copyToClipboard()
-                }
-                .tint(.cyan)
+            .tint(.red)
+        }
+        .swipeActions(edge: .leading) {
+            Button("Copy") {
+                copyToClipboard()
+            }
+            .tint(.cyan)
 
-                Button("Paste") {
-                    pasteFromClipboard()
-                }
-                .disabled(RowClipboard.pack == nil)
-                .tint(.orange)
+            Button("Paste") {
+                pasteFromClipboard()
+            }
+            .disabled(RowClipboard.pack == nil)
+            .tint(.orange)
 
-                Button("Duplicate") {
-                    duplicatePack()
-                }
-                .tint(.green)
+            Button("Duplicate") {
+                duplicatePack()
             }
-            .contentShape(Rectangle())
-            // Ensure the row background is opaque
-            .background(COLOR_ROW_PACK)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
-                            frame = newValue
-                        }
-                }
-            )
-            .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingPack = pack
+            .tint(.green)
+        }
+        .contentShape(Rectangle())
+        // Ensure the row background is opaque
+        .background(COLOR_ROW_PACK)
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { frame = proxy.frame(in: .global) }
+                    .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                        frame = newValue
+                    }
             }
-            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
-                EditPackView(pack: title)
-                    .presentationCompactAdaptation(.none)
-                    .background(COLOR_POPUP_BORDER)
-            }
+        )
+        .onTapGesture(count: 2) {
+            arrowEdge = arrowEdge(for: frame)
+            editingPack = pack
+        }
+        .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
+            EditPackView(pack: title)
+                .presentationCompactAdaptation(.none)
+                .background(COLOR_POPUP_BORDER)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
