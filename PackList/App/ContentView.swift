@@ -32,40 +32,33 @@ struct ContentView: View {
                     label: {
                         Image(systemName: "info.circle")
                     }
-                    .padding(.leading, 8)
 
                     Button {
+                        // UnDo
                     } label: {
-                        Button {
-                            // UnDo
-                        } label: {
-                            Image(systemName: "arrow.uturn.backward")
-                        }
+                        Image(systemName: "arrow.uturn.backward")
                     }
-                    .padding(.leading, 20)
+                    .disabled(true)
+                    .padding(.horizontal, 30)
                     
                     Spacer()
                     Text("モチメモ")
                     Spacer()
 
                     Button {
+                        // Setting
                     } label: {
-                        Button {
-                            // ReDo
-                        } label: {
-                            Image(systemName: "arrow.uturn.forward")
-                        }
+                        Image(systemName: "gearshape")
                     }
-                    .padding(.trailing, 20)
+                    .padding(.horizontal, 30)
 
                     Button { addPack() }
                     label: {
                         Image(systemName: "plus.message")
                     }
-                    .padding(.trailing, 8)
                 }
                 .frame(height: rowHeight)
-                .padding(.horizontal)
+                .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }
         }
