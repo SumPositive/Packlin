@@ -47,7 +47,8 @@ struct PackRowView: View {
                 .padding(.top, -rowHeight)
                 .animation(.default, value: pack.child)
             }
-        } header: {
+        }
+        header: {
             HStack {
                 Button {
                     isExpanded.toggle()
@@ -56,6 +57,7 @@ struct PackRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .frame(width: 24, height: 24)
                 }
                 .buttonStyle(BorderlessButtonStyle())
 
@@ -131,7 +133,7 @@ struct PackRowView: View {
             }
             .contentShape(Rectangle())
             // Ensure the row background is opaque
-            .background(Color(.systemBackground))
+            .background(Color(.cyan)) // systemBackground
             .background(
                 GeometryReader { proxy in
                     Color.clear

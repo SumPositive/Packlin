@@ -51,6 +51,7 @@ struct GroupRowView: View {
                     }
                 } label: {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .frame(width: 24, height: 24)
                 }
                 .buttonStyle(BorderlessButtonStyle())
 
@@ -127,7 +128,7 @@ struct GroupRowView: View {
             }
             .contentShape(Rectangle())
             // Ensure the row background is opaque
-            .background(Color(.systemBackground))
+            .background(Color(.green))
             .background(
                 GeometryReader { proxy in
                     Color.clear
