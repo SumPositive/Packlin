@@ -36,9 +36,11 @@ struct PackRowView: View {
     var body: some View {
         Section {
             if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    ForEach(sortedGroups) { group in
+                        GroupRowView(group: group)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
                 }
                 .animation(.default, value: pack.child)
             }
