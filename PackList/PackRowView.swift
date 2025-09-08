@@ -91,12 +91,14 @@ struct PackRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("［\(pack.stock)／\(pack.need)］")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
+                        //    Text("［\(pack.stock)／\(pack.need)］")
+                        //        .font(FONT_STOCK)
+                        //        .foregroundStyle(COLOR_WEIGHT)
+                        //        .padding(.trailing, 4)
                     }
                 }
+                .padding(.vertical, 4) // Row上下余白
+
                 Spacer()
                 Button {
                     if !isExpanded {
@@ -135,7 +137,7 @@ struct PackRowView: View {
             }
             .contentShape(Rectangle())
             // Ensure the row background is opaque
-            .background(Color(.cyan)) // systemBackground
+            .background(COLOR_ROW_PLAN)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -152,7 +154,7 @@ struct PackRowView: View {
             .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
+                    .background(COLOR_POPUP_BORDER)
             }
         }
     }

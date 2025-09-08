@@ -64,6 +64,7 @@ struct ContentView: View {
                 }
                 .frame(height: rowHeight)
                 .padding(.horizontal)
+                .padding(.vertical, 0)
                 .background(.thinMaterial)
             }
         }
