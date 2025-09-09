@@ -127,30 +127,30 @@ struct GroupRowView: View {
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
-        }
-        .swipeActions(edge: .trailing) {
-            Button("Cut") {
-                copyToClipboard()
-                deleteGroup()
+            .swipeActions(edge: .trailing) {
+                Button("Cut") {
+                    copyToClipboard()
+                    deleteGroup()
+                }
+                .tint(.red)
             }
-            .tint(.red)
-        }
-        .swipeActions(edge: .leading) {
-            Button("Copy") {
-                copyToClipboard()
-            }
-            .tint(.cyan)
+            .swipeActions(edge: .leading) {
+                Button("Copy") {
+                    copyToClipboard()
+                }
+                .tint(.cyan)
 
-            Button("Paste") {
-                pasteFromClipboard()
-            }
-            .disabled(RowClipboard.group == nil && RowClipboard.item == nil)
-            .tint(.orange)
+                Button("Paste") {
+                    pasteFromClipboard()
+                }
+                .disabled(RowClipboard.group == nil && RowClipboard.item == nil)
+                .tint(.orange)
 
-            Button("Duplicate") {
-                duplicateGroup()
+                Button("Duplicate") {
+                    duplicateGroup()
+                }
+                .tint(.green)
             }
-            .tint(.green)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
