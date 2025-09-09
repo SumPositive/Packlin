@@ -29,20 +29,23 @@ struct GroupRowView: View {
     }
 
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
-            if group.child.isEmpty {
-                Text(" ")
-                    .padding(.leading, 0)
-            } else {
-                ForEach(sortedItems) { item in
-                    ItemRowView(item: item)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+        Section {
+            if isExpanded {
+                if group.child.isEmpty {
+                    Text(" ")
+                        .padding(.leading, 0)
+                } else {
+                    ForEach(sortedItems) { item in
+                        ItemRowView(item: item)
+                            .swipeActions { }
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    .onMove(perform: moveItem)
+                    .environment(\.editMode, .constant(.active))
+                    .animation(.default, value: group.child)
                 }
-                .onMove(perform: moveItem)
-                .environment(\.editMode, .constant(.active))
-                .animation(.default, value: group.child)
             }
-        } label: {
+        } header: {
             HStack(spacing: 0) {
                 Rectangle()
                     .fill(COLOR_ROW_PACK)
