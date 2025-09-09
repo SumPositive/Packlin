@@ -17,6 +17,7 @@ struct GroupRowView: View {
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @Namespace private var namespace
 
     private let rowHeight: CGFloat = 44
 
@@ -130,7 +131,7 @@ struct GroupRowView: View {
         }
         .navigationDestination(item: $selectedGroup) { group in
             GroupDetailView(group: group)
-                .navigationTransition(.zoom)
+                .navigationTransition(.zoom(source: group.id, in: namespace))
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }

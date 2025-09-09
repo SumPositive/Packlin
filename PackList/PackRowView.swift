@@ -17,6 +17,7 @@ struct PackRowView: View {
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
     @State private var selectedPack: M1Pack?
+    @Namespace private var namespace
    
     private let rowHeight: CGFloat = 44
 
@@ -126,7 +127,7 @@ struct PackRowView: View {
             }
             .navigationDestination(item: $selectedPack) { pack in
                 PackDetailView(pack: pack)
-                    .navigationTransition(.zoom)
+                    .navigationTransition(.zoom(source: pack.id, in: namespace))
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
