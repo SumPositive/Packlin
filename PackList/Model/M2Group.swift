@@ -48,3 +48,13 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     }
 }
 
+extension M2Group: Hashable {
+    static func == (lhs: M2Group, rhs: M2Group) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+

@@ -62,3 +62,13 @@ final class M1Pack {
     }
 }
 
+extension M1Pack: Hashable {
+    static func == (lhs: M1Pack, rhs: M1Pack) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
