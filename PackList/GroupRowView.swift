@@ -132,6 +132,7 @@ struct GroupRowView: View {
         .navigationDestination(item: $selectedGroup) { group in
             GroupDetailView(group: group)
                 .navigationTransition(.zoom(sourceID: group.id, in: namespace))
+                .animation(.easeInOut(duration: 0.6), value: selectedGroup)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
