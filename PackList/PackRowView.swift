@@ -129,7 +129,7 @@ struct PackRowView: View {
             .navigationDestination(item: $selectedPack) { pack in
                 PackDetailView(pack: pack)
                     .matchedGeometryEffect(id: pack.id, in: namespace)
-                    .navigationTransition(.zoom(source: pack.id, in: namespace))
+                    .navigationTransition(.zoom(sourceID: pack.id, in: namespace))
             }
             .animation(.easeInOut(duration: 1.0), value: selectedPack)
         }
