@@ -16,7 +16,7 @@ struct PackRowView: View {
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-    @State private var showDetail = false
+    @State private var selectedPack: M1Pack?
    
     private let rowHeight: CGFloat = 44
 
@@ -33,7 +33,7 @@ struct PackRowView: View {
         Group {
             HStack(spacing: 0) {
                 Button {
-                    showDetail = true
+                    selectedPack = pack
                 } label: {
                     Image(systemName: "chevron.right")
                         .frame(width: 20, height: 20)
@@ -124,10 +124,10 @@ struct PackRowView: View {
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
-            .navigationDestination(isPresented: $showDetail) {
+            .navigationDestination(item: $selectedPack) { pack in
                 PackDetailView(pack: pack)
+                    .navigationTransition(.zoom)
             }
-            .navigationTransition(.zoom)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }

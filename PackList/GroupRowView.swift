@@ -13,7 +13,7 @@ struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
 
-    @State private var showDetail = false
+    @State private var selectedGroup: M2Group?
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
@@ -36,7 +36,7 @@ struct GroupRowView: View {
                 .padding(.horizontal, 0)
 
             Button {
-                showDetail = true
+                selectedGroup = group
             } label: {
                 Image(systemName: "chevron.right")
                     .frame(width: 20, height: 20)
@@ -128,10 +128,10 @@ struct GroupRowView: View {
                 .presentationCompactAdaptation(.none)
                 .background(Color.primary.opacity(0.2))
         }
-        .navigationDestination(isPresented: $showDetail) {
+        .navigationDestination(item: $selectedGroup) { group in
             GroupDetailView(group: group)
+                .navigationTransition(.zoom)
         }
-        .navigationTransition(.zoom)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
