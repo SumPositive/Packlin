@@ -28,60 +28,56 @@ struct PackRowView: View {
         return !items.isEmpty && items.allSatisfy { $0.check }
     }
 
-    private var sortedGroups: [M2Group] {
-        pack.child.sorted { $0.order < $1.order }
-    }
-
     var body: some View {
         Group {
-            HStack {
-                NavigationLink {
-                    PackDetailView(pack: pack)
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .frame(width: 20, height: 20)
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
+            NavigationLink {
+                PackDetailView(pack: pack)
+            } label: {
+                HStack {
+                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                        .padding(.trailing, 8)
 
-                Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                    .padding(.trailing, 8)
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(pack.name.isEmpty ? "New Pack" : pack.name)
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
-                    
-                    if !pack.memo.isEmpty {
-                        Text(pack.memo)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(pack.name.isEmpty ? "New Pack" : pack.name)
                             .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.leading, 25)
-                    }
-                    if DEBUG_SHOW_ORDER_ID {
-                        Text("pack (\(pack.order)) [\(pack.id)]")
-                    }
-                    
-                    HStack {
-                        Spacer() // 右寄せにするため
-                        if 0 < pack.stockWeight {
-                            Text("\(pack.stockWeight)g／\(pack.needWeight)g")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
+                            .font(FONT_NAME)
+                            .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
+
+                        if !pack.memo.isEmpty {
+                            Text(pack.memo)
+                                .lineLimit(3)
+                                .font(FONT_MEMO)
+                                .foregroundStyle(COLOR_MEMO)
+                                .padding(.leading, 25)
                         }
+                        if DEBUG_SHOW_ORDER_ID {
+                            Text("pack (\(pack.order)) [\(pack.id)]")
+                        }
+
+                        HStack {
+                            Spacer() // 右寄せにするため
+                            if 0 < pack.stockWeight {
+                                Text("\(pack.stockWeight)g／\(pack.needWeight)g")
+                                    .font(FONT_WEIGHT)
+                                    .foregroundStyle(COLOR_WEIGHT)
+                                    .padding(.trailing, 4)
+                            }
 //                        Text("［\(pack.stock)／\(pack.need)］")
 //                            .font(FONT_STOCK)
 //                            .foregroundStyle(COLOR_WEIGHT)
 //                            .padding(.trailing, 4)
+                        }
                     }
-                }
-                .padding(.vertical, 4)
+                    .padding(.vertical, 4)
 
-                Spacer()
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .frame(width: 20, height: 20)
+                        .padding(.horizontal, 8)
+                }
             }
+            .buttonStyle(PlainButtonStyle())
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
@@ -118,10 +114,12 @@ struct PackRowView: View {
                         }
                 }
             )
-            .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingPack = pack
-            }
+            .simultaneousGesture(
+                LongPressGesture().onEnded { _ in
+                    arrowEdge = arrowEdge(for: frame)
+                    editingPack = pack
+                }
+            )
             .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
