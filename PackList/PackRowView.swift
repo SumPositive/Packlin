@@ -76,10 +76,6 @@ struct PackRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("［\(pack.stock)／\(pack.need)］")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
                     }
                 }
                 .padding(.vertical, 4)

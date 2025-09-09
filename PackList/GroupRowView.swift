@@ -76,10 +76,6 @@ struct GroupRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("\(group.stock)／\(group.need)")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
                     }
                 }
                 .padding(.vertical, 4)
