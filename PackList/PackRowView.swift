@@ -129,9 +129,9 @@ struct PackRowView: View {
             .navigationDestination(item: $selectedPack) { pack in
                 PackDetailView(pack: pack)
                     .matchedGeometryEffect(id: pack.id, in: namespace)
-                    .navigationTransition(.identity)
-                    .animation(.easeInOut(duration: 1.0), value: selectedPack)
             }
+            .navigationTransition(.zoom(source: selectedPack?.id, in: namespace))
+            .animation(.easeInOut(duration: 1.0), value: selectedPack)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }

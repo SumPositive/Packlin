@@ -133,9 +133,9 @@ struct GroupRowView: View {
         .navigationDestination(item: $selectedGroup) { group in
             GroupDetailView(group: group)
                 .matchedGeometryEffect(id: group.id, in: namespace)
-                .navigationTransition(.identity)
-                .animation(.easeInOut(duration: 1.0), value: selectedGroup)
         }
+        .navigationTransition(.zoom(source: selectedGroup?.id, in: namespace))
+        .animation(.easeInOut(duration: 1.0), value: selectedGroup)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
