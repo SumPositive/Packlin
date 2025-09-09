@@ -85,6 +85,7 @@ struct PackRowView: View {
                 }
             }
             .frame(minHeight: rowHeight)
+            .matchedGeometryEffect(id: pack.id, in: namespace)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -127,8 +128,9 @@ struct PackRowView: View {
             }
             .navigationDestination(item: $selectedPack) { pack in
                 PackDetailView(pack: pack)
-                    .navigationTransition(.zoom(sourceID: pack.id, in: namespace))
-                    .animation(.easeInOut(duration: 0.6), value: selectedPack)
+                    .matchedGeometryEffect(id: pack.id, in: namespace)
+                    .navigationTransition(.identity)
+                    .animation(.easeInOut(duration: 1.0), value: selectedPack)
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
