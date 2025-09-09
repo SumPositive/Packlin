@@ -270,13 +270,6 @@ struct EditItemView: View {
                 Stepper("", value: needBinding, in: 0...Int.max)
                     .labelsHidden()
             }
-//            HStack {
-//                Spacer()
-//                Button("Done") {
-//                    try? context.save()
-//                    dismiss()
-//                }
-//            }
         }
         .padding()
         .frame(minWidth: 300)

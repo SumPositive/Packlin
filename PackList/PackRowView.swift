@@ -296,13 +296,6 @@ struct EditPackView: View {
                     .background(Color.white.opacity(0.7))
                     .padding(4)
             }
-//            HStack {
-//                Spacer()
-//                Button("Done") {
-//                    try? context.save()
-//                    dismiss()
-//                }
-//            }
         }
         .padding()
         .frame(minWidth: 300, maxHeight: 300)
