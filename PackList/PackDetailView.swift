@@ -19,7 +19,15 @@ struct PackDetailView: View {
 
     var body: some View {
         List {
-            ForEach(sortedGroups) { group in
+            if let firstGroup = sortedGroups.first {
+                Section {
+                    // コンテンツは不要。GroupRowView をセクションヘッダーとして表示する
+                } header: {
+                    GroupRowView(group: firstGroup)
+                }
+            }
+
+            ForEach(sortedGroups.dropFirst()) { group in
                 GroupRowView(group: group)
             }
             .onMove(perform: moveGroup)
@@ -69,12 +77,19 @@ struct PackDetailView: View {
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
-        var groups = sortedGroups
-        groups.move(fromOffsets: source, toOffset: destination)
-        for (index, group) in groups.enumerated() {
-            group.order = index
+        // 先頭のグループはピン留めされているため、残りのグループのみを並べ替える
+        guard !sortedGroups.isEmpty else { return }
+
+        var remaining = Array(sortedGroups.dropFirst())
+        remaining.move(fromOffsets: source, toOffset: destination)
+
+        // 新しい順序を適用（0 はピン留めされたグループ）
+        var reordered: [M2Group] = [sortedGroups[0]]
+        for (index, group) in remaining.enumerated() {
+            group.order = index + 1
+            reordered.append(group)
         }
-        pack.child = groups
+        pack.child = reordered
     }
 }
 
