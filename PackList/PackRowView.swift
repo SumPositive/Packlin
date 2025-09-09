@@ -37,7 +37,8 @@ struct PackRowView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .frame(width: 20, height: 20)
-                        .padding(.horizontal, 8)
+                        .foregroundColor(.accentColor)
+                        .padding(.horizontal, 10)
                 }
                 .buttonStyle(PlainButtonStyle())
 
@@ -70,10 +71,6 @@ struct PackRowView: View {
                                     .foregroundStyle(COLOR_WEIGHT)
                                     .padding(.trailing, 4)
                             }
-//                        Text("［\(pack.stock)／\(pack.need)］")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
                         }
                     }
                     .padding(.vertical, 4)
@@ -112,6 +109,7 @@ struct PackRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
+            .background(COLOR_ROW_PACK)
             .background(
                 NavigationLink(
                     destination: PackDetailView(pack: pack),
@@ -119,7 +117,6 @@ struct PackRowView: View {
                 ) { EmptyView() }
                 .hidden()
             )
-            .background(COLOR_ROW_PACK)
             .background(
                 GeometryReader { proxy in
                     Color.clear

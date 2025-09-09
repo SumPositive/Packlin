@@ -25,8 +25,19 @@ struct PackDetailView: View {
             .environment(\.editMode, .constant(.active))
         }
         .listStyle(.plain)
+        .listSectionSpacing(0)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    // UnDo
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .disabled(true)
+                .padding(.horizontal, 30)
+            }
+
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     addGroup()
