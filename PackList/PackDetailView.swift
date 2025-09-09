@@ -10,6 +10,7 @@ import SwiftData
 
 struct PackDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     let pack: M1Pack
 
     private var sortedGroups: [M2Group] {
@@ -27,7 +28,16 @@ struct PackDetailView: View {
         .listStyle(.plain)
         .listSectionSpacing(0)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+            }
+
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
                     // UnDo
