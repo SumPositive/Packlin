@@ -16,6 +16,7 @@ struct PackRowView: View {
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var showDetail = false
    
     private let rowHeight: CGFloat = 44
 
@@ -31,8 +32,8 @@ struct PackRowView: View {
     var body: some View {
         Group {
             HStack(spacing: 0) {
-                NavigationLink {
-                    PackDetailView(pack: pack)
+                Button {
+                    showDetail = true
                 } label: {
                     Image(systemName: "chevron.right")
                         .frame(width: 20, height: 20)
@@ -111,6 +112,13 @@ struct PackRowView: View {
                 .tint(.green)
             }
             .contentShape(Rectangle())
+            .background(
+                NavigationLink(
+                    destination: PackDetailView(pack: pack),
+                    isActive: $showDetail
+                ) { EmptyView() }
+                .hidden()
+            )
             .background(COLOR_ROW_PACK)
             .background(
                 GeometryReader { proxy in
