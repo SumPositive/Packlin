@@ -115,13 +115,6 @@ struct GroupRowView: View {
         .contentShape(Rectangle())
         .background(COLOR_ROW_GROUP)
         .background(
-            NavigationLink(
-                destination: GroupDetailView(group: group),
-                isActive: $showDetail
-            ) { EmptyView() }
-            .hidden()
-        )
-        .background(
             GeometryReader { proxy in
                 Color.clear
                     .onAppear { frame = proxy.frame(in: .global) }
@@ -134,6 +127,10 @@ struct GroupRowView: View {
             EditGroupView(group: group)
                 .presentationCompactAdaptation(.none)
                 .background(Color.primary.opacity(0.2))
+        }
+        .navigationDestination(isPresented: $showDetail) {
+            GroupDetailView(group: group)
+                .navigationTransition(.zoom)
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }

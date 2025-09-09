@@ -14,7 +14,7 @@ struct ContentView: View {
     private let rowHeight: CGFloat = 44
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(packs) { pack in
                     PackRowView(pack: pack)

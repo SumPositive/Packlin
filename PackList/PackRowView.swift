@@ -111,13 +111,6 @@ struct PackRowView: View {
             .contentShape(Rectangle())
             .background(COLOR_ROW_PACK)
             .background(
-                NavigationLink(
-                    destination: PackDetailView(pack: pack),
-                    isActive: $showDetail
-                ) { EmptyView() }
-                .hidden()
-            )
-            .background(
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { frame = proxy.frame(in: .global) }
@@ -130,6 +123,10 @@ struct PackRowView: View {
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
+            }
+            .navigationDestination(isPresented: $showDetail) {
+                PackDetailView(pack: pack)
+                    .navigationTransition(.zoom)
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
