@@ -34,7 +34,17 @@ struct PackRowView: View {
     }
 
     var body: some View {
-        Group {
+        Section {
+            if isExpanded {
+                ForEach(sortedGroups) { group in
+                    GroupRowView(group: group)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                .onMove(perform: moveGroup)
+                .environment(\.editMode, .constant(.active))
+                .animation(.default, value: pack.child)
+            }
+        } header: {
             HStack {
                 Button {
                     isExpanded.toggle()
@@ -141,18 +151,8 @@ struct PackRowView: View {
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
-
-            if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
-                .animation(.default, value: pack.child)
-            }
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     private func addGroup() {
