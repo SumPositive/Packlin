@@ -31,10 +31,21 @@ struct PackDetailView: View {
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
+                HStack {
+                    Button {
+                        // ＜ 戻る
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    
+                    Button {
+                        // UnDo
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(true)
+                    .padding(.horizontal, 30)
                 }
             }
 
