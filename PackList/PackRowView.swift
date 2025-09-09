@@ -127,7 +127,7 @@ struct PackRowView: View {
             }
             .navigationDestination(item: $selectedPack) { pack in
                 PackDetailView(pack: pack)
-                    .navigationTransition(.zoom(source: pack.id, in: namespace))
+                    .navigationTransition(.zoom(sourceID: pack.id, in: namespace))
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
