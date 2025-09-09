@@ -273,6 +273,7 @@ struct EditGroupView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Bindable var group: M2Group
+    @FocusState private var nameIsFocused: Bool
     
     var body: some View {
         VStack {
@@ -281,6 +282,7 @@ struct EditGroupView: View {
                     .font(.caption)
                     .padding(4)
                 TextField("", text: $group.name, prompt: Text("New Group name"))
+                    .focused($nameIsFocused)
                     .lineLimit(3)
                     .background(Color.white.opacity(0.7))
                     .padding(4)
@@ -299,6 +301,11 @@ struct EditGroupView: View {
         .frame(minWidth: 300)
         .onDisappear() {
             try? context.save()
+        }
+        .onAppear {
+            if group.name.isEmpty {
+                nameIsFocused = true
+            }
         }
     }
 }
