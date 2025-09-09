@@ -13,10 +13,10 @@ struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
     let pack: M1Pack
     
-    @State private var isExpanded = false
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var showDetail = false
    
     private let rowHeight: CGFloat = 44
 
@@ -29,68 +29,59 @@ struct PackRowView: View {
         return !items.isEmpty && items.allSatisfy { $0.check }
     }
 
-    private var sortedGroups: [M2Group] {
-        pack.child.sorted { $0.order < $1.order }
-    }
-
     var body: some View {
         Group {
-            HStack {
+            HStack(spacing: 0) {
                 Button {
-                    isExpanded.toggle()
-                    if isExpanded && pack.child.isEmpty {
-                        addGroup()
-                    }
+                    showDetail = true
                 } label: {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    Image(systemName: "chevron.right")
                         .frame(width: 20, height: 20)
+                        .foregroundColor(.accentColor)
+                        .padding(.horizontal, 10)
                 }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
+                .buttonStyle(PlainButtonStyle())
 
-                Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                    .padding(.trailing, 8)
+                HStack {
+                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                        .padding(.trailing, 8)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(pack.name.isEmpty ? "New Pack" : pack.name)
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
-                    
-                    if !pack.memo.isEmpty {
-                        Text(pack.memo)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(pack.name.isEmpty ? "New Pack" : pack.name)
                             .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.leading, 25)
-                    }
-                    if DEBUG_SHOW_ORDER_ID {
-                        Text("pack (\(pack.order)) [\(pack.id)]")
-                    }
-                    
-                    HStack {
-                        Spacer() // 右寄せにするため
-                        if 0 < pack.stockWeight {
-                            Text("\(pack.stockWeight)g／\(pack.needWeight)g")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
+                            .font(FONT_NAME)
+                            .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
+
+                        if !pack.memo.isEmpty {
+                            Text(pack.memo)
+                                .lineLimit(3)
+                                .font(FONT_MEMO)
+                                .foregroundStyle(COLOR_MEMO)
+                                .padding(.leading, 25)
+                        }
+                        if DEBUG_SHOW_ORDER_ID {
+                            Text("pack (\(pack.order)) [\(pack.id)]")
+                        }
+
+                        HStack {
+                            Spacer() // 右寄せにするため
+                            if 0 < pack.stockWeight {
+                                Text("\(pack.stockWeight)g／\(pack.needWeight)g")
+                                    .font(FONT_WEIGHT)
+                                    .foregroundStyle(COLOR_WEIGHT)
+                                    .padding(.trailing, 4)
+                            }
                         }
                     }
-                }
-                .padding(.vertical, 4)
+                    .padding(.vertical, 4)
 
-                Spacer()
-                Button {
-                    if !isExpanded {
-                        isExpanded = true
-                    }
-                    addGroup()
-                } label: {
-                    Image(systemName: "plus.rectangle")
+                    Spacer()
                 }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    arrowEdge = arrowEdge(for: frame)
+                    editingPack = pack
+                }
             }
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
@@ -120,6 +111,13 @@ struct PackRowView: View {
             .contentShape(Rectangle())
             .background(COLOR_ROW_PACK)
             .background(
+                NavigationLink(
+                    destination: PackDetailView(pack: pack),
+                    isActive: $showDetail
+                ) { EmptyView() }
+                .hidden()
+            )
+            .background(
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { frame = proxy.frame(in: .global) }
@@ -128,36 +126,13 @@ struct PackRowView: View {
                         }
                 }
             )
-            .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingPack = pack
-            }
             .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
                 EditPackView(pack: title)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
-
-            if isExpanded {
-                ForEach(sortedGroups) { group in
-                    GroupRowView(group: group)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
-                .animation(.default, value: pack.child)
-            }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-    }
-
-    private func addGroup() {
-        let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
-        modelContext.insert(newGroup)
-        withAnimation {
-            pack.child.append(newGroup)
-            pack.normalizeGroupOrder()
-        }
     }
 
     private func deletePack() {
@@ -215,7 +190,6 @@ struct PackRowView: View {
         }
         else if let clip = RowClipboard.group {
             // GroupRowをPackの最上行に挿入する
-            isExpanded = true
             let newGroup = cloneGroup(clip, parent: pack)
             newGroup.order = -1 // 最上行
             modelContext.insert(newGroup)
@@ -247,15 +221,6 @@ struct PackRowView: View {
         modelContext.insert(newItem)
         parent.child.append(newItem)
         parent.normalizeItemOrder()
-    }
-
-    private func moveGroup(from source: IndexSet, to destination: Int) {
-        var groups = sortedGroups
-        groups.move(fromOffsets: source, toOffset: destination)
-        for (index, group) in groups.enumerated() {
-            group.order = index
-        }
-        pack.child = groups
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {

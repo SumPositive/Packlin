@@ -29,7 +29,22 @@ struct GroupRowView: View {
     }
 
     var body: some View {
-        Group {
+        Section {
+            if isExpanded {
+                if group.child.isEmpty {
+                    Text(" ")
+                        .padding(.leading, 0)
+                } else {
+                    ForEach(sortedItems) { item in
+                        ItemRowView(item: item)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                    .onMove(perform: moveItem)
+                    .environment(\.editMode, .constant(.active))
+                    .animation(.default, value: group.child)
+                }
+            }
+        } header: {
             HStack(spacing: 0) {
                 Rectangle()
                     .fill(COLOR_ROW_PACK)
@@ -142,21 +157,6 @@ struct GroupRowView: View {
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
-            }
-            
-            if isExpanded {
-                if group.child.isEmpty {
-                    Text(" ")
-                        .padding(.leading, 0)
-                } else {
-                    ForEach(sortedItems) { item in
-                        ItemRowView(item: item)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    .onMove(perform: moveItem)
-                    .environment(\.editMode, .constant(.active))
-                    .animation(.default, value: group.child)
-                }
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
