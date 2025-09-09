@@ -30,9 +30,16 @@ struct PackRowView: View {
 
     var body: some View {
         Group {
-            NavigationLink {
-                PackDetailView(pack: pack)
-            } label: {
+            HStack(spacing: 0) {
+                NavigationLink {
+                    PackDetailView(pack: pack)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .frame(width: 20, height: 20)
+                        .padding(.horizontal, 8)
+                }
+                .buttonStyle(PlainButtonStyle())
+
                 HStack {
                     Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                         .padding(.trailing, 8)
@@ -71,13 +78,13 @@ struct PackRowView: View {
                     .padding(.vertical, 4)
 
                     Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .frame(width: 20, height: 20)
-                        .padding(.horizontal, 8)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    arrowEdge = arrowEdge(for: frame)
+                    editingPack = pack
                 }
             }
-            .buttonStyle(PlainButtonStyle())
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
@@ -112,12 +119,6 @@ struct PackRowView: View {
                         .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
                             frame = newValue
                         }
-                }
-            )
-            .simultaneousGesture(
-                LongPressGesture().onEnded { _ in
-                    arrowEdge = arrowEdge(for: frame)
-                    editingPack = pack
                 }
             )
             .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
