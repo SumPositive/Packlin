@@ -33,114 +33,118 @@ struct PackRowView: View {
         pack.child.sorted { $0.order < $1.order }
     }
 
+    private var rowContent: some View {
+        HStack {
+            Button {
+                isExpanded.toggle()
+                if isExpanded && pack.child.isEmpty {
+                    addGroup()
+                }
+            } label: {
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .frame(width: 20, height: 20)
+            }
+            .buttonStyle(BorderlessButtonStyle())
+            .padding(.horizontal, 8)
+
+            Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                .padding(.trailing, 8)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(pack.name.isEmpty ? "New Pack" : pack.name)
+                    .lineLimit(3)
+                    .font(FONT_NAME)
+                    .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
+
+                if !pack.memo.isEmpty {
+                    Text(pack.memo)
+                        .lineLimit(3)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(COLOR_MEMO)
+                        .padding(.leading, 25)
+                }
+                if DEBUG_SHOW_ORDER_ID {
+                    Text("pack (\(pack.order)) [\(pack.id)]")
+                }
+
+                HStack {
+                    Spacer() // 右寄せにするため
+                    if 0 < pack.stockWeight {
+                        Text("\(pack.stockWeight)g／\(pack.needWeight)g")
+                            .font(FONT_WEIGHT)
+                            .foregroundStyle(COLOR_WEIGHT)
+                            .padding(.trailing, 4)
+                    }
+//                    Text("［\(pack.stock)／\(pack.need)］")
+//                        .font(FONT_STOCK)
+//                        .foregroundStyle(COLOR_WEIGHT)
+//                        .padding(.trailing, 4)
+                }
+            }
+            .padding(.vertical, 4)
+
+            Spacer()
+            Button {
+                if !isExpanded {
+                    isExpanded = true
+                }
+                addGroup()
+            } label: {
+                Image(systemName: "plus.rectangle")
+            }
+            .buttonStyle(BorderlessButtonStyle())
+            .padding(.horizontal, 8)
+        }
+        .frame(minHeight: rowHeight)
+    }
+
     var body: some View {
         Group {
-            HStack {
-                Button {
-                    isExpanded.toggle()
-                    if isExpanded && pack.child.isEmpty {
-                        addGroup()
+            rowContent
+                .swipeActions(edge: .trailing) {
+                    Button("Cut") {
+                        copyToClipboard()
+                        deletePack()
                     }
-                } label: {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .frame(width: 20, height: 20)
+                    .tint(.red)
                 }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
-
-                Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                    .padding(.trailing, 8)
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(pack.name.isEmpty ? "New Pack" : pack.name)
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
-                    
-                    if !pack.memo.isEmpty {
-                        Text(pack.memo)
-                            .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.leading, 25)
+                .swipeActions(edge: .leading) {
+                    Button("Copy") {
+                        copyToClipboard()
                     }
-                    if DEBUG_SHOW_ORDER_ID {
-                        Text("pack (\(pack.order)) [\(pack.id)]")
-                    }
-                    
-                    HStack {
-                        Spacer() // 右寄せにするため
-                        if 0 < pack.stockWeight {
-                            Text("\(pack.stockWeight)g／\(pack.needWeight)g")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
-                        }
-//                        Text("［\(pack.stock)／\(pack.need)］")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
-                    }
-                }
-                .padding(.vertical, 4)
+                    .tint(.cyan)
 
-                Spacer()
-                Button {
-                    if !isExpanded {
-                        isExpanded = true
+                    Button("Paste") {
+                        pasteFromClipboard()
                     }
-                    addGroup()
-                } label: {
-                    Image(systemName: "plus.rectangle")
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
-            }
-            .frame(minHeight: rowHeight)
-            .swipeActions(edge: .trailing) {
-                Button("Cut") {
-                    copyToClipboard()
-                    deletePack()
-                }
-                .tint(.red)
-            }
-            .swipeActions(edge: .leading) {
-                Button("Copy") {
-                    copyToClipboard()
-                }
-                .tint(.cyan)
+                    .disabled(RowClipboard.pack == nil)
+                    .tint(.orange)
 
-                Button("Paste") {
-                    pasteFromClipboard()
+                    Button("Duplicate") {
+                        duplicatePack()
+                    }
+                    .tint(.green)
                 }
-                .disabled(RowClipboard.pack == nil)
-                .tint(.orange)
-
-                Button("Duplicate") {
-                    duplicatePack()
+                .contentShape(Rectangle())
+                .background(COLOR_ROW_PACK)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear { frame = proxy.frame(in: .global) }
+                            .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                                frame = newValue
+                            }
+                    }
+                )
+                .onTapGesture {
+                    arrowEdge = arrowEdge(for: frame)
+                    editingPack = pack
                 }
-                .tint(.green)
-            }
-            .contentShape(Rectangle())
-            .background(COLOR_ROW_PACK)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
-                            frame = newValue
-                        }
+                .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
+                    EditPackView(pack: title)
+                        .presentationCompactAdaptation(.none)
+                        .background(Color.primary.opacity(0.2))
                 }
-            )
-            .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingPack = pack
-            }
-            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
-                EditPackView(pack: title)
-                    .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-            }
 
             if isExpanded {
                 ForEach(sortedGroups) { group in
@@ -150,6 +154,13 @@ struct PackRowView: View {
                 .onMove(perform: moveGroup)
                 .environment(\.editMode, .constant(.active))
                 .animation(.default, value: pack.child)
+            }
+        }
+        .overlay(alignment: .top) {
+            if isExpanded {
+                rowContent
+                    .background(COLOR_ROW_PACK)
+                    .allowsHitTesting(false)
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
