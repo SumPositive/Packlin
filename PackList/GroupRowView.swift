@@ -130,8 +130,8 @@ struct GroupRowView: View {
         }
         .navigationDestination(isPresented: $showDetail) {
             GroupDetailView(group: group)
-                .navigationTransition(.zoom)
         }
+        .navigationTransition(.zoom)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
