@@ -16,6 +16,7 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
 
     var name: String
     var memo: String
+    var isPinned: Bool
 
     @Relationship(inverse: \M1Pack.child) var parent: M1Pack?
     @Relationship(deleteRule: .cascade) var child: [M3Item] = []
@@ -26,11 +27,12 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     var stockWeight: Int { child.reduce(0) { $0 + $1.weight * $1.stock } }
     var needWeight: Int { child.reduce(0) { $0 + $1.weight * $1.need } }
 
-    init(id: ID = shortUUID(), name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
+    init(id: ID = shortUUID(), name: String, memo: String = "", order: Int = 0, isPinned: Bool = false, parent: M1Pack? = nil) {
         self.id = id
         self.name = name
         self.memo = memo
         self.order = order
+        self.isPinned = isPinned
         self.parent = parent
     }
 

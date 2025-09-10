@@ -37,7 +37,12 @@ final class M1Pack {
     
     /// 子グループの order を連番に整理する
     func normalizeGroupOrder() {
-        child = child.sorted { $0.order < $1.order }
+        child = child.sorted {
+            if $0.isPinned == $1.isPinned {
+                return $0.order < $1.order
+            }
+            return $0.isPinned && !$1.isPinned
+        }
         for (index, group) in child.enumerated() {
             group.order = index
         }

@@ -23,7 +23,7 @@ func clonePack(_ source: M1Pack) -> M1Pack {
 }
 
 func cloneGroup(_ source: M2Group, parent: M1Pack? = nil) -> M2Group {
-    let newGroup = M2Group(name: source.name, memo: source.memo, order: source.order, parent: parent)
+    let newGroup = M2Group(name: source.name, memo: source.memo, order: source.order, isPinned: source.isPinned, parent: parent)
     for i in source.child {
         let newItem = cloneItem(i, parent: newGroup)
         newGroup.child.append(newItem)

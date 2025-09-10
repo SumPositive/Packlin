@@ -50,6 +50,12 @@ struct GroupRowView: View {
 
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .padding(.trailing, 8)
+
+                if group.isPinned {
+                    Image(systemName: "pin.fill")
+                        .foregroundStyle(.yellow)
+                        .padding(.trailing, 4)
+                }
                 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
@@ -104,6 +110,14 @@ struct GroupRowView: View {
             .frame(minHeight: rowHeight)
             .padding(.leading, 0)
             .swipeActions(edge: .trailing) {
+                Button(group.isPinned ? "Unpin" : "Pin") {
+                    group.isPinned.toggle()
+                    withAnimation {
+                        group.parent?.normalizeGroupOrder()
+                    }
+                }
+                .tint(.yellow)
+
                 Button("Cut") {
                     copyToClipboard()
                     deleteGroup()
@@ -193,7 +207,7 @@ struct GroupRowView: View {
 
     private func duplicateGroup() {
         guard let parentTitle = group.parent else { return }
-        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), isPinned: group.isPinned, parent: parentTitle)
         modelContext.insert(newGroup)
         withAnimation {
             if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {

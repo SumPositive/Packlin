@@ -30,7 +30,12 @@ struct PackRowView: View {
     }
 
     private var sortedGroups: [M2Group] {
-        pack.child.sorted { $0.order < $1.order }
+        pack.child.sorted {
+            if $0.isPinned == $1.isPinned {
+                return $0.order < $1.order
+            }
+            return $0.isPinned && !$1.isPinned
+        }
     }
 
     var body: some View {
@@ -156,7 +161,7 @@ struct PackRowView: View {
     }
 
     private func addGroup() {
-        let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
+        let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), isPinned: false, parent: pack)
         modelContext.insert(newGroup)
         withAnimation {
             pack.child.append(newGroup)
@@ -231,7 +236,7 @@ struct PackRowView: View {
     }
 
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
-        let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), isPinned: group.isPinned, parent: parent)
         modelContext.insert(newGroup)
         withAnimation {
             if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
@@ -260,6 +265,7 @@ struct PackRowView: View {
             group.order = index
         }
         pack.child = groups
+        pack.normalizeGroupOrder()
     }
 
     private func arrowEdge(for frame: CGRect?) -> Edge {
