@@ -92,6 +92,10 @@ struct PackRowView: View {
                 Spacer()
                 Button {
                     pack.pin.toggle()
+                    let descriptor = FetchDescriptor<M1Pack>()
+                    if let packs = try? modelContext.fetch(descriptor) {
+                        M1Pack.normalizePackOrder(packs)
+                    }
                 } label: {
                     Image(systemName: pack.pin ? "pin.fill" : "pin")
                 }

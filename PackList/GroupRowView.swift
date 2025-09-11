@@ -87,6 +87,7 @@ struct GroupRowView: View {
                 Spacer()
                 Button {
                     group.pin.toggle()
+                    group.parent?.normalizeGroupOrder()
                 } label: {
                     Image(systemName: group.pin ? "pin.fill" : "pin")
                 }

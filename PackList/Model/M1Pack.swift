@@ -39,7 +39,12 @@ final class M1Pack {
     
     /// 子グループの order を連番に整理する
     func normalizeGroupOrder() {
-        child = child.sorted { $0.order < $1.order }
+        child = child.sorted {
+            if $0.pin == $1.pin {
+                return $0.order < $1.order
+            }
+            return $0.pin && !$1.pin
+        }
         for (index, group) in child.enumerated() {
             group.order = index
         }
@@ -52,7 +57,12 @@ final class M1Pack {
 
     /// パック全体の order を連番に整理する
     static func normalizePackOrder(_ packs: [M1Pack]) {
-        let sorted = packs.sorted { $0.order < $1.order }
+        let sorted = packs.sorted {
+            if $0.pin == $1.pin {
+                return $0.order < $1.order
+            }
+            return $0.pin && !$1.pin
+        }
         for (index, pack) in sorted.enumerated() {
             pack.order = index
         }
