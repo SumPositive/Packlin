@@ -18,6 +18,7 @@ final class M1Pack {
     var memo: String
 
     var createdAt: Date
+    var pin: Bool
 
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
 
@@ -27,12 +28,13 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
-    init(id: ID = shortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+    init(id: ID = shortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0, pin: Bool = false) {
         self.id = id
         self.name = name
         self.memo = memo
         self.createdAt = createdAt
         self.order = order
+        self.pin = pin
     }
     
     /// 子グループの order を連番に整理する

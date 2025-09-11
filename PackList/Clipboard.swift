@@ -14,7 +14,7 @@ enum RowClipboard {
 }
 
 func clonePack(_ source: M1Pack) -> M1Pack {
-    let newPack = M1Pack(name: source.name, memo: source.memo, createdAt: source.createdAt)
+    let newPack = M1Pack(name: source.name, memo: source.memo, createdAt: source.createdAt, pin: source.pin)
     for g in source.child {
         let newGroup = cloneGroup(g, parent: newPack)
         newPack.child.append(newGroup)
@@ -23,7 +23,7 @@ func clonePack(_ source: M1Pack) -> M1Pack {
 }
 
 func cloneGroup(_ source: M2Group, parent: M1Pack? = nil) -> M2Group {
-    let newGroup = M2Group(name: source.name, memo: source.memo, order: source.order, parent: parent)
+    let newGroup = M2Group(name: source.name, memo: source.memo, order: source.order, pin: source.pin, parent: parent)
     for i in source.child {
         let newItem = cloneItem(i, parent: newGroup)
         newGroup.child.append(newItem)

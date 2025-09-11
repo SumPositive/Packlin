@@ -86,6 +86,14 @@ struct GroupRowView: View {
 
                 Spacer()
                 Button {
+                    group.pin.toggle()
+                } label: {
+                    Image(systemName: group.pin ? "pin.fill" : "pin")
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
+
+                Button {
                     if !isExpanded {
                         isExpanded = true
                     }
@@ -94,7 +102,7 @@ struct GroupRowView: View {
                     Image(systemName: "plus.circle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
+                .padding(.trailing, 8)
 
 //                Rectangle()
 //                    .fill(COLOR_ROW_PACK)
@@ -193,7 +201,7 @@ struct GroupRowView: View {
 
     private func duplicateGroup() {
         guard let parentTitle = group.parent else { return }
-        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), pin: group.pin, parent: parentTitle)
         modelContext.insert(newGroup)
         withAnimation {
             if let index = parentTitle.child.firstIndex(where: { $0.id == group.id }) {

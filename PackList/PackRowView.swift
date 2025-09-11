@@ -30,7 +30,12 @@ struct PackRowView: View {
     }
 
     private var sortedGroups: [M2Group] {
-        pack.child.sorted { $0.order < $1.order }
+        pack.child.sorted {
+            if $0.pin == $1.pin {
+                return $0.order < $1.order
+            }
+            return $0.pin && !$1.pin
+        }
     }
 
     var body: some View {
@@ -86,6 +91,14 @@ struct PackRowView: View {
 
                 Spacer()
                 Button {
+                    pack.pin.toggle()
+                } label: {
+                    Image(systemName: pack.pin ? "pin.fill" : "pin")
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal, 8)
+
+                Button {
                     if !isExpanded {
                         isExpanded = true
                     }
@@ -94,7 +107,7 @@ struct PackRowView: View {
                     Image(systemName: "plus.rectangle")
                 }
                 .buttonStyle(BorderlessButtonStyle())
-                .padding(.horizontal, 8)
+                .padding(.trailing, 8)
             }
             .frame(minHeight: rowHeight)
             .swipeActions(edge: .trailing) {
@@ -186,7 +199,7 @@ struct PackRowView: View {
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
         let newOrder = M1Pack.nextPackOrder(packs)
-        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001), order: newOrder)
+        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001), order: newOrder, pin: pack.pin)
         modelContext.insert(newTitle)
         for group in pack.child {
             copyGroup(group, to: newTitle)
@@ -231,7 +244,7 @@ struct PackRowView: View {
     }
 
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
-        let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
+        let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), pin: group.pin, parent: parent)
         modelContext.insert(newGroup)
         withAnimation {
             if let index = parent.child.firstIndex(where: { $0.id == group.id }) {

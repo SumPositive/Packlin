@@ -10,7 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
+    @Query(sort: [SortDescriptor(\M1Pack.pin, order: .reverse), SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     private let rowHeight: CGFloat = 44
 
     var body: some View {
