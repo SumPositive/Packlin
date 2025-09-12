@@ -11,13 +11,18 @@ struct ItemListView: View {
 
     var body: some View {
         List {
-            ForEach(sortedItems) { item in
-                ItemRowView(item: item)
+            Section {
+                ForEach(sortedItems) { item in
+                    ItemRowView(item: item)
+                }
+                .onMove(perform: moveItem)
+            } header: {
+                GroupRowView(group: group)
             }
-            .onMove(perform: moveItem)
             .environment(\.editMode, .constant(.active))
         }
         .listStyle(.plain)
+        .listSectionSpacing(0)
         .navigationTitle(group.name.isEmpty ? "New Group" : group.name)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
