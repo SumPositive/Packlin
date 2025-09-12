@@ -17,9 +17,19 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    NavigationLink(destination: GroupListView(pack: pack)) {
+                    ZStack(alignment: .trailing) {
                         PackRowView(pack: pack)
+
+                        NavigationLink(destination: GroupListView(pack: pack)) {
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .frame(width: 44, height: rowHeight)
+                        }
+                        .padding(.leading, 12)
+                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
                     }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
                 .onMove(perform: movePack)
                 .environment(\.editMode, .constant(.active))

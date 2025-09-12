@@ -3,6 +3,7 @@ import SwiftData
 
 struct ItemListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     let pack: M1Pack
     let initialGroup: M2Group
 
@@ -32,7 +33,13 @@ struct ItemListView: View {
             .listStyle(.plain)
             .listSectionSpacing(0)
             .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
+            .navigationBarBackButtonHidden(true)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.backward")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: addItem) {
                         Image(systemName: "plus.circle")
