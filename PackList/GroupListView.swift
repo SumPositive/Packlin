@@ -12,7 +12,7 @@ struct GroupListView: View {
     var body: some View {
         List {
             ForEach(sortedGroups) { group in
-                NavigationLink(destination: ItemListView(group: group)) {
+                NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
                     GroupRowView(group: group)
                 }
             }
