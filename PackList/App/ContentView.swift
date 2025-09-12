@@ -17,17 +17,8 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    ZStack(alignment: .trailing) {
+                    NavigationLink(destination: GroupListView(pack: pack)) {
                         PackRowView(pack: pack)
-
-                        NavigationLink(destination: GroupListView(pack: pack)) {
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.secondary)
-                                .frame(width: 44, height: rowHeight)
-                        }
-                        .padding(.leading, 12)
-                        .contentShape(Rectangle())
-                        .buttonStyle(.plain)
                     }
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
@@ -36,7 +27,7 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .padding(.top, -8) // headerとPackList間の余白を無くす
-            .padding(.horizontal, 0)
+            .padding(.horizontal, 8)
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {

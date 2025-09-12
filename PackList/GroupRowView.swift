@@ -70,8 +70,8 @@ struct GroupRowView: View {
             }
             .frame(minHeight: rowHeight)
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
-            .padding(.vertical, 0)
-            .padding(.leading, 0)
+            .padding(.vertical, 8)
+            .padding(.leading, 8)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()

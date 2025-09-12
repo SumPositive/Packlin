@@ -15,17 +15,8 @@ struct GroupListView: View {
     var body: some View {
         List {
             ForEach(sortedGroups) { group in
-                ZStack(alignment: .trailing) {
+                NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
                     GroupRowView(group: group)
-
-                    NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                            .frame(width: 44, height: rowHeight)
-                    }
-                    .padding(.leading, 12)
-                    .contentShape(Rectangle())
-                    .buttonStyle(.plain)
                 }
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
             }
@@ -33,14 +24,18 @@ struct GroupListView: View {
             .environment(\.editMode, .constant(.active))
         }
         .listStyle(.plain)
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
-        .padding(0)
+        .padding(.horizontal, 8)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.backward")
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack(spacing: 0) {
+                        Image(systemName: "chevron.backward")
+                        //Text("Top")
+                    }
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {

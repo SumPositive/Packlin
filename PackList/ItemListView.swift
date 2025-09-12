@@ -27,7 +27,7 @@ struct ItemListView: View {
                     }
                     .id(group.id)
                     .environment(\.editMode, .constant(.active))
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 0)
                 }
             }
             .listStyle(.plain)
@@ -36,8 +36,13 @@ struct ItemListView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.backward")
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        HStack(spacing: 0) {
+                            Image(systemName: "chevron.backward.2")
+                            //Text("Group")
+                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
