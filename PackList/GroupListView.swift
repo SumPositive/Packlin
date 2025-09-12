@@ -19,7 +19,8 @@ struct GroupListView: View {
                     GroupRowView(group: group)
 
                     NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
-                        Image(systemName: "chevron.right")
+                        Color.clear
+                            .frame(width: 0, height: rowHeight)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 20)
                             .contentShape(Rectangle())

@@ -21,7 +21,8 @@ struct ContentView: View {
                         PackRowView(pack: pack)
 
                         NavigationLink(destination: GroupListView(pack: pack)) {
-                            Image(systemName: "chevron.right")
+                            Color.clear
+                                .frame(width: 0, height: rowHeight)
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 20)
                                 .contentShape(Rectangle())
