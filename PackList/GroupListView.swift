@@ -15,17 +15,24 @@ struct GroupListView: View {
     var body: some View {
         List {
             ForEach(sortedGroups) { group in
-                ZStack(alignment: .trailing) {
+                ZStack(alignment: .leading) {
                     GroupRowView(group: group)
 
-                    NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
-                        Color.clear
-                            .frame(width: 0, height: rowHeight)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 20)
-                            .contentShape(Rectangle())
+                    GeometryReader { proxy in
+                        HStack(spacing: 0) {
+                            Color.clear
+                                .frame(width: proxy.size.width / 2)
+                                .allowsHitTesting(false)
+
+                            NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
+                                Color.clear
+                                    .frame(width: proxy.size.width / 2)
+                                    .padding(.vertical, 8)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    .buttonStyle(.plain)
                 }
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
             }
