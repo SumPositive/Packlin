@@ -31,7 +31,7 @@ struct GroupRowView: View {
         Group {
             HStack(spacing: 0) {
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-                    .padding(.horizontal, 8)
+                    .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
@@ -71,7 +71,7 @@ struct GroupRowView: View {
             .frame(minHeight: rowHeight)
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
             .padding(.vertical, 8)
-            .padding(.leading, 0)
+            .padding(.leading, 8)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()

@@ -20,13 +20,14 @@ struct ContentView: View {
                     NavigationLink(destination: GroupListView(pack: pack)) {
                         PackRowView(pack: pack)
                     }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
                 .onMove(perform: movePack)
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
             .padding(.top, -8) // headerとPackList間の余白を無くす
-            .padding(.horizontal, 0)
+            .padding(.horizontal, 8)
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
