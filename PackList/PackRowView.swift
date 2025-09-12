@@ -31,7 +31,7 @@ struct PackRowView: View {
 
     var body: some View {
         Group {
-            HStack {
+            HStack(spacing: 0) {
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                     .padding(.trailing, 8)
 
@@ -58,15 +58,36 @@ struct PackRowView: View {
                             Text("\(pack.stockWeight)g／\(pack.needWeight)g")
                                 .font(FONT_WEIGHT)
                                 .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
+                                .padding(.trailing, 8)
                         }
                     }
                 }
-                .padding(.vertical, 4)
+                //.padding(.vertical, 4)
 
                 Spacer()
             }
             .frame(minHeight: rowHeight)
+            .padding(.vertical, 0)
+            .contentShape(Rectangle())
+            //.background(COLOR_ROW_PACK)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { frame = proxy.frame(in: .global) }
+                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
+                            frame = newValue
+                        }
+                }
+            )
+            .onTapGesture {
+                arrowEdge = arrowEdge(for: frame)
+                editingPack = pack
+            }
+            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
+                EditPackView(pack: title)
+                    .presentationCompactAdaptation(.none)
+                    .background(Color.primary.opacity(0.2))
+            }
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -79,40 +100,19 @@ struct PackRowView: View {
                     copyToClipboard()
                 }
                 .tint(.cyan)
-
+                
                 Button("Paste") {
                     pasteFromClipboard()
                 }
                 .disabled(RowClipboard.pack == nil)
                 .tint(.orange)
-
+                
                 Button("Duplicate") {
                     duplicatePack()
                 }
                 .tint(.green)
             }
-            .contentShape(Rectangle())
-            .background(COLOR_ROW_PACK)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
-                            frame = newValue
-                        }
-                }
-            )
-            .onLongPressGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingPack = pack
-            }
-            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
-                EditPackView(pack: title)
-                    .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-            }
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     private func deletePack() {

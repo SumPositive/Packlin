@@ -30,13 +30,8 @@ struct GroupRowView: View {
     var body: some View {
         Group {
             HStack(spacing: 0) {
-                Rectangle()
-                    .fill(COLOR_ROW_PACK)
-                    .frame(width: 8)
-                    .padding(.horizontal, 0)
-
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-                    .padding(.trailing, 8)
+                    .padding(.horizontal, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(group.name.isEmpty ? "New Group" : group.name)
@@ -69,11 +64,13 @@ struct GroupRowView: View {
 //                            .padding(.trailing, 4)
                     }
                 }
-                .padding(.vertical, 4)
+                //.padding(.vertical, 4)
 
                 Spacer()
             }
             .frame(minHeight: rowHeight)
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
+            .padding(.vertical, 8)
             .padding(.leading, 0)
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
@@ -110,7 +107,7 @@ struct GroupRowView: View {
                         }
                 }
             )
-            .onLongPressGesture {
+            .onTapGesture {
                 arrowEdge = arrowEdge(for: frame)
                 editingGroup = group
             }
@@ -120,7 +117,6 @@ struct GroupRowView: View {
                     .background(Color.primary.opacity(0.2))
             }
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
     }
 
     private func deleteGroup() {

@@ -25,16 +25,11 @@ struct ItemRowView: View {
 
 
     var body: some View {
-        HStack {
-            Rectangle()
-                .fill(COLOR_ROW_PACK)
-                .frame(width: 8)
-                .padding(.horizontal, 0)
-            
+        HStack(spacing: 0) {
             Rectangle()
                 .fill(COLOR_ROW_GROUP)
-                .frame(width: 8)
-                .padding(.leading, -8)
+                .frame(width: 12)
+                .padding(.leading, 0)
                 .padding(.trailing, 8)
 
             Button {
@@ -135,6 +130,7 @@ struct ItemRowView: View {
                 .background(Color.primary.opacity(0.2))
         }
         .transition(.move(edge: .top).combined(with: .opacity))
+       .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
     }
 
     private func deleteItem() {

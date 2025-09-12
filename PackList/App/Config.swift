@@ -56,9 +56,9 @@ let COLOR_NAME_EMPTY: Color = .secondary
 let COLOR_MEMO: Color = .primary
 let COLOR_WEIGHT: Color = .primary
 
-let COLOR_ROW_PACK: Color = Color(.systemGray6)
-let COLOR_ROW_GROUP: Color = Color(.systemBackground)
-let COLOR_ROW_ITEM: Color = Color(.systemGray6)
+let COLOR_ROW_PACK: Color = Color(.green)  //(.systemBackground)
+let COLOR_ROW_GROUP: Color = Color(.systemGray2)
+let COLOR_ROW_ITEM: Color = Color(.cyan)  //(.systemBackground)
 let COLOR_POPUP_BORDER: Color = Color(.systemGray3)
 
 

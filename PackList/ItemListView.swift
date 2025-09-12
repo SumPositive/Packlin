@@ -26,6 +26,7 @@ struct ItemListView: View {
                     }
                     .id(group.id)
                     .environment(\.editMode, .constant(.active))
+                    .padding(.horizontal, 8)
                 }
             }
             .listStyle(.plain)

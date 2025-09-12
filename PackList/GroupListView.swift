@@ -20,11 +20,13 @@ struct GroupListView: View {
             .environment(\.editMode, .constant(.active))
         }
         .listStyle(.plain)
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
+        .padding(0)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: addGroup) {
-                    Image(systemName: "plus.circle")
+                    Image(systemName: "plus.rectangle")
                 }
             }
         }
