@@ -15,8 +15,16 @@ struct GroupListView: View {
     var body: some View {
         List {
             ForEach(sortedGroups) { group in
-                NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
+                ZStack(alignment: .trailing) {
                     GroupRowView(group: group)
+
+                    NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
+                        Image(systemName: "chevron.right")
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
             }
