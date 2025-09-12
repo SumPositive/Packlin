@@ -17,7 +17,9 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    PackRowView(pack: pack)
+                    NavigationLink(destination: GroupListView(pack: pack)) {
+                        PackRowView(pack: pack)
+                    }
                 }
                 .onMove(perform: movePack)
                 .environment(\.editMode, .constant(.active))
