@@ -1,6 +1,7 @@
 //
 //  ShortUUID.swift
 //  PackList
+//　　　 UUID（32Byte）では長すぎるので、本件では12Byteで十分と判断した
 //
 //  Created by sumpo on 2025/09/07.
 //

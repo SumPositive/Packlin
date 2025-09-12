@@ -1,6 +1,7 @@
 //
 //  M3Item.swift
 //  PackList
+//　　　 データ量的には3次元配列で十分だが、逐次保存など堅牢にするためにDBにする
 //
 //  Created by sumpo on 2025/09/05.
 //

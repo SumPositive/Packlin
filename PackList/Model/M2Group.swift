@@ -1,6 +1,7 @@
 //
 //  M2Group.swift
 //  PackList
+//　　　 データ量的には3次元配列で十分だが、逐次保存など堅牢にするためにDBにする
 //
 //  Created by sumpo on 2025/09/05.
 //
@@ -26,7 +27,11 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     var stockWeight: Int { child.reduce(0) { $0 + $1.weight * $1.stock } }
     var needWeight: Int { child.reduce(0) { $0 + $1.weight * $1.need } }
 
-    init(id: ID = shortUUID(), name: String, memo: String = "", order: Int = 0, parent: M1Pack? = nil) {
+    init(id: ID = shortUUID(),
+         name: String,
+         memo: String = "",
+         order: Int = 0,
+         parent: M1Pack? = nil) {
         self.id = id
         self.name = name
         self.memo = memo

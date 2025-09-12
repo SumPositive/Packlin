@@ -95,11 +95,6 @@ struct GroupRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 .padding(.horizontal, 8)
-
-//                Rectangle()
-//                    .fill(COLOR_ROW_PACK)
-//                    .frame(width: 8)
-//                    .padding(.horizontal, 0)
             }
             .frame(minHeight: rowHeight)
             .padding(.leading, 0)

@@ -1,6 +1,7 @@
 //
 //  M1Pack.swift
 //  PackList
+//　　　 データ量的には3次元配列で十分だが、逐次保存など堅牢にするためにDBにする
 //
 //  Created by sumpo on 2025/09/05.
 //
@@ -27,7 +28,11 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
-    init(id: ID = shortUUID(), name: String, memo: String = "", createdAt: Date = Date(), order: Int = 0) {
+    init(id: ID = shortUUID(),
+         name: String,
+         memo: String = "",
+         createdAt: Date = Date(),
+         order: Int = 0) {
         self.id = id
         self.name = name
         self.memo = memo
