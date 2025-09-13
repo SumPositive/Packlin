@@ -17,8 +17,17 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    NavigationLink(destination: GroupListView(pack: pack)) {
+                    ZStack(alignment: .trailing) {
                         PackRowView(pack: pack)
+
+                        NavigationLink(destination: GroupListView(pack: pack)) {
+                            Color.clear
+                                .frame(width: 0, height: rowHeight)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 20)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
