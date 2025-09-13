@@ -15,25 +15,29 @@ struct GroupListView: View {
     var body: some View {
         List {
             ForEach(sortedGroups) { group in
-                ZStack(alignment: .trailing) {
+                ZStack {
                     GroupRowView(group: group)
 
-                    NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
-                        Color.clear
-                            .frame(width: 0, height: rowHeight)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 20)
-                            .contentShape(Rectangle())
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
+                            Color.clear
+                        }
+                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        .frame(width: 80)
+                        .padding(.trailing, 8)
+                        .background(Color.clear).contentShape(Rectangle()) //タップ領域
                     }
-                    .buttonStyle(.plain)
                 }
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                .background(COLOR_ROW_GROUP)
             }
             .onMove(perform: moveGroup)
             .environment(\.editMode, .constant(.active))
         }
         .listStyle(.plain)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 0)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -43,7 +47,7 @@ struct GroupListView: View {
                 }) {
                     HStack(spacing: 0) {
                         Image(systemName: "chevron.backward")
-                        //Text("Top")
+                        Text("Pack")
                     }
                 }
             }

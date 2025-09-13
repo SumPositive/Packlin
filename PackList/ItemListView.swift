@@ -28,6 +28,7 @@ struct ItemListView: View {
                     .id(group.id)
                     .environment(\.editMode, .constant(.active))
                     .padding(.horizontal, 0)
+                    .background(COLOR_ROW_GROUP)
                 }
             }
             .listStyle(.plain)
@@ -40,8 +41,8 @@ struct ItemListView: View {
                         dismiss()
                     }) {
                         HStack(spacing: 0) {
-                            Image(systemName: "chevron.backward.2")
-                            //Text("Group")
+                            Image(systemName: "chevron.backward")
+                            Text("Group")
                         }
                     }
                 }

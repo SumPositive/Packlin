@@ -58,20 +58,16 @@ struct GroupRowView: View {
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
                         }
-//                        Text("\(group.stock)／\(group.need)")
-//                            .font(FONT_STOCK)
-//                            .foregroundStyle(COLOR_WEIGHT)
-//                            .padding(.trailing, 4)
                     }
                 }
-                //.padding(.vertical, 4)
-
                 Spacer()
             }
             .frame(minHeight: rowHeight)
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
             .padding(.vertical, 8)
             .padding(.leading, 8)
+            .padding(.trailing, 16)
+            .contentShape(Rectangle())
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -96,8 +92,6 @@ struct GroupRowView: View {
                 }
                 .tint(.green)
             }
-            .contentShape(Rectangle())
-            .background(COLOR_ROW_GROUP)
             .background(
                 GeometryReader { proxy in
                     Color.clear

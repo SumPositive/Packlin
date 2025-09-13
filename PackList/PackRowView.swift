@@ -62,15 +62,12 @@ struct PackRowView: View {
                         }
                     }
                 }
-                //.padding(.vertical, 4)
-
                 Spacer()
             }
             .frame(minHeight: rowHeight)
             .padding(.vertical, 8)
-            .padding(.horizontal, 0)
-            //.contentShape(Rectangle())
-            .background(COLOR_ROW_PACK)
+            .padding(.horizontal, 8)
+            .contentShape(Rectangle())
             .background(
                 GeometryReader { proxy in
                     Color.clear

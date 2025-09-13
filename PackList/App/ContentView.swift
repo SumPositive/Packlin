@@ -17,17 +17,19 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(packs) { pack in
-                    ZStack(alignment: .trailing) {
+                    ZStack {
                         PackRowView(pack: pack)
 
-                        NavigationLink(destination: GroupListView(pack: pack)) {
-                            Color.clear
-                                .frame(width: 0, height: rowHeight)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 20)
-                                .contentShape(Rectangle())
+                        HStack(spacing: 0) {
+                            Spacer()
+                            NavigationLink(destination: GroupListView(pack: pack)) {
+                                Color.clear
+                            }
+                            .frame(width: 80)
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 8)
+                            .background(Color.clear).contentShape(Rectangle()) //タップ領域
                         }
-                        .buttonStyle(.plain)
                     }
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
@@ -36,7 +38,7 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .padding(.top, -8) // headerとPackList間の余白を無くす
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 0)
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
