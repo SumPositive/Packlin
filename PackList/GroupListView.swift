@@ -55,7 +55,7 @@ struct GroupListView: View {
             }
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
-                    modelContext.undo()
+                    modelContext.undoManager?.undo()
                     updateUndoRedo()
                 } label: {
                     Image(systemName: "arrow.uturn.backward")
@@ -63,7 +63,7 @@ struct GroupListView: View {
                 .disabled(!canUndo)
 
                 Button {
-                    modelContext.redo()
+                    modelContext.undoManager?.redo()
                     updateUndoRedo()
                 } label: {
                     Image(systemName: "arrow.uturn.forward")

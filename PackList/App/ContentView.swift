@@ -50,7 +50,7 @@ struct ContentView: View {
                     }
 
                     Button {
-                        modelContext.undo()
+                        modelContext.undoManager?.undo()
                         updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
@@ -59,7 +59,7 @@ struct ContentView: View {
                     .padding(.horizontal, 15)
 
                     Button {
-                        modelContext.redo()
+                        modelContext.undoManager?.redo()
                         updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
