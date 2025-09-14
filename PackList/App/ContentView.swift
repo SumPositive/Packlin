@@ -44,7 +44,7 @@ struct ContentView: View {
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
-                    Button { }
+                    Button { } 
                     label: {
                         Image(systemName: "info.circle")
                     }
@@ -89,6 +89,9 @@ struct ContentView: View {
                 .onAppear { updateUndoRedo() }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+            updateUndoRedo()
+        }
     }
 
     private func updateUndoRedo() {
@@ -99,7 +102,10 @@ struct ContentView: View {
 
     private func addPack() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping(); updateUndoRedo()}
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+        }
 
         let newPack = M1Pack(name: "", order: M1Pack.nextPackOrder(packs))
         modelContext.insert(newPack)
@@ -107,7 +113,10 @@ struct ContentView: View {
 
     private func movePack(from source: IndexSet, to destination: Int) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping(); updateUndoRedo()}
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+        }
 
         var items = packs
         items.move(fromOffsets: source, toOffset: destination)

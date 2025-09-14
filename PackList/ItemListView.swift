@@ -71,21 +71,24 @@ struct ItemListView: View {
                 proxy.scrollTo(initialGroup.id, anchor: .top)
                 updateUndoRedo()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                updateUndoRedo()
+            }
         }
     }
 
-//    private func addItem() {
-//        let newItem = M3Item(name: "", order: initialGroup.nextItemOrder(), parent: initialGroup)
-//        modelContext.insert(newItem)
-//        withAnimation {
-//            initialGroup.child.append(newItem)
-//            initialGroup.normalizeItemOrder()
-//        }
-//    }
+    private func updateUndoRedo() {
+        let manager = modelContext.undoManager
+        canUndo = manager?.canUndo ?? false
+        canRedo = manager?.canRedo ?? false
+    }
 
     private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+        }
 
         var items = group.child.sorted { $0.order < $1.order }
         items.move(fromOffsets: source, toOffset: destination)
@@ -93,13 +96,6 @@ struct ItemListView: View {
             item.order = index
         }
         group.child = items
-        updateUndoRedo()
-    }
-
-    private func updateUndoRedo() {
-        let manager = modelContext.undoManager
-        canUndo = manager?.canUndo ?? false
-        canRedo = manager?.canRedo ?? false
     }
 }
 

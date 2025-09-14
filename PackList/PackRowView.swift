@@ -115,7 +115,10 @@ struct PackRowView: View {
 
     private func deletePack() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         for group in pack.child {
             deleteGroup(group)
@@ -129,7 +132,10 @@ struct PackRowView: View {
 
     private func deleteGroup(_ group: M2Group) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         for item in group.child {
             modelContext.delete(item)
@@ -139,7 +145,10 @@ struct PackRowView: View {
 
     private func duplicatePack() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
@@ -159,7 +168,10 @@ struct PackRowView: View {
 
     private func pasteFromClipboard() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         if let template = RowClipboard.pack {
             // PackRowを現在行にペーストする、現在行は下になる
@@ -192,7 +204,10 @@ struct PackRowView: View {
 
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
         modelContext.insert(newGroup)
@@ -211,7 +226,10 @@ struct PackRowView: View {
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
         modelContext.insert(newItem)
@@ -267,6 +285,7 @@ struct EditPackView: View {
         .onDisappear() {
             try? modelContext.save()
             modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
 }

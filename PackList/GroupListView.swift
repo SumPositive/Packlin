@@ -76,11 +76,23 @@ struct GroupListView: View {
             }
         }
         .onAppear { updateUndoRedo() }
+        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+            updateUndoRedo()
+        }
+    }
+
+    private func updateUndoRedo() {
+        let manager = modelContext.undoManager
+        canUndo = manager?.canUndo ?? false
+        canRedo = manager?.canRedo ?? false
     }
 
     private func addGroup() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+        }
 
         let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
         modelContext.insert(newGroup)
@@ -88,12 +100,14 @@ struct GroupListView: View {
             pack.child.append(newGroup)
             pack.normalizeGroupOrder()
         }
-        updateUndoRedo()
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+        }
 
         var groups = sortedGroups
         groups.move(fromOffsets: source, toOffset: destination)
@@ -101,13 +115,6 @@ struct GroupListView: View {
             group.order = index
         }
         pack.child = groups
-        updateUndoRedo()
-    }
-
-    private func updateUndoRedo() {
-        let manager = modelContext.undoManager
-        canUndo = manager?.canUndo ?? false
-        canRedo = manager?.canRedo ?? false
     }
 }
 

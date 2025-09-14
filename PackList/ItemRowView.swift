@@ -135,7 +135,10 @@ struct ItemRowView: View {
 
     private func deleteItem() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         if let parent = item.parent,
            let index = parent.child.firstIndex(where: { $0.id == item.id }) {
@@ -149,7 +152,10 @@ struct ItemRowView: View {
 
     private func duplicateItem() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order, parent: parent)
@@ -171,7 +177,10 @@ struct ItemRowView: View {
 
     private func pasteFromClipboard() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         guard let clip = RowClipboard.item, let parent = item.parent else { return }
         let newItem = cloneItem(clip, parent: parent)
@@ -289,6 +298,7 @@ struct EditItemView: View {
         .onDisappear() {
             try? modelContext.save()
             modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
 }
