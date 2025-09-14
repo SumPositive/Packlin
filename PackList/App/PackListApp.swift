@@ -19,7 +19,7 @@ struct PackListApp: App {
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
-            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: schema, configurations: [modelConfiguration], isUndoEnabled: true)
 //            let context = container.mainContext
 //            let descriptor = FetchDescriptor<E1Title>()
 //            let existing = try context.fetch(descriptor)
