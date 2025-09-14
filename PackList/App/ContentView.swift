@@ -12,6 +12,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     private let rowHeight: CGFloat = 44
+    @State private var canUndo = false
+    @State private var canRedo = false
 
     var body: some View {
         NavigationView {
@@ -48,12 +50,22 @@ struct ContentView: View {
                     }
 
                     Button {
-                        // UnDo
+                        modelContext.undo()
+                        updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
-                    .disabled(true)
-                    .padding(.horizontal, 30)
+                    .disabled(!canUndo)
+                    .padding(.horizontal, 15)
+
+                    Button {
+                        modelContext.redo()
+                        updateUndoRedo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                    }
+                    .disabled(!canRedo)
+                    .padding(.trailing, 15)
                     
                     Spacer()
                     Text("モチメモ")
@@ -74,6 +86,7 @@ struct ContentView: View {
                 .frame(height: rowHeight)
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)
+                .onAppear { updateUndoRedo() }
             }
         }
     }
@@ -81,6 +94,7 @@ struct ContentView: View {
     private func addPack() {
         let newPack = M1Pack(name: "", order: M1Pack.nextPackOrder(packs))
         modelContext.insert(newPack)
+        updateUndoRedo()
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {
@@ -89,6 +103,13 @@ struct ContentView: View {
         for (index, pack) in items.enumerated() {
             pack.order = index
         }
+        updateUndoRedo()
+    }
+
+    private func updateUndoRedo() {
+        let manager = modelContext.undoManager
+        canUndo = manager?.canUndo ?? false
+        canRedo = manager?.canRedo ?? false
     }
 }
 

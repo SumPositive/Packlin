@@ -20,16 +20,8 @@ struct PackListApp: App {
 
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
-//            let context = container.mainContext
-//            let descriptor = FetchDescriptor<E1Title>()
-//            let existing = try context.fetch(descriptor)
-//            if existing.isEmpty {
-//                let title = E1Title(name: "New Title", note: "新しいPackListのタイトルを追加する")
-//                let group = E2Group(name: "New Group", parent: title)
-//                _ = E3Item(name: "New Item", parent: group)
-//                context.insert(title)
-//                try context.save()
-//            }
+            // Undo/Redo のために UndoManager を設定
+            container.mainContext.undoManager = UndoManager()
             return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")

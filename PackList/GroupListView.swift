@@ -7,6 +7,8 @@ struct GroupListView: View {
     let pack: M1Pack
 
     private let rowHeight: CGFloat = 44
+    @State private var canUndo = false
+    @State private var canRedo = false
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
@@ -51,12 +53,29 @@ struct GroupListView: View {
                     }
                 }
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    modelContext.undo()
+                    updateUndoRedo()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .disabled(!canUndo)
+
+                Button {
+                    modelContext.redo()
+                    updateUndoRedo()
+                } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .disabled(!canRedo)
+
                 Button(action: addGroup) {
                     Image(systemName: "plus.rectangle")
                 }
             }
         }
+        .onAppear { updateUndoRedo() }
     }
 
     private func addGroup() {
@@ -66,6 +85,7 @@ struct GroupListView: View {
             pack.child.append(newGroup)
             pack.normalizeGroupOrder()
         }
+        updateUndoRedo()
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
@@ -75,6 +95,13 @@ struct GroupListView: View {
             group.order = index
         }
         pack.child = groups
+        updateUndoRedo()
+    }
+
+    private func updateUndoRedo() {
+        let manager = modelContext.undoManager
+        canUndo = manager?.canUndo ?? false
+        canRedo = manager?.canRedo ?? false
     }
 }
 
