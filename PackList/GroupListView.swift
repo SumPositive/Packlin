@@ -51,7 +51,21 @@ struct GroupListView: View {
                     }
                 }
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    modelContext.undo()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .disabled(!(modelContext.undoManager?.canUndo ?? false))
+
+                Button {
+                    modelContext.redo()
+                } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .disabled(!(modelContext.undoManager?.canRedo ?? false))
+
                 Button(action: addGroup) {
                     Image(systemName: "plus.rectangle")
                 }

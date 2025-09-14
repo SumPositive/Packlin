@@ -48,12 +48,20 @@ struct ContentView: View {
                     }
 
                     Button {
-                        // UnDo
+                        modelContext.undo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
-                    .disabled(true)
+                    .disabled(!(modelContext.undoManager?.canUndo ?? false))
                     .padding(.horizontal, 30)
+
+                    Button {
+                        modelContext.redo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                    }
+                    .disabled(!(modelContext.undoManager?.canRedo ?? false))
+                    .padding(.trailing, 30)
                     
                     Spacer()
                     Text("モチメモ")

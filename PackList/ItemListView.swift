@@ -46,6 +46,21 @@ struct ItemListView: View {
                         }
                     }
                 }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        modelContext.undo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(!(modelContext.undoManager?.canUndo ?? false))
+
+                    Button {
+                        modelContext.redo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                    }
+                    .disabled(!(modelContext.undoManager?.canRedo ?? false))
+                }
 //                ToolbarItem(placement: .navigationBarTrailing) {
 //                    Button(action: addItem) {
 //                        Image(systemName: "plus.circle")
