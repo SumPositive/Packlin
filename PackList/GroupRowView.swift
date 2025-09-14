@@ -122,6 +122,9 @@ struct GroupRowView: View {
     }
 
     private func addItem() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
         modelContext.insert(newItem)
         withAnimation {
@@ -131,6 +134,9 @@ struct GroupRowView: View {
     }
     
     private func deleteGroup() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         for item in group.child {
             modelContext.delete(item)
         }
@@ -143,6 +149,9 @@ struct GroupRowView: View {
     }
 
     private func duplicateGroup() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         guard let parentTitle = group.parent else { return }
         let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
         modelContext.insert(newGroup)
@@ -165,6 +174,9 @@ struct GroupRowView: View {
     }
 
     private func pasteFromClipboard() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         if let clip = RowClipboard.group, let parent = group.parent {
             // GroupRowを現在行にペーストする、現在行は下になる
             let newGroup = cloneGroup(clip, parent: parent)
@@ -195,6 +207,9 @@ struct GroupRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
         modelContext.insert(newItem)
         parent.child.append(newItem)
@@ -212,7 +227,7 @@ struct GroupRowView: View {
 
 struct EditGroupView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var context
+    @Environment(\.modelContext) private var modelContext
     @Bindable var group: M2Group
     @FocusState private var nameIsFocused: Bool
     
@@ -240,13 +255,15 @@ struct EditGroupView: View {
         }
         .padding()
         .frame(minWidth: 300)
-        .onDisappear() {
-            try? context.save()
-        }
         .onAppear {
+            modelContext.undoManager?.beginUndoGrouping()
             if group.name.isEmpty {
                 nameIsFocused = true
             }
+        }
+        .onDisappear() {
+            try? modelContext.save()
+            modelContext.undoManager?.endUndoGrouping()
         }
     }
 }

@@ -134,6 +134,9 @@ struct ItemRowView: View {
     }
 
     private func deleteItem() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         if let parent = item.parent,
            let index = parent.child.firstIndex(where: { $0.id == item.id }) {
             withAnimation {
@@ -145,6 +148,9 @@ struct ItemRowView: View {
     }
 
     private func duplicateItem() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order, parent: parent)
         modelContext.insert(newItem)
@@ -164,6 +170,9 @@ struct ItemRowView: View {
     }
 
     private func pasteFromClipboard() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         guard let clip = RowClipboard.item, let parent = item.parent else { return }
         let newItem = cloneItem(clip, parent: parent)
         newItem.order = item.order
@@ -193,7 +202,7 @@ struct ItemRowView: View {
 
 struct EditItemView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var context
+    @Environment(\.modelContext) private var modelContext
     @Bindable var item: M3Item
     @FocusState private var nameIsFocused: Bool
 
@@ -271,13 +280,15 @@ struct EditItemView: View {
         }
         .padding()
         .frame(minWidth: 300)
-        .onDisappear() {
-            try? context.save()
-        }
         .onAppear {
+            modelContext.undoManager?.beginUndoGrouping()
             if item.name.isEmpty {
                 nameIsFocused = true
             }
+        }
+        .onDisappear() {
+            try? modelContext.save()
+            modelContext.undoManager?.endUndoGrouping()
         }
     }
 }

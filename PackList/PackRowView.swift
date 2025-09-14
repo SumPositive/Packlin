@@ -114,6 +114,9 @@ struct PackRowView: View {
     }
 
     private func deletePack() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         for group in pack.child {
             deleteGroup(group)
         }
@@ -125,6 +128,9 @@ struct PackRowView: View {
     }
 
     private func deleteGroup(_ group: M2Group) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         for item in group.child {
             modelContext.delete(item)
         }
@@ -132,6 +138,9 @@ struct PackRowView: View {
     }
 
     private func duplicatePack() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
         let newOrder = M1Pack.nextPackOrder(packs)
@@ -149,6 +158,9 @@ struct PackRowView: View {
     }
 
     private func pasteFromClipboard() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         if let template = RowClipboard.pack {
             // PackRowを現在行にペーストする、現在行は下になる
             let newPack = clonePack(template)
@@ -179,6 +191,9 @@ struct PackRowView: View {
     }
 
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         let newGroup = M2Group(name: group.name, memo: group.memo, order: parent.nextGroupOrder(), parent: parent)
         modelContext.insert(newGroup)
         withAnimation {
@@ -195,6 +210,9 @@ struct PackRowView: View {
     }
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
         modelContext.insert(newItem)
         parent.child.append(newItem)
@@ -212,7 +230,7 @@ struct PackRowView: View {
 
 struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var context
+    @Environment(\.modelContext) private var modelContext
     @Bindable var pack: M1Pack
     @FocusState private var nameIsFocused: Bool
     
@@ -240,13 +258,15 @@ struct EditPackView: View {
         }
         .padding()
         .frame(minWidth: 300, maxHeight: 300)
-        .onDisappear() {
-            try? context.save()
-        }
         .onAppear {
+            modelContext.undoManager?.beginUndoGrouping()
             if pack.name.isEmpty {
                 nameIsFocused = true
             }
+        }
+        .onDisappear() {
+            try? modelContext.save()
+            modelContext.undoManager?.endUndoGrouping()
         }
     }
 }

@@ -11,6 +11,9 @@ struct ItemListView: View {
         pack.child.sorted { $0.order < $1.order }
     }
 
+    @State private var canUndo = false
+    @State private var canRedo = false
+
     var body: some View {
         ScrollViewReader { proxy in
             List {
@@ -46,14 +49,27 @@ struct ItemListView: View {
                         }
                     }
                 }
-//                ToolbarItem(placement: .navigationBarTrailing) {
-//                    Button(action: addItem) {
-//                        Image(systemName: "plus.circle")
-//                    }
-//                }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        modelContext.undoManager?.undo()
+                        updateUndoRedo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(!canUndo)
+
+                    Button {
+                        modelContext.undoManager?.redo()
+                        updateUndoRedo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                    }
+                    .disabled(!canRedo)
+                }
             }
             .onAppear {
                 proxy.scrollTo(initialGroup.id, anchor: .top)
+                updateUndoRedo()
             }
         }
     }
@@ -68,12 +84,22 @@ struct ItemListView: View {
 //    }
 
     private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         var items = group.child.sorted { $0.order < $1.order }
         items.move(fromOffsets: source, toOffset: destination)
         for (index, item) in items.enumerated() {
             item.order = index
         }
         group.child = items
+        updateUndoRedo()
+    }
+
+    private func updateUndoRedo() {
+        let manager = modelContext.undoManager
+        canUndo = manager?.canUndo ?? false
+        canRedo = manager?.canRedo ?? false
     }
 }
 
