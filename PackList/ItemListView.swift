@@ -23,7 +23,7 @@ struct ItemListView: View {
                             moveItem(in: group, from: source, to: destination)
                         }
                     } header: {
-                        GroupRowView(group: group)
+                        GroupRowView(group: group, isHeader: true)
                     }
                     .id(group.id)
                     .environment(\.editMode, .constant(.active))
@@ -46,11 +46,11 @@ struct ItemListView: View {
                         }
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: addItem) {
-                        Image(systemName: "plus.circle")
-                    }
-                }
+//                ToolbarItem(placement: .navigationBarTrailing) {
+//                    Button(action: addItem) {
+//                        Image(systemName: "plus.circle")
+//                    }
+//                }
             }
             .onAppear {
                 proxy.scrollTo(initialGroup.id, anchor: .top)
@@ -58,14 +58,14 @@ struct ItemListView: View {
         }
     }
 
-    private func addItem() {
-        let newItem = M3Item(name: "", order: initialGroup.nextItemOrder(), parent: initialGroup)
-        modelContext.insert(newItem)
-        withAnimation {
-            initialGroup.child.append(newItem)
-            initialGroup.normalizeItemOrder()
-        }
-    }
+//    private func addItem() {
+//        let newItem = M3Item(name: "", order: initialGroup.nextItemOrder(), parent: initialGroup)
+//        modelContext.insert(newItem)
+//        withAnimation {
+//            initialGroup.child.append(newItem)
+//            initialGroup.normalizeItemOrder()
+//        }
+//    }
 
     private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
         var items = group.child.sorted { $0.order < $1.order }

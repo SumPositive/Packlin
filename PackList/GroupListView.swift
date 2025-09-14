@@ -16,7 +16,7 @@ struct GroupListView: View {
         List {
             ForEach(sortedGroups) { group in
                 ZStack {
-                    GroupRowView(group: group)
+                    GroupRowView(group: group, isHeader: false)
 
                     HStack {
                         Spacer()

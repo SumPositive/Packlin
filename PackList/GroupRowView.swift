@@ -12,6 +12,7 @@ import UIKit
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
     let group: M2Group
+    let isHeader: Bool
 
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
@@ -19,8 +20,9 @@ struct GroupRowView: View {
 
     private let rowHeight: CGFloat = 44
 
-    init(group: M2Group) {
+    init(group: M2Group, isHeader: Bool) {
         self.group = group
+        self.isHeader = isHeader
     }
 
     private var allItemsChecked: Bool {
@@ -57,6 +59,12 @@ struct GroupRowView: View {
                                 .font(FONT_WEIGHT)
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.trailing, 4)
+                        }
+                        
+                        if isHeader {
+                            Button(action: addItem) {
+                                Image(systemName: "plus.circle")
+                            }
                         }
                     }
                 }
@@ -113,6 +121,15 @@ struct GroupRowView: View {
         }
     }
 
+    private func addItem() {
+        let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
+        modelContext.insert(newItem)
+        withAnimation {
+            group.child.append(newItem)
+            group.normalizeItemOrder()
+        }
+    }
+    
     private func deleteGroup() {
         for item in group.child {
             modelContext.delete(item)
