@@ -79,6 +79,9 @@ struct GroupListView: View {
     }
 
     private func addGroup() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
         modelContext.insert(newGroup)
         withAnimation {
@@ -89,6 +92,9 @@ struct GroupListView: View {
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         var groups = sortedGroups
         groups.move(fromOffsets: source, toOffset: destination)
         for (index, group) in groups.enumerated() {

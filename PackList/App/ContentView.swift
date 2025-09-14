@@ -91,25 +91,29 @@ struct ContentView: View {
         }
     }
 
+    private func updateUndoRedo() {
+        let manager = modelContext.undoManager
+        canUndo = manager?.canUndo ?? false
+        canRedo = manager?.canRedo ?? false
+    }
+
     private func addPack() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping(); updateUndoRedo()}
+
         let newPack = M1Pack(name: "", order: M1Pack.nextPackOrder(packs))
         modelContext.insert(newPack)
-        updateUndoRedo()
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping(); updateUndoRedo()}
+
         var items = packs
         items.move(fromOffsets: source, toOffset: destination)
         for (index, pack) in items.enumerated() {
             pack.order = index
         }
-        updateUndoRedo()
-    }
-
-    private func updateUndoRedo() {
-        let manager = modelContext.undoManager
-        canUndo = manager?.canUndo ?? false
-        canRedo = manager?.canRedo ?? false
     }
 }
 

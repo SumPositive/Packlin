@@ -84,6 +84,9 @@ struct ItemListView: View {
 //    }
 
     private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer { modelContext.undoManager?.endUndoGrouping() }
+
         var items = group.child.sorted { $0.order < $1.order }
         items.move(fromOffsets: source, toOffset: destination)
         for (index, item) in items.enumerated() {
