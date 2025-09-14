@@ -44,7 +44,7 @@ struct ContentView: View {
             .navigationBarHidden(true)
             .safeAreaInset(edge: .top) {
                 HStack {
-                    Button { }
+                    Button { } 
                     label: {
                         Image(systemName: "info.circle")
                     }
@@ -88,6 +88,15 @@ struct ContentView: View {
                 .background(.thinMaterial)
                 .onAppear { updateUndoRedo() }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .undoManagerWillCloseGroup, object: modelContext.undoManager)) { _ in
+            updateUndoRedo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .undoManagerDidUndo, object: modelContext.undoManager)) { _ in
+            updateUndoRedo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .undoManagerDidRedo, object: modelContext.undoManager)) { _ in
+            updateUndoRedo()
         }
     }
 

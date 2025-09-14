@@ -71,6 +71,15 @@ struct ItemListView: View {
                 proxy.scrollTo(initialGroup.id, anchor: .top)
                 updateUndoRedo()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .undoManagerWillCloseGroup, object: modelContext.undoManager)) { _ in
+                updateUndoRedo()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .undoManagerDidUndo, object: modelContext.undoManager)) { _ in
+                updateUndoRedo()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .undoManagerDidRedo, object: modelContext.undoManager)) { _ in
+                updateUndoRedo()
+            }
         }
     }
 

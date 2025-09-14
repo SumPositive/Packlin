@@ -76,6 +76,15 @@ struct GroupListView: View {
             }
         }
         .onAppear { updateUndoRedo() }
+        .onReceive(NotificationCenter.default.publisher(for: .undoManagerWillCloseGroup, object: modelContext.undoManager)) { _ in
+            updateUndoRedo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .undoManagerDidUndo, object: modelContext.undoManager)) { _ in
+            updateUndoRedo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .undoManagerDidRedo, object: modelContext.undoManager)) { _ in
+            updateUndoRedo()
+        }
     }
 
     private func addGroup() {
