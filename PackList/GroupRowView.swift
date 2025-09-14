@@ -123,7 +123,10 @@ struct GroupRowView: View {
 
     private func addItem() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
         modelContext.insert(newItem)
@@ -135,7 +138,10 @@ struct GroupRowView: View {
     
     private func deleteGroup() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         for item in group.child {
             modelContext.delete(item)
@@ -150,7 +156,10 @@ struct GroupRowView: View {
 
     private func duplicateGroup() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         guard let parentTitle = group.parent else { return }
         let newGroup = M2Group(name: group.name, memo: group.memo, order: parentTitle.nextGroupOrder(), parent: parentTitle)
@@ -175,7 +184,10 @@ struct GroupRowView: View {
 
     private func pasteFromClipboard() {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         if let clip = RowClipboard.group, let parent = group.parent {
             // GroupRowを現在行にペーストする、現在行は下になる
@@ -208,7 +220,10 @@ struct GroupRowView: View {
 
     private func copyItem(_ item: M3Item, to parent: M2Group) {
         modelContext.undoManager?.beginUndoGrouping()
-        defer { modelContext.undoManager?.endUndoGrouping() }
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
         let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: parent.nextItemOrder(), parent: parent)
         modelContext.insert(newItem)
@@ -264,6 +279,7 @@ struct EditGroupView: View {
         .onDisappear() {
             try? modelContext.save()
             modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
 }
