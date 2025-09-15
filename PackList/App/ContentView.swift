@@ -52,7 +52,7 @@ struct ContentView: View {
                     Button {
                         modelContext.undoManager?.undo()
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        updateUndoRedo()
+                        //updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
@@ -62,7 +62,7 @@ struct ContentView: View {
                     Button {
                         modelContext.undoManager?.redo()
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        updateUndoRedo()
+                        //updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                     }
@@ -97,9 +97,10 @@ struct ContentView: View {
     }
 
     private func updateUndoRedo() {
-        let manager = modelContext.undoManager
-        canUndo = manager?.canUndo ?? false
-        canRedo = manager?.canRedo ?? false
+        if let um = modelContext.undoManager {
+            canUndo = um.canUndo
+            canRedo = um.canRedo
+        }
     }
 
     private func addPack() {
