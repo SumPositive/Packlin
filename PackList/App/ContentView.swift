@@ -8,13 +8,16 @@
 import SwiftUI
 import SwiftData
 
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     private let rowHeight: CGFloat = 44
     @State private var canUndo = false
     @State private var canRedo = false
+    @State private var listID = UUID() // Listリフレッシュ用
 
+    
     var body: some View {
         NavigationView {
             List {
@@ -27,7 +30,7 @@ struct ContentView: View {
                             NavigationLink(destination: GroupListView(pack: pack)) {
                                 Color.clear
                             }
-                            .frame(width: 80)
+                            .frame(width: 180)
                             .buttonStyle(.plain)
                             .padding(.trailing, 8)
                             .background(Color.clear).contentShape(Rectangle()) //タップ領域
@@ -39,6 +42,7 @@ struct ContentView: View {
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
+            .id(listID)   // listIDが変わるとListが作り直される
             .padding(.top, -8) // headerとPackList間の余白を無くす
             .padding(.horizontal, 0)
             .navigationBarHidden(true)
@@ -48,27 +52,34 @@ struct ContentView: View {
                     label: {
                         Image(systemName: "info.circle")
                     }
+                    .padding(.horizontal, 8)
 
                     Button {
-                        modelContext.undoManager?.undo()
+                        withAnimation {
+                            modelContext.undoManager?.undo()
+                        }
+                        listID = UUID()  // ここで List を再描画
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
                         //updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
                     .disabled(!canUndo)
-                    .padding(.horizontal, 15)
+                    .padding(.horizontal, 8)
 
-                    Button {
-                        modelContext.undoManager?.redo()
-                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        //updateUndoRedo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.forward")
-                    }
-                    .disabled(!canRedo)
-                    .padding(.trailing, 15)
-                    
+                    //    Button {
+                    //        withAnimation {
+                    //            modelContext.undoManager?.redo()
+                    //        }
+                    //        listID = UUID()  // ここで List を再描画
+                    //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    //        //updateUndoRedo()
+                    //    } label: {
+                    //        Image(systemName: "arrow.uturn.forward")
+                    //    }
+                    //    .disabled(!canRedo)
+                    //    .padding(.horizontal, 8)
+
                     Spacer()
                     Text("モチメモ")
                     Spacer()
@@ -78,12 +89,13 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "gearshape")
                     }
-                    .padding(.horizontal, 30)
+                    .padding(.horizontal, 8)
 
                     Button { addPack() }
                     label: {
                         Image(systemName: "plus.message")
                     }
+                    .padding(.horizontal, 8)
                 }
                 .frame(height: rowHeight)
                 .padding(.horizontal, 8)

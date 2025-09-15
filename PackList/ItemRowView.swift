@@ -215,14 +215,43 @@ struct EditItemView: View {
     @Bindable var item: M3Item
     @FocusState private var nameIsFocused: Bool
 
+    private var weightBinding: Binding<Int> {
+        Binding(get: { item.weight },
+                set: {
+//            item.weight = max(0, $0)
+            // 数字以外を排除
+//            let filtered = max(0, $0).filter { $0.isNumber }
+            let value = max(0, $0)
+            if APP_MAX_WEIGHT_NUM < value {
+                item.weight = APP_MAX_WEIGHT_NUM
+            } else {
+                item.weight = value
+            }
+        })
+    }
     private var stockBinding: Binding<Int> {
-        Binding(get: { item.stock }, set: { item.stock = max(0, $0) })
+        Binding(get: { item.stock },
+                set: {
+            //item.stock = max(0, $0)
+            let value = max(0, $0)
+            if APP_MAX_STOCK_NUM < value {
+                item.stock = APP_MAX_STOCK_NUM
+            } else {
+                item.stock = value
+            }
+        })
     }
     private var needBinding: Binding<Int> {
-        Binding(get: { item.need }, set: { item.need = max(0, $0) })
-    }
-    private var weightBinding: Binding<Int> {
-        Binding(get: { item.weight }, set: { item.weight = max(0, $0) })
+        Binding(get: { item.need },
+                set: {
+            //item.need = max(0, $0)
+            let value = max(0, $0)
+            if APP_MAX_NEED_NUM < value {
+                item.need = APP_MAX_NEED_NUM
+            } else {
+                item.need = value
+            }
+        })
     }
 
     var body: some View {
@@ -231,17 +260,27 @@ struct EditItemView: View {
                 Text("名称:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $item.name, prompt: Text("New Item name"))
-                    .focused($nameIsFocused)
-                    .background(Color.white.opacity(0.7))
+                TextEditor(text: $item.name)
+                    .onChange(of: item.name) { newValue, oldValue in
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                        }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+                    .frame(width: 260, height: 80)
                     .padding(4)
             }
             HStack {
                 Text("メモ:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $item.memo)
-                    .background(Color.white.opacity(0.7))
+                TextEditor(text: $item.memo)
+                    .onChange(of: item.memo) { newValue, oldValue in
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+                    .frame(width: 260, height: 80)
                     .padding(4)
             }
             HStack {
@@ -255,7 +294,7 @@ struct EditItemView: View {
                 Text("ｇ")
                     .font(.caption)
                     .padding(4)
-                Stepper("", value: weightBinding, in: 0...Int.max)
+                Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
                     .labelsHidden()
             }
             HStack {
@@ -269,7 +308,7 @@ struct EditItemView: View {
                 Text("個")
                     .font(.caption)
                     .padding(4)
-                Stepper("", value: stockBinding, in: 0...Int.max)
+                Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
                     .labelsHidden()
             }
             HStack {
@@ -283,7 +322,7 @@ struct EditItemView: View {
                 Text("個")
                     .font(.caption)
                     .padding(4)
-                Stepper("", value: needBinding, in: 0...Int.max)
+                Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
                     .labelsHidden()
             }
         }
@@ -296,9 +335,9 @@ struct EditItemView: View {
             }
         }
         .onDisappear() {
-            try? modelContext.save()
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            //try? modelContext.save() // Undoスタックがクリアされる
         }
     }
 }

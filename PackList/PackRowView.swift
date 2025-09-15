@@ -258,19 +258,27 @@ struct EditPackView: View {
                 Text("名称:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $pack.name, prompt: Text("New Pack name"))
-                    .focused($nameIsFocused)
-                    .lineLimit(3)
-                    .background(Color.white.opacity(0.7))
+                TextEditor(text: $pack.name)
+                    .onChange(of: pack.name) { newValue, oldValue in
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                        }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+                    .frame(width: 260, height: 80)
                     .padding(4)
             }
             HStack {
                 Text("メモ:")
                     .font(.caption)
                     .padding(4)
-                TextField("", text: $pack.memo)
-                    .lineLimit(3)
-                    .background(Color.white.opacity(0.7))
+                TextEditor(text: $pack.memo)
+                    .onChange(of: pack.memo) { newValue, oldValue in
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+                    .frame(width: 260, height: 80)
                     .padding(4)
             }
         }
@@ -283,9 +291,9 @@ struct EditPackView: View {
             }
         }
         .onDisappear() {
-            try? modelContext.save()
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            //try? modelContext.save() // Undoスタックがクリアされる
         }
     }
 }

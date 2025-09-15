@@ -9,6 +9,7 @@ struct GroupListView: View {
     private let rowHeight: CGFloat = 44
     @State private var canUndo = false
     @State private var canRedo = false
+    @State private var listID = UUID() // Listリフレッシュ用
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
@@ -27,7 +28,7 @@ struct GroupListView: View {
                         }
                         .contentShape(Rectangle())
                         .buttonStyle(.plain)
-                        .frame(width: 80)
+                        .frame(width: 180)
                         .padding(.trailing, 8)
                         .background(Color.clear).contentShape(Rectangle()) //タップ領域
                     }
@@ -39,54 +40,69 @@ struct GroupListView: View {
             .environment(\.editMode, .constant(.active))
         }
         .listStyle(.plain)
+        .id(listID)   // listIDが変わるとListが作り直される
         .padding(.horizontal, 0)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    HStack(spacing: 0) {
-                        Image(systemName: "chevron.backward")
-                        Text("Pack")
+                HStack {
+                    Button {
+                        try? modelContext.save() // Undoスタックがクリアされる
+                        modelContext.undoManager?.removeAllActions()
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 0) {
+                            Image(systemName: "chevron.backward")
+                            //Text("Pack")
+                        }
                     }
+                    .padding(.trailing, 8)
+
+                    Button {
+                        withAnimation {
+                            modelContext.undoManager?.undo()
+                        }
+                        listID = UUID()  // ここで List を再描画
+                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(!canUndo)
+                    
+                    //    Button {
+                    //        withAnimation {
+                    //            modelContext.undoManager?.redo()
+                    //        }
+                    //        listID = UUID()  // ここで List を再描画
+                    //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    //    } label: {
+                    //        Image(systemName: "arrow.uturn.forward")
+                    //    }
+                    //    .disabled(!canRedo)
                 }
             }
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button {
-                    modelContext.undoManager?.undo()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                    updateUndoRedo()
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                }
-                .disabled(!canUndo)
-
-                Button {
-                    modelContext.undoManager?.redo()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                    updateUndoRedo()
-                } label: {
-                    Image(systemName: "arrow.uturn.forward")
-                }
-                .disabled(!canRedo)
-
                 Button(action: addGroup) {
                     Image(systemName: "plus.rectangle")
                 }
             }
         }
-        .onAppear { updateUndoRedo() }
+        .onAppear {
+            try? modelContext.save() // Undoスタックがクリアされる
+            modelContext.undoManager?.removeAllActions()
+            updateUndoRedo()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
             updateUndoRedo()
         }
     }
 
     private func updateUndoRedo() {
-        let manager = modelContext.undoManager
-        canUndo = manager?.canUndo ?? false
-        canRedo = manager?.canRedo ?? false
+        if let um = modelContext.undoManager {
+            canUndo = um.canUndo
+            canRedo = um.canRedo
+        }
     }
 
     private func addGroup() {

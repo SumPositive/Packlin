@@ -31,12 +31,12 @@ let APP_MAX_PACK_ROWS : Int = 50
 let APP_MAX_PART_ROWS : Int = 50
 let APP_MAX_ITEM_ROWS : Int  = 100
 
-let APP_MAX_NAME_LEN : Int = 50
-let APP_MAX_MEMO_LEN : Int = 50
+let APP_MAX_NAME_LEN : Int = 200     // .name 文字数
+let APP_MAX_MEMO_LEN : Int = 200     // .memo 文字数
 
-let APP_MAX_WEIGHT_NUM : Int = 999999
-let APP_MAX_STOCK_NUM : Int  = 999
-let APP_MAX_NEED_NUM : Int   = 999
+let APP_MAX_WEIGHT_NUM : Int = 999999   // (g)
+let APP_MAX_STOCK_NUM : Int  = 999      // 個数
+let APP_MAX_NEED_NUM : Int   = 999      // 個数
 
 
 //-------------------------------------- Color関係
