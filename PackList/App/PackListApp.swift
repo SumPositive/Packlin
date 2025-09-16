@@ -30,7 +30,7 @@ struct PackListApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            PackListView()
         }
         .modelContainer(sharedModelContainer)
     }

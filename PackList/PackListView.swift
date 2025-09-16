@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 
-struct ContentView: View {
+struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     private let rowHeight: CGFloat = 44
@@ -142,5 +142,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    PackListView()
 }
