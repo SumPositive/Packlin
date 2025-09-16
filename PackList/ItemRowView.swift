@@ -133,7 +133,7 @@ struct ItemRowView: View {
             editingItem = item
         }
         .popover(item: $editingItem, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { item in
-            EditItemView(item: item, keyboardHeight: keyboardHeight)
+            EditItemView(item: item)
                 .presentationCompactAdaptation(.none)
                 .background(Color.primary.opacity(0.2))
         }
@@ -231,7 +231,6 @@ struct EditItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var item: M3Item
     @FocusState private var nameIsFocused: Bool
-    let keyboardHeight: CGFloat
 
     private var weightBinding: Binding<Int> {
         Binding(get: { item.weight },
@@ -273,81 +272,78 @@ struct EditItemView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack {
-                HStack {
-                    Text("名称:")
-                        .font(.caption)
-                        .padding(4)
-                    TextEditor(text: $item.name)
-                        .onChange(of: item.name) { newValue, oldValue in
-                            if APP_MAX_NAME_LEN < newValue.count {
-                                item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                            }
+        VStack {
+            HStack {
+                Text("名称:")
+                    .font(.caption)
+                    .padding(4)
+                TextEditor(text: $item.name)
+                    .onChange(of: item.name) { newValue, oldValue in
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
                         }
-                        .focused($nameIsFocused) // フォーカス状態とバインド
-                        .frame(width: 260, height: 80)
-                        .padding(4)
-                }
-                HStack {
-                    Text("メモ:")
-                        .font(.caption)
-                        .padding(4)
-                    TextEditor(text: $item.memo)
-                        .onChange(of: item.memo) { newValue, oldValue in
-                            if APP_MAX_MEMO_LEN < newValue.count {
-                                item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                            }
-                        }
-                        .frame(width: 260, height: 80)
-                        .padding(4)
-                }
-                HStack {
-                    Text("個重量:")
-                        .font(.caption)
-                    TextField("", value: weightBinding, format: .number)
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.trailing)
-                        .background(Color.white.opacity(0.7))
-                        .padding(4)
-                    Text("ｇ")
-                        .font(.caption)
-                        .padding(4)
-                    Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
-                        .labelsHidden()
-                }
-                HStack {
-                    Text("在庫数:")
-                        .font(.caption)
-                    TextField("", value: stockBinding, format: .number)
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.trailing)
-                        .background(Color.white.opacity(0.7))
-                        .padding(4)
-                    Text("個")
-                        .font(.caption)
-                        .padding(4)
-                    Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
-                        .labelsHidden()
-                }
-                HStack {
-                    Text("必要数:")
-                        .font(.caption)
-                    TextField("", value: needBinding, format: .number)
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.trailing)
-                        .background(Color.white.opacity(0.7))
-                        .padding(4)
-                    Text("個")
-                        .font(.caption)
-                        .padding(4)
-                    Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
-                        .labelsHidden()
-                }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+                    .frame(width: 260, height: 80)
+                    .padding(4)
             }
-            .padding()
-            .padding(.bottom, keyboardHeight)
+            HStack {
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextEditor(text: $item.memo)
+                    .onChange(of: item.memo) { newValue, oldValue in
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+                    .frame(width: 260, height: 80)
+                    .padding(4)
+            }
+            HStack {
+                Text("個重量:")
+                    .font(.caption)
+                TextField("", value: weightBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+                Text("ｇ")
+                    .font(.caption)
+                    .padding(4)
+                Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
+                    .labelsHidden()
+            }
+            HStack {
+                Text("在庫数:")
+                    .font(.caption)
+                TextField("", value: stockBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+                Text("個")
+                    .font(.caption)
+                    .padding(4)
+                Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
+                    .labelsHidden()
+            }
+            HStack {
+                Text("必要数:")
+                    .font(.caption)
+                TextField("", value: needBinding, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .background(Color.white.opacity(0.7))
+                    .padding(4)
+                Text("個")
+                    .font(.caption)
+                    .padding(4)
+                Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
+                    .labelsHidden()
+            }
         }
+        .padding()
         .frame(minWidth: 300)
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()

@@ -122,7 +122,7 @@ struct GroupRowView: View {
                 editingGroup = group
             }
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
-                EditGroupView(group: group, keyboardHeight: keyboardHeight)
+                EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
@@ -262,42 +262,38 @@ struct EditGroupView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var group: M2Group
     @FocusState private var nameIsFocused: Bool
-    let keyboardHeight: CGFloat
 
     var body: some View {
-        ScrollView {
-            VStack {
-                HStack {
-                    Text("名称:")
-                        .font(.caption)
-                        .padding(4)
-                    TextEditor(text: $group.name)
-                        .onChange(of: group.name) { newValue, oldValue in
-                            if APP_MAX_NAME_LEN < newValue.count {
-                                group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                            }
+        VStack {
+            HStack {
+                Text("名称:")
+                    .font(.caption)
+                    .padding(4)
+                TextEditor(text: $group.name)
+                    .onChange(of: group.name) { newValue, oldValue in
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
                         }
-                        .focused($nameIsFocused) // フォーカス状態とバインド
-                        .frame(width: 260, height: 80)
-                        .padding(4)
-                }
-                HStack {
-                    Text("メモ:")
-                        .font(.caption)
-                        .padding(4)
-                    TextEditor(text: $group.memo)
-                        .onChange(of: group.memo) { newValue, oldValue in
-                            if APP_MAX_MEMO_LEN < newValue.count {
-                                group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                            }
-                        }
-                        .frame(width: 260, height: 80)
-                        .padding(4)
-                }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+                    .frame(width: 260, height: 80)
+                    .padding(4)
             }
-            .padding()
-            .padding(.bottom, keyboardHeight)
+            HStack {
+                Text("メモ:")
+                    .font(.caption)
+                    .padding(4)
+                TextEditor(text: $group.memo)
+                    .onChange(of: group.memo) { newValue, oldValue in
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+                    .frame(width: 260, height: 80)
+                    .padding(4)
+            }
         }
+        .padding()
         .frame(minWidth: 300)
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()
