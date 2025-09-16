@@ -26,7 +26,7 @@ struct PopupView<Content: View>: View {
     var body: some View {
         GeometryReader { geo in
             let screen = geo.size
-            
+
             ZStack(alignment: .topLeading) {
                 // 背景タップで閉じる
                 Color.black.opacity(0.001)
@@ -34,7 +34,7 @@ struct PopupView<Content: View>: View {
                     .onTapGesture {
                         onDismiss()
                     }
-                
+
                 // 本体
                 VStack(spacing: 0) {
                     content
@@ -58,6 +58,7 @@ struct PopupView<Content: View>: View {
 //                self.screenSize = screen
 //            }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom) // キーボード表示時に位置が変わらないようにする
     }
     
     /// 表示位置（キーボードに隠れないように画面の中央より上に表示する）
