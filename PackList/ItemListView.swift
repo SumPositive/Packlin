@@ -74,8 +74,11 @@ struct ItemListView: View {
         Section {
             ForEach(sortedItems(in: group)) { item in
                 ItemRowView(item: item) { selected, location in
-                    let localPoint = geometry.convert(location, from: .named("itemList"))
-                    let globalPoint = geometry.convert(localPoint, to: .global)
+                    let containerFrame = geometry.frame(in: .global)
+                    let globalPoint = CGPoint(
+                        x: containerFrame.minX + location.x,
+                        y: containerFrame.minY + location.y
+                    )
                     popupLocation = globalPoint
                     editingItem = selected
                 }
