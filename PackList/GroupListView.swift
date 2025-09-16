@@ -11,6 +11,7 @@ struct GroupListView: View {
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingGroup: M2Group? = nil
+    @State private var popupLocation: CGPoint? = nil
 
     private let rowHeight: CGFloat = 44
 
@@ -25,6 +26,7 @@ struct GroupListView: View {
                     ZStack {
                         GroupRowView(group: group, isHeader: false) { selected in
                             editingGroup = selected
+                            popupLocation = nil
                         }
                         
                         HStack {
@@ -107,7 +109,11 @@ struct GroupListView: View {
             //(ZStack 1) Popupで表示
             if let group = editingGroup {
                 PopupView(
-                    onDismiss: { editingGroup = nil }
+                    anchor: popupLocation,
+                    onDismiss: {
+                        editingGroup = nil
+                        popupLocation = nil
+                    }
                 ) {
                     EditGroupView(group: group)
                 }

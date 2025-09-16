@@ -16,6 +16,7 @@ struct PackListView: View {
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingPack: M1Pack? = nil
+    @State private var popupLocation: CGPoint? = nil
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
@@ -29,6 +30,7 @@ struct PackListView: View {
                         ZStack {
                             PackRowView(pack: pack) { selected in
                                 editingPack = selected
+                                popupLocation = nil
                             }
                             
                             HStack(spacing: 0) {
@@ -117,7 +119,11 @@ struct PackListView: View {
             //(ZStack 1) Popupで表示
             if let pack = editingPack {
                 PopupView(
-                    onDismiss: { editingPack = nil }
+                    anchor: popupLocation,
+                    onDismiss: {
+                        editingPack = nil
+                        popupLocation = nil
+                    }
                 ) {
                     EditPackView(pack: pack)
                 }

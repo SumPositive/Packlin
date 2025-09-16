@@ -11,7 +11,7 @@ import UIKit
 
 struct ItemRowView: View {
     let item: M3Item
-    let onEdit: (M3Item) -> Void
+    let onEdit: (M3Item, CGPoint) -> Void
 
     @Environment(\.modelContext) private var modelContext
    
@@ -82,9 +82,14 @@ struct ItemRowView: View {
         .background(COLOR_ROW_ITEM)
         .transition(.move(edge: .top).combined(with: .opacity))
         .contentShape(Rectangle())
-        .onTapGesture {
-            onEdit(item)
-        }
+        .gesture(
+            DragGesture(minimumDistance: 0, coordinateSpace: .named("itemList"))
+                .onEnded { value in
+                    let translation = value.translation
+                    guard abs(translation.width) < 8, abs(translation.height) < 8 else { return }
+                    onEdit(item, value.location)
+                }
+        )
         .swipeActions(edge: .trailing) {
             Button("Cut") {
                 copyToClipboard()

@@ -12,43 +12,51 @@ struct ItemListView: View {
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingItem: M3Item? = nil
+    @State private var popupLocation: CGPoint? = nil
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
     }
     
     var body: some View {
-        ZStack {
-            ScrollViewReader { proxy in
-                groupList(proxy: proxy)
-                    .onAppear {
-                        proxy.scrollTo(initialGroup.id, anchor: .top)
-                        try? modelContext.save() // Undoスタクがクリアされる
-                        modelContext.undoManager?.removeAllActions()
-                        updateUndoRedo()
-                    }
-                    .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                        updateUndoRedo()
-                    }
-            }
-            //----------------------------------
-            //(ZStack 1) Popupで表示
-            if let item = editingItem {
-                PopupView(
-                    onDismiss: { editingItem = nil }
-                ) {
-                    EditItemView(item: item)
+        GeometryReader { geometry in
+            ZStack {
+                ScrollViewReader { proxy in
+                    groupList(proxy: proxy, geometry: geometry)
+                        .onAppear {
+                            proxy.scrollTo(initialGroup.id, anchor: .top)
+                            try? modelContext.save() // Undoスタクがクリアされる
+                            modelContext.undoManager?.removeAllActions()
+                            updateUndoRedo()
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                            updateUndoRedo()
+                        }
                 }
-                .zIndex(1)
+                //----------------------------------
+                //(ZStack 1) Popupで表示
+                if let item = editingItem {
+                    PopupView(
+                        anchor: popupLocation,
+                        onDismiss: {
+                            editingItem = nil
+                            popupLocation = nil
+                        }
+                    ) {
+                        EditItemView(item: item)
+                    }
+                    .zIndex(1)
+                }
             }
+            .coordinateSpace(name: "itemList")
         }
     }
 
     @ViewBuilder
-    private func groupList(proxy: ScrollViewProxy) -> some View {
+    private func groupList(proxy: ScrollViewProxy, geometry: GeometryProxy) -> some View {
         List {
             ForEach(sortedGroups) { group in
-                groupSection(group)
+                groupSection(group, geometry: geometry)
             }
         }
         .listStyle(.plain)
@@ -62,10 +70,13 @@ struct ItemListView: View {
     }
 
     @ViewBuilder
-    private func groupSection(_ group: M2Group) -> some View {
+    private func groupSection(_ group: M2Group, geometry: GeometryProxy) -> some View {
         Section {
             ForEach(sortedItems(in: group)) { item in
-                ItemRowView(item: item) { selected in
+                ItemRowView(item: item) { selected, location in
+                    let localPoint = geometry.convert(location, from: .named("itemList"))
+                    let globalPoint = geometry.convert(localPoint, to: .global)
+                    popupLocation = globalPoint
                     editingItem = selected
                 }
             }
