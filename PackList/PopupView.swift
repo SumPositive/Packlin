@@ -13,7 +13,8 @@ import SwiftUI
 struct PopupView<Content: View>: View {
     let onDismiss: () -> Void
     let content: Content
-    
+
+    @StateObject private var keyboard = KeyboardObserver()
     @State private var contentSize: CGSize = .zero
 //    @State private var screenSize: CGSize = .zero
     
@@ -26,7 +27,8 @@ struct PopupView<Content: View>: View {
     var body: some View {
         GeometryReader { geo in
             let screen = geo.size
-            
+            let keyboardOffset = keyboard.height > 0 ? keyboard.height + 16 : 0
+
             ZStack(alignment: .topLeading) {
                 // 背景タップで閉じる
                 Color.black.opacity(0.001)
@@ -56,10 +58,18 @@ struct PopupView<Content: View>: View {
                         )
                 }
                 .position(popupPosition(screen: screen))
+                .offset(y: -keyboardOffset)
             }
             .onPreferenceChange(SizePreferenceKey.self) {
                 // 子ViewのcontentSizeが取得できる
                 self.contentSize = $0
+                updatePopoverBottom(contentSize: $0, screen: screen)
+            }
+            .onChange(of: screen) { newScreen in
+                updatePopoverBottom(contentSize: contentSize, screen: newScreen)
+            }
+            .onAppear {
+                updatePopoverBottom(contentSize: contentSize, screen: screen)
             }
 //            .onAppear {
 //                self.screenSize = screen
@@ -78,6 +88,15 @@ struct PopupView<Content: View>: View {
         // 中心座標を返す
         return CGPoint(x: x + fullWidth/2,
                        y: max(0, screen.height/2 - fullHeight))
+    }
+
+    private func updatePopoverBottom(contentSize: CGSize, screen: CGSize) {
+        let padding: CGFloat = 8
+        let fullHeight = contentSize.height + padding * 2
+        let centerY = max(0, screen.height / 2 - fullHeight)
+        let bottom = min(screen.height, centerY + fullHeight / 2)
+        popoverBottom = bottom
+        keyboard.refresh()
     }
 }
 
