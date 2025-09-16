@@ -213,7 +213,51 @@ struct EditItemView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable var item: M3Item
-    @FocusState private var nameIsFocused: Bool
+    @StateObject private var keyboardObserver = KeyboardObserver()
+    @FocusState private var focusedField: Field?
+    @State private var fieldFrames: [Field: CGRect] = [:]
+    @State private var containerFrame: CGRect = .zero
+
+    private enum Field: Hashable {
+        case name
+        case memo
+        case weight
+        case stock
+        case need
+    }
+
+    private struct FieldFramePreferenceKey: PreferenceKey {
+        static var defaultValue: [Field: CGRect] = [:]
+
+        static func reduce(value: inout [Field: CGRect], nextValue: () -> [Field: CGRect]) {
+            value.merge(nextValue()) { $1 }
+        }
+    }
+
+    private struct ContainerFramePreferenceKey: PreferenceKey {
+        static var defaultValue: CGRect = .zero
+
+        static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+            value = nextValue()
+        }
+    }
+
+    private var keyboardOffset: CGFloat {
+        guard keyboardObserver.keyboardHeight > 0,
+              let focusedField,
+              let fieldFrame = fieldFrames[focusedField],
+              containerFrame != .zero else {
+            return 0
+        }
+
+        let keyboardTop = UIScreen.main.bounds.height - keyboardObserver.keyboardHeight
+        let safeMargin: CGFloat = 16
+        let overlap = fieldFrame.maxY + safeMargin - keyboardTop
+        guard overlap > 0 else { return 0 }
+
+        let availableOffset = max(0, fieldFrame.minY - containerFrame.minY)
+        return min(overlap, availableOffset)
+    }
 
     private var weightBinding: Binding<Int> {
         Binding(get: { item.weight },
@@ -255,86 +299,143 @@ struct EditItemView: View {
     }
 
     var body: some View {
-        VStack {
-            HStack {
-                Text("名称:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $item.name)
-                    .onChange(of: item.name) { newValue, oldValue in
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                        }
+        GeometryReader { geometry in
+            let bottomInset = geometry.safeAreaInsets.bottom
+            let bottomPadding = max(0, keyboardObserver.keyboardHeight - bottomInset)
+
+            ScrollView {
+                VStack {
+                    HStack {
+                        Text("名称:")
+                            .font(.caption)
+                            .padding(4)
+                        TextEditor(text: $item.name)
+                            .onChange(of: item.name) { newValue, oldValue in
+                                if APP_MAX_NAME_LEN < newValue.count {
+                                    item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                                }
+                            }
+                            .focused($focusedField, equals: .name)
+                            .frame(width: 260, height: 80)
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.name: proxy.frame(in: .global)])
+                                }
+                            )
                     }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(width: 260, height: 80)
-                    .padding(4)
-            }
-            HStack {
-                Text("メモ:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $item.memo)
-                    .onChange(of: item.memo) { newValue, oldValue in
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
+                    HStack {
+                        Text("メモ:")
+                            .font(.caption)
+                            .padding(4)
+                        TextEditor(text: $item.memo)
+                            .onChange(of: item.memo) { newValue, oldValue in
+                                if APP_MAX_MEMO_LEN < newValue.count {
+                                    item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                                }
+                            }
+                            .focused($focusedField, equals: .memo)
+                            .frame(width: 260, height: 80)
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.memo: proxy.frame(in: .global)])
+                                }
+                            )
                     }
-                    .frame(width: 260, height: 80)
-                    .padding(4)
+                    HStack {
+                        Text("個重量:")
+                            .font(.caption)
+                        TextField("", value: weightBinding, format: .number)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .weight)
+                            .background(Color.white.opacity(0.7))
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.weight: proxy.frame(in: .global)])
+                                }
+                            )
+                        Text("ｇ")
+                            .font(.caption)
+                            .padding(4)
+                        Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
+                            .labelsHidden()
+                    }
+                    HStack {
+                        Text("在庫数:")
+                            .font(.caption)
+                        TextField("", value: stockBinding, format: .number)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .stock)
+                            .background(Color.white.opacity(0.7))
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.stock: proxy.frame(in: .global)])
+                                }
+                            )
+                        Text("個")
+                            .font(.caption)
+                            .padding(4)
+                        Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
+                            .labelsHidden()
+                    }
+                    HStack {
+                        Text("必要数:")
+                            .font(.caption)
+                        TextField("", value: needBinding, format: .number)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .need)
+                            .background(Color.white.opacity(0.7))
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.need: proxy.frame(in: .global)])
+                                }
+                            )
+                        Text("個")
+                            .font(.caption)
+                            .padding(4)
+                        Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
+                            .labelsHidden()
+                    }
+                }
+                .padding()
+                .frame(minWidth: 300)
             }
-            HStack {
-                Text("個重量:")
-                    .font(.caption)
-                TextField("", value: weightBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                    .padding(4)
-                Text("ｇ")
-                    .font(.caption)
-                    .padding(4)
-                Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
-                    .labelsHidden()
-            }
-            HStack {
-                Text("在庫数:")
-                    .font(.caption)
-                TextField("", value: stockBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                    .padding(4)
-                Text("個")
-                    .font(.caption)
-                    .padding(4)
-                Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
-                    .labelsHidden()
-            }
-            HStack {
-                Text("必要数:")
-                    .font(.caption)
-                TextField("", value: needBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                    .padding(4)
-                Text("個")
-                    .font(.caption)
-                    .padding(4)
-                Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
-                    .labelsHidden()
-            }
+            .padding(.bottom, bottomPadding)
+            .offset(y: -keyboardOffset)
+            .animation(.easeOut(duration: 0.25), value: keyboardObserver.keyboardHeight)
+            .animation(.easeOut(duration: 0.25), value: focusedField)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: ContainerFramePreferenceKey.self,
+                                            value: proxy.frame(in: .global))
+                }
+            )
         }
-        .padding()
-        .frame(minWidth: 300)
+        .onPreferenceChange(FieldFramePreferenceKey.self) { frames in
+            fieldFrames = frames
+        }
+        .onPreferenceChange(ContainerFramePreferenceKey.self) { frame in
+            containerFrame = frame
+        }
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()
             if item.name.isEmpty {
-                nameIsFocused = true
+                focusedField = .name
             }
         }
-        .onDisappear() {
+        .onDisappear {
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる

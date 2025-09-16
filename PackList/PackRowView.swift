@@ -250,47 +250,124 @@ struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable var pack: M1Pack
-    @FocusState private var nameIsFocused: Bool
-    
-    var body: some View {
-        VStack {
-            HStack {
-                Text("名称:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $pack.name)
-                    .onChange(of: pack.name) { newValue, oldValue in
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                        }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(width: 260, height: 80)
-                    .padding(4)
-            }
-            HStack {
-                Text("メモ:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $pack.memo)
-                    .onChange(of: pack.memo) { newValue, oldValue in
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
-                    }
-                    .frame(width: 260, height: 80)
-                    .padding(4)
-            }
+    @StateObject private var keyboardObserver = KeyboardObserver()
+    @FocusState private var focusedField: Field?
+    @State private var fieldFrames: [Field: CGRect] = [:]
+    @State private var containerFrame: CGRect = .zero
+
+    private enum Field: Hashable {
+        case name
+        case memo
+    }
+
+    private struct FieldFramePreferenceKey: PreferenceKey {
+        static var defaultValue: [Field: CGRect] = [:]
+
+        static func reduce(value: inout [Field: CGRect], nextValue: () -> [Field: CGRect]) {
+            value.merge(nextValue()) { $1 }
         }
-        .padding()
-        .frame(minWidth: 300, maxHeight: 300)
+    }
+
+    private struct ContainerFramePreferenceKey: PreferenceKey {
+        static var defaultValue: CGRect = .zero
+
+        static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+            value = nextValue()
+        }
+    }
+
+    private var keyboardOffset: CGFloat {
+        guard keyboardObserver.keyboardHeight > 0,
+              let focusedField,
+              let fieldFrame = fieldFrames[focusedField],
+              containerFrame != .zero else {
+            return 0
+        }
+
+        let keyboardTop = UIScreen.main.bounds.height - keyboardObserver.keyboardHeight
+        let safeMargin: CGFloat = 16
+        let overlap = fieldFrame.maxY + safeMargin - keyboardTop
+        guard overlap > 0 else { return 0 }
+
+        let availableOffset = max(0, fieldFrame.minY - containerFrame.minY)
+        return min(overlap, availableOffset)
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            let bottomInset = geometry.safeAreaInsets.bottom
+            let bottomPadding = max(0, keyboardObserver.keyboardHeight - bottomInset)
+
+            ScrollView {
+                VStack {
+                    HStack {
+                        Text("名称:")
+                            .font(.caption)
+                            .padding(4)
+                        TextEditor(text: $pack.name)
+                            .onChange(of: pack.name) { newValue, oldValue in
+                                if APP_MAX_NAME_LEN < newValue.count {
+                                    pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                                }
+                            }
+                            .focused($focusedField, equals: .name)
+                            .frame(width: 260, height: 80)
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.name: proxy.frame(in: .global)])
+                                }
+                            )
+                    }
+                    HStack {
+                        Text("メモ:")
+                            .font(.caption)
+                            .padding(4)
+                        TextEditor(text: $pack.memo)
+                            .onChange(of: pack.memo) { newValue, oldValue in
+                                if APP_MAX_MEMO_LEN < newValue.count {
+                                    pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                                }
+                            }
+                            .focused($focusedField, equals: .memo)
+                            .frame(width: 260, height: 80)
+                            .padding(4)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(key: FieldFramePreferenceKey.self,
+                                                           value: [.memo: proxy.frame(in: .global)])
+                                }
+                            )
+                    }
+                }
+                .padding()
+                .frame(minWidth: 300, maxHeight: 300)
+            }
+            .padding(.bottom, bottomPadding)
+            .offset(y: -keyboardOffset)
+            .animation(.easeOut(duration: 0.25), value: keyboardObserver.keyboardHeight)
+            .animation(.easeOut(duration: 0.25), value: focusedField)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: ContainerFramePreferenceKey.self,
+                                            value: proxy.frame(in: .global))
+                }
+            )
+        }
+        .onPreferenceChange(FieldFramePreferenceKey.self) { frames in
+            fieldFrames = frames
+        }
+        .onPreferenceChange(ContainerFramePreferenceKey.self) { frame in
+            containerFrame = frame
+        }
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()
             if pack.name.isEmpty {
-                nameIsFocused = true
+                focusedField = .name
             }
         }
-        .onDisappear() {
+        .onDisappear {
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる
