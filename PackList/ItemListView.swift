@@ -19,10 +19,10 @@ struct ItemListView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
+        GeometryReader { _ in
             ZStack {
                 ScrollViewReader { proxy in
-                    groupList(proxy: proxy, geometry: geometry)
+                    groupList(proxy: proxy)
                         .onAppear {
                             proxy.scrollTo(initialGroup.id, anchor: .top)
                             try? modelContext.save() // Undoスタクがクリアされる
@@ -53,10 +53,10 @@ struct ItemListView: View {
     }
 
     @ViewBuilder
-    private func groupList(proxy: ScrollViewProxy, geometry: GeometryProxy) -> some View {
+    private func groupList(proxy: ScrollViewProxy) -> some View {
         List {
             ForEach(sortedGroups) { group in
-                groupSection(group, geometry: geometry)
+                groupSection(group)
             }
         }
         .listStyle(.plain)
@@ -70,16 +70,11 @@ struct ItemListView: View {
     }
 
     @ViewBuilder
-    private func groupSection(_ group: M2Group, geometry: GeometryProxy) -> some View {
+    private func groupSection(_ group: M2Group) -> some View {
         Section {
             ForEach(sortedItems(in: group)) { item in
                 ItemRowView(item: item) { selected, location in
-                    let containerFrame = geometry.frame(in: .global)
-                    let globalPoint = CGPoint(
-                        x: containerFrame.minX + location.x,
-                        y: containerFrame.minY + location.y
-                    )
-                    popupLocation = globalPoint
+                    popupLocation = location
                     editingItem = selected
                 }
             }
