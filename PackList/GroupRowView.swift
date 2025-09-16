@@ -17,6 +17,9 @@ struct GroupRowView: View {
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var keyboardHeight: CGFloat = 0
+
+    private let keyboardHeightObserver = KeyboardHeightObserver()
 
     private let rowHeight: CGFloat = 44
 
@@ -103,20 +106,34 @@ struct GroupRowView: View {
             .background(
                 GeometryReader { proxy in
                     Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
+                        .onAppear {
+                            let newFrame = proxy.frame(in: .global)
+                            frame = newFrame
+                            arrowEdge = arrowEdge(for: newFrame, keyboardHeight: keyboardHeight)
+                        }
                         .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
                             frame = newValue
+                            arrowEdge = arrowEdge(for: newValue, keyboardHeight: keyboardHeight)
                         }
                 }
             )
             .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
+                arrowEdge = arrowEdge(for: frame, keyboardHeight: keyboardHeight)
                 editingGroup = group
             }
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
-                EditGroupView(group: group)
+                EditGroupView(group: group, keyboardHeight: keyboardHeight)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
+            }
+            .onReceive(keyboardHeightObserver.willShow) { notification in
+                let height = keyboardHeightObserver.height(from: notification)
+                keyboardHeight = height
+                arrowEdge = arrowEdge(for: frame, keyboardHeight: height)
+            }
+            .onReceive(keyboardHeightObserver.willHide) { _ in
+                keyboardHeight = 0
+                arrowEdge = arrowEdge(for: frame, keyboardHeight: 0)
             }
         }
     }
@@ -231,11 +248,11 @@ struct GroupRowView: View {
         parent.normalizeItemOrder()
     }
 
-    private func arrowEdge(for frame: CGRect?) -> Edge {
+    private func arrowEdge(for frame: CGRect?, keyboardHeight: CGFloat) -> Edge {
         guard let frame = frame else { return .bottom }
         let screenHeight = UIScreen.main.bounds.height
         let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
+        let bottomSpace = screenHeight - keyboardHeight - frame.maxY
         return bottomSpace > topSpace ? .top : .bottom
     }
 }
@@ -245,38 +262,42 @@ struct EditGroupView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var group: M2Group
     @FocusState private var nameIsFocused: Bool
-    
+    let keyboardHeight: CGFloat
+
     var body: some View {
-        VStack {
-            HStack {
-                Text("名称:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $group.name)
-                    .onChange(of: group.name) { newValue, oldValue in
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+        ScrollView {
+            VStack {
+                HStack {
+                    Text("名称:")
+                        .font(.caption)
+                        .padding(4)
+                    TextEditor(text: $group.name)
+                        .onChange(of: group.name) { newValue, oldValue in
+                            if APP_MAX_NAME_LEN < newValue.count {
+                                group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                            }
                         }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(width: 260, height: 80)
-                    .padding(4)
-            }
-            HStack {
-                Text("メモ:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $group.memo)
-                    .onChange(of: group.memo) { newValue, oldValue in
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        .focused($nameIsFocused) // フォーカス状態とバインド
+                        .frame(width: 260, height: 80)
+                        .padding(4)
+                }
+                HStack {
+                    Text("メモ:")
+                        .font(.caption)
+                        .padding(4)
+                    TextEditor(text: $group.memo)
+                        .onChange(of: group.memo) { newValue, oldValue in
+                            if APP_MAX_MEMO_LEN < newValue.count {
+                                group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                            }
                         }
-                    }
-                    .frame(width: 260, height: 80)
-                    .padding(4)
+                        .frame(width: 260, height: 80)
+                        .padding(4)
+                }
             }
+            .padding()
+            .padding(.bottom, keyboardHeight)
         }
-        .padding()
         .frame(minWidth: 300)
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()

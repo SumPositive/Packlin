@@ -16,6 +16,9 @@ struct ItemRowView: View {
     @State private var editingItem: M3Item?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var keyboardHeight: CGFloat = 0
+
+    private let keyboardHeightObserver = KeyboardHeightObserver()
    
     private let rowHeight: CGFloat = 44
 
@@ -114,20 +117,34 @@ struct ItemRowView: View {
         .background(
             GeometryReader { proxy in
                 Color.clear
-                    .onAppear { frame = proxy.frame(in: .global) }
+                    .onAppear {
+                        let newFrame = proxy.frame(in: .global)
+                        frame = newFrame
+                        arrowEdge = arrowEdge(for: newFrame, keyboardHeight: keyboardHeight)
+                    }
                     .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
                         frame = newValue
+                        arrowEdge = arrowEdge(for: newValue, keyboardHeight: keyboardHeight)
                     }
             }
         )
         .onTapGesture {
-            arrowEdge = arrowEdge(for: frame)
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: keyboardHeight)
             editingItem = item
         }
         .popover(item: $editingItem, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { item in
-            EditItemView(item: item)
+            EditItemView(item: item, keyboardHeight: keyboardHeight)
                 .presentationCompactAdaptation(.none)
                 .background(Color.primary.opacity(0.2))
+        }
+        .onReceive(keyboardHeightObserver.willShow) { notification in
+            let height = keyboardHeightObserver.height(from: notification)
+            keyboardHeight = height
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: height)
+        }
+        .onReceive(keyboardHeightObserver.willHide) { _ in
+            keyboardHeight = 0
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: 0)
         }
         .transition(.move(edge: .top).combined(with: .opacity))
        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
@@ -199,11 +216,11 @@ struct ItemRowView: View {
         }
     }
 
-    private func arrowEdge(for frame: CGRect?) -> Edge {
+    private func arrowEdge(for frame: CGRect?, keyboardHeight: CGFloat) -> Edge {
         guard let frame = frame else { return .bottom }
         let screenHeight = UIScreen.main.bounds.height
         let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
+        let bottomSpace = screenHeight - keyboardHeight - frame.maxY
         return bottomSpace > topSpace ? .top : .bottom
     }
 }
@@ -214,6 +231,7 @@ struct EditItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var item: M3Item
     @FocusState private var nameIsFocused: Bool
+    let keyboardHeight: CGFloat
 
     private var weightBinding: Binding<Int> {
         Binding(get: { item.weight },
@@ -255,78 +273,81 @@ struct EditItemView: View {
     }
 
     var body: some View {
-        VStack {
-            HStack {
-                Text("名称:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $item.name)
-                    .onChange(of: item.name) { newValue, oldValue in
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+        ScrollView {
+            VStack {
+                HStack {
+                    Text("名称:")
+                        .font(.caption)
+                        .padding(4)
+                    TextEditor(text: $item.name)
+                        .onChange(of: item.name) { newValue, oldValue in
+                            if APP_MAX_NAME_LEN < newValue.count {
+                                item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                            }
                         }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(width: 260, height: 80)
-                    .padding(4)
-            }
-            HStack {
-                Text("メモ:")
-                    .font(.caption)
-                    .padding(4)
-                TextEditor(text: $item.memo)
-                    .onChange(of: item.memo) { newValue, oldValue in
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        .focused($nameIsFocused) // フォーカス状態とバインド
+                        .frame(width: 260, height: 80)
+                        .padding(4)
+                }
+                HStack {
+                    Text("メモ:")
+                        .font(.caption)
+                        .padding(4)
+                    TextEditor(text: $item.memo)
+                        .onChange(of: item.memo) { newValue, oldValue in
+                            if APP_MAX_MEMO_LEN < newValue.count {
+                                item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                            }
                         }
-                    }
-                    .frame(width: 260, height: 80)
-                    .padding(4)
+                        .frame(width: 260, height: 80)
+                        .padding(4)
+                }
+                HStack {
+                    Text("個重量:")
+                        .font(.caption)
+                    TextField("", value: weightBinding, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .background(Color.white.opacity(0.7))
+                        .padding(4)
+                    Text("ｇ")
+                        .font(.caption)
+                        .padding(4)
+                    Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
+                        .labelsHidden()
+                }
+                HStack {
+                    Text("在庫数:")
+                        .font(.caption)
+                    TextField("", value: stockBinding, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .background(Color.white.opacity(0.7))
+                        .padding(4)
+                    Text("個")
+                        .font(.caption)
+                        .padding(4)
+                    Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
+                        .labelsHidden()
+                }
+                HStack {
+                    Text("必要数:")
+                        .font(.caption)
+                    TextField("", value: needBinding, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .background(Color.white.opacity(0.7))
+                        .padding(4)
+                    Text("個")
+                        .font(.caption)
+                        .padding(4)
+                    Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
+                        .labelsHidden()
+                }
             }
-            HStack {
-                Text("個重量:")
-                    .font(.caption)
-                TextField("", value: weightBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                    .padding(4)
-                Text("ｇ")
-                    .font(.caption)
-                    .padding(4)
-                Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
-                    .labelsHidden()
-            }
-            HStack {
-                Text("在庫数:")
-                    .font(.caption)
-                TextField("", value: stockBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                    .padding(4)
-                Text("個")
-                    .font(.caption)
-                    .padding(4)
-                Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
-                    .labelsHidden()
-            }
-            HStack {
-                Text("必要数:")
-                    .font(.caption)
-                TextField("", value: needBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                    .padding(4)
-                Text("個")
-                    .font(.caption)
-                    .padding(4)
-                Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
-                    .labelsHidden()
-            }
+            .padding()
+            .padding(.bottom, keyboardHeight)
         }
-        .padding()
         .frame(minWidth: 300)
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()
