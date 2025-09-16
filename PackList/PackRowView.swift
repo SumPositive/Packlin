@@ -13,9 +13,9 @@ struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
     let pack: M1Pack
     
-    @State private var editingPack: M1Pack?
-    @State private var frame: CGRect = .zero
-    @State private var arrowEdge: Edge = .bottom
+//    @State private var editingPack: M1Pack?
+//    @State private var frame: CGRect = .zero
+//    @State private var arrowEdge: Edge = .bottom
    
     private let rowHeight: CGFloat = 44
 
@@ -34,7 +34,7 @@ struct PackRowView: View {
             HStack(spacing: 0) {
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                     .padding(.trailing, 8)
-
+                
                 VStack(alignment: .leading, spacing: 1) {
                     Text(pack.name.isEmpty ? "New Pack" : pack.name)
                         .lineLimit(3)
@@ -78,15 +78,16 @@ struct PackRowView: View {
                 }
             )
             .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingPack = pack
+                //arrowEdge = arrowEdge(for: frame)
+                
+//                editingPack = pack
             }
-            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
-                EditPackView(pack: title)
-                    .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-                    .ignoresSafeArea(.keyboard) // これを付けると“圧縮”が起きにくくなる
-            }
+            //            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { pack in
+            //                EditPackView(pack: pack)
+            //                    .presentationCompactAdaptation(.none)
+            //                    .background(Color.primary.opacity(0.2))
+            //                    .ignoresSafeArea(.keyboard) // これを付けると“圧縮”が起きにくくなる
+            //            }
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
