@@ -38,12 +38,9 @@ struct PopupView<Content: View>: View {
                 // 本体
                 VStack(spacing: 0) {
                     content
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear
-                                    .preference(key: SizePreferenceKey.self, value: geo.size)
-                            }
-                        )
+                        .readSize { size in
+                            self.contentSize = size
+                        }
                         .padding(4) // Popupの外枠として見える
                         .background(
                             RoundedRectangle(cornerRadius: 12)
@@ -56,10 +53,6 @@ struct PopupView<Content: View>: View {
                         )
                 }
                 .position(popupPosition(screen: screen))
-            }
-            .onPreferenceChange(SizePreferenceKey.self) {
-                // 子ViewのcontentSizeが取得できる
-                self.contentSize = $0
             }
 //            .onAppear {
 //                self.screenSize = screen
@@ -78,15 +71,6 @@ struct PopupView<Content: View>: View {
         // 中心座標を返す
         return CGPoint(x: x + fullWidth/2,
                        y: max(0, screen.height/2 - fullHeight))
-    }
-}
-
-
-// --- コンテンツサイズ取得用 PreferenceKey ---
-struct SizePreferenceKey: PreferenceKey {
-    static var defaultValue: CGSize { .zero }
-    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
-        value = nextValue()
     }
 }
 
