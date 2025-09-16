@@ -41,6 +41,7 @@ final class KeyboardObserver: ObservableObject {
                 let bottomInset = window.safeAreaInsets.bottom
                 let overlap = max(0, window.bounds.maxY - end.minY - bottomInset)
 
+                // Popup 下端がキーボードに掛かった分だけを返す
                 if (window.bounds.maxY - popoverBottom) < overlap {
                     self?.height = overlap - (window.bounds.maxY - popoverBottom)
                 }else{

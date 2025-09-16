@@ -13,9 +13,12 @@ import SwiftUI
 struct PopupView<Content: View>: View {
     let onDismiss: () -> Void
     let content: Content
-    
+
+    @StateObject private var keyboard = KeyboardObserver()
     @State private var contentSize: CGSize = .zero
 //    @State private var screenSize: CGSize = .zero
+
+    private let popupPadding: CGFloat = 8
     
     init(onDismiss: @escaping () -> Void,
          @ViewBuilder content: () -> Content) {
@@ -34,7 +37,7 @@ struct PopupView<Content: View>: View {
                     .onTapGesture {
                         onDismiss()
                     }
-                
+
                 // 本体
                 VStack(spacing: 0) {
                     content
@@ -56,28 +59,42 @@ struct PopupView<Content: View>: View {
                         )
                 }
                 .position(popupPosition(screen: screen))
+                .offset(y: -keyboard.height) // キーボードと重なる分だけ持ち上げる
             }
             .onPreferenceChange(SizePreferenceKey.self) {
                 // 子ViewのcontentSizeが取得できる
                 self.contentSize = $0
+                updatePopoverBottom(screen: screen)
             }
 //            .onAppear {
 //                self.screenSize = screen
 //            }
+            .onAppear {
+                updatePopoverBottom(screen: screen)
+            }
+            .onChange(of: geo.size) { newScreen in
+                updatePopoverBottom(screen: newScreen)
+            }
         }
     }
-    
+
     /// 表示位置（キーボードに隠れないように画面の中央より上に表示する）
     private func popupPosition(screen: CGSize) -> CGPoint {
-        let padding: CGFloat = 8
-        let fullWidth = contentSize.width + padding*2  // padding + background
-        let fullHeight = contentSize.height + padding*2 // padding
+        let fullWidth = contentSize.width + popupPadding * 2  // padding + background
+        let fullHeight = contentSize.height + popupPadding * 2 // padding
         // 左上座標
         let x = (screen.width - fullWidth) / 2
         let y = (screen.height - fullHeight) / 2
         // 中心座標を返す
         return CGPoint(x: x + fullWidth/2,
                        y: max(0, screen.height/2 - fullHeight))
+    }
+
+    private func updatePopoverBottom(screen: CGSize) {
+        let fullHeight = contentSize.height + popupPadding * 2
+        let centerY = max(0, screen.height / 2 - fullHeight)
+        let bottom = centerY + fullHeight / 2
+        popoverBottom = bottom
     }
 }
 
