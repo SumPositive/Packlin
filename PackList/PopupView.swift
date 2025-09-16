@@ -15,7 +15,6 @@ struct PopupView<Content: View>: View {
     let content: Content
     
     @State private var contentSize: CGSize = .zero
-//    @State private var screenSize: CGSize = .zero
     
     init(onDismiss: @escaping () -> Void,
          @ViewBuilder content: () -> Content) {
@@ -54,11 +53,8 @@ struct PopupView<Content: View>: View {
                 }
                 .position(popupPosition(screen: screen))
             }
-//            .onAppear {
-//                self.screenSize = screen
-//            }
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom) // キーボード表示時に位置が変わらないようにする
+        //.ignoresSafeArea(.keyboard, edges: .bottom) // キーボード表示時に位置が変わらないようにする
     }
     
     /// 表示位置（キーボードに隠れないように画面の中央より上に表示する）
@@ -68,7 +64,6 @@ struct PopupView<Content: View>: View {
         let fullHeight = contentSize.height + padding*2 // padding
         // 左上座標
         let x = (screen.width - fullWidth) / 2
-        let y = (screen.height - fullHeight) / 2
         // 中心座標を返す
         return CGPoint(x: x + fullWidth/2,
                        y: max(0, screen.height/2 - fullHeight))
