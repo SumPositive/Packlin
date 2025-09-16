@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import Combine
 
 struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
@@ -17,8 +18,10 @@ struct GroupRowView: View {
     @State private var editingGroup: M2Group?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
+    @State private var keyboardHeight: CGFloat = 0
 
     private let rowHeight: CGFloat = 44
+    private let keyboardHeightObserver = KeyboardHeightObserver()
 
     init(group: M2Group, isHeader: Bool) {
         self.group = group
@@ -103,14 +106,19 @@ struct GroupRowView: View {
             .background(
                 GeometryReader { proxy in
                     Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
+                        .onAppear {
+                            let newFrame = proxy.frame(in: .global)
+                            frame = newFrame
+                            arrowEdge = arrowEdge(for: newFrame, keyboardHeight: keyboardHeight)
+                        }
                         .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
                             frame = newValue
+                            arrowEdge = arrowEdge(for: newValue, keyboardHeight: keyboardHeight)
                         }
                 }
             )
             .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
+                arrowEdge = arrowEdge(for: frame, keyboardHeight: keyboardHeight)
                 editingGroup = group
             }
             .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
@@ -118,6 +126,10 @@ struct GroupRowView: View {
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
             }
+        }
+        .onReceive(keyboardHeightObserver.publisher) { height in
+            keyboardHeight = height
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: height)
         }
     }
 
@@ -231,11 +243,11 @@ struct GroupRowView: View {
         parent.normalizeItemOrder()
     }
 
-    private func arrowEdge(for frame: CGRect?) -> Edge {
+    private func arrowEdge(for frame: CGRect?, keyboardHeight: CGFloat) -> Edge {
         guard let frame = frame else { return .bottom }
         let screenHeight = UIScreen.main.bounds.height
         let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
+        let bottomSpace = screenHeight - keyboardHeight - frame.maxY
         return bottomSpace > topSpace ? .top : .bottom
     }
 }

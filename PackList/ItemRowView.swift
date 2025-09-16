@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import Combine
 
 struct ItemRowView: View {
     @Environment(\.modelContext) private var modelContext
@@ -16,8 +17,10 @@ struct ItemRowView: View {
     @State private var editingItem: M3Item?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-   
+    @State private var keyboardHeight: CGFloat = 0
+
     private let rowHeight: CGFloat = 44
+    private let keyboardHeightObserver = KeyboardHeightObserver()
 
     init(item: M3Item) {
         self.item = item
@@ -114,14 +117,19 @@ struct ItemRowView: View {
         .background(
             GeometryReader { proxy in
                 Color.clear
-                    .onAppear { frame = proxy.frame(in: .global) }
+                    .onAppear {
+                        let newFrame = proxy.frame(in: .global)
+                        frame = newFrame
+                        arrowEdge = arrowEdge(for: newFrame, keyboardHeight: keyboardHeight)
+                    }
                     .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
                         frame = newValue
+                        arrowEdge = arrowEdge(for: newValue, keyboardHeight: keyboardHeight)
                     }
             }
         )
         .onTapGesture {
-            arrowEdge = arrowEdge(for: frame)
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: keyboardHeight)
             editingItem = item
         }
         .popover(item: $editingItem, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { item in
@@ -129,8 +137,12 @@ struct ItemRowView: View {
                 .presentationCompactAdaptation(.none)
                 .background(Color.primary.opacity(0.2))
         }
+        .onReceive(keyboardHeightObserver.publisher) { height in
+            keyboardHeight = height
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: height)
+        }
         .transition(.move(edge: .top).combined(with: .opacity))
-       .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
     }
 
     private func deleteItem() {
@@ -199,11 +211,11 @@ struct ItemRowView: View {
         }
     }
 
-    private func arrowEdge(for frame: CGRect?) -> Edge {
+    private func arrowEdge(for frame: CGRect?, keyboardHeight: CGFloat) -> Edge {
         guard let frame = frame else { return .bottom }
         let screenHeight = UIScreen.main.bounds.height
         let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
+        let bottomSpace = screenHeight - keyboardHeight - frame.maxY
         return bottomSpace > topSpace ? .top : .bottom
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import Combine
 
 struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
@@ -16,8 +17,10 @@ struct PackRowView: View {
     @State private var editingPack: M1Pack?
     @State private var frame: CGRect = .zero
     @State private var arrowEdge: Edge = .bottom
-   
+    @State private var keyboardHeight: CGFloat = 0
+
     private let rowHeight: CGFloat = 44
+    private let keyboardHeightObserver = KeyboardHeightObserver()
 
     init(pack: M1Pack) {
         self.pack = pack
@@ -71,14 +74,19 @@ struct PackRowView: View {
             .background(
                 GeometryReader { proxy in
                     Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
+                        .onAppear {
+                            let newFrame = proxy.frame(in: .global)
+                            frame = newFrame
+                            arrowEdge = arrowEdge(for: newFrame, keyboardHeight: keyboardHeight)
+                        }
                         .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
                             frame = newValue
+                            arrowEdge = arrowEdge(for: newValue, keyboardHeight: keyboardHeight)
                         }
                 }
             )
             .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
+                arrowEdge = arrowEdge(for: frame, keyboardHeight: keyboardHeight)
                 editingPack = pack
             }
             .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { title in
@@ -98,18 +106,22 @@ struct PackRowView: View {
                     copyToClipboard()
                 }
                 .tint(.cyan)
-                
+
                 Button("Paste") {
                     pasteFromClipboard()
                 }
                 .disabled(RowClipboard.pack == nil)
                 .tint(.orange)
-                
+
                 Button("Duplicate") {
                     duplicatePack()
                 }
                 .tint(.green)
             }
+        }
+        .onReceive(keyboardHeightObserver.publisher) { height in
+            keyboardHeight = height
+            arrowEdge = arrowEdge(for: frame, keyboardHeight: height)
         }
     }
 
@@ -237,11 +249,11 @@ struct PackRowView: View {
         parent.normalizeItemOrder()
     }
 
-    private func arrowEdge(for frame: CGRect?) -> Edge {
+    private func arrowEdge(for frame: CGRect?, keyboardHeight: CGFloat) -> Edge {
         guard let frame = frame else { return .bottom }
         let screenHeight = UIScreen.main.bounds.height
         let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
+        let bottomSpace = screenHeight - keyboardHeight - frame.maxY
         return bottomSpace > topSpace ? .top : .bottom
     }
 }
