@@ -117,6 +117,7 @@ struct GroupRowView: View {
                 EditGroupView(group: group)
                     .presentationCompactAdaptation(.none)
                     .background(Color.primary.opacity(0.2))
+                    .ignoresSafeArea(.keyboard) // これを付けると“圧縮”が起きにくくなる
             }
         }
     }
@@ -236,7 +237,14 @@ struct GroupRowView: View {
         let screenHeight = UIScreen.main.bounds.height
         let topSpace = frame.minY
         let bottomSpace = screenHeight - frame.maxY
-        return bottomSpace > topSpace ? .top : .bottom
+
+        if topSpace < bottomSpace {
+            popoverBottom = frame.maxY + 150 + 40
+            return .top
+        }else{
+            popoverBottom = 0 // 背面スライドUPしない。popoverだけがスライドUPしてくれる
+            return .bottom
+        }
     }
 }
 
@@ -249,42 +257,45 @@ struct EditGroupView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("名称:")
+                Text("名称")
                     .font(.caption)
-                    .padding(4)
                 TextEditor(text: $group.name)
                     .onChange(of: group.name) { newValue, oldValue in
+                        // 最大文字数制限
                         if APP_MAX_NAME_LEN < newValue.count {
                             group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
                         }
                     }
                     .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(width: 260, height: 80)
-                    .padding(4)
+                    .frame(height: 60)
             }
             HStack {
-                Text("メモ:")
+                Text("メモ")
                     .font(.caption)
-                    .padding(4)
                 TextEditor(text: $group.memo)
                     .onChange(of: group.memo) { newValue, oldValue in
+                        // 最大文字数制限
                         if APP_MAX_MEMO_LEN < newValue.count {
                             group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                         }
                     }
-                    .frame(width: 260, height: 80)
-                    .padding(4)
+                    .frame(height: 60)
             }
         }
-        .padding()
-        .frame(minWidth: 300)
+        .padding(.horizontal, 16)
+        .frame(width: 300, height: 150)
         .onAppear {
+            // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
             if group.name.isEmpty {
                 nameIsFocused = true
             }
         }
         .onDisappear() {
+            // 末尾のスペースと改行を除去
+            group.name = group.name.trimTrailSpacesAndNewlines
+            group.memo = group.memo.trimTrailSpacesAndNewlines
+            // UndoGrouping
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる

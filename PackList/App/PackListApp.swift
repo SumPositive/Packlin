@@ -28,11 +28,16 @@ struct PackListApp: App {
         }
     }()
 
+    @StateObject private var kb = KeyboardObserver()
+
     var body: some Scene {
         WindowGroup {
             PackListView()
+                .offset(y: -kb.height) // ← アンカー（= このビュー）をキーボード高さぶん持ち上げる
+                .animation(.easeOut(duration: 0.5), value: kb.height)
         }
         .modelContainer(sharedModelContainer)
+
     }
 }
 
