@@ -15,7 +15,7 @@ struct PopupView<Content: View>: View {
     let content: Content
     
     @State private var contentSize: CGSize = .zero
-    @State private var screenSize: CGSize = .zero
+//    @State private var screenSize: CGSize = .zero
     
     init(onDismiss: @escaping () -> Void,
          @ViewBuilder content: () -> Content) {
@@ -61,12 +61,14 @@ struct PopupView<Content: View>: View {
                 // 子ViewのcontentSizeが取得できる
                 self.contentSize = $0
             }
-            .onAppear { self.screenSize = screen }
+//            .onAppear {
+//                self.screenSize = screen
+//            }
         }
     }
     
-    /// 表示位置（常に画面の中央）
-    func popupPosition(screen: CGSize) -> CGPoint {
+    /// 表示位置（キーボードに隠れないように画面の中央より上に表示する）
+    private func popupPosition(screen: CGSize) -> CGPoint {
         let padding: CGFloat = 8
         let fullWidth = contentSize.width + padding*2  // padding + background
         let fullHeight = contentSize.height + padding*2 // padding
@@ -75,7 +77,7 @@ struct PopupView<Content: View>: View {
         let y = (screen.height - fullHeight) / 2
         // 中心座標を返す
         return CGPoint(x: x + fullWidth/2,
-                       y: y + fullHeight/2)
+                       y: max(0, screen.height/2 - fullHeight))
     }
 }
 
