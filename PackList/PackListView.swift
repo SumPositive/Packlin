@@ -11,14 +11,15 @@ import SwiftData
 
 struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
-    private let rowHeight: CGFloat = 44
+
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
+    @State private var editingPack: M1Pack? = nil
 
-    @State var editingPack: M1Pack? = nil
+    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
+    private let rowHeight: CGFloat = 44
     
     var body: some View {
         ZStack {
@@ -26,7 +27,9 @@ struct PackListView: View {
                 List {
                     ForEach(packs) { pack in
                         ZStack {
-                            PackRowView(pack: pack)
+                            PackRowView(pack: pack) { selected in
+                                editingPack = selected
+                            }
                             
                             HStack(spacing: 0) {
                                 Spacer()
@@ -111,23 +114,18 @@ struct PackListView: View {
             }
 
             //----------------------------------
-            //(ZStack 1) PopupでEditKeyDefView表示
+            //(ZStack 1) Popupで表示
             if let pack = editingPack {
                 PopupView(
                     onDismiss: { editingPack = nil }
                 ) {
                     EditPackView(pack: pack)
                 }
-                .zIndex(1) // これが無いとSettingViewの下になる
-                
+                .zIndex(1)
             }
         }
     }
 
-    func editPack(_ pack: M1Pack) {
-        editingPack = pack
-    }
-    
     private func updateUndoRedo() {
         if let um = modelContext.undoManager {
             canUndo = um.canUndo
@@ -160,6 +158,63 @@ struct PackListView: View {
         }
     }
 }
+
+
+struct EditPackView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var pack: M1Pack
+    @FocusState private var nameIsFocused: Bool
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("名称")
+                    .font(.caption)
+                TextEditor(text: $pack.name)
+                    .onChange(of: pack.name) { newValue, oldValue in
+                        // 最大文字数制限
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                        }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+                    .frame(height: 60)
+            }
+            HStack {
+                Text("メモ")
+                    .font(.caption)
+                TextEditor(text: $pack.memo)
+                    .onChange(of: pack.memo) { newValue, oldValue in
+                        // 最大文字数制限
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+                    .frame(height: 60)
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(width: 300, height: 150)
+        .onAppear {
+            // UndoGrouping
+            modelContext.undoManager?.beginUndoGrouping()
+            if pack.name.isEmpty {
+                nameIsFocused = true
+            }
+        }
+        .onDisappear() {
+            // 末尾のスペースと改行を除去
+            pack.name = pack.name.trimTrailSpacesAndNewlines
+            pack.memo = pack.memo.trimTrailSpacesAndNewlines
+            // UndoGrouping
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            //try? modelContext.save() // Undoスタックがクリアされる
+        }
+    }
+}
+
 
 #Preview {
     PackListView()

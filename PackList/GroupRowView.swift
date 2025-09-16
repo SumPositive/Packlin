@@ -10,25 +10,18 @@ import SwiftData
 import UIKit
 
 struct GroupRowView: View {
-    @Environment(\.modelContext) private var modelContext
     let group: M2Group
     let isHeader: Bool
+    let onEdit: (M2Group) -> Void
 
-    @State private var editingGroup: M2Group?
-    @State private var frame: CGRect = .zero
-    @State private var arrowEdge: Edge = .bottom
-
+    @Environment(\.modelContext) private var modelContext
+    
     private let rowHeight: CGFloat = 44
-
-    init(group: M2Group, isHeader: Bool) {
-        self.group = group
-        self.isHeader = isHeader
-    }
 
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check }
     }
-
+    
     var body: some View {
         Group {
             HStack(spacing: 0) {
@@ -76,6 +69,9 @@ struct GroupRowView: View {
             .padding(.leading, 8)
             .padding(.trailing, 16)
             .contentShape(Rectangle())
+            .onTapGesture {
+                onEdit(group)
+            }
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -99,25 +95,6 @@ struct GroupRowView: View {
                     duplicateGroup()
                 }
                 .tint(.green)
-            }
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
-                            frame = newValue
-                        }
-                }
-            )
-            .onTapGesture {
-                arrowEdge = arrowEdge(for: frame)
-                editingGroup = group
-            }
-            .popover(item: $editingGroup, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { group in
-                EditGroupView(group: group)
-                    .presentationCompactAdaptation(.none)
-                    .background(Color.primary.opacity(0.2))
-                    .ignoresSafeArea(.keyboard) // これを付けると“圧縮”が起きにくくなる
             }
         }
     }
@@ -232,74 +209,5 @@ struct GroupRowView: View {
         parent.normalizeItemOrder()
     }
 
-    private func arrowEdge(for frame: CGRect?) -> Edge {
-        guard let frame = frame else { return .bottom }
-        let screenHeight = UIScreen.main.bounds.height
-        let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
-
-        if topSpace < bottomSpace {
-            popoverBottom = frame.maxY + 150 + 40
-            return .top
-        }else{
-            popoverBottom = 0 // 背面スライドUPしない。popoverだけがスライドUPしてくれる
-            return .bottom
-        }
-    }
-}
-
-struct EditGroupView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
-    @Bindable var group: M2Group
-    @FocusState private var nameIsFocused: Bool
-    
-    var body: some View {
-        VStack {
-            HStack {
-                Text("名称")
-                    .font(.caption)
-                TextEditor(text: $group.name)
-                    .onChange(of: group.name) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                        }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(height: 60)
-            }
-            HStack {
-                Text("メモ")
-                    .font(.caption)
-                TextEditor(text: $group.memo)
-                    .onChange(of: group.memo) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
-                    }
-                    .frame(height: 60)
-            }
-        }
-        .padding(.horizontal, 16)
-        .frame(width: 300, height: 150)
-        .onAppear {
-            // UndoGrouping
-            modelContext.undoManager?.beginUndoGrouping()
-            if group.name.isEmpty {
-                nameIsFocused = true
-            }
-        }
-        .onDisappear() {
-            // 末尾のスペースと改行を除去
-            group.name = group.name.trimTrailSpacesAndNewlines
-            group.memo = group.memo.trimTrailSpacesAndNewlines
-            // UndoGrouping
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            //try? modelContext.save() // Undoスタックがクリアされる
-        }
-    }
 }
 

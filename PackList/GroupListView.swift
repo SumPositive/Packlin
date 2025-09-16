@@ -2,99 +2,117 @@ import SwiftUI
 import SwiftData
 
 struct GroupListView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
     let pack: M1Pack
 
-    private let rowHeight: CGFloat = 44
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
+    @State private var editingGroup: M2Group? = nil
+
+    private let rowHeight: CGFloat = 44
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
     }
-
+    
     var body: some View {
-        List {
-            ForEach(sortedGroups) { group in
-                ZStack {
-                    GroupRowView(group: group, isHeader: false)
-
+        ZStack {
+            List {
+                ForEach(sortedGroups) { group in
+                    ZStack {
+                        GroupRowView(group: group, isHeader: false) { selected in
+                            editingGroup = selected
+                        }
+                        
+                        HStack {
+                            Spacer()
+                            NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
+                                Color.clear
+                            }
+                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
+                            .frame(width: 180)
+                            .padding(.trailing, 8)
+                            .background(Color.clear).contentShape(Rectangle()) //タップ領域
+                        }
+                    }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .background(COLOR_ROW_GROUP)
+                }
+                .onMove(perform: moveGroup)
+                .environment(\.editMode, .constant(.active))
+            }
+            .listStyle(.plain)
+            .id(listID)   // listIDが変わるとListが作り直される
+            .padding(.horizontal, 0)
+            .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
                     HStack {
-                        Spacer()
-                        NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
-                            Color.clear
+                        Button {
+                            try? modelContext.save() // Undoスタックがクリアされる
+                            modelContext.undoManager?.removeAllActions()
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 0) {
+                                Image(systemName: "chevron.backward")
+                                //Text("Pack")
+                            }
                         }
-                        .contentShape(Rectangle())
-                        .buttonStyle(.plain)
-                        .frame(width: 180)
                         .padding(.trailing, 8)
-                        .background(Color.clear).contentShape(Rectangle()) //タップ領域
+                        
+                        Button {
+                            withAnimation {
+                                modelContext.undoManager?.undo()
+                            }
+                            listID = UUID()  // ここで List を再描画
+                            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                        } label: {
+                            Image(systemName: "arrow.uturn.backward")
+                        }
+                        .disabled(!canUndo)
+                        
+                        //    Button {
+                        //        withAnimation {
+                        //            modelContext.undoManager?.redo()
+                        //        }
+                        //        listID = UUID()  // ここで List を再描画
+                        //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                        //    } label: {
+                        //        Image(systemName: "arrow.uturn.forward")
+                        //    }
+                        //    .disabled(!canRedo)
                     }
                 }
-                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                .background(COLOR_ROW_GROUP)
-            }
-            .onMove(perform: moveGroup)
-            .environment(\.editMode, .constant(.active))
-        }
-        .listStyle(.plain)
-        .id(listID)   // listIDが変わるとListが作り直される
-        .padding(.horizontal, 0)
-        .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                HStack {
-                    Button {
-                        try? modelContext.save() // Undoスタックがクリアされる
-                        modelContext.undoManager?.removeAllActions()
-                        dismiss()
-                    } label: {
-                        HStack(spacing: 0) {
-                            Image(systemName: "chevron.backward")
-                            //Text("Pack")
-                        }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button(action: addGroup) {
+                        Image(systemName: "plus.rectangle")
                     }
-                    .padding(.trailing, 8)
+                }
+            }
+            .onAppear {
+                try? modelContext.save() // Undoスタックがクリアされる
+                modelContext.undoManager?.removeAllActions()
+                updateUndoRedo()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                updateUndoRedo()
+            }
 
-                    Button {
-                        withAnimation {
-                            modelContext.undoManager?.undo()
-                        }
-                        listID = UUID()  // ここで List を再描画
-                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                    } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                    }
-                    .disabled(!canUndo)
-                    
-                    //    Button {
-                    //        withAnimation {
-                    //            modelContext.undoManager?.redo()
-                    //        }
-                    //        listID = UUID()  // ここで List を再描画
-                    //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                    //    } label: {
-                    //        Image(systemName: "arrow.uturn.forward")
-                    //    }
-                    //    .disabled(!canRedo)
+            //----------------------------------
+            //(ZStack 1) Popupで表示
+            if let group = editingGroup {
+                PopupView(
+                    onDismiss: { editingGroup = nil }
+                ) {
+                    EditGroupView(group: group)
                 }
+                .zIndex(1)
             }
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button(action: addGroup) {
-                    Image(systemName: "plus.rectangle")
-                }
-            }
-        }
-        .onAppear {
-            try? modelContext.save() // Undoスタックがクリアされる
-            modelContext.undoManager?.removeAllActions()
-            updateUndoRedo()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-            updateUndoRedo()
         }
     }
 
@@ -135,6 +153,63 @@ struct GroupListView: View {
         pack.child = groups
     }
 }
+
+
+struct EditGroupView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var group: M2Group
+    @FocusState private var nameIsFocused: Bool
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("名称")
+                    .font(.caption)
+                TextEditor(text: $group.name)
+                    .onChange(of: group.name) { newValue, oldValue in
+                        // 最大文字数制限
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                        }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+                    .frame(height: 60)
+            }
+            HStack {
+                Text("メモ")
+                    .font(.caption)
+                TextEditor(text: $group.memo)
+                    .onChange(of: group.memo) { newValue, oldValue in
+                        // 最大文字数制限
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+                    .frame(height: 60)
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(width: 300, height: 150)
+        .onAppear {
+            // UndoGrouping
+            modelContext.undoManager?.beginUndoGrouping()
+            if group.name.isEmpty {
+                nameIsFocused = true
+            }
+        }
+        .onDisappear() {
+            // 末尾のスペースと改行を除去
+            group.name = group.name.trimTrailSpacesAndNewlines
+            group.memo = group.memo.trimTrailSpacesAndNewlines
+            // UndoGrouping
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            //try? modelContext.save() // Undoスタックがクリアされる
+        }
+    }
+}
+
 
 #Preview {
     GroupListView(pack: M1Pack(name: "", order: 0))

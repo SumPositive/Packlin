@@ -10,24 +10,17 @@ import SwiftData
 import UIKit
 
 struct PackRowView: View {
-    @Environment(\.modelContext) private var modelContext
     let pack: M1Pack
+    let onEdit: (M1Pack) -> Void
     
-//    @State private var editingPack: M1Pack?
-//    @State private var frame: CGRect = .zero
-//    @State private var arrowEdge: Edge = .bottom
-   
+    @Environment(\.modelContext) private var modelContext
+
     private let rowHeight: CGFloat = 44
-
-    init(pack: M1Pack) {
-        self.pack = pack
-    }
-
+    
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
         return !items.isEmpty && items.allSatisfy { $0.check }
     }
-
 
     var body: some View {
         Group {
@@ -68,26 +61,9 @@ struct PackRowView: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 8)
             .contentShape(Rectangle())
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { frame = proxy.frame(in: .global) }
-                        .onChange(of: proxy.frame(in: .global)) { oldValue, newValue in
-                            frame = newValue
-                        }
-                }
-            )
             .onTapGesture {
-                //arrowEdge = arrowEdge(for: frame)
-                
-//                editingPack = pack
+                onEdit(pack)
             }
-            //            .popover(item: $editingPack, attachmentAnchor: .rect(.bounds), arrowEdge: arrowEdge) { pack in
-            //                EditPackView(pack: pack)
-            //                    .presentationCompactAdaptation(.none)
-            //                    .background(Color.primary.opacity(0.2))
-            //                    .ignoresSafeArea(.keyboard) // これを付けると“圧縮”が起きにくくなる
-            //            }
             .swipeActions(edge: .trailing) {
                 Button("Cut") {
                     copyToClipboard()
@@ -239,75 +215,5 @@ struct PackRowView: View {
         parent.normalizeItemOrder()
     }
 
-    // popoverを表示する側を求める
-    private func arrowEdge(for frame: CGRect?) -> Edge {
-        guard let frame = frame else { return .bottom }
-        let screenHeight = UIScreen.main.bounds.height
-        let topSpace = frame.minY
-        let bottomSpace = screenHeight - frame.maxY
-
-        if topSpace < bottomSpace {
-            popoverBottom = frame.maxY + 150 + 40
-            return .top
-        }else{
-            popoverBottom = 0 // 背面スライドUPしない。popoverだけがスライドUPしてくれる
-            return .bottom
-        }
-    }
-}
-
-struct EditPackView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
-    @Bindable var pack: M1Pack
-    @FocusState private var nameIsFocused: Bool
-    
-    var body: some View {
-        VStack {
-            HStack {
-                Text("名称")
-                    .font(.caption)
-                TextEditor(text: $pack.name)
-                    .onChange(of: pack.name) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                        }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(height: 60)
-            }
-            HStack {
-                Text("メモ")
-                    .font(.caption)
-                TextEditor(text: $pack.memo)
-                    .onChange(of: pack.memo) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
-                    }
-                    .frame(height: 60)
-            }
-        }
-        .padding(.horizontal, 16)
-        .frame(width: 300, height: 150)
-        .onAppear {
-            // UndoGrouping
-            modelContext.undoManager?.beginUndoGrouping()
-            if pack.name.isEmpty {
-                nameIsFocused = true
-            }
-        }
-        .onDisappear() {
-            // 末尾のスペースと改行を除去
-            pack.name = pack.name.trimTrailSpacesAndNewlines
-            pack.memo = pack.memo.trimTrailSpacesAndNewlines
-            // UndoGrouping
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            //try? modelContext.save() // Undoスタックがクリアされる
-        }
-    }
 }
 
