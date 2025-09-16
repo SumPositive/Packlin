@@ -5,8 +5,7 @@
 //  Created by sumpo on 2025/09/05.
 //
 
-import Foundation
-import SwiftUICore
+import SwiftUI
 
 
 // MARK: - Global let value
