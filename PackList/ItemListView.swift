@@ -20,92 +20,130 @@ struct ItemListView: View {
     var body: some View {
         ZStack {
             ScrollViewReader { proxy in
-                List {
-                    ForEach(sortedGroups) { group in
-                        Section {
-                            ForEach(group.child.sorted { $0.order < $1.order }) { item in
-                                ItemRowView(item: item) { selected in
-                                    editingItem = selected
-                                }
-                            }
-                            .onMove { source, destination in
-                                moveItem(in: group, from: source, to: destination)
-                            }
-                        } header: {
-                            GroupRowView(group: group, isHeader: true)
-                        }
-                        .id(group.id)
-                        .environment(\.editMode, .constant(.active))
-                        .padding(.horizontal, 0)
-                        .background(COLOR_ROW_GROUP)
+                groupList(proxy: proxy)
+                    .onAppear {
+                        handleOnAppear(proxy: proxy)
                     }
-                }
-                .listStyle(.plain)
-                .id(listID)   // listIDが変わるとListが作り直される
-                .listSectionSpacing(0)
-                .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
-                .navigationBarBackButtonHidden(true)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        HStack {
-                            Button(action: {
-                                try? modelContext.save() // Undoスタックがクリアされる
-                                modelContext.undoManager?.removeAllActions()
-                                dismiss()
-                            }) {
-                                HStack(spacing: 0) {
-                                    Image(systemName: "chevron.backward")
-                                    //Text("Group")
-                                }
-                            }
-                            .padding(.trailing, 8)
-                            
-                            Button {
-                                withAnimation {
-                                    modelContext.undoManager?.undo()
-                                }
-                                listID = UUID()  // ここで List を再描画
-                                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                            } label: {
-                                Image(systemName: "arrow.uturn.backward")
-                            }
-                            .disabled(!canUndo)
-                            
-                            //    Button {
-                            //        withAnimation {
-                            //            modelContext.undoManager?.redo()
-                            //        }
-                            //        listID = UUID()  // ここで List を再描画
-                            //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                            //    } label: {
-                            //        Image(systemName: "arrow.uturn.forward")
-                            //    }
-                            //    .disabled(!canRedo)
-                        }
+                    .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                        updateUndoRedo()
                     }
-                }
-                .onAppear {
-                    proxy.scrollTo(initialGroup.id, anchor: .top)
-                    try? modelContext.save() // Undoスタックがクリアされる
-                    modelContext.undoManager?.removeAllActions()
-                    updateUndoRedo()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                    updateUndoRedo()
-                }
             }
 
-            //----------------------------------
-            //(ZStack 1) Popupで表示
-            if let item = editingItem {
-                PopupView(
-                    onDismiss: { editingItem = nil }
-                ) {
-                    EditItemView(item: item)
-                }
-                .zIndex(1)
+            popupOverlay
+        }
+    }
+
+    @ViewBuilder
+    private func groupList(proxy: ScrollViewProxy) -> some View {
+        List {
+            ForEach(sortedGroups) { group in
+                groupSection(group)
             }
         }
+        .listStyle(.plain)
+        .id(listID)   // listIDが変わるとListが作り直される
+        .listSectionSpacing(0)
+        .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
+        .navigationBarBackButtonHidden(true)
+        .toolbar { navigationToolbar }
+    }
+
+    @ViewBuilder
+    private func groupSection(_ group: M2Group) -> some View {
+        Section {
+            ForEach(sortedItems(in: group)) { item in
+                ItemRowView(item: item) { selected in
+                    editingItem = selected
+                }
+            }
+            .onMove { source, destination in
+                moveItem(in: group, from: source, to: destination)
+            }
+        } header: {
+            GroupRowView(group: group, isHeader: true)
+        }
+        .id(group.id)
+        .environment(\.editMode, .constant(.active))
+        .padding(.horizontal, 0)
+        .background(COLOR_ROW_GROUP)
+    }
+
+    @ToolbarContentBuilder
+    private var navigationToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarLeading) {
+            navigationButtons
+        }
+    }
+
+    @ViewBuilder
+    private var navigationButtons: some View {
+        HStack {
+            backButton
+            undoButton
+
+            //    Button {
+            //        withAnimation {
+            //            modelContext.undoManager?.redo()
+            //        }
+            //        listID = UUID()  // ここで List を再描画
+            //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            //    } label: {
+            //        Image(systemName: "arrow.uturn.forward")
+            //    }
+            //    .disabled(!canRedo)
+        }
+    }
+
+    private var backButton: some View {
+        Button(action: {
+            try? modelContext.save() // Undoスタックがクリアされる
+            modelContext.undoManager?.removeAllActions()
+            dismiss()
+        }) {
+            HStack(spacing: 0) {
+                Image(systemName: "chevron.backward")
+                //Text("Group")
+            }
+        }
+        .padding(.trailing, 8)
+    }
+
+    private var undoButton: some View {
+        Button {
+            withAnimation {
+                modelContext.undoManager?.undo()
+            }
+            listID = UUID()  // ここで List を再描画
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        } label: {
+            Image(systemName: "arrow.uturn.backward")
+        }
+        .disabled(!canUndo)
+    }
+
+    @ViewBuilder
+    private var popupOverlay: some View {
+        //----------------------------------
+        //(ZStack 1) Popupで表示
+        if let item = editingItem {
+            PopupView(
+                onDismiss: { editingItem = nil }
+            ) {
+                EditItemView(item: item)
+            }
+            .zIndex(1)
+        }
+    }
+
+    private func handleOnAppear(proxy: ScrollViewProxy) {
+        proxy.scrollTo(initialGroup.id, anchor: .top)
+        try? modelContext.save() // Undoスタクがクリアされる
+        modelContext.undoManager?.removeAllActions()
+        updateUndoRedo()
+    }
+
+    private func sortedItems(in group: M2Group) -> [M3Item] {
+        group.child.sorted { $0.order < $1.order }
     }
 
     private func updateUndoRedo() {
