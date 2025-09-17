@@ -13,6 +13,7 @@ struct ItemListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
+    @State private var isVisible = true
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
@@ -23,12 +24,21 @@ struct ItemListView: View {
             ScrollViewReader { proxy in
                 groupList(proxy: proxy)
                     .onAppear {
+                        isVisible = true
                         proxy.scrollTo(initialGroup.id, anchor: .top)
+                        guard editingItem == nil else {
+                            updateUndoRedo()
+                            return
+                        }
                         try? modelContext.save() // Undoスタクがクリアされる
                         modelContext.undoManager?.removeAllActions()
                         updateUndoRedo()
                     }
+                    .onDisappear {
+                        isVisible = false
+                    }
                     .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                        guard isVisible else { return }
                         updateUndoRedo()
                     }
             }
@@ -275,7 +285,10 @@ struct EditItemView: View {
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
             // UndoGrouping
-            modelContext.undoManager?.endUndoGrouping()
+            if let undoManager = modelContext.undoManager,
+               undoManager.groupingLevel > 0 {
+                undoManager.endUndoGrouping()
+            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる
         }
