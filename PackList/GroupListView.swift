@@ -53,52 +53,63 @@ struct GroupListView: View {
             .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
             .navigationBarBackButtonHidden(true)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    HStack {
-                        Button {
-                            try? modelContext.save() // Undoスタックがクリアされる
-                            modelContext.undoManager?.removeAllActions()
-                            dismiss()
-                        } label: {
-                            HStack(spacing: 0) {
-                                Image(systemName: "chevron.backward")
-                                //Text("Pack")
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button {
+                        // PackViewに戻るときに保存
+                        if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                            do {
+                                try modelContext.save() // Undoスタックがクリアされる
+                            } catch {
+                                print("DB保存に失敗.2: \(error)")
                             }
+                            um.removeAllActions()
                         }
-                        .padding(.trailing, 8)
-                        
-                        Button {
-                            withAnimation {
-                                modelContext.undoManager?.undo()
-                            }
-                            listID = UUID()  // ここで List を再描画
-                            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        } label: {
-                            Image(systemName: "arrow.uturn.backward")
-                        }
-                        .disabled(!canUndo)
-                        
-                        Button {
-                            withAnimation {
-                                modelContext.undoManager?.redo()
-                            }
-                            listID = UUID()  // ここで List を再描画
-                            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        } label: {
-                            Image(systemName: "arrow.uturn.forward")
-                        }
-                        .disabled(!canRedo)
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.backward")
                     }
+                    .padding(.trailing, 8)
+                    
+                    Button {
+                        withAnimation {
+                            modelContext.undoManager?.undo()
+                        }
+                        listID = UUID()  // ここで List を再描画
+                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(!canUndo)
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    
+                    Button {
+                        withAnimation {
+                            modelContext.undoManager?.redo()
+                        }
+                        listID = UUID()  // ここで List を再描画
+                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                    }
+                    .disabled(!canRedo)
+                    .padding(.trailing, 8)
+
                     Button(action: addGroup) {
                         Image(systemName: "plus.rectangle")
                     }
                 }
             }
             .onAppear {
-                try? modelContext.save() // Undoスタックがクリアされる
-                modelContext.undoManager?.removeAllActions()
+                // PackViewから来たときとItemViewから戻ったときに保存
+                if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                    do {
+                        try modelContext.save() // Undoスタックがクリアされる
+                    } catch {
+                        print("DB保存に失敗.1: \(error)")
+                    }
+                    um.removeAllActions()
+                }
                 updateUndoRedo()
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
@@ -213,7 +224,6 @@ struct EditGroupView: View {
                 um.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            //try? modelContext.save() // Undoスタックがクリアされる
         }
     }
 }

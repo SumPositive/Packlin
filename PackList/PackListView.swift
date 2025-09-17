@@ -54,11 +54,14 @@ struct PackListView: View {
             .padding(.horizontal, 0)
             .safeAreaInset(edge: .top) {
                 HStack {
-                    Button { }
-                    label: {
-                        Image(systemName: "info.circle")
+                    Button {
+                        // Setting
+                    } label: {
+                        Image(systemName: "gearshape")
                     }
                     .padding(.horizontal, 8)
+                    
+                    Spacer()
 
                     Button {
                         withAnimation {
@@ -72,6 +75,8 @@ struct PackListView: View {
                     .disabled(!canUndo)
                     .padding(.horizontal, 8)
 
+                    Text("モチメモ")
+
                     Button {
                         withAnimation {
                             modelContext.undoManager?.redo()
@@ -83,18 +88,8 @@ struct PackListView: View {
                     }
                     .disabled(!canRedo)
                     .padding(.horizontal, 8)
-
+                    
                     Spacer()
-                    Text("モチメモ")
-                        .padding(.trailing, 40)
-                    Spacer()
-
-                    Button {
-                        // Setting
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
-                    .padding(.horizontal, 8)
 
                     Button { addPack() }
                     label: {
@@ -216,7 +211,6 @@ struct EditPackView: View {
                 um.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            //try? modelContext.save() // Undoスタックがクリアされる
         }
     }
 }

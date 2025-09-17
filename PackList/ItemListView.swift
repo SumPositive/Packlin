@@ -31,9 +31,7 @@ struct ItemListView: View {
                             updateUndoRedo()
                             return
                         }
-                        try? modelContext.save() // Undoスタクがクリアされる
-                        modelContext.undoManager?.removeAllActions()
-                        updateUndoRedo()
+                        // ここでは、modelContext.save()しない
                     }
                     .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                         updateUndoRedo()
@@ -100,43 +98,43 @@ struct ItemListView: View {
 
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
-            HStack {
-                Button(action: {
-                    try? modelContext.save() // Undoスタックがクリアされる
-                    modelContext.undoManager?.removeAllActions()
-                    dismiss()
-                }) {
-                    HStack(spacing: 0) {
-                        Image(systemName: "chevron.backward")
-                        //Text("Group")
-                    }
+        ToolbarItemGroup(placement: .navigationBarLeading) {
+            Button(action: {
+                dismiss()
+                // GroupListView.onAppearで.save()が呼ばれる
+            }) {
+                HStack(spacing: 0) {
+                    Image(systemName: "chevron.backward")
+                    //Text("Group")
                 }
-                .padding(.trailing, 8)
-                
-                Button {
-                    withAnimation {
-                        modelContext.undoManager?.undo()
-                    }
-                    listID = UUID()  // ここで List を再描画
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                }
-                .disabled(!canUndo)
-
-                Button {
-                    withAnimation {
-                        modelContext.undoManager?.redo()
-                    }
-                    listID = UUID()  // ここで List を再描画
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                } label: {
-                    Image(systemName: "arrow.uturn.forward")
-                }
-                .disabled(!canRedo)
             }
+            .padding(.trailing, 8)
+            
+            Button {
+                withAnimation {
+                    modelContext.undoManager?.undo()
+                }
+                listID = UUID()  // ここで List を再描画
+                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+            }
+            .disabled(!canUndo)
         }
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+            Button {
+                withAnimation {
+                    modelContext.undoManager?.redo()
+                }
+                listID = UUID()  // ここで List を再描画
+                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            } label: {
+                Image(systemName: "arrow.uturn.forward")
+            }
+            .disabled(!canRedo)
+            .padding(.trailing, 8)
+        }
+
     }
 
     private func sortedItems(in group: M2Group) -> [M3Item] {
