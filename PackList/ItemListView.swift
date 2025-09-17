@@ -19,38 +19,36 @@ struct ItemListView: View {
     }
     
     var body: some View {
-//        GeometryReader { _ in
-            ZStack {
-                ScrollViewReader { proxy in
-                    groupList(proxy: proxy)
-                        .onAppear {
-                            proxy.scrollTo(initialGroup.id, anchor: .top)
-                            try? modelContext.save() // Undoスタクがクリアされる
-                            modelContext.undoManager?.removeAllActions()
-                            updateUndoRedo()
-                        }
-                        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                            updateUndoRedo()
-                        }
-                }
-                //----------------------------------
-                //(ZStack 1) Popupで表示
-                if let item = editingItem {
-                    PopupView(
-                        anchor: popupAnchor,
-                        onDismiss: {
-                            editingItem = nil
-                            popupAnchor = nil
-                        }
-                    ) {
-                        EditItemView(item: item)
+        ZStack {
+            ScrollViewReader { proxy in
+                groupList(proxy: proxy)
+                    .onAppear {
+                        proxy.scrollTo(initialGroup.id, anchor: .top)
+                        try? modelContext.save() // Undoスタクがクリアされる
+                        modelContext.undoManager?.removeAllActions()
+                        updateUndoRedo()
                     }
-                    .zIndex(1)
-                }
+                    .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                        updateUndoRedo()
+                    }
             }
-            .coordinateSpace(name: "itemList")
+            //----------------------------------
+            //(ZStack 1) Popupで表示
+            if let item = editingItem {
+                PopupView(
+                    anchor: popupAnchor,
+                    onDismiss: {
+                        editingItem = nil
+                        popupAnchor = nil
+                    }
+                ) {
+                    EditItemView(item: item)
+                }
+                .zIndex(1)
+            }
         }
-//    }
+        .coordinateSpace(name: "itemList")
+    }
 
     @ViewBuilder
     private func groupList(proxy: ScrollViewProxy) -> some View {
