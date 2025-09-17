@@ -24,6 +24,10 @@ struct ItemListView: View {
                 groupList(proxy: proxy)
                     .onAppear {
                         proxy.scrollTo(initialGroup.id, anchor: .top)
+                        guard editingItem == nil else {
+                            updateUndoRedo()
+                            return
+                        }
                         try? modelContext.save() // Undoスタクがクリアされる
                         modelContext.undoManager?.removeAllActions()
                         updateUndoRedo()
@@ -275,7 +279,10 @@ struct EditItemView: View {
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
             // UndoGrouping
-            modelContext.undoManager?.endUndoGrouping()
+            if let undoManager = modelContext.undoManager,
+               undoManager.groupingLevel > 0 {
+                undoManager.endUndoGrouping()
+            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる
         }
