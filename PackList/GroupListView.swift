@@ -10,8 +10,8 @@ struct GroupListView: View {
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
-    @State private var editingGroup: M2Group? = nil
-    @State private var popupLocation: CGPoint? = nil
+    @State private var editingGroup: M2Group?
+    @State private var popupAnchor: CGPoint?
 
     private let rowHeight: CGFloat = 44
 
@@ -24,9 +24,9 @@ struct GroupListView: View {
             List {
                 ForEach(sortedGroups) { group in
                     ZStack {
-                        GroupRowView(group: group, isHeader: false) { selected in
+                        GroupRowView(group: group, isHeader: false) { selected, point in
                             editingGroup = selected
-                            popupLocation = nil
+                            popupAnchor = point
                         }
                         
                         HStack {
@@ -109,10 +109,10 @@ struct GroupListView: View {
             //(ZStack 1) Popupで表示
             if let group = editingGroup {
                 PopupView(
-                    anchor: popupLocation,
+                    anchor: popupAnchor,
                     onDismiss: {
                         editingGroup = nil
-                        popupLocation = nil
+                        popupAnchor = nil
                     }
                 ) {
                     EditGroupView(group: group)

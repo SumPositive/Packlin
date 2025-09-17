@@ -14,7 +14,8 @@ struct ItemRowView: View {
     let onEdit: (M3Item, CGPoint) -> Void
 
     @Environment(\.modelContext) private var modelContext
-   
+    @State private var rowFrame: CGRect?
+
     private let rowHeight: CGFloat = 44
 
     var body: some View {
@@ -82,12 +83,29 @@ struct ItemRowView: View {
         .background(COLOR_ROW_ITEM)
         .transition(.move(edge: .top).combined(with: .opacity))
         .contentShape(Rectangle())
+        .background(
+            // Row本体に置くとRowサイズが固定化されてしまうため
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear {
+                        rowFrame = geo.frame(in: .global)
+                    }
+                    .onChange(of: geo.frame(in: .global)) { newFrame, oldFrame in
+                        rowFrame = newFrame
+                    }
+            }
+        )
         .gesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .named("itemList"))
                 .onEnded { value in
                     let translation = value.translation
                     guard abs(translation.width) < 8, abs(translation.height) < 8 else { return }
-                    onEdit(item, value.location)
+                    if let rf = rowFrame {
+                        //.locationはRow内の相対座標 --> rfで絶対座標に変換
+                        let po = CGPoint(x: rf.width / 2.0,
+                                         y: rf.minY + value.location.y)
+                        onEdit(item, po)
+                    }
                 }
         )
         .swipeActions(edge: .trailing) {

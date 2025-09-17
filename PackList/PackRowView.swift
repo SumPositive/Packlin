@@ -80,9 +80,10 @@ struct PackRowView: View {
                             let translation = value.translation
                             guard abs(translation.width) < 8, abs(translation.height) < 8 else { return }
                             if let rf = rowFrame {
+                                //.locationはRow内の相対座標 --> rfで絶対座標に変換
                                 let po = CGPoint(x: rf.width / 2.0,
                                                  y: rf.minY + value.location.y)
-                                onEdit(pack, po) //.locationはRow内の相対座標
+                                onEdit(pack, po)
                             }
                         }
                 )
