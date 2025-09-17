@@ -63,8 +63,15 @@ struct PackRowView: View {
                 .padding(.horizontal, 8)
                 .contentShape(Rectangle())
                 .background(
+                    // Row本体に置くとRowサイズが固定化されてしまうため
                     GeometryReader { geo in
-                        rowFrame = geo.frame(in: .global)
+                        Color.clear
+                            .onAppear {
+                                rowFrame = geo.frame(in: .global)
+                            }
+                            .onChange(of: geo.frame(in: .global)) { newFrame, oldFrame in
+                                rowFrame = newFrame
+                            }
                     }
                 )
                 .gesture(
@@ -72,9 +79,11 @@ struct PackRowView: View {
                         .onEnded { value in
                             let translation = value.translation
                             guard abs(translation.width) < 8, abs(translation.height) < 8 else { return }
-                            let po = CGPoint(x: rowFrame.width / 2.0,
-                                             y: rowFrame.minY + value.location.y)
-                            onEdit(pack, po) //.locationはRow内の相対座標
+                            if let rf = rowFrame {
+                                let po = CGPoint(x: rf.width / 2.0,
+                                                 y: rf.minY + value.location.y)
+                                onEdit(pack, po) //.locationはRow内の相対座標
+                            }
                         }
                 )
                 .swipeActions(edge: .trailing) {
