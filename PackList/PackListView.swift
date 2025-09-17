@@ -66,15 +66,27 @@ struct PackListView: View {
                         }
                         listID = UUID()  // ここで List を再描画
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        //updateUndoRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
                     .disabled(!canUndo)
                     .padding(.horizontal, 8)
 
+                    Button {
+                        withAnimation {
+                            modelContext.undoManager?.redo()
+                        }
+                        listID = UUID()  // ここで List を再描画
+                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                    }
+                    .disabled(!canRedo)
+                    .padding(.horizontal, 8)
+
                     Spacer()
                     Text("モチメモ")
+                        .padding(.trailing, 40)
                     Spacer()
 
                     Button {

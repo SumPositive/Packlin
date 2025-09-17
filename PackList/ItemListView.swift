@@ -124,6 +124,17 @@ struct ItemListView: View {
                     Image(systemName: "arrow.uturn.backward")
                 }
                 .disabled(!canUndo)
+
+                Button {
+                    withAnimation {
+                        modelContext.undoManager?.redo()
+                    }
+                    listID = UUID()  // ここで List を再描画
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .disabled(!canRedo)
             }
         }
     }
