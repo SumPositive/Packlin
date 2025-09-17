@@ -12,7 +12,7 @@ struct GroupListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
-    @State private var isVisible = true
+    @State private var isVisible = false
 
     private let rowHeight: CGFloat = 44
 
@@ -215,7 +215,9 @@ struct EditGroupView: View {
             group.name = group.name.trimTrailSpacesAndNewlines
             group.memo = group.memo.trimTrailSpacesAndNewlines
             // UndoGrouping
-            modelContext.undoManager?.endUndoGrouping()
+            if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                um.endUndoGrouping()
+            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる
         }

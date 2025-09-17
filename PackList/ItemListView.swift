@@ -13,7 +13,7 @@ struct ItemListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
-    @State private var isVisible = true
+    @State private var isVisible = false
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
@@ -217,6 +217,11 @@ struct EditItemView: View {
                             item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
                         }
                     }
+                    .onDisappear(){
+                        nameIsFocused = false
+                        // 末尾のスペースと改行を除去
+                //        item.name = item.name.trimTrailSpacesAndNewlines
+                    }
                     .focused($nameIsFocused) // フォーカス状態とバインド
                     .frame(height: 60)
             }
@@ -230,6 +235,10 @@ struct EditItemView: View {
                         if APP_MAX_MEMO_LEN < newValue.count {
                             item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                         }
+                    }
+                    .onDisappear(){
+                        // 末尾のスペースと改行を除去
+              //          item.memo = item.memo.trimTrailSpacesAndNewlines
                     }
                     .frame(height: 60)
             }
@@ -281,16 +290,11 @@ struct EditItemView: View {
             }
         }
         .onDisappear() {
-            // 末尾のスペースと改行を除去
-            item.name = item.name.trimTrailSpacesAndNewlines
-            item.memo = item.memo.trimTrailSpacesAndNewlines
             // UndoGrouping
-            if let undoManager = modelContext.undoManager,
-               undoManager.groupingLevel > 0 {
-                undoManager.endUndoGrouping()
+            if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                um.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            //try? modelContext.save() // Undoスタックがクリアされる
         }
     }
 }

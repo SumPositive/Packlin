@@ -17,7 +17,7 @@ struct PackListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
-    @State private var isVisible = true
+    @State private var isVisible = false
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
@@ -209,7 +209,9 @@ struct EditPackView: View {
             pack.name = pack.name.trimTrailSpacesAndNewlines
             pack.memo = pack.memo.trimTrailSpacesAndNewlines
             // UndoGrouping
-            modelContext.undoManager?.endUndoGrouping()
+            if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                um.endUndoGrouping()
+            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             //try? modelContext.save() // Undoスタックがクリアされる
         }
