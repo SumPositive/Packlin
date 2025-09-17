@@ -12,7 +12,6 @@ struct GroupListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
-    @State private var isVisible = false
 
     private let rowHeight: CGFloat = 44
 
@@ -29,10 +28,10 @@ struct GroupListView: View {
                             editingGroup = selected
                             popupAnchor = point
                         }
-                        
+
                         HStack {
                             Spacer()
-                            NavigationLink(destination: ItemListView(pack: pack, initialGroup: group)) {
+                            NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
                                 Color.clear
                             }
                             .contentShape(Rectangle())
@@ -98,16 +97,11 @@ struct GroupListView: View {
                 }
             }
             .onAppear {
-                isVisible = true
                 try? modelContext.save() // Undoスタックがクリアされる
                 modelContext.undoManager?.removeAllActions()
                 updateUndoRedo()
             }
-            .onDisappear {
-                isVisible = false
-            }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                guard isVisible else { return }
                 updateUndoRedo()
             }
 
