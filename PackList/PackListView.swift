@@ -17,7 +17,6 @@ struct PackListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
-    @State private var isVisible = false
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
@@ -25,91 +24,83 @@ struct PackListView: View {
     
     var body: some View {
         ZStack {
-            NavigationView {
-                List {
-                    ForEach(packs) { pack in
-                        ZStack {
-                            PackRowView(pack: pack) { selected, point in
-                                editingPack = selected
-                                popupAnchor = point
-                            }
-                            
-                            HStack(spacing: 0) {
-                                Spacer()
-                                NavigationLink(destination: GroupListView(pack: pack)) {
-                                    Color.clear
-                                }
-                                .frame(width: 180)
-                                .buttonStyle(.plain)
-                                .padding(.trailing, 8)
-                                .background(Color.clear).contentShape(Rectangle()) //タップ領域
-                            }
+            List {
+                ForEach(packs) { pack in
+                    ZStack {
+                        PackRowView(pack: pack) { selected, point in
+                            editingPack = selected
+                            popupAnchor = point
                         }
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+
+                        HStack(spacing: 0) {
+                            Spacer()
+                            NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
+                                Color.clear
+                            }
+                            .frame(width: 180)
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 8)
+                            .background(Color.clear).contentShape(Rectangle()) //タップ領域
+                        }
                     }
-                    .onMove(perform: movePack)
-                    .environment(\.editMode, .constant(.active))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
-                .listStyle(.plain)
-                .id(listID)   // listIDが変わるとListが作り直される
-                .padding(.top, -8) // headerとPackList間の余白を無くす
-                .padding(.horizontal, 0)
-                .navigationBarHidden(true)
-                .safeAreaInset(edge: .top) {
-                    HStack {
-                        Button { }
-                        label: {
-                            Image(systemName: "info.circle")
-                        }
-                        .padding(.horizontal, 8)
-                        
-                        Button {
-                            withAnimation {
-                                modelContext.undoManager?.undo()
-                            }
-                            listID = UUID()  // ここで List を再描画
-                            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                            //updateUndoRedo()
-                        } label: {
-                            Image(systemName: "arrow.uturn.backward")
-                        }
-                        .disabled(!canUndo)
-                        .padding(.horizontal, 8)
-                        
-                        Spacer()
-                        Text("モチメモ")
-                        Spacer()
-                        
-                        Button {
-                            // Setting
-                        } label: {
-                            Image(systemName: "gearshape")
-                        }
-                        .padding(.horizontal, 8)
-                        
-                        Button { addPack() }
-                        label: {
-                            Image(systemName: "plus.message")
-                        }
-                        .padding(.horizontal, 8)
+                .onMove(perform: movePack)
+                .environment(\.editMode, .constant(.active))
+            }
+            .listStyle(.plain)
+            .id(listID)   // listIDが変わるとListが作り直される
+            .padding(.top, -8) // headerとPackList間の余白を無くす
+            .padding(.horizontal, 0)
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    Button { }
+                    label: {
+                        Image(systemName: "info.circle")
                     }
-                    .frame(height: rowHeight)
                     .padding(.horizontal, 8)
-                    .background(.thinMaterial)
+
+                    Button {
+                        withAnimation {
+                            modelContext.undoManager?.undo()
+                        }
+                        listID = UUID()  // ここで List を再描画
+                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                        //updateUndoRedo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .disabled(!canUndo)
+                    .padding(.horizontal, 8)
+
+                    Spacer()
+                    Text("モチメモ")
+                    Spacer()
+
+                    Button {
+                        // Setting
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                    .padding(.horizontal, 8)
+
+                    Button { addPack() }
+                    label: {
+                        Image(systemName: "plus.message")
+                    }
+                    .padding(.horizontal, 8)
                 }
+                .frame(height: rowHeight)
+                .padding(.horizontal, 8)
+                .background(.thinMaterial)
             }
             .onAppear {
-                isVisible = true
                 updateUndoRedo()
-            }
-            .onDisappear {
-                isVisible = false
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                guard isVisible else { return }
                 updateUndoRedo()
             }
-            
+
             //----------------------------------
             //(ZStack 1) Popupで表示
             if let pack = editingPack {

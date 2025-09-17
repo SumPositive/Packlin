@@ -82,17 +82,14 @@ struct GroupRowView: View {
                         }
                 }
             )
-            .gesture(
-                DragGesture(minimumDistance: 0, coordinateSpace: .named("groupList"))
+            .simultaneousGesture(
+                SpatialTapGesture()
                     .onEnded { value in
-                        let translation = value.translation
-                        guard abs(translation.width) < 8, abs(translation.height) < 8 else { return }
-                        if let rf = rowFrame {
-                            //.locationはRow内の相対座標 --> rfで絶対座標に変換
-                            let po = CGPoint(x: rf.width / 2.0,
-                                             y: rf.minY + value.location.y)
-                            onEdit(group, po)
-                        }
+                        guard let rf = rowFrame else { return }
+                        let location = value.location
+                        let po = CGPoint(x: rf.width / 2.0,
+                                         y: rf.minY + location.y)
+                        onEdit(group, po)
                     }
             )
             .swipeActions(edge: .trailing) {
