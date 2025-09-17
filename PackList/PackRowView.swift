@@ -11,9 +11,10 @@ import UIKit
 
 struct PackRowView: View {
     let pack: M1Pack
-    let onEdit: (M1Pack) -> Void
-    
+    let onEdit: (M1Pack, CGPoint) -> Void
+
     @Environment(\.modelContext) private var modelContext
+    @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     
@@ -23,72 +24,94 @@ struct PackRowView: View {
     }
 
     var body: some View {
-        Group {
-            HStack(spacing: 0) {
-                Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                    .padding(.trailing, 8)
-                
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(pack.name.isEmpty ? "New Pack" : pack.name)
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
+            Group {
+                HStack(spacing: 0) {
+                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                        .padding(.trailing, 8)
                     
-                    if !pack.memo.isEmpty {
-                        Text(pack.memo)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(pack.name.isEmpty ? "New Pack" : pack.name)
                             .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.leading, 25)
-                    }
-                    if DEBUG_SHOW_ORDER_ID {
-                        Text("pack (\(pack.order)) [\(pack.id)]")
-                    }
-                    
-                    HStack {
-                        Spacer() // 右寄せにするため
-                        if 0 < pack.stockWeight {
-                            Text("\(pack.stockWeight)g／\(pack.needWeight)g")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 8)
+                            .font(FONT_NAME)
+                            .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
+                        
+                        if !pack.memo.isEmpty {
+                            Text(pack.memo)
+                                .lineLimit(3)
+                                .font(FONT_MEMO)
+                                .foregroundStyle(COLOR_MEMO)
+                                .padding(.leading, 25)
+                        }
+                        if DEBUG_SHOW_ORDER_ID {
+                            Text("pack (\(pack.order)) [\(pack.id)]")
+                        }
+                        
+                        HStack {
+                            Spacer() // 右寄せにするため
+                            if 0 < pack.stockWeight {
+                                Text("\(pack.stockWeight)g／\(pack.needWeight)g")
+                                    .font(FONT_WEIGHT)
+                                    .foregroundStyle(COLOR_WEIGHT)
+                                    .padding(.trailing, 8)
+                            }
                         }
                     }
+                    Spacer()
                 }
-                Spacer()
+                .frame(minHeight: rowHeight)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 8)
+                .contentShape(Rectangle())
+                .background(
+                    // Row本体に置くとRowサイズが固定化されてしまうため
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear {
+                                rowFrame = geo.frame(in: .global)
+                            }
+                            .onChange(of: geo.frame(in: .global)) { newFrame, oldFrame in
+                                rowFrame = newFrame
+                            }
+                    }
+                )
+                .gesture(
+                    DragGesture(minimumDistance: 0, coordinateSpace: .named("packList"))
+                        .onEnded { value in
+                            let translation = value.translation
+                            guard abs(translation.width) < 8, abs(translation.height) < 8 else { return }
+                            if let rf = rowFrame {
+                                //.locationはRow内の相対座標 --> rfで絶対座標に変換
+                                let po = CGPoint(x: rf.width / 2.0,
+                                                 y: rf.minY + value.location.y)
+                                onEdit(pack, po)
+                            }
+                        }
+                )
+                .swipeActions(edge: .trailing) {
+                    Button("Cut") {
+                        copyToClipboard()
+                        deletePack()
+                    }
+                    .tint(.red)
+                }
+                .swipeActions(edge: .leading) {
+                    Button("Copy") {
+                        copyToClipboard()
+                    }
+                    .tint(.cyan)
+                    
+                    Button("Paste") {
+                        pasteFromClipboard()
+                    }
+                    .disabled(RowClipboard.pack == nil)
+                    .tint(.orange)
+                    
+                    Button("Duplicate") {
+                        duplicatePack()
+                    }
+                    .tint(.green)
+                }
             }
-            .frame(minHeight: rowHeight)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 8)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onEdit(pack)
-            }
-            .swipeActions(edge: .trailing) {
-                Button("Cut") {
-                    copyToClipboard()
-                    deletePack()
-                }
-                .tint(.red)
-            }
-            .swipeActions(edge: .leading) {
-                Button("Copy") {
-                    copyToClipboard()
-                }
-                .tint(.cyan)
-                
-                Button("Paste") {
-                    pasteFromClipboard()
-                }
-                .disabled(RowClipboard.pack == nil)
-                .tint(.orange)
-                
-                Button("Duplicate") {
-                    duplicatePack()
-                }
-                .tint(.green)
-            }
-        }
     }
 
     private func deletePack() {

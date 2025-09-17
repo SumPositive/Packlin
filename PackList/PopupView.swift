@@ -11,13 +11,16 @@ import SwiftUI
 
 // 画面中央ポップアップ
 struct PopupView<Content: View>: View {
+    let anchor: CGPoint?
     let onDismiss: () -> Void
     let content: Content
-    
+
     @State private var contentSize: CGSize = .zero
-    
-    init(onDismiss: @escaping () -> Void,
+
+    init(anchor: CGPoint? = nil,
+         onDismiss: @escaping () -> Void,
          @ViewBuilder content: () -> Content) {
+        self.anchor = anchor
         self.onDismiss = onDismiss
         self.content = content()
     }
@@ -60,13 +63,28 @@ struct PopupView<Content: View>: View {
     /// 表示位置（キーボードに隠れないように画面の中央より上に表示する）
     private func popupPosition(screen: CGSize) -> CGPoint {
         let padding: CGFloat = 8
-        let fullWidth = contentSize.width + padding*2  // padding + background
-        let fullHeight = contentSize.height + padding*2 // padding
+        let fullWidth = contentSize.width + padding * 2  // padding + background
+        let fullHeight = contentSize.height + padding * 2 // padding
+
+        if let anchor {
+            let halfWidth = fullWidth / 2
+            let halfHeight = fullHeight / 2
+
+            let minX = halfWidth
+            let maxX = max(halfWidth, screen.width - halfWidth)
+            let minY = halfHeight
+            let maxY = max(halfHeight, screen.height - halfHeight)
+
+            let clampedX = min(max(anchor.x, minX), maxX)
+            let clampedY = min(max(anchor.y, minY), maxY)
+            return CGPoint(x: clampedX, y: clampedY)
+        }
+
         // 左上座標
         let x = (screen.width - fullWidth) / 2
-        // 中心座標を返す
-        return CGPoint(x: x + fullWidth/2,
-                       y: max(0, screen.height/2 - fullHeight))
+        // 中心座標を返す（従来どおりやや上寄せ）
+        return CGPoint(x: x + fullWidth / 2,
+                       y: max(0, screen.height / 2 - fullHeight))
     }
 }
 

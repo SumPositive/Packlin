@@ -15,7 +15,8 @@ struct PackListView: View {
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
-    @State private var editingPack: M1Pack? = nil
+    @State private var editingPack: M1Pack?
+    @State private var popupAnchor: CGPoint?
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
@@ -27,8 +28,9 @@ struct PackListView: View {
                 List {
                     ForEach(packs) { pack in
                         ZStack {
-                            PackRowView(pack: pack) { selected in
+                            PackRowView(pack: pack) { selected, point in
                                 editingPack = selected
+                                popupAnchor = point
                             }
                             
                             HStack(spacing: 0) {
@@ -73,19 +75,6 @@ struct PackListView: View {
                         .disabled(!canUndo)
                         .padding(.horizontal, 8)
                         
-                        //    Button {
-                        //        withAnimation {
-                        //            modelContext.undoManager?.redo()
-                        //        }
-                        //        listID = UUID()  // ここで List を再描画
-                        //        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                        //        //updateUndoRedo()
-                        //    } label: {
-                        //        Image(systemName: "arrow.uturn.forward")
-                        //    }
-                        //    .disabled(!canRedo)
-                        //    .padding(.horizontal, 8)
-                        
                         Spacer()
                         Text("モチメモ")
                         Spacer()
@@ -112,12 +101,16 @@ struct PackListView: View {
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()
             }
-
+            
             //----------------------------------
             //(ZStack 1) Popupで表示
             if let pack = editingPack {
                 PopupView(
-                    onDismiss: { editingPack = nil }
+                    anchor: popupAnchor,
+                    onDismiss: {
+                        editingPack = nil
+                        popupAnchor = nil
+                    }
                 ) {
                     EditPackView(pack: pack)
                 }
