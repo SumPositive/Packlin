@@ -78,7 +78,7 @@ struct PackRowView: View {
                     SpatialTapGesture()
                         .onEnded { value in
                             guard let rf = rowFrame else { return }
-                            let location = value.location(in: .named("packList"))
+                            let location = value.location
                             let po = CGPoint(x: rf.width / 2.0,
                                              y: rf.minY + location.y)
                             onEdit(pack, po)
