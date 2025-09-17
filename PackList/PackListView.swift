@@ -17,6 +17,7 @@ struct PackListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
+    @State private var isVisible = true
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
@@ -95,10 +96,17 @@ struct PackListView: View {
                     .frame(height: rowHeight)
                     .padding(.horizontal, 8)
                     .background(.thinMaterial)
-                    .onAppear { updateUndoRedo() }
                 }
             }
+            .onAppear {
+                isVisible = true
+                updateUndoRedo()
+            }
+            .onDisappear {
+                isVisible = false
+            }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+                guard isVisible else { return }
                 updateUndoRedo()
             }
             
