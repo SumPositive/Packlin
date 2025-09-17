@@ -23,7 +23,10 @@ struct ItemListView: View {
             ScrollViewReader { proxy in
                 groupList(proxy: proxy)
                     .onAppear {
-                        proxy.scrollTo(initialGroup.id, anchor: .top)
+                        DispatchQueue.main.async {
+                            // メインスレッドでList描画後に実行する
+                            proxy.scrollTo(initialGroup.id, anchor: .top)
+                        }
                         guard editingItem == nil else {
                             updateUndoRedo()
                             return
@@ -211,11 +214,6 @@ struct EditItemView: View {
                             item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
                         }
                     }
-                    .onDisappear(){
-                        nameIsFocused = false
-                        // 末尾のスペースと改行を除去
-                //        item.name = item.name.trimTrailSpacesAndNewlines
-                    }
                     .focused($nameIsFocused) // フォーカス状態とバインド
                     .frame(height: 60)
             }
@@ -229,10 +227,6 @@ struct EditItemView: View {
                         if APP_MAX_MEMO_LEN < newValue.count {
                             item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                         }
-                    }
-                    .onDisappear(){
-                        // 末尾のスペースと改行を除去
-              //          item.memo = item.memo.trimTrailSpacesAndNewlines
                     }
                     .frame(height: 60)
             }
@@ -284,6 +278,9 @@ struct EditItemView: View {
             }
         }
         .onDisappear() {
+            // 末尾のスペースと改行を除去
+            item.name = item.name.trimTrailSpacesAndNewlines
+            item.memo = item.memo.trimTrailSpacesAndNewlines
             // UndoGrouping
             if let um = modelContext.undoManager, 0 < um.groupingLevel {
                 um.endUndoGrouping()
