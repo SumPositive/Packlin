@@ -11,16 +11,16 @@ import SwiftData
 struct ItemListView: View {
     let pack: M1Pack
     let initialGroup: M2Group
-
+    
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
-
+    
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
     }
@@ -61,24 +61,27 @@ struct ItemListView: View {
         }
         .coordinateSpace(name: "itemList")
     }
-
+    
     @ViewBuilder
     private func groupList(proxy: ScrollViewProxy) -> some View {
-        List {
-            ForEach(sortedGroups) { group in
-                groupSection(group)
+        // List → ScrollView + LazyVStack(pinnedViews) に変更（セクションヘッダをピン留め）
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                ForEach(sortedGroups) { group in
+                    groupSection(group)
+                }
             }
         }
-        .listStyle(.plain)
-        .id(listID)   // listIDが変わるとListが作り直される
-        .listSectionSpacing(0)
+        .id(listID)   // listIDが変わるとListが作り直される（ScrollViewでも同様に再構築トリガとして使用）
+        // .listStyle(.plain)
+        // .listSectionSpacing(0)
         .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             navigationToolbar
         }
     }
-
+    
     @ViewBuilder
     private func groupSection(_ group: M2Group) -> some View {
         Section {
@@ -87,22 +90,56 @@ struct ItemListView: View {
                     editingItem = selected
                     popupAnchor = point
                 }
+                .contentShape(Rectangle()) // D&D の当たり判定を広げる
+                // 一次元方式：どのセクションにもドロップ可能にするため、行をドラッグ可能に
+                .draggable("\(item.id)") // ペイロード・トークンは item.id を文字列化したもの
+                // この行の「直前」に挿入
+                .dropDestination(for: String.self) { tokens, _ in
+                    guard let token = tokens.first else { return false }
+                    moveItemByDrag(token, toGroup: group, before: item)
+                    listID = UUID()  // ここで List を再描画（ScrollViewでも再構築）
+                    return true
+                }
             }
-            .onMove { source, destination in
-                moveItem(in: group, from: source, to: destination)
-            }
+            
+            // セクション末尾の受け口（末尾へ挿入）
+            Color.clear
+                .frame(height: 12)
+                .dropDestination(for: String.self) { tokens, _ in
+                    guard let token = tokens.first else { return false }
+                    moveItemByDrag(token, toGroup: group, before: nil)
+                    listID = UUID()  // ここで List を再描画
+                    return true
+                }
+            
+            // ↓ List 専用の onMove は ScrollView 構成では無効になるため温存のみ
+            /*
+             .onMove { source, destination in
+             moveItem(in: group, from: source, to: destination)
+             }
+             */
         } header: {
             GroupRowView(group: group, isHeader: true) { selected, point in
                 //editingGroup = selected
                 //popupAnchor = point
             }
+            .background(COLOR_ROW_GROUP)
+            .contentShape(Rectangle())
+            // ヘッダーにドロップ → 先頭に挿入
+            .dropDestination(for: String.self) { tokens, _ in
+                guard let token = tokens.first else { return false }
+//                let first = sortedItems(in: group).first
+                moveItemByDrag(token, toGroup: group, before: nil)
+                listID = UUID()  // ここで List を再描画
+                return true
+            }
         }
         .id(group.id)
-        .environment(\.editMode, .constant(.active))
+        // .environment(\.editMode, .constant(.active)) // ← Listベースの並べ替え用。ScrollViewでは不要のため無効化
         .padding(.horizontal, 0)
         .background(COLOR_ROW_GROUP)
     }
-
+    
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigationBarLeading) {
@@ -141,33 +178,92 @@ struct ItemListView: View {
             .disabled(!canRedo)
             .padding(.trailing, 8)
         }
-
+        
     }
-
+    
     private func sortedItems(in group: M2Group) -> [M3Item] {
         group.child.sorted { $0.order < $1.order }
     }
-
+    
     private func updateUndoRedo() {
         if let um = modelContext.undoManager {
             canUndo = um.canUndo
             canRedo = um.canRedo
         }
     }
-
-    private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
+    
+//    // ↓ Listベースの onMove（同一セクション内）は ScrollView 構成では不使用だが、元コードとして温存
+//    private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
+//        modelContext.undoManager?.beginUndoGrouping()
+//        defer {
+//            modelContext.undoManager?.endUndoGrouping()
+//            updateUndoRedo()
+//        }
+//        
+//        var items = group.child.sorted { $0.order < $1.order }
+//        items.move(fromOffsets: source, toOffset: destination)
+//        for (index, item) in items.enumerated() {
+//            item.order = index
+//        }
+//        group.child = items
+//    }
+    
+    // ===== 一次元方式：ドラッグ&ドロップ移動（グループ跨ぎ） =====
+    
+    // ドラッグペイロード（id が UUID でない場合は適宜変更）
+    private func dragToken(for item: M3Item) -> String { "\(item.id)" }
+    
+    // トークンから (元グループ, アイテム, 元index) を解決
+    private func findItem(byToken token: String) -> (M2Group, M3Item, Int)? {
+        for g in pack.child.sorted(by: { $0.order < $1.order }) {
+            let items = sortedItems(in: g)
+            if let idx = items.firstIndex(where: { dragToken(for: $0) == token }) {
+                return (g, items[idx], idx)
+            }
+        }
+        return nil
+    }
+    
+    // グループ跨ぎ移動の本体：targetItem の直後（nilなら末尾）に挿入
+    private func moveItemByDrag(_ token: String,
+                                toGroup targetGroup: M2Group,
+                                before targetItem: M3Item?) {
+        guard let (sourceGroup, movingItem, srcIndex) = findItem(byToken: token) else { return }
+        
         modelContext.undoManager?.beginUndoGrouping()
         defer {
             modelContext.undoManager?.endUndoGrouping()
             updateUndoRedo()
         }
-
-        var items = group.child.sorted { $0.order < $1.order }
-        items.move(fromOffsets: source, toOffset: destination)
-        for (index, item) in items.enumerated() {
-            item.order = index
+        
+        // 1) 元グループから取り外し（order を詰める）
+        var srcItems = sortedItems(in: sourceGroup)
+        guard srcIndex < srcItems.count else { return }
+        _ = srcItems.remove(at: srcIndex)
+        sourceGroup.child = srcItems
+        sourceGroup.normalizeItemOrder()
+        
+        // 2) 先グループの挿入位置
+        var dstItems = sortedItems(in: targetGroup)
+        var insertIndex = dstItems.endIndex
+        if let targetItem,
+           var idx = dstItems.firstIndex(where: { $0.id == targetItem.id }) {
+            idx += 1 // 直後へ挿入
+            if idx < insertIndex {
+                insertIndex = idx
+            }
+            // Safty
+            insertIndex = max(0, min(insertIndex, dstItems.count))
+        }else{
+            // 先頭に挿入
+            insertIndex = 0
         }
-        group.child = items
+        
+        // 3) 挿入して親の付け替え
+        movingItem.parent = targetGroup
+        dstItems.insert(movingItem, at: insertIndex)
+        targetGroup.child = dstItems
+        targetGroup.normalizeItemOrder()
     }
 }
 
@@ -313,3 +409,4 @@ struct EditItemView: View {
     pack.child.append(group)
     return ItemListView(pack: pack, initialGroup: group)
 }
+
