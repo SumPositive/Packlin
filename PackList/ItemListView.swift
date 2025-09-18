@@ -13,6 +13,7 @@ struct ItemListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
+    @State private var itemFrames: [M3Item.ID: CGRect] = [:]
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
@@ -75,14 +76,64 @@ struct ItemListView: View {
     @ViewBuilder
     private func groupSection(_ group: M2Group) -> some View {
         Section {
-            ForEach(sortedItems(in: group)) { item in
+            let items = sortedItems(in: group)
+            ForEach(Array(items.enumerated()), id: \.element.id) { enumeratedItem in
+                let index = enumeratedItem.offset
+                let item = enumeratedItem.element
                 ItemRowView(item: item) { selected, point in
                     editingItem = selected
                     popupAnchor = point
                 }
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear {
+                                registerFrame(geo: geo, for: item)
+                            }
+                            .onChange(of: geo.frame(in: .named("itemList"))) { _, _ in
+                                registerFrame(geo: geo, for: item)
+                            }
+                            .onDisappear {
+                                itemFrames.removeValue(forKey: item.id)
+                            }
+                    }
+                )
+                .draggable(ItemDragData(itemID: item.id))
+                .dropDestination(for: ItemDragData.self) { items, dropInfo in
+                    guard let payload = items.first else { return false }
+                    let location = dropInfo.location(in: .named("itemList"))
+                    let baseIndex: Int
+                    if let frame = itemFrames[item.id] {
+                        baseIndex = index + (location.y >= frame.midY ? 1 : 0)
+                    } else {
+                        baseIndex = index
+                    }
+                    let destinationIndex = dropInsertionIndex(for: payload.itemID,
+                                                               in: group,
+                                                               baseIndex: baseIndex)
+                    relocateItem(withID: payload.itemID,
+                                  to: group,
+                                  destinationIndex: destinationIndex)
+                    return true
+                }
             }
             .onMove { source, destination in
                 moveItem(in: group, from: source, to: destination)
+            }
+            if items.isEmpty {
+                Color.clear
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
+                    .dropDestination(for: ItemDragData.self) { items, _ in
+                        guard let payload = items.first else { return false }
+                        let destinationIndex = dropInsertionIndex(for: payload.itemID,
+                                                                   in: group,
+                                                                   baseIndex: 0)
+                        relocateItem(withID: payload.itemID,
+                                      to: group,
+                                      destinationIndex: destinationIndex)
+                        return true
+                    }
             }
         } header: {
             GroupRowView(group: group, isHeader: true) { selected, point in
@@ -141,6 +192,68 @@ struct ItemListView: View {
         group.child.sorted { $0.order < $1.order }
     }
 
+    private func registerFrame(geo: GeometryProxy, for item: M3Item) {
+        let frame = geo.frame(in: .named("itemList"))
+        if itemFrames[item.id] != frame {
+            itemFrames[item.id] = frame
+        }
+    }
+
+    private func dropInsertionIndex(for itemID: M3Item.ID, in group: M2Group, baseIndex: Int) -> Int {
+        let sourceGroup = pack.child.first { parentGroup in
+            parentGroup.child.contains { $0.id == itemID }
+        }
+
+        var index = max(baseIndex, 0)
+        if let sourceGroup,
+           sourceGroup.id == group.id,
+           let sourceIndex = sortedItems(in: sourceGroup).firstIndex(where: { $0.id == itemID }) {
+            if sourceIndex < index {
+                index -= 1
+            }
+            let upperBound = max(group.child.count - 1, 0)
+            index = min(index, upperBound)
+        } else {
+            index = min(index, group.child.count)
+        }
+        return max(index, 0)
+    }
+
+    private func relocateItem(withID itemID: M3Item.ID, to destinationGroup: M2Group, destinationIndex: Int) {
+        guard let sourceGroup = pack.child.first(where: { group in
+            group.child.contains { $0.id == itemID }
+        }),
+        let removalIndex = sourceGroup.child.firstIndex(where: { $0.id == itemID }) else {
+            return
+        }
+
+        if sourceGroup.id == destinationGroup.id && destinationIndex == removalIndex {
+            return
+        }
+
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+        }
+
+        let item = sourceGroup.child[removalIndex]
+        withAnimation {
+            sourceGroup.child.remove(at: removalIndex)
+
+            var destinationItems = destinationGroup.child
+            let clampedIndex = max(0, min(destinationIndex, destinationItems.count))
+            destinationItems.insert(item, at: clampedIndex)
+            destinationGroup.child = destinationItems
+            item.parent = destinationGroup
+
+            if sourceGroup.id != destinationGroup.id {
+                sourceGroup.normalizeItemOrder()
+            }
+            destinationGroup.normalizeItemOrder()
+        }
+    }
+
     private func updateUndoRedo() {
         if let um = modelContext.undoManager {
             canUndo = um.canUndo
@@ -161,6 +274,14 @@ struct ItemListView: View {
             item.order = index
         }
         group.child = items
+    }
+}
+
+private struct ItemDragData: Transferable, Codable {
+    let itemID: M3Item.ID
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(for: ItemDragData.self)
     }
 }
 
