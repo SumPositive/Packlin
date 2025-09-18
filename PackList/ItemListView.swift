@@ -50,14 +50,16 @@ struct ItemListView: View {
             //----------------------------------
             //(ZStack 1) Popupで表示
             if let item = editingItem {
-                PopupView(
-                    anchor: popupAnchor,
-                    onDismiss: {
+                PopupView(anchor: popupAnchor) {
+                    //.onDismiss：PopupView内から閉じる場合
+                    editingItem = nil
+                    popupAnchor = nil
+                } content: {
+                    EditItemView(item: item) {
+                        //.onClose：EditItemView内から閉じる場合
                         editingItem = nil
                         popupAnchor = nil
                     }
-                ) {
-                    EditItemView(item: item)
                 }
                 .zIndex(1)
             }
@@ -250,8 +252,10 @@ struct ItemListView: View {
 /// Item 編集
 /// 外枠 frameを固定サイズにして、内側をレイアウトしている
 struct EditItemView: View {
-    @Environment(\.modelContext) private var modelContext
     @Bindable var item: M3Item
+    let onClose: () -> Void
+
+    @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
     
     private var weightBinding: Binding<Int> {
@@ -295,40 +299,27 @@ struct EditItemView: View {
         VStack {
             HStack {    // Actions
                 Button {
-                    copyToClipboard()
+                    duplicateItem()
                 } label: {
                     VStack {
-                        Image(systemName: "document.on.document")
-                        Text("Copy").font(.caption)
+                        Image(systemName: "plus.square.on.square")
+                        Text("複製").font(.caption)
                     }
                 }
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
                 
-                Button {
-                    pasteFromClipboard()
-                } label: {
-                    VStack {
-                        Image(systemName: "document.on.clipboard")
-                        Text("Paste").font(.caption)
-                    }
-                }
-                .disabled(RowClipboard.item == nil)
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-
                 Spacer()
                 
                 Button {
-                    copyToClipboard()
-                    //TODO: EditItemViewを閉じる
-                    
+                    // EditItemViewを閉じる
+                    onClose()
                     // Itemを削除する
                     deleteItem()
                 } label: {
                     VStack {
-                        Image(systemName: "scissors")
-                        Text("Cut").font(.caption)
+                        Image(systemName: "trash")
+                        Text("削除").font(.caption)
                     }
                 }
                 .tint(.red)
@@ -421,32 +412,31 @@ struct EditItemView: View {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
-    
 
-    private func copyToClipboard() {
-        RowClipboard.clear()
-        RowClipboard.item = cloneItem(item)
-    }
-    
-    /// Clipboardから現在のItemに上書きする
-    private func pasteFromClipboard() {
+    /// 現在のItemを複製して現在行に追加する
+    private func duplicateItem() {
         modelContext.undoManager?.beginUndoGrouping()
         defer {
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
-        guard let clip = RowClipboard.item else { return }
+        
+        guard let parent = item.parent else { return }
+        let newItem = M3Item(name: item.name, memo: item.memo,
+                             stock: item.stock, need: item.need, weight: item.weight,
+                             order: item.order,
+                             parent: parent)
+        modelContext.insert(newItem)
         withAnimation {
-            // Paste
-            item.name = clip.name
-            item.memo = clip.memo
-            //item.check = clip.check     // チェック
-            item.stock = clip.stock     // 在庫数
-            item.need = clip.need       // 必要数
-            item.weight = clip.weight   // 重量(g)
+            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+                // 現在行の下に追加
+                parent.child.insert(newItem, at: index + 1)
+            }
+            parent.normalizeItemOrder()
         }
     }
-
+    
+    /// 現在のItemを削除する
     private func deleteItem() {
         modelContext.undoManager?.beginUndoGrouping()
         defer {
