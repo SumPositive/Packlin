@@ -121,12 +121,11 @@ struct ItemListView: View {
             }
         )
         .draggable(ItemDragData(itemID: item.id))
-        .dropDestination(for: ItemDragData.self) { items, dropInfo in
+        .dropDestination(for: ItemDragData.self) { items, location in
             guard let payload = items.first else { return false }
-            let location = dropInfo.location(in: .named("itemList"))
             let baseIndex: Int
             if let frame = itemFrames[item.id] {
-                baseIndex = index + (location.y >= frame.midY ? 1 : 0)
+                baseIndex = index + (location.y >= frame.height / 2 ? 1 : 0)
             } else {
                 baseIndex = index
             }
