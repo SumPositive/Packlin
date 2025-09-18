@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct ItemListView: View {
     let pack: M1Pack
@@ -75,65 +76,18 @@ struct ItemListView: View {
 
     @ViewBuilder
     private func groupSection(_ group: M2Group) -> some View {
+        let items = sortedItems(in: group)
         Section {
-            let items = sortedItems(in: group)
             ForEach(Array(items.enumerated()), id: \.element.id) { enumeratedItem in
-                let index = enumeratedItem.offset
-                let item = enumeratedItem.element
-                ItemRowView(item: item) { selected, point in
-                    editingItem = selected
-                    popupAnchor = point
-                }
-                .background(
-                    GeometryReader { geo in
-                        Color.clear
-                            .onAppear {
-                                registerFrame(geo: geo, for: item)
-                            }
-                            .onChange(of: geo.frame(in: .named("itemList"))) { _, _ in
-                                registerFrame(geo: geo, for: item)
-                            }
-                            .onDisappear {
-                                itemFrames.removeValue(forKey: item.id)
-                            }
-                    }
-                )
-                .draggable(ItemDragData(itemID: item.id))
-                .dropDestination(for: ItemDragData.self) { items, dropInfo in
-                    guard let payload = items.first else { return false }
-                    let location = dropInfo.location(in: .named("itemList"))
-                    let baseIndex: Int
-                    if let frame = itemFrames[item.id] {
-                        baseIndex = index + (location.y >= frame.midY ? 1 : 0)
-                    } else {
-                        baseIndex = index
-                    }
-                    let destinationIndex = dropInsertionIndex(for: payload.itemID,
-                                                               in: group,
-                                                               baseIndex: baseIndex)
-                    relocateItem(withID: payload.itemID,
-                                  to: group,
-                                  destinationIndex: destinationIndex)
-                    return true
-                }
+                itemRow(for: enumeratedItem.element,
+                        in: group,
+                        index: enumeratedItem.offset)
             }
             .onMove { source, destination in
                 moveItem(in: group, from: source, to: destination)
             }
             if items.isEmpty {
-                Color.clear
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .contentShape(Rectangle())
-                    .dropDestination(for: ItemDragData.self) { items, _ in
-                        guard let payload = items.first else { return false }
-                        let destinationIndex = dropInsertionIndex(for: payload.itemID,
-                                                                   in: group,
-                                                                   baseIndex: 0)
-                        relocateItem(withID: payload.itemID,
-                                      to: group,
-                                      destinationIndex: destinationIndex)
-                        return true
-                    }
+                emptyDropTarget(for: group)
             }
         } header: {
             GroupRowView(group: group, isHeader: true) { selected, point in
@@ -145,6 +99,61 @@ struct ItemListView: View {
         .environment(\.editMode, .constant(.active))
         .padding(.horizontal, 0)
         .background(COLOR_ROW_GROUP)
+    }
+
+    private func itemRow(for item: M3Item, in group: M2Group, index: Int) -> some View {
+        ItemRowView(item: item) { selected, point in
+            editingItem = selected
+            popupAnchor = point
+        }
+        .background(
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear {
+                        registerFrame(geo: geo, for: item)
+                    }
+                    .onChange(of: geo.frame(in: .named("itemList"))) { _, _ in
+                        registerFrame(geo: geo, for: item)
+                    }
+                    .onDisappear {
+                        itemFrames.removeValue(forKey: item.id)
+                    }
+            }
+        )
+        .draggable(ItemDragData(itemID: item.id))
+        .dropDestination(for: ItemDragData.self) { items, dropInfo in
+            guard let payload = items.first else { return false }
+            let location = dropInfo.location(in: .named("itemList"))
+            let baseIndex: Int
+            if let frame = itemFrames[item.id] {
+                baseIndex = index + (location.y >= frame.midY ? 1 : 0)
+            } else {
+                baseIndex = index
+            }
+            let destinationIndex = dropInsertionIndex(for: payload.itemID,
+                                                       in: group,
+                                                       baseIndex: baseIndex)
+            relocateItem(withID: payload.itemID,
+                          to: group,
+                          destinationIndex: destinationIndex)
+            return true
+        }
+    }
+
+    private func emptyDropTarget(for group: M2Group) -> some View {
+        Color.clear
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
+            .dropDestination(for: ItemDragData.self) { items, _ in
+                guard let payload = items.first else { return false }
+                let destinationIndex = dropInsertionIndex(for: payload.itemID,
+                                                           in: group,
+                                                           baseIndex: 0)
+                relocateItem(withID: payload.itemID,
+                              to: group,
+                              destinationIndex: destinationIndex)
+                return true
+            }
     }
 
     @ToolbarContentBuilder
@@ -281,8 +290,12 @@ private struct ItemDragData: Transferable, Codable {
     let itemID: M3Item.ID
 
     static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(for: ItemDragData.self)
+        CodableRepresentation(for: ItemDragData.self, contentType: .packListItemData)
     }
+}
+
+private extension UTType {
+    static let packListItemData = UTType(exportedAs: "com.sumpositive.packlist.item")
 }
 
 
