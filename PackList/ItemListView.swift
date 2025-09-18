@@ -4,6 +4,9 @@
 //
 //  Created by sumpo on 2025/09/14.
 //
+//　Item移動がGroupを超えて可能にするためListでなくLazyVStackを利用、そのため
+//　RowのswipeActionsが使えなくなるので、EditItemView上にActionsボタンを表示することにした
+//
 
 import SwiftUI
 import SwiftData
@@ -111,13 +114,6 @@ struct ItemListView: View {
                     listID = UUID()  // ここで List を再描画
                     return true
                 }
-            
-            // ↓ List 専用の onMove は ScrollView 構成では無効になるため温存のみ
-            /*
-             .onMove { source, destination in
-             moveItem(in: group, from: source, to: destination)
-             }
-             */
         } header: {
             GroupRowView(group: group, isHeader: true) { selected, point in
                 //editingGroup = selected
@@ -128,14 +124,12 @@ struct ItemListView: View {
             // ヘッダーにドロップ → 先頭に挿入
             .dropDestination(for: String.self) { tokens, _ in
                 guard let token = tokens.first else { return false }
-//                let first = sortedItems(in: group).first
-                moveItemByDrag(token, toGroup: group, before: nil)
+                moveItemByDrag(token, toGroup: group, before: nil) // nil:先頭へ
                 listID = UUID()  // ここで List を再描画
                 return true
             }
         }
         .id(group.id)
-        // .environment(\.editMode, .constant(.active)) // ← Listベースの並べ替え用。ScrollViewでは不要のため無効化
         .padding(.horizontal, 0)
         .background(COLOR_ROW_GROUP)
     }
@@ -192,22 +186,7 @@ struct ItemListView: View {
         }
     }
     
-//    // ↓ Listベースの onMove（同一セクション内）は ScrollView 構成では不使用だが、元コードとして温存
-//    private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
-//        modelContext.undoManager?.beginUndoGrouping()
-//        defer {
-//            modelContext.undoManager?.endUndoGrouping()
-//            updateUndoRedo()
-//        }
-//        
-//        var items = group.child.sorted { $0.order < $1.order }
-//        items.move(fromOffsets: source, toOffset: destination)
-//        for (index, item) in items.enumerated() {
-//            item.order = index
-//        }
-//        group.child = items
-//    }
-    
+
     // ===== 一次元方式：ドラッグ&ドロップ移動（グループ跨ぎ） =====
     
     // ドラッグペイロード（id が UUID でない場合は適宜変更）
@@ -271,7 +250,6 @@ struct ItemListView: View {
 /// Item 編集
 /// 外枠 frameを固定サイズにして、内側をレイアウトしている
 struct EditItemView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable var item: M3Item
     @FocusState private var nameIsFocused: Bool
@@ -315,6 +293,49 @@ struct EditItemView: View {
     
     var body: some View {
         VStack {
+            HStack {    // Actions
+                Button {
+                    copyToClipboard()
+                } label: {
+                    VStack {
+                        Image(systemName: "document.on.document")
+                        Text("Copy").font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+                
+                Button {
+                    pasteFromClipboard()
+                } label: {
+                    VStack {
+                        Image(systemName: "document.on.clipboard")
+                        Text("Paste").font(.caption)
+                    }
+                }
+                .disabled(RowClipboard.item == nil)
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+
+                Spacer()
+                
+                Button {
+                    copyToClipboard()
+                    //TODO: EditItemViewを閉じる
+                    
+                    // Itemを削除する
+                    deleteItem()
+                } label: {
+                    VStack {
+                        Image(systemName: "scissors")
+                        Text("Cut").font(.caption)
+                    }
+                }
+                .tint(.red)
+                .padding(.horizontal, 8)
+            }
+            .padding(.bottom, 8)
+            
             HStack {
                 Text("名称")
                     .font(.caption)
@@ -381,7 +402,7 @@ struct EditItemView: View {
                     .labelsHidden()
             }        }
         .padding(.horizontal, 16)
-        .frame(width: 300, height: 280)
+        .frame(width: 300, height: 320)
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
@@ -400,6 +421,49 @@ struct EditItemView: View {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
+    
+
+    private func copyToClipboard() {
+        RowClipboard.clear()
+        RowClipboard.item = cloneItem(item)
+    }
+    
+    /// Clipboardから現在のItemに上書きする
+    private func pasteFromClipboard() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        guard let clip = RowClipboard.item else { return }
+        withAnimation {
+            // Paste
+            item.name = clip.name
+            item.memo = clip.memo
+            //item.check = clip.check     // チェック
+            item.stock = clip.stock     // 在庫数
+            item.need = clip.need       // 必要数
+            item.weight = clip.weight   // 重量(g)
+        }
+    }
+
+    private func deleteItem() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        
+        if let group = item.parent,
+           let index = group.child.firstIndex(where: { $0.id == item.id }) {
+            withAnimation {
+                group.child.remove(at: index)
+                group.normalizeItemOrder()
+            }
+        }
+        modelContext.delete(item)
+    }
+    
 }
 
 
