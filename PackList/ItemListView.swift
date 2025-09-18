@@ -162,6 +162,30 @@ struct ItemListView: View {
         }
         group.child = items
     }
+
+    private func relocateItem(from sourceGroup: M2Group,
+                              sourceIndex: Int,
+                              to destinationGroup: M2Group,
+                              destinationIndex: Int) {
+        var sourceItems = sourceGroup.child.sorted { $0.order < $1.order }
+        guard sourceItems.indices.contains(sourceIndex) else { return }
+
+        let movingItem = sourceItems.remove(at: sourceIndex)
+        for (index, item) in sourceItems.enumerated() {
+            item.order = index
+        }
+        sourceGroup.child = sourceItems
+
+        movingItem.parent = destinationGroup
+
+        var destinationItems = destinationGroup.child.sorted { $0.order < $1.order }
+        let clampedIndex = max(0, min(destinationIndex, destinationItems.count))
+        destinationItems.insert(movingItem, at: clampedIndex)
+        for (index, item) in destinationItems.enumerated() {
+            item.order = index
+        }
+        destinationGroup.child = destinationItems
+    }
 }
 
 
