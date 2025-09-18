@@ -80,6 +80,16 @@ struct ItemListView: View {
                     editingItem = selected
                     popupAnchor = point
                 }
+                .draggable(item.id)
+                .dropDestination(for: M3Item.ID.self) { itemIDs, _ in
+                    guard let itemID = itemIDs.first, itemID != item.id else {
+                        return false
+                    }
+                    guard let targetIndex = sortedItems(in: group).firstIndex(where: { $0.id == item.id }) else {
+                        return false
+                    }
+                    return relocateItem(withID: itemID, to: group, destinationIndex: targetIndex)
+                }
             }
             .onMove { source, destination in
                 moveItem(in: group, from: source, to: destination)
@@ -89,11 +99,23 @@ struct ItemListView: View {
                 //editingGroup = selected
                 //popupAnchor = point
             }
+            .dropDestination(for: M3Item.ID.self) { itemIDs, _ in
+                guard let itemID = itemIDs.first else {
+                    return false
+                }
+                return relocateItem(withID: itemID, to: group, destinationIndex: 0)
+            }
         }
         .id(group.id)
         .environment(\.editMode, .constant(.active))
         .padding(.horizontal, 0)
         .background(COLOR_ROW_GROUP)
+        .dropDestination(for: M3Item.ID.self) { itemIDs, _ in
+            guard let itemID = itemIDs.first else {
+                return false
+            }
+            return relocateItem(withID: itemID, to: group, destinationIndex: sortedItems(in: group).count)
+        }
     }
 
     @ToolbarContentBuilder
@@ -149,18 +171,100 @@ struct ItemListView: View {
     }
 
     private func moveItem(in group: M2Group, from source: IndexSet, to destination: Int) {
+        guard let sourceIndex = source.first else {
+            return
+        }
+        let items = sortedItems(in: group)
+        guard items.indices.contains(sourceIndex) else {
+            return
+        }
+        _ = relocateItem(withID: items[sourceIndex].id, to: group, destinationIndex: destination)
+    }
+
+    private func relocateItem(withID itemID: M3Item.ID, to targetGroup: M2Group, destinationIndex rawDestination: Int) -> Bool {
+        guard let item = item(withID: itemID), let sourceGroup = item.parent else {
+            return false
+        }
+
+        if sourceGroup.id == targetGroup.id {
+            var destination = rawDestination
+            let items = sortedItems(in: sourceGroup)
+            guard let currentIndex = items.firstIndex(where: { $0.id == itemID }) else {
+                return false
+            }
+
+            if currentIndex < destination {
+                destination -= 1
+            }
+
+            let maxIndex = max(items.count - 1, 0)
+            destination = max(0, min(destination, maxIndex))
+
+            if destination == currentIndex {
+                return false
+            }
+
+            performItemMove(item, to: targetGroup, destinationIndex: destination)
+            return true
+        } else {
+            let destination = max(0, min(rawDestination, sortedItems(in: targetGroup).count))
+            performItemMove(item, to: targetGroup, destinationIndex: destination)
+            return true
+        }
+    }
+
+    private func performItemMove(_ item: M3Item, to targetGroup: M2Group, destinationIndex: Int) {
         modelContext.undoManager?.beginUndoGrouping()
         defer {
             modelContext.undoManager?.endUndoGrouping()
             updateUndoRedo()
         }
 
-        var items = group.child.sorted { $0.order < $1.order }
-        items.move(fromOffsets: source, toOffset: destination)
-        for (index, item) in items.enumerated() {
-            item.order = index
+        relocate(item: item, to: targetGroup, destinationIndex: destinationIndex)
+    }
+
+    private func relocate(item: M3Item, to targetGroup: M2Group, destinationIndex: Int) {
+        guard let sourceGroup = item.parent else {
+            return
         }
-        group.child = items
+
+        if sourceGroup.id == targetGroup.id {
+            var items = sortedItems(in: sourceGroup)
+            guard let currentIndex = items.firstIndex(where: { $0.id == item.id }) else {
+                return
+            }
+
+            let movingItem = items.remove(at: currentIndex)
+            let boundedDestination = max(0, min(destinationIndex, items.count))
+            items.insert(movingItem, at: boundedDestination)
+            sourceGroup.child = items
+            movingItem.parent = sourceGroup
+            sourceGroup.normalizeItemOrder()
+        } else {
+            var sourceItems = sortedItems(in: sourceGroup)
+            guard let currentIndex = sourceItems.firstIndex(where: { $0.id == item.id }) else {
+                return
+            }
+            let movingItem = sourceItems.remove(at: currentIndex)
+            sourceGroup.child = sourceItems
+            sourceGroup.normalizeItemOrder()
+
+            var targetItems = sortedItems(in: targetGroup)
+            let boundedDestination = max(0, min(destinationIndex, targetItems.count))
+            targetItems.insert(movingItem, at: boundedDestination)
+            targetGroup.child = targetItems
+            movingItem.parent = targetGroup
+            targetGroup.normalizeItemOrder()
+        }
+    }
+
+    private func item(withID id: M3Item.ID) -> M3Item? {
+        for group in pack.child {
+            if let found = group.child.first(where: { $0.id == id }) {
+                return found
+            }
+        }
+        return nil
     }
 }
 
