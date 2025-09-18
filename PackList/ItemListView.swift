@@ -28,6 +28,9 @@ struct ItemListView: View {
         pack.child.sorted { $0.order < $1.order }
     }
     
+    // Popup表示中はナビバーボタンを非活性にするためのフラグ
+    private var isShowingPopup: Bool { editingItem != nil }
+    
     var body: some View {
         ZStack {
             ScrollViewReader { proxy in
@@ -149,6 +152,7 @@ struct ItemListView: View {
                 }
             }
             .padding(.trailing, 8)
+            .disabled(isShowingPopup)
             
             Button {
                 withAnimation {
@@ -159,8 +163,9 @@ struct ItemListView: View {
             } label: {
                 Image(systemName: "arrow.uturn.backward")
             }
-            .disabled(!canUndo)
+            .disabled(!canUndo || isShowingPopup)
         }
+        
         ToolbarItemGroup(placement: .navigationBarTrailing) {
             Button {
                 withAnimation {
@@ -171,7 +176,7 @@ struct ItemListView: View {
             } label: {
                 Image(systemName: "arrow.uturn.forward")
             }
-            .disabled(!canRedo)
+            .disabled(!canRedo || isShowingPopup)
             .padding(.trailing, 8)
         }
         

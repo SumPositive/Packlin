@@ -21,7 +21,9 @@ struct PackListView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
     private let rowHeight: CGFloat = 44
-    
+    // Popup表示中はナビバーボタンを非活性にするためのフラグ
+    private var isShowingPopup: Bool { editingPack != nil }
+
     var body: some View {
         ZStack {
             List {
@@ -59,10 +61,9 @@ struct PackListView: View {
                     } label: {
                         Image(systemName: "gearshape")
                     }
+                    .disabled(isShowingPopup)
                     .padding(.horizontal, 8)
                     
-                    Spacer()
-
                     Button {
                         withAnimation {
                             modelContext.undoManager?.undo()
@@ -72,11 +73,13 @@ struct PackListView: View {
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
-                    .disabled(!canUndo)
+                    .disabled(!canUndo || isShowingPopup)
                     .padding(.horizontal, 8)
 
+                    Spacer()
                     Text("モチメモ")
-
+                    Spacer()
+                    
                     Button {
                         withAnimation {
                             modelContext.undoManager?.redo()
@@ -86,15 +89,14 @@ struct PackListView: View {
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                     }
-                    .disabled(!canRedo)
+                    .disabled(!canRedo || isShowingPopup)
                     .padding(.horizontal, 8)
                     
-                    Spacer()
-
                     Button { addPack() }
                     label: {
                         Image(systemName: "plus.message")
                     }
+                    .disabled(isShowingPopup)
                     .padding(.horizontal, 8)
                 }
                 .frame(height: rowHeight)

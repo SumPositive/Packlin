@@ -32,7 +32,9 @@ struct PopupView<Content: View>: View {
             ZStack(alignment: .topLeading) {
                 // 背景タップで閉じる
                 Color.black.opacity(0.001)
-                    .ignoresSafeArea()
+                    // frameとignoresSafeArea(.container, .all)を適用し、ナビゲーションバー上までタップ領域が広がるようにしている
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea(.container, edges: .all)
                     .onTapGesture {
                         onDismiss()
                     }

@@ -26,6 +26,10 @@ struct GroupListView: View {
         pack.child.sorted { $0.order < $1.order }
     }
     
+    // Popup表示中はナビバーボタンを非活性にするためのフラグ
+    private var isShowingPopup: Bool { editingGroup != nil }
+
+    
     var body: some View {
         ZStack {
             List {
@@ -75,8 +79,9 @@ struct GroupListView: View {
                     } label: {
                         Image(systemName: "chevron.backward")
                     }
+                    .disabled(isShowingPopup)
                     .padding(.trailing, 8)
-                    
+
                     Button {
                         withAnimation {
                             modelContext.undoManager?.undo()
@@ -86,10 +91,9 @@ struct GroupListView: View {
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
-                    .disabled(!canUndo)
+                    .disabled(!canUndo || isShowingPopup)
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    
                     Button {
                         withAnimation {
                             modelContext.undoManager?.redo()
@@ -99,12 +103,13 @@ struct GroupListView: View {
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                     }
-                    .disabled(!canRedo)
+                    .disabled(!canRedo || isShowingPopup)
                     .padding(.trailing, 8)
 
                     Button(action: addGroup) {
                         Image(systemName: "plus.rectangle")
                     }
+                    .disabled(isShowingPopup)
                 }
             }
             .onAppear {
