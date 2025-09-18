@@ -1,3 +1,10 @@
+//
+//  GroupListView.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/14.
+//
+
 import SwiftUI
 import SwiftData
 

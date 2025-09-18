@@ -1,3 +1,10 @@
+//
+//  AppNavigation.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/14.
+//
+
 import Foundation
 import SwiftUI
 import SwiftData
