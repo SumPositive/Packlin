@@ -107,30 +107,6 @@ struct ItemRowView: View {
                     onEdit(item, po)
                 }
         )
-        .swipeActions(edge: .trailing) {
-            Button("action.cut") {
-                copyToClipboard()
-                deleteItem()
-            }
-            .tint(.red)
-        }
-        .swipeActions(edge: .leading) {
-            Button("action.copy") {
-                copyToClipboard()
-            }
-            .tint(.cyan)
-
-            Button("action.paste") {
-                pasteFromClipboard()
-            }
-            //.disabled(RowClipboard.item == nil)
-            .tint(.blue)
-
-            Button("action.duplicate") {
-                duplicateItem()
-            }
-            .tint(.green)
-        }
     }
 
     private func deleteItem() {
@@ -148,55 +124,6 @@ struct ItemRowView: View {
             }
         }
         modelContext.delete(item)
-    }
-
-    private func duplicateItem() {
-        modelContext.undoManager?.beginUndoGrouping()
-        defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-        }
-
-        guard let parent = item.parent else { return }
-        let newItem = M3Item(name: item.name, memo: item.memo, stock: item.stock, need: item.need, weight: item.weight, order: item.order, parent: parent)
-        modelContext.insert(newItem)
-        withAnimation {
-            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-                parent.child.insert(newItem, at: index)
-            } else {
-                parent.child.append(newItem)
-            }
-            parent.normalizeItemOrder()
-        }
-    }
-
-    private func copyToClipboard() {
-        RowClipboard.clear()
-        RowClipboard.item = cloneItem(item)
-    }
-
-    private func pasteFromClipboard() {
-        modelContext.undoManager?.beginUndoGrouping()
-        defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-        }
-
-        guard let clip = RowClipboard.item, let parent = item.parent else { return }
-        let newItem = cloneItem(clip, parent: parent)
-        newItem.order = item.order
-        modelContext.insert(newItem)
-        withAnimation {
-            // 現在行(index)を求めその行に追加する
-            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-                // index位置に追加
-                parent.child.insert(newItem, at: index)
-            } else {
-                // 末尾に追加
-                parent.child.append(newItem)
-            }
-            parent.normalizeItemOrder()
-        }
     }
 
 }

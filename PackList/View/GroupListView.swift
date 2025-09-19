@@ -131,14 +131,15 @@ struct GroupListView: View {
             //----------------------------------
             //(ZStack 1) Popupで表示
             if let group = editingGroup {
-                PopupView(
-                    anchor: popupAnchor,
-                    onDismiss: {
+                PopupView(anchor: popupAnchor) {
+                    editingGroup = nil
+                    popupAnchor = nil
+                } content: {
+                    EditGroupView(group: group) {
+                        //.onClose：内から閉じる場合
                         editingGroup = nil
                         popupAnchor = nil
                     }
-                ) {
-                    EditGroupView(group: group)
                 }
                 .zIndex(1)
             }
@@ -185,13 +186,49 @@ struct GroupListView: View {
 
 
 struct EditGroupView: View {
+    @Bindable var group: M2Group
+    let onClose: () -> Void
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Bindable var group: M2Group
     @FocusState private var nameIsFocused: Bool
     
     var body: some View {
         VStack {
+            HStack {    // Actions
+                Button {
+                    duplicateGroup()
+                } label: {
+                    VStack {
+                        Image(systemName: "plus.square.on.square")
+                        Text("action.duplicate")
+                            .font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+                
+                Spacer()
+                Text("Group.edit.title").font(.footnote)
+                Spacer()
+
+                Button {
+                    // EditItemViewを閉じる
+                    onClose()
+                    // Itemを削除する
+                    deleteGroup()
+                } label: {
+                    VStack {
+                        Image(systemName: "trash")
+                        Text("action.delete")
+                            .font(.caption)
+                    }
+                }
+                .tint(.red)
+                .padding(.horizontal, 8)
+            }
+            .padding(.bottom, 8)
+
             HStack {
                 Text("edit.name")
                     .font(.caption)
@@ -219,7 +256,7 @@ struct EditGroupView: View {
             }
         }
         .padding(.horizontal, 16)
-        .frame(width: 300, height: 150)
+        .frame(width: 300, height: 190)
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
@@ -238,6 +275,60 @@ struct EditGroupView: View {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
+
+    /// 現在のGroupを複製して現在行に追加する
+    private func duplicateGroup() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        
+        guard let parent = group.parent else { return }
+        let newGroup = M2Group(name: group.name, memo: group.memo,
+                               order: parent.nextGroupOrder(),
+                               parent: parent)
+        modelContext.insert(newGroup)
+        withAnimation {
+            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+                // 現在行の下に追加
+                parent.child.insert(newGroup, at: index + 1)
+            }
+            parent.normalizeGroupOrder()
+        }
+        for item in group.child {
+            copyItem(item, to: newGroup)
+        }
+    }
+    private func copyItem(_ item: M3Item, to parent: M2Group) {
+        let newItem = M3Item(name: item.name, memo: item.memo,
+                             stock: item.stock, need: item.need, weight: item.weight,
+                             order: parent.nextItemOrder(), parent: parent)
+        modelContext.insert(newItem)
+        parent.child.append(newItem)
+        parent.normalizeItemOrder()
+    }
+
+    /// 現在のGroupを削除する
+    private func deleteGroup() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        // groupの配下を削除
+        for item in group.child {
+            modelContext.delete(item)
+        }
+        // groupを削除：pack側から削除して整列する
+        if let parent = group.parent,
+           let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+            parent.child.remove(at: index)
+            parent.normalizeGroupOrder()
+        }
+        modelContext.delete(group)
+    }
+
 }
 
 

@@ -15,6 +15,7 @@
       }
     },
     "action.copy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -31,6 +32,7 @@
       }
     },
     "action.cut" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -79,6 +81,7 @@
       }
     },
     "action.paste" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -152,6 +155,22 @@
         }
       }
     },
+    "Group.edit.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "グループ"
+          }
+        }
+      }
+    },
     "info.url" : {
       "localizations" : {
         "en" : {
@@ -174,6 +193,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "item (%1$lld) [%2$@]"
+          }
+        }
+      }
+    },
+    "Item.edit.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アイテム"
           }
         }
       }
@@ -256,7 +291,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "パックが見つかりません"
+            "value" : "モチメモが見つかりません"
           }
         }
       }
@@ -267,6 +302,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "pack (%1$lld) [%2$@]"
+          }
+        }
+      }
+    },
+    "Pack.edit.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pack"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "モチメモ"
           }
         }
       }
@@ -314,7 +365,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新規パック"
+            "value" : "新規モチメモ"
           }
         }
       }

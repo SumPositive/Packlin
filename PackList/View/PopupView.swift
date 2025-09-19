@@ -59,7 +59,6 @@ struct PopupView<Content: View>: View {
                 .position(popupPosition(screen: screen))
             }
         }
-        //.ignoresSafeArea(.keyboard, edges: .bottom) // キーボード表示時に位置が変わらないようにする
     }
     
     /// 表示位置（キーボードに隠れないように画面の中央より上に表示する）

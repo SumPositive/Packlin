@@ -116,14 +116,15 @@ struct PackListView: View {
             //----------------------------------
             //(ZStack 1) Popupで表示
             if let pack = editingPack {
-                PopupView(
-                    anchor: popupAnchor,
-                    onDismiss: {
+                PopupView(anchor: popupAnchor) {
+                    editingPack = nil
+                    popupAnchor = nil
+                } content: {
+                    EditPackView(pack: pack) {
+                        //.onClose：内から閉じる場合
                         editingPack = nil
                         popupAnchor = nil
                     }
-                ) {
-                    EditPackView(pack: pack)
                 }
                 .zIndex(1)
             }
@@ -178,13 +179,49 @@ struct PackListView: View {
 
 
 struct EditPackView: View {
+    @Bindable var pack: M1Pack
+    let onClose: () -> Void
+    
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Bindable var pack: M1Pack
     @FocusState private var nameIsFocused: Bool
     
     var body: some View {
         VStack {
+            HStack {    // Actions
+                Button {
+                    duplicatePack()
+                } label: {
+                    VStack {
+                        Image(systemName: "plus.square.on.square")
+                        Text("action.duplicate")
+                            .font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+                
+                Spacer()
+                Text("Pack.edit.title").font(.footnote)
+                Spacer()
+
+                Button {
+                    // EditItemViewを閉じる
+                    onClose()
+                    // Itemを削除する
+                    deletePack()
+                } label: {
+                    VStack {
+                        Image(systemName: "trash")
+                        Text("action.delete")
+                            .font(.caption)
+                    }
+                }
+                .tint(.red)
+                .padding(.horizontal, 8)
+            }
+            .padding(.bottom, 8)
+            
             HStack {
                 Text("edit.name")
                     .font(.caption)
@@ -212,7 +249,7 @@ struct EditPackView: View {
             }
         }
         .padding(.horizontal, 16)
-        .frame(width: 300, height: 150)
+        .frame(width: 300, height: 190)
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
@@ -230,6 +267,80 @@ struct EditPackView: View {
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
+    }
+    
+    /// 現在のPackを複製して現在行に追加する
+    private func duplicatePack() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        
+        let descriptor = FetchDescriptor<M1Pack>()
+        let packs = (try? modelContext.fetch(descriptor)) ?? []
+        let newOrder = M1Pack.nextPackOrder(packs)
+        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001), order: newOrder)
+        modelContext.insert(newTitle)
+        for group in pack.child {
+            copyGroup(group, to: newTitle)
+        }
+    }
+    private func copyGroup(_ group: M2Group, to parent: M1Pack) {
+        let newGroup = M2Group(name: group.name, memo: group.memo,
+                               order: parent.nextGroupOrder(), parent: parent)
+        modelContext.insert(newGroup)
+        withAnimation {
+            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+                // 下に追加
+                parent.child.insert(newGroup, at: index + 1)
+            } else {
+                parent.child.append(newGroup)
+            }
+            parent.normalizeGroupOrder()
+        }
+        for item in group.child {
+            copyItem(item, to: newGroup)
+        }
+    }
+    private func copyItem(_ item: M3Item, to parent: M2Group) {
+        let newItem = M3Item(name: item.name, memo: item.memo,
+                             stock: item.stock, need: item.need, weight: item.weight,
+                             order: parent.nextItemOrder(), parent: parent)
+        modelContext.insert(newItem)
+        parent.child.append(newItem)
+        parent.normalizeItemOrder()
+    }
+    
+    /// 現在のPackを削除する
+    private func deletePack() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        // groupとその配下を削除
+        for group in pack.child {
+            deleteGroup(group)
+        }
+        // Packを削除
+        modelContext.delete(pack)
+        let descriptor = FetchDescriptor<M1Pack>()
+        if let packs = try? modelContext.fetch(descriptor) {
+            M1Pack.normalizePackOrder(packs)
+        }
+    }
+    /// groupとその配下を削除
+    private func deleteGroup(_ group: M2Group) {
+        for item in group.child {
+            modelContext.delete(item)
+        }
+        if let parent = group.parent,
+           let index = parent.child.firstIndex(where: { $0.id == group.id }) {
+            parent.child.remove(at: index)
+            parent.normalizeGroupOrder()
+        }
+        modelContext.delete(group)
     }
 }
 

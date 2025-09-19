@@ -81,8 +81,6 @@ struct ItemListView: View {
             }
         }
         .id(listID)   // listIDが変わるとListが作り直される（ScrollViewでも同様に再構築トリガとして使用）
-        // .listStyle(.plain)
-        // .listSectionSpacing(0)
         .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -319,6 +317,8 @@ struct EditItemView: View {
                 .padding(.horizontal, 8)
 
                 Spacer()
+                Text("Item.edit.title").font(.footnote)
+                Spacer()
 
                 Button {
                     // EditItemViewを閉じる
@@ -454,7 +454,7 @@ struct EditItemView: View {
             modelContext.undoManager?.endUndoGrouping()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
-        
+        // itemを削除：group側から削除して整列する
         if let group = item.parent,
            let index = group.child.firstIndex(where: { $0.id == item.id }) {
             withAnimation {
