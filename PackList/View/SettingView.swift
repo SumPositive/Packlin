@@ -33,7 +33,11 @@ struct SettingView: View {
                 .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                 .sheet(isPresented: $showSafari) {
                     let urlString = String(localized: "info.url")
-                    SafariView(url: URL(string: urlString)!)
+                    if let url = URL(string: urlString) {
+                        SafariView(url: url)
+                    } else {
+                        Text("setting.infoUnavailable")
+                    }
                 }
 
             }

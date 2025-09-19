@@ -70,7 +70,7 @@ struct GroupListScene: View {
         if let pack = packs.first {
             GroupListView(pack: pack)
         } else {
-            Text("Pack not found")
+            Text("navigation.packNotFound")
         }
     }
 }
@@ -93,7 +93,7 @@ struct ItemListScene: View {
         if let pack = packs.first, let group = groups.first {
             ItemListView(pack: pack, initialGroup: group)
         } else {
-            Text("Group not found")
+            Text("navigation.groupNotFound")
         }
     }
 }

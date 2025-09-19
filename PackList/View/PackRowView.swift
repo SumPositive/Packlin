@@ -17,6 +17,8 @@ struct PackRowView: View {
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
+    private var isNamePlaceholder: Bool { pack.name.isEmpty }
+    private var weightUnit: String { String(localized: "unit.gram") }
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
@@ -30,10 +32,10 @@ struct PackRowView: View {
                         .padding(.trailing, 8)
                     
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(pack.name.isEmpty ? "New Pack" : pack.name)
+                        pack.name.placeholderText("placeholder.pack.new")
                             .lineLimit(3)
                             .font(FONT_NAME)
-                            .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
+                            .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                         
                         if !pack.memo.isEmpty {
                             Text(pack.memo)
@@ -49,7 +51,7 @@ struct PackRowView: View {
                         HStack {
                             Spacer() // 右寄せにするため
                             if 0 < pack.stockWeight {
-                                Text("\(pack.stockWeight)g／\(pack.needWeight)g")
+                                Text(verbatim: "\(pack.stockWeight)\(weightUnit)／\(pack.needWeight)\(weightUnit)")
                                     .font(FONT_WEIGHT)
                                     .foregroundStyle(COLOR_WEIGHT)
                                     .padding(.trailing, 8)
@@ -85,25 +87,25 @@ struct PackRowView: View {
                         }
                 )
                 .swipeActions(edge: .trailing) {
-                    Button("Cut") {
+                    Button("action.cut") {
                         copyToClipboard()
                         deletePack()
                     }
                     .tint(.red)
                 }
                 .swipeActions(edge: .leading) {
-                    Button("Copy") {
+                    Button("action.copy") {
                         copyToClipboard()
                     }
                     .tint(.cyan)
-                    
-                    Button("Paste") {
+
+                    Button("action.paste") {
                         pasteFromClipboard()
                     }
                     .disabled(RowClipboard.pack == nil)
                     .tint(.orange)
-                    
-                    Button("Duplicate") {
+
+                    Button("action.duplicate") {
                         duplicatePack()
                     }
                     .tint(.green)

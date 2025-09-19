@@ -83,7 +83,7 @@ struct ItemListView: View {
         .id(listID)   // listIDが変わるとListが作り直される（ScrollViewでも同様に再構築トリガとして使用）
         // .listStyle(.plain)
         // .listSectionSpacing(0)
-        .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
+        .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
         .navigationBarBackButtonHidden(true)
         .toolbar {
             navigationToolbar
@@ -262,7 +262,10 @@ struct EditItemView: View {
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
-    
+
+    private var gramUnit: String { String(localized: "unit.gram") }
+    private var pieceUnit: String { String(localized: "unit.piece") }
+
     private var weightBinding: Binding<Int> {
         Binding(get: { item.weight },
                 set: {
@@ -308,14 +311,15 @@ struct EditItemView: View {
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
-                        Text("複製").font(.caption)
+                        Text("action.duplicate")
+                            .font(.caption)
                     }
                 }
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
-                
+
                 Spacer()
-                
+
                 Button {
                     // EditItemViewを閉じる
                     onClose()
@@ -324,16 +328,17 @@ struct EditItemView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
-                        Text("削除").font(.caption)
+                        Text("action.delete")
+                            .font(.caption)
                     }
                 }
                 .tint(.red)
                 .padding(.horizontal, 8)
             }
             .padding(.bottom, 8)
-            
+
             HStack {
-                Text("名称")
+                Text("edit.name")
                     .font(.caption)
                     .padding(4)
                 TextEditor(text: $item.name)
@@ -347,7 +352,7 @@ struct EditItemView: View {
                     .frame(height: 60)
             }
             HStack {
-                Text("メモ")
+                Text("edit.memo")
                     .font(.caption)
                     .padding(4)
                 TextEditor(text: $item.memo)
@@ -360,43 +365,44 @@ struct EditItemView: View {
                     .frame(height: 60)
             }
             .padding(.bottom, 8)
-            
+
             HStack {
-                Text("個重量")
+                Text("item.field.weight")
                     .font(.caption)
                 TextField("", value: weightBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .background(Color.white.opacity(0.7))
-                Text("ｇ")
+                Text(verbatim: gramUnit)
                     .font(.caption)
                 Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
                     .labelsHidden()
             }
             HStack {
-                Text("在庫数")
+                Text("item.field.stock")
                     .font(.caption)
                 TextField("", value: stockBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .background(Color.white.opacity(0.7))
-                Text("個")
+                Text(verbatim: pieceUnit)
                     .font(.caption)
                 Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
                     .labelsHidden()
             }
             HStack {
-                Text("必要数")
+                Text("item.field.need")
                     .font(.caption)
                 TextField("", value: needBinding, format: .number)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .background(Color.white.opacity(0.7))
-                Text("個")
+                Text(verbatim: pieceUnit)
                     .font(.caption)
                 Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
                     .labelsHidden()
-            }        }
+            }
+        }
         .padding(.horizontal, 16)
         .frame(width: 300, height: 320)
         .onAppear {

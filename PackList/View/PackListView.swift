@@ -77,7 +77,7 @@ struct PackListView: View {
                     .padding(.horizontal, 8)
 
                     Spacer()
-                    Text("モチメモ")
+                    Text("app.title")
                     Spacer()
                     
                     Button {
@@ -170,7 +170,7 @@ struct EditPackView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("名称")
+                Text("edit.name")
                     .font(.caption)
                 TextEditor(text: $pack.name)
                     .onChange(of: pack.name) { newValue, oldValue in
@@ -183,7 +183,7 @@ struct EditPackView: View {
                     .frame(height: 60)
             }
             HStack {
-                Text("メモ")
+                Text("edit.memo")
                     .font(.caption)
                 TextEditor(text: $pack.memo)
                     .onChange(of: pack.memo) { newValue, oldValue in

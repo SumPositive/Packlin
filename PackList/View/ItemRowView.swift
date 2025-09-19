@@ -17,6 +17,8 @@ struct ItemRowView: View {
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
+    private var isNamePlaceholder: Bool { item.name.isEmpty }
+    private var weightUnit: String { String(localized: "unit.gram") }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -41,10 +43,10 @@ struct ItemRowView: View {
             .padding(.trailing, 8)
 
             VStack(alignment: .leading, spacing: 1){
-                Text(item.name.isEmpty ? "New Item" : item.name)
+                item.name.placeholderText("placeholder.item.new")
                     .lineLimit(3)
                     .font(FONT_NAME)
-                    .foregroundStyle(item.name.isEmpty ? .secondary : COLOR_NAME)
+                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
 
                 if !item.memo.isEmpty {
                     Text(item.memo)
@@ -60,11 +62,11 @@ struct ItemRowView: View {
                 HStack {
                     Spacer() // 右寄せにするため
                     if 0 < item.weight {
-                        Text("［\(item.weight)g］")
+                        Text(verbatim: "［\(item.weight)\(weightUnit)］")
                             .font(FONT_WEIGHT)
                             .foregroundStyle(COLOR_WEIGHT)
 
-                        Text("\(item.stock * item.weight)g／\(item.need * item.weight)g")
+                        Text(verbatim: "\(item.stock * item.weight)\(weightUnit)／\(item.need * item.weight)\(weightUnit)")
                             .font(FONT_WEIGHT)
                             .foregroundStyle(COLOR_WEIGHT)
                             .padding(.trailing, 4)
@@ -106,25 +108,25 @@ struct ItemRowView: View {
                 }
         )
         .swipeActions(edge: .trailing) {
-            Button("Cut") {
+            Button("action.cut") {
                 copyToClipboard()
                 deleteItem()
             }
             .tint(.red)
         }
         .swipeActions(edge: .leading) {
-            Button("Copy") {
+            Button("action.copy") {
                 copyToClipboard()
             }
             .tint(.cyan)
 
-            Button("Paste") {
+            Button("action.paste") {
                 pasteFromClipboard()
             }
             //.disabled(RowClipboard.item == nil)
             .tint(.blue)
 
-            Button("Duplicate") {
+            Button("action.duplicate") {
                 duplicateItem()
             }
             .tint(.green)
