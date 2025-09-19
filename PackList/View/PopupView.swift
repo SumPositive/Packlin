@@ -9,9 +9,9 @@ import Foundation
 import SwiftUI
 
 
-// 画面中央ポップアップ
+/// content を anchor 位置にポップアップ表示する
 struct PopupView<Content: View>: View {
-    let anchor: CGPoint?
+    let anchor: CGPoint?        //=nil:中央に配置
     let onDismiss: () -> Void
     let content: Content
 
@@ -68,25 +68,31 @@ struct PopupView<Content: View>: View {
         let fullWidth = contentSize.width + padding * 2  // padding + background
         let fullHeight = contentSize.height + padding * 2 // padding
 
+        var position: CGPoint
         if let anchor {
-            let halfWidth = fullWidth / 2
-            let halfHeight = fullHeight / 2
-
-            let minX = halfWidth
-            let maxX = max(halfWidth, screen.width - halfWidth)
-            let minY = halfHeight
-            let maxY = max(halfHeight, screen.height - halfHeight)
-
-            let clampedX = min(max(anchor.x, minX), maxX)
-            let clampedY = min(max(anchor.y, minY), maxY)
-            return CGPoint(x: clampedX, y: clampedY)
+            position = anchor
+        }else{
+            // 中央
+            position = CGPoint(x: screen.width / 2, y: screen.height / 2)
         }
+        
+        let halfWidth = fullWidth / 2
+        let halfHeight = fullHeight / 2
+        
+        let minX = halfWidth
+        let maxX = max(halfWidth, screen.width - halfWidth)
+        let minY = halfHeight
+        let maxY = max(halfHeight, screen.height - halfHeight)
+        
+        let clampedX = min(max(position.x, minX), maxX)
+        let clampedY = min(max(position.y, minY), maxY)
+        return CGPoint(x: clampedX, y: clampedY)
 
-        // 左上座標
-        let x = (screen.width - fullWidth) / 2
-        // 中心座標を返す（従来どおりやや上寄せ）
-        return CGPoint(x: x + fullWidth / 2,
-                       y: max(0, screen.height / 2 - fullHeight))
+//        // 左上座標
+//        let x = (screen.width - fullWidth) / 2
+//        // 中心座標を返す（従来どおりやや上寄せ）
+//        return CGPoint(x: x + fullWidth / 2,
+//                       y: max(0, screen.height / 2 - fullHeight))
     }
 }
 
