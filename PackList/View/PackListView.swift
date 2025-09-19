@@ -17,6 +17,7 @@ struct PackListView: View {
     @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
+    @State private var isShowSetting: Bool = false
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
@@ -58,6 +59,8 @@ struct PackListView: View {
                 HStack {
                     Button {
                         // Setting
+                        popupAnchor = nil // 中央
+                        isShowSetting = true
                     } label: {
                         Image(systemName: "gearshape")
                     }
@@ -77,7 +80,7 @@ struct PackListView: View {
                     .padding(.horizontal, 8)
 
                     Spacer()
-                    Text("モチメモ")
+                    Text("app.title")
                     Spacer()
                     
                     Button {
@@ -123,6 +126,19 @@ struct PackListView: View {
                     EditPackView(pack: pack)
                 }
                 .zIndex(1)
+            }
+            //----------------------------------
+            //(ZStack 2) Popupで表示
+            if isShowSetting {
+                PopupView(
+                    anchor: popupAnchor,
+                    onDismiss: {
+                        isShowSetting = false
+                    }
+                ) {
+                    SettingView()
+                }
+                .zIndex(2)
             }
         }
     }
@@ -170,7 +186,7 @@ struct EditPackView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("名称")
+                Text("edit.name")
                     .font(.caption)
                 TextEditor(text: $pack.name)
                     .onChange(of: pack.name) { newValue, oldValue in
@@ -183,7 +199,7 @@ struct EditPackView: View {
                     .frame(height: 60)
             }
             HStack {
-                Text("メモ")
+                Text("edit.memo")
                     .font(.caption)
                 TextEditor(text: $pack.memo)
                     .onChange(of: pack.memo) { newValue, oldValue in
@@ -220,4 +236,5 @@ struct EditPackView: View {
 
 #Preview {
     PackListView()
+//    EditPackView(pack: M1Pack(name: "TEST"))
 }

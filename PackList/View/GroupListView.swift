@@ -61,7 +61,7 @@ struct GroupListView: View {
             .listStyle(.plain)
             .id(listID)   // listIDが変わるとListが作り直される
             .padding(.horizontal, 0)
-            .navigationTitle(pack.name.isEmpty ? "New Pack" : pack.name)
+            .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
@@ -193,7 +193,7 @@ struct EditGroupView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("名称")
+                Text("edit.name")
                     .font(.caption)
                 TextEditor(text: $group.name)
                     .onChange(of: group.name) { newValue, oldValue in
@@ -206,7 +206,7 @@ struct EditGroupView: View {
                     .frame(height: 60)
             }
             HStack {
-                Text("メモ")
+                Text("edit.memo")
                     .font(.caption)
                 TextEditor(text: $group.memo)
                     .onChange(of: group.memo) { newValue, oldValue in

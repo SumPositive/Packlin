@@ -8,12 +8,10 @@
 import SwiftUI
 import SafariServices
 
-
+/// 設定画面：Popupで表示する
 struct SettingView: View {
     
-    
     @State private var showSafari = false
-
     
     var body: some View {
         VStack {
@@ -33,10 +31,17 @@ struct SettingView: View {
                 .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                 .sheet(isPresented: $showSafari) {
                     let urlString = String(localized: "info.url")
-                    SafariView(url: URL(string: urlString)!)
+                    if let url = URL(string: urlString) {
+                        SafariView(url: url)
+                    } else {
+                        Text("setting.infoUnavailable")
+                    }
                 }
-
+                
+                Spacer()
             }
+
+            Spacer()
         }
         .padding(.horizontal, 8)
         .frame(width: 300, height: 300)
@@ -47,6 +52,16 @@ struct SettingView: View {
 
         }
     }
+    
+    /// カスタムSafariシート
+    struct SafariView: UIViewControllerRepresentable {
+        let url: URL
+        func makeUIViewController(context: Context) -> SFSafariViewController {
+            return SFSafariViewController(url: url)
+        }
+        func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    }
+
 }
 
 
