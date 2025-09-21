@@ -12,9 +12,17 @@ import SafariServices
 struct SettingView: View {
     
     @State private var showSafari = false
-    
+    @State private var showAd = false
+
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: "gearshape")
+                Text("お知らせ・設定")
+                Spacer()
+            }
+            .padding(8)
+            
             HStack {
                 // 情報（ボタン）
                 Button(action: {
@@ -24,10 +32,8 @@ struct SettingView: View {
                     }
                 }) {
                     Image(systemName: "info.circle")
-                    //.imageScale(.large)
-                        .accentColor(.accentColor)
+                    Text("アプリの紹介・取扱説明")
                 }
-                .padding() // これがないとタップ有効範囲がImageの最小範囲だけになってしまう
                 .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                 .sheet(isPresented: $showSafari) {
                     let urlString = String(localized: "info.url")
@@ -40,6 +46,32 @@ struct SettingView: View {
                 
                 Spacer()
             }
+            .padding(8)
+
+            HStack {
+                // 広告を見て寄付する（ボタン）
+                Button(action: {
+                    withAnimation {
+                        // SafariでURLを表示する
+                        showAd = true
+                    }
+                }) {
+                    Image(systemName: "heart.fill")
+                    Text("広告を見て寄付する")
+                }
+                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
+                .sheet(isPresented: $showAd) {
+                    //TODO: 動画広告を表示する
+                }
+                
+                Spacer()
+            }
+            .padding(8)
+//            Text("無料WiFiに繋いでいる時にでもよろしくお願いします")
+//                .font(.caption2)
+//                .padding(.leading, 20)
+//                .padding(.top, 2)
+            
 
             Spacer()
         }
