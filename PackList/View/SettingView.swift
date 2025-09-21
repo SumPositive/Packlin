@@ -102,7 +102,7 @@ struct SettingView: View {
                         }
                         .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                         .sheet(isPresented: $showAd) {
-                            //TODO:収益広告バナーを3種類を同時に表示する
+                            BannerAdContainerView()
                         }
                         Spacer()
                     }
@@ -157,6 +157,156 @@ struct SettingView: View {
             .background(Color(.white).opacity(0.5))
             .cornerRadius(12)
         }
+    }
+
+    /// バナー広告の表示を管理するビュー
+    struct BannerAdContainerView: View {
+        @Environment(\.dismiss) private var dismiss
+
+        private let banners = BannerAd.sampleBanners
+
+        var body: some View {
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(banners) { banner in
+                            BannerAdCardView(banner: banner)
+                        }
+                    }
+                    .padding()
+                }
+                .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+                .navigationTitle(Text("setting.bannerAdTitle"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "setting.adClose")) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// 単一のバナー広告を表示するカード
+    struct BannerAdCardView: View {
+        let banner: BannerAd
+
+        var body: some View {
+            Group {
+                if let destination = banner.destination {
+                    Link(destination: destination) {
+                        cardContent
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    cardContent
+                }
+            }
+        }
+
+        private var cardContent: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(banner.title)
+                    .font(.headline)
+
+                BannerAdImageView(imageURL: banner.imageURL)
+
+                Text(banner.message)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(uiColor: .secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primary.opacity(0.05))
+            )
+        }
+    }
+
+    /// バナー広告の画像を読み込んで表示する
+    struct BannerAdImageView: View {
+        let imageURL: URL?
+
+        var body: some View {
+            Group {
+                if let imageURL {
+                    AsyncImage(url: imageURL) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(placeholderBackground)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .clipped()
+                        case .failure:
+                            placeholder
+                        @unknown default:
+                            placeholder
+                        }
+                    }
+                } else {
+                    placeholder
+                }
+            }
+            .frame(height: 90)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+
+        private var placeholder: some View {
+            ZStack {
+                placeholderBackground
+                Text("setting.bannerAdUnavailable")
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .padding(8)
+            }
+        }
+
+        private var placeholderBackground: some View {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(uiColor: .tertiarySystemFill))
+        }
+    }
+
+    /// バナー広告の定義
+    struct BannerAd: Identifiable {
+        let id = UUID()
+        let title: LocalizedStringResource
+        let message: LocalizedStringResource
+        let destination: URL?
+        let imageURL: URL?
+
+        static let sampleBanners: [BannerAd] = [
+            BannerAd(
+                title: "ad.banner1.title",
+                message: "ad.banner1.message",
+                destination: URL(string: "https://www.japan.travel/ja/"),
+                imageURL: URL(string: "https://dummyimage.com/600x200/0f9d58/ffffff&text=Travel+Deals")
+            ),
+            BannerAd(
+                title: "ad.banner2.title",
+                message: "ad.banner2.message",
+                destination: URL(string: "https://www.jtb.co.jp/"),
+                imageURL: URL(string: "https://dummyimage.com/600x200/4285f4/ffffff&text=Packing+Checklist")
+            ),
+            BannerAd(
+                title: "ad.banner3.title",
+                message: "ad.banner3.message",
+                destination: URL(string: "https://hoken.mynavi.jp/"),
+                imageURL: URL(string: "https://dummyimage.com/600x200/fbbc05/333333&text=Travel+Insurance")
+            )
+        ]
     }
 
     /// 広告動画の表示を管理するビュー
