@@ -407,8 +407,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PackList/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+                               INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
+                               INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3916054326181876~1043090235";
+                               INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -442,8 +443,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PackList/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+                               INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
+                               INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3916054326181876~1043090235";
+                               INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
