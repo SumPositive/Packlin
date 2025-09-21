@@ -34,7 +34,11 @@ struct PackListApp: App {
 
     init() {
 #if canImport(GoogleMobileAds)
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        // Initialize the Google Mobile Ads SDK.
+        MobileAds.shared.start()
+        // Test mode
+        let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
+        MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
 #endif
     }
 

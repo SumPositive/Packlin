@@ -101,7 +101,7 @@ struct SettingView: View {
                         }
                         .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                         .sheet(isPresented: $showAd) {
-                            BannerAdContainerView()
+                            AdMobBannerContainerView()
                         }
                         Spacer()
                     }
@@ -120,7 +120,7 @@ struct SettingView: View {
                         }
                         .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                         .sheet(isPresented: $showAdMovie) {
-                            VideoAdContainerView()
+                            AdMobVideoContainerView()
                         }
                         HStack(spacing: 0) {
                             Image(systemName: "exclamationmark.triangle")

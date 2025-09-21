@@ -16,27 +16,44 @@ import UIKit
 import GoogleMobileAds
 #endif
 
+// アプリID は、Info.plistにセット：key:GADApplicationIdentifier
+
+// 広告ユニットID
+#if DEBUG
+// アダプティブ バナー テスト用
+let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
+// インタースティシャル テスト用
+let ADMOB_VIDEO_UnitID  = "ca-app-pub-3940256099942544/4411468910"
+#else
+// アダプティブ バナー 本番用
+let ADMOB_BANNER_UnitID = "ca-app-pub-3916054326181876/5237233709"
+// インタースティシャル 本番用
+let ADMOB_VIDEO_UnitID  = "ca-app-pub-3916054326181876/8697912668"
+#endif
+
+
+
 /// バナー広告の表示を管理するビュー
-struct BannerAdContainerView: View {
+struct AdMobBannerContainerView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let bannerConfigs = [
         AdMobBannerConfiguration(
             title: "ad.banner1.title",
             message: "ad.banner1.message",
-            adUnitID: "ca-app-pub-3940256099942544/2934735716",
+            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
             size: CGSize(width: 320, height: 50)
         ),
         AdMobBannerConfiguration(
             title: "ad.banner2.title",
             message: "ad.banner2.message",
-            adUnitID: "ca-app-pub-3940256099942544/2934735716",
+            adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 320, height: 100)
         ),
         AdMobBannerConfiguration(
             title: "ad.banner3.title",
             message: "ad.banner3.message",
-            adUnitID: "ca-app-pub-3940256099942544/2934735716",
+            adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 300, height: 250)
         )
     ]
@@ -105,7 +122,7 @@ struct AdMobBannerConfiguration: Identifiable {
 }
 
 /// 動画広告の表示を管理するビュー
-struct VideoAdContainerView: View {
+struct AdMobVideoContainerView: View {
     var body: some View {
         #if canImport(GoogleMobileAds)
         AdMobRewardedScreen()
@@ -119,7 +136,8 @@ struct VideoAdContainerView: View {
 /// AdMob報酬型広告の表示ビュー
 struct AdMobRewardedScreen: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var loader = RewardedAdLoader(adUnitID: "ca-app-pub-3940256099942544/1712485313")
+    // Google AdMob: gsuite@art.jp  　広告ユニット名：PackList V3 Reward
+    @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
     @State private var rewardDescription: String?
 
     var body: some View {
