@@ -64,7 +64,7 @@ struct SettingView: View {
                 }
                 .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                 .sheet(isPresented: $showAd) {
-                    //TODO:広告バナーを3種類を同時に表示する
+                    AdBannerContainerView()
                 }
                 Spacer()
             }
@@ -141,6 +141,132 @@ struct SettingView: View {
             return SFSafariViewController(url: url)
         }
         func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    }
+
+    /// 静的広告バナーを一覧表示するビュー
+    struct AdBannerContainerView: View {
+        @Environment(\.dismiss) private var dismiss
+
+        private let banners = AdBanner.supportBanners
+
+        var body: some View {
+            NavigationView {
+                ScrollView {
+                    LazyVStack(spacing: 20) {
+                        ForEach(banners) { banner in
+                            AdBannerCardView(banner: banner)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 24)
+                }
+                .background(Color(uiColor: .systemGroupedBackground))
+                .navigationTitle(Text("setting.adBannerTitle"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "setting.adClose")) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// 個別の広告バナーを表示するカード
+    struct AdBannerCardView: View {
+        let banner: AdBanner
+        @Environment(\.openURL) private var openURL
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: banner.iconName)
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .padding(12)
+                        .background(banner.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(banner.title)
+                            .font(.headline)
+                        Text(banner.description)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 0)
+                }
+
+                Button {
+                    if let url = banner.url {
+                        openURL(url)
+                    }
+                } label: {
+                    Text("setting.adBannerAction")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(banner.url == nil)
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(uiColor: .secondarySystemBackground))
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 6)
+        }
+    }
+
+    /// 広告バナー情報
+    struct AdBanner: Identifiable {
+        let id = UUID()
+        let title: LocalizedStringKey
+        let description: LocalizedStringKey
+        let urlKey: String
+        let iconName: String
+        let accentColor: Color
+
+        static let supportBanners: [AdBanner] = [
+            AdBanner(
+                titleKey: "setting.adBanner1.title",
+                descriptionKey: "setting.adBanner1.description",
+                urlKey: "ad.banner1.url",
+                iconName: "hands.sparkles.fill",
+                accentColor: .pink
+            ),
+            AdBanner(
+                titleKey: "setting.adBanner2.title",
+                descriptionKey: "setting.adBanner2.description",
+                urlKey: "ad.banner2.url",
+                iconName: "leaf.fill",
+                accentColor: .green
+            ),
+            AdBanner(
+                titleKey: "setting.adBanner3.title",
+                descriptionKey: "setting.adBanner3.description",
+                urlKey: "ad.banner3.url",
+                iconName: "book.fill",
+                accentColor: .blue
+            )
+        ]
+
+        init(titleKey: String, descriptionKey: String, urlKey: String, iconName: String, accentColor: Color) {
+            self.title = LocalizedStringKey(titleKey)
+            self.description = LocalizedStringKey(descriptionKey)
+            self.urlKey = urlKey
+            self.iconName = iconName
+            self.accentColor = accentColor
+        }
+
+        var url: URL? {
+            let urlString = Bundle.main.localizedString(forKey: urlKey, value: nil, table: nil)
+            guard !urlString.isEmpty else { return nil }
+            return URL(string: urlString)
+        }
     }
 
     /// 広告動画の表示を管理するビュー
