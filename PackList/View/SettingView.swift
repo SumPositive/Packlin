@@ -390,9 +390,7 @@ struct SettingView: View {
                 self.onRewardEarned?(ad.adReward)
             }
         }
-    }
 
-    extension RewardedAdLoader: FullScreenContentDelegate {
         func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
@@ -562,28 +560,28 @@ struct SettingView: View {
     }
 #endif
 
-#if canImport(UIKit)
-    extension UIApplication {
-        static func topMostViewController(base: UIViewController? = UIApplication.shared.connectedScenes
-            .compactMap { scene in
-                (scene as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow })?.rootViewController
-            }
-            .first) -> UIViewController? {
-            if let navigationController = base as? UINavigationController {
-                return topMostViewController(base: navigationController.visibleViewController)
-            }
-            if let tabController = base as? UITabBarController, let selected = tabController.selectedViewController {
-                return topMostViewController(base: selected)
-            }
-            if let presented = base?.presentedViewController {
-                return topMostViewController(base: presented)
-            }
-            return base
-        }
-    }
-#endif
-
 }
+
+#if canImport(UIKit)
+extension UIApplication {
+    static func topMostViewController(base: UIViewController? = UIApplication.shared.connectedScenes
+        .compactMap { scene in
+            (scene as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        }
+        .first) -> UIViewController? {
+        if let navigationController = base as? UINavigationController {
+            return topMostViewController(base: navigationController.visibleViewController)
+        }
+        if let tabController = base as? UITabBarController, let selected = tabController.selectedViewController {
+            return topMostViewController(base: selected)
+        }
+        if let presented = base?.presentedViewController {
+            return topMostViewController(base: presented)
+        }
+        return base
+    }
+}
+#endif
 
 
 #Preview {
