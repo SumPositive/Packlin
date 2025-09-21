@@ -99,10 +99,10 @@ struct ItemListView: View {
                 .contentShape(Rectangle()) // D&D の当たり判定を広げる
                 // 一次元方式：どのセクションにもドロップ可能にするため、行をドラッグ可能に
                 .draggable("\(item.id)") // ペイロード・トークンは item.id を文字列化したもの
-                // この行の「直前」に挿入
+                // この行の「直後」に挿入
                 .dropDestination(for: String.self) { tokens, _ in
                     guard let token = tokens.first else { return false }
-                    moveItemByDrag(token, toGroup: group, before: item)
+                    moveItemByDrag(token, toGroup: group, target: item, placement: .after)
                     listID = UUID()  // ここで List を再描画（ScrollViewでも再構築）
                     return true
                 }
@@ -113,7 +113,7 @@ struct ItemListView: View {
                 .frame(height: 12)
                 .dropDestination(for: String.self) { tokens, _ in
                     guard let token = tokens.first else { return false }
-                    moveItemByDrag(token, toGroup: group, before: nil)
+                    moveItemByDrag(token, toGroup: group, target: nil, placement: .after) // nil:末尾へ
                     listID = UUID()  // ここで List を再描画
                     return true
                 }
@@ -127,7 +127,8 @@ struct ItemListView: View {
             // ヘッダーにドロップ → 先頭に挿入
             .dropDestination(for: String.self) { tokens, _ in
                 guard let token = tokens.first else { return false }
-                moveItemByDrag(token, toGroup: group, before: nil) // nil:先頭へ
+                let firstItem = sortedItems(in: group).first
+                moveItemByDrag(token, toGroup: group, target: firstItem, placement: .before)
                 listID = UUID()  // ここで List を再描画
                 return true
             }
@@ -208,12 +209,18 @@ struct ItemListView: View {
         return nil
     }
     
-    // グループ跨ぎ移動の本体：targetItem の直後（nilなら末尾）に挿入
+    private enum DropPlacement {
+        case before
+        case after
+    }
+
+    // グループ跨ぎ移動の本体：targetItem の直前/直後（nilなら先頭/末尾）に挿入
     private func moveItemByDrag(_ token: String,
                                 toGroup targetGroup: M2Group,
-                                before targetItem: M3Item?) {
+                                target targetItem: M3Item?,
+                                placement: DropPlacement) {
         guard let (sourceGroup, movingItem, srcIndex) = findItem(byToken: token) else { return }
-        
+
         modelContext.undoManager?.beginUndoGrouping()
         defer {
             modelContext.undoManager?.endUndoGrouping()
@@ -229,20 +236,33 @@ struct ItemListView: View {
         
         // 2) 先グループの挿入位置
         var dstItems = sortedItems(in: targetGroup)
-        var insertIndex = dstItems.endIndex
-        if let targetItem,
-           var idx = dstItems.firstIndex(where: { $0.id == targetItem.id }) {
-            idx += 1 // 直後へ挿入
-            if idx < insertIndex {
-                insertIndex = idx
+        var insertIndex = dstItems.count
+
+        if sourceGroup.id == targetGroup.id,
+           let targetItem,
+           targetItem.id == movingItem.id {
+            insertIndex = min(srcIndex, dstItems.count)
+        } else {
+            switch placement {
+            case .before:
+                if let targetItem,
+                   let idx = dstItems.firstIndex(where: { $0.id == targetItem.id }) {
+                    insertIndex = idx
+                } else {
+                    insertIndex = 0
+                }
+            case .after:
+                if let targetItem,
+                   let idx = dstItems.firstIndex(where: { $0.id == targetItem.id }) {
+                    insertIndex = idx + 1
+                } else {
+                    insertIndex = dstItems.count
+                }
             }
-            // Safty
-            insertIndex = max(0, min(insertIndex, dstItems.count))
-        }else{
-            // 先頭に挿入
-            insertIndex = 0
         }
-        
+
+        insertIndex = max(0, min(insertIndex, dstItems.count))
+
         // 3) 挿入して親の付け替え
         movingItem.parent = targetGroup
         dstItems.insert(movingItem, at: insertIndex)
