@@ -406,6 +406,7 @@
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PackList/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -440,6 +441,7 @@
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PackList/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
