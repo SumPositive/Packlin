@@ -1,524 +1,700 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "" : {
-
-    },
-    "%lld／%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld／%2$lld"
+  "sourceLanguage": "en",
+  "strings": {
+    "": {},
+    "%lld／%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld／%2$lld"
           }
         }
       }
     },
-    "action.copy" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copy"
+    "Group.edit.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コピー"
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "グループ"
           }
         }
       }
     },
-    "action.cut" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cut"
+    "Item.edit.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切り取り"
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "アイテム"
           }
         }
       }
     },
-    "action.delete" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
+    "Key": {
+      "extractionState": "manual"
+    },
+    "Pack.edit.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pack"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "削除"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "モチメモ"
           }
         }
       }
     },
-    "action.duplicate" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duplicate"
+    "action.copy": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "複製"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピー"
           }
         }
       }
     },
-    "action.paste" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paste"
+    "action.cut": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "貼り付け"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り取り"
           }
         }
       }
     },
-    "ad.video.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    "action.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除"
           }
         }
       }
     },
-    "app.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CalcRoll"
+    "action.duplicate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "モチメモ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "複製"
           }
         }
       }
     },
-    "edit.memo" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Memo"
+    "action.paste": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "メモ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "貼り付け"
           }
         }
       }
     },
-    "edit.name" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
+    "ad.banner1.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find the latest luggage and travel accessories."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "名称"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最新のスーツケースやトラベル雑貨をチェック。"
           }
         }
       }
     },
-    "group (%lld) [%@]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "group (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "Group.edit.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group"
+    "ad.banner1.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel Gear Sale"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "グループ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "旅行グッズセール"
           }
         }
       }
     },
-    "info.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://docs.azukid.com/CalcRoll/"
+    "ad.banner2.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download a printable checklist to stay organized."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://docs.azukid.com/CalcRoll/"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "印刷して使えるチェックリストをダウンロード。"
           }
         }
       }
     },
-    "item (%lld) [%@]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "item (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "Item.edit.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Item"
+    "ad.banner2.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Packing Checklist PDF"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "アイテム"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "荷造りチェックリストPDF"
           }
         }
       }
     },
-    "item.field.need" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Required"
+    "ad.banner3.message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compare plans before your next trip."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "必要数"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次の旅行に備えてプランを比較しましょう。"
           }
         }
       }
     },
-    "item.field.stock" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stock"
+    "ad.banner3.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel Insurance Quotes"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在庫数"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "旅行保険の見積もり"
           }
         }
       }
     },
-    "item.field.weight" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unit Weight"
+    "ad.video.url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "個重量"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
           }
         }
       }
     },
-    "Key" : {
-      "extractionState" : "manual"
-    },
-    "navigation.groupNotFound" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group not found"
+    "app.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CalcRoll"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループが見つかりません"
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "モチメモ"
           }
         }
       }
     },
-    "navigation.packNotFound" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pack not found"
+    "edit.memo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memo"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "モチメモが見つかりません"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メモ"
           }
         }
       }
     },
-    "pack (%lld) [%@]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "pack (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "Pack.edit.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pack"
+    "edit.name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "モチメモ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称"
           }
         }
       }
     },
-    "placeholder.group.new" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Group"
+    "group (%lld) [%@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "group (%1$lld) [%2$@]"
+          }
+        }
+      }
+    },
+    "info.url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://docs.azukid.com/CalcRoll/"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新規グループ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://docs.azukid.com/CalcRoll/"
           }
         }
       }
     },
-    "placeholder.item.new" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Item"
+    "item (%lld) [%@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "item (%1$lld) [%2$@]"
+          }
+        }
+      }
+    },
+    "item.field.need": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新規アイテム"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "必要数"
           }
         }
       }
     },
-    "placeholder.pack.new" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Pack"
+    "item.field.stock": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新規モチメモ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在庫数"
           }
         }
       }
     },
-    "setting.adClose" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
+    "item.field.weight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unit Weight"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "閉じる"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "個重量"
           }
         }
       }
     },
-    "setting.adDescription" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watching the entire video helps support the developer."
+    "navigation.groupNotFound": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group not found"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "動画を最後まで視聴すると開発者をサポートできます"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グループが見つかりません"
           }
         }
       }
     },
-    "setting.adUnavailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to load the advertisement."
+    "navigation.packNotFound": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pack not found"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を読み込めませんでした"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "モチメモが見つかりません"
           }
         }
       }
     },
-    "setting.adVideoTitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Support Ad"
+    "pack (%lld) [%@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "pack (%1$lld) [%2$@]"
+          }
+        }
+      }
+    },
+    "placeholder.group.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Group"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告動画"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規グループ"
           }
         }
       }
     },
-    "setting.infoUnavailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information unavailable"
+    "placeholder.item.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Item"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "情報を表示できません"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規アイテム"
           }
         }
       }
     },
-    "unit.gram" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "g"
+    "placeholder.pack.new": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Pack"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ｇ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規モチメモ"
           }
         }
       }
     },
-    "unit.piece" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pcs"
+    "setting.adClose": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "個"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉じる"
           }
         }
       }
     },
-    "アプリの紹介・取扱説明" : {
-
+    "setting.adDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watching the entire video helps support the developer."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "動画を最後まで視聴すると開発者をサポートできます"
+          }
+        }
+      }
     },
-    "お知らせ・設定" : {
-
+    "setting.adLoading": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading advertisement..."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を読み込み中..."
+          }
+        }
+      }
     },
-    "ことら送金で寄付" : {
-
+    "setting.adPlay": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play ad"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を再生"
+          }
+        }
+      }
     },
-    "動画広告を見て寄付" : {
-
+    "setting.adRewardThanks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thank you for watching the ad!"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告をご視聴いただきありがとうございます！"
+          }
+        }
+      }
     },
-    "広告を見て寄付" : {
-
+    "setting.adRetry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再読み込み"
+          }
+        }
+      }
     },
-    "開発者を支援する" : {
-
+    "setting.adUnavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to load the advertisement."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を読み込めませんでした"
+          }
+        }
+      }
     },
-    "音が出ます" : {
-
-    }
+    "setting.adVideoTitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support Ad"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告動画"
+          }
+        }
+      }
+    },
+    "setting.bannerAdTitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support with banner ads"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バナー広告で応援"
+          }
+        }
+      }
+    },
+    "setting.bannerAdUnavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banner could not be loaded."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告バナーを読み込めませんでした。"
+          }
+        }
+      }
+    },
+    "setting.infoUnavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Information unavailable"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "情報を表示できません"
+          }
+        }
+      }
+    },
+    "unit.gram": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "g"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ｇ"
+          }
+        }
+      }
+    },
+    "unit.piece": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pcs"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "個"
+          }
+        }
+      }
+    },
+    "お知らせ・設定": {},
+    "ことら送金で寄付": {},
+    "アプリの紹介・取扱説明": {},
+    "動画広告を見て寄付": {},
+    "広告を見て寄付": {},
+    "開発者を支援する": {},
+    "音が出ます": {}
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

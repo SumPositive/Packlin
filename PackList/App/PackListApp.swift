@@ -7,6 +7,9 @@
 
 import SwiftUI
 import SwiftData
+#if canImport(GoogleMobileAds)
+import GoogleMobileAds
+#endif
 
 @main
 struct PackListApp: App {
@@ -28,6 +31,12 @@ struct PackListApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+
+    init() {
+#if canImport(GoogleMobileAds)
+        GADMobileAds.sharedInstance().start(completionHandler: nil)
+#endif
+    }
 
     var body: some Scene {
         WindowGroup {
