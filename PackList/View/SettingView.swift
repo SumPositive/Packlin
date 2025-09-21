@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SafariServices
+import AVKit
 
 /// 設定画面：Popupで表示する
 struct SettingView: View {
@@ -61,7 +62,7 @@ struct SettingView: View {
                 }
                 .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                 .sheet(isPresented: $showAd) {
-                    //TODO: 動画広告を表示する
+                    VideoAdContainerView()
                 }
                 
                 Spacer()
@@ -92,6 +93,79 @@ struct SettingView: View {
             return SFSafariViewController(url: url)
         }
         func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    }
+
+    /// 広告動画の表示を管理するビュー
+    struct VideoAdContainerView: View {
+        @Environment(\.dismiss) private var dismiss
+
+        var body: some View {
+            if let adURL = URL(string: String(localized: "ad.video.url")) {
+                VideoAdView(adURL: adURL)
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundStyle(.yellow)
+                    Text("setting.adUnavailable")
+                        .multilineTextAlignment(.center)
+                        .font(.headline)
+                    Button(String(localized: "setting.adClose")) {
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+            }
+        }
+    }
+
+    /// 動画広告を再生するビュー
+    struct VideoAdView: View {
+        let adURL: URL
+        @Environment(\.dismiss) private var dismiss
+        @State private var player: AVPlayer
+
+        init(adURL: URL) {
+            self.adURL = adURL
+            _player = State(initialValue: AVPlayer(url: adURL))
+        }
+
+        var body: some View {
+            NavigationView {
+                VStack(spacing: 24) {
+                    VideoPlayer(player: player)
+                        .aspectRatio(16 / 9, contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal)
+                        .onAppear {
+                            player.play()
+                        }
+                        .onDisappear {
+                            player.pause()
+                        }
+
+                    Text("setting.adDescription")
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    Spacer()
+                }
+                .padding(.top, 24)
+                .background(Color(uiColor: .systemBackground))
+                .navigationTitle(Text("setting.adVideoTitle"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "setting.adClose")) {
+                            player.pause()
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
