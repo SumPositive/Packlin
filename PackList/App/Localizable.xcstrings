@@ -1,697 +1,619 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "en", 
   "strings" : {
-    "" : {
-
-    },
+    "" : {}, 
     "%lld／%lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "new", 
             "value" : "%1$lld／%2$lld"
           }
         }
       }
-    },
+    }, 
     "action.copy" : {
-      "extractionState" : "stale",
+      "extractionState" : "stale", 
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Copy"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "コピー"
           }
         }
       }
-    },
+    }, 
     "action.cut" : {
-      "extractionState" : "stale",
+      "extractionState" : "stale", 
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Cut"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "切り取り"
           }
         }
       }
-    },
+    }, 
     "action.delete" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Delete"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "削除"
           }
         }
       }
-    },
+    }, 
     "action.duplicate" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Duplicate"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "複製"
           }
         }
       }
-    },
+    }, 
     "action.paste" : {
-      "extractionState" : "stale",
+      "extractionState" : "stale", 
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Paste"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "貼り付け"
           }
         }
       }
-    },
-    "ad.video.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
-          }
-        }
-      }
-    },
+    }, 
     "app.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "CalcRoll"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "needs_review", 
             "value" : "モチメモ"
           }
         }
       }
-    },
+    }, 
     "edit.memo" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Memo"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "メモ"
           }
         }
       }
-    },
+    }, 
     "edit.name" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Name"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "名称"
           }
         }
       }
-    },
+    }, 
     "group (%lld) [%@]" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "new", 
             "value" : "group (%1$lld) [%2$@]"
           }
         }
       }
-    },
+    }, 
     "Group.edit.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Group"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "needs_review", 
             "value" : "グループ"
           }
         }
       }
-    },
+    }, 
     "info.url" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "https://docs.azukid.com/CalcRoll/"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "https://docs.azukid.com/CalcRoll/"
           }
         }
       }
-    },
+    }, 
     "item (%lld) [%@]" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "new", 
             "value" : "item (%1$lld) [%2$@]"
           }
         }
       }
-    },
+    }, 
     "Item.edit.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Item"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "needs_review", 
             "value" : "アイテム"
           }
         }
       }
-    },
+    }, 
     "item.field.need" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Required"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "必要数"
           }
         }
       }
-    },
+    }, 
     "item.field.stock" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Stock"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "在庫数"
           }
         }
       }
-    },
+    }, 
     "item.field.weight" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Unit Weight"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "個重量"
           }
         }
       }
-    },
+    }, 
     "Key" : {
       "extractionState" : "manual"
-    },
+    }, 
     "navigation.groupNotFound" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Group not found"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "グループが見つかりません"
           }
         }
       }
-    },
+    }, 
     "navigation.packNotFound" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Pack not found"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "モチメモが見つかりません"
           }
         }
       }
-    },
+    }, 
     "pack (%lld) [%@]" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "new", 
             "value" : "pack (%1$lld) [%2$@]"
           }
         }
       }
-    },
+    }, 
     "Pack.edit.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Pack"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "モチメモ"
           }
         }
       }
-    },
+    }, 
     "placeholder.group.new" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "New Group"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "新規グループ"
           }
         }
       }
-    },
+    }, 
     "placeholder.item.new" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "New Item"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "新規アイテム"
           }
         }
       }
-    },
+    }, 
     "placeholder.pack.new" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "New Pack"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "新規モチメモ"
           }
         }
       }
-    },
-    "setting.adClose" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "閉じる"
-          }
-        }
-      }
-    },
-    "setting.adDescription" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watching the entire video helps support the developer."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "動画を最後まで視聴すると開発者をサポートできます"
-          }
-        }
-      }
-    },
-    "setting.adUnavailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to load the advertisement."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を読み込めませんでした"
-          }
-        }
-      }
-    },
-    "setting.adVideoTitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Support Ad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告動画"
-          }
-        }
-      }
-    },
-    "setting.adBannerTitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Support Ads"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "支援広告一覧"
-          }
-        }
-      }
-    },
-    "setting.adBannerAction" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Ad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を開く"
-          }
-        }
-      }
-    },
-    "setting.adBanner1.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disaster Relief"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "災害支援"
-          }
-        }
-      }
-    },
-    "setting.adBanner1.description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open the partner advertisement to support disaster response programs."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "パートナー広告を開いて災害支援プログラムを応援しましょう。"
-          }
-        }
-      }
-    },
-    "setting.adBanner2.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Environmental Care"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "環境保護"
-          }
-        }
-      }
-    },
-    "setting.adBanner2.description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your visit helps environmental conservation initiatives."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アクセスすることで環境保護の取り組みをサポートできます。"
-          }
-        }
-      }
-    },
-    "setting.adBanner3.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Education Access"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "教育支援"
-          }
-        }
-      }
-    },
-    "setting.adBanner3.description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Viewing the ad contributes to global education support."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を見ると世界の教育支援につながります。"
-          }
-        }
-      }
-    },
-    "ad.banner1.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://www.redcross.org/"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://www.redcross.org/"
-          }
-        }
-      }
-    },
-    "ad.banner2.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://www.worldwildlife.org/"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://www.worldwildlife.org/"
-          }
-        }
-      }
-    },
-    "ad.banner3.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://www.roomtoread.org/"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://www.roomtoread.org/"
-          }
-        }
-      }
-    },
+    }, 
     "setting.infoUnavailable" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "Information unavailable"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "情報を表示できません"
           }
         }
       }
-    },
+    }, 
     "unit.gram" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "g"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "ｇ"
           }
         }
       }
-    },
+    }, 
     "unit.piece" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "pcs"
           }
-        },
+        }, 
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "translated", 
             "value" : "個"
           }
         }
       }
-    },
-    "アプリの紹介・取扱説明" : {
-
-    },
-    "お知らせ・設定" : {
-
-    },
-    "ことら送金で寄付" : {
-
-    },
-    "動画広告を見て寄付" : {
-
-    },
-    "広告を見て寄付" : {
-
-    },
-    "音が出ます" : {
-
+    }, 
+    "アプリの紹介・取扱説明" : {}, 
+    "お知らせ・設定" : {}, 
+    "ことら送金で寄付" : {}, 
+    "動画広告を見て寄付" : {}, 
+    "広告を見て寄付" : {}, 
+    "音が出ます" : {}, 
+    "setting.revenueAds.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Revenue Ads Preview"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "収益広告プレビュー"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Preview common monetization ad formats you can integrate."
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "実装候補となる代表的な広告フォーマットを確認できます。"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.openDemo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Open Demo"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "デモを開く"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.banner.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Banner Ad"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "バナー広告"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.banner.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Simple ads that stay visible at the edge of the screen and earn revenue per impression."
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "画面の上下などに常時表示され、インプレッションごとに収益が発生するシンプルな広告です。"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.interstitial.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Interstitial Ad"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "インタースティシャル広告"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.interstitial.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Full-screen ads shown between content screens; tune the frequency to balance experience and revenue."
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "コンテンツの合間に全画面で表示する広告で、表示頻度を調整することで体験と収益のバランスを取れます。"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.rewarded.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Rewarded Video Ad"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "リワード動画広告"
+          }
+        }
+      }
+    }, 
+    "setting.revenueAds.rewarded.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "Engaging ads that grant in-app rewards when users watch the video through to the end."
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "ユーザーが最後まで視聴するとアプリ内報酬を付与できる、エンゲージメントの高い広告形式です。"
+          }
+        }
+      }
+    }, 
+    "ad.revenue.banner.url" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "https://developers.google.com/admob/ios/banner"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "https://developers.google.com/admob/ios/banner"
+          }
+        }
+      }
+    }, 
+    "ad.revenue.interstitial.url" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "https://developers.google.com/admob/ios/interstitial"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "https://developers.google.com/admob/ios/interstitial"
+          }
+        }
+      }
+    }, 
+    "ad.revenue.rewarded.url" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "https://developers.google.com/admob/ios/rewarded"
+          }
+        }, 
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated", 
+            "value" : "https://developers.google.com/admob/ios/rewarded"
+          }
+        }
+      }
     }
-  },
+  }, 
   "version" : "1.0"
 }

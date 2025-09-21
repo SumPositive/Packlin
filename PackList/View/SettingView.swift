@@ -7,192 +7,110 @@
 
 import SwiftUI
 import SafariServices
-import AVKit
 
 /// 設定画面：Popupで表示する
 struct SettingView: View {
-    
+
     @State private var showSafari = false
-    @State private var showAd = false
-    @State private var showAdMovie = false
-    @State private var showDonate = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Image(systemName: "gearshape")
-                Text("お知らせ・設定")
-                Spacer()
-            }
-            .padding(8)
-            
-            HStack {
-                // 情報（ボタン）
-                Button(action: {
-                    withAnimation {
-                        // SafariでURLを表示する
-                        showSafari = true
-                    }
-                }) {
-                    Image(systemName: "info.circle")
-                    Text("アプリの紹介・取扱説明")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack {
+                    Image(systemName: "gearshape")
+                    Text("お知らせ・設定")
+                    Spacer()
                 }
-                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
-                .sheet(isPresented: $showSafari) {
-                    let urlString = String(localized: "info.url")
-                    if let url = URL(string: urlString) {
-                        SafariView(url: url)
-                    } else {
-                        Text("setting.infoUnavailable")
-                    }
-                }
-                
-                Spacer()
-            }
-            .padding(8)
+                .padding(.horizontal, 4)
 
-            HStack {
-                // 広告を見て寄付する（ボタン）
-                Button(action: {
-                    withAnimation {
-                        // SafariでURLを表示する
-                        showAd = true
+                Button {
+                    showSafari = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "info.circle")
+                        Text("アプリの紹介・取扱説明")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
-                }) {
-                    Image(systemName: "heart.fill")
-                    Text("広告を見て寄付")
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(uiColor: .secondarySystemBackground))
+                    )
                 }
-                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
-                .sheet(isPresented: $showAd) {
-                    AdBannerContainerView()
-                }
-                Spacer()
-            }
-            .padding(8)
+                .buttonStyle(.plain)
 
-            HStack {
-                // 動画広告を見て寄付する（ボタン）
-                Button(action: {
-                    withAnimation {
-                        // SafariでURLを表示する
-                        showAdMovie = true
-                    }
-                }) {
-                    Image(systemName: "heart.fill")
-                    Text("動画広告を見て寄付")
-                }
-                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
-                .sheet(isPresented: $showAdMovie) {
-                    VideoAdContainerView()
-                }
-                HStack(spacing: 0) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .imageScale(.small)
-                    Text("音が出ます").font(.caption)
-                }
-                Spacer()
+                RevenueAdsShowcaseView()
             }
-            .padding(8)
-//            Text("無料WiFiに繋いでいる時にでもよろしくお願いします")
-//                .font(.caption2)
-//                .padding(.leading, 20)
-//                .padding(.top, 2)
-            
-            HStack {
-                // **＊送金て寄付する（ボタン）
-                Button(action: {
-                    withAnimation {
-                        // SafariでURLを表示する
-                        showDonate = true
-                    }
-                }) {
-                    Image(systemName: "heart.fill")
-                    Text("ことら送金で寄付")
-                }
-                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
-                .sheet(isPresented: $showDonate) {
-                    //TODO:ことら送金で寄付する
-                }
-//                HStack(spacing: 0) {
-//                    Image(systemName: "exclamationmark.triangle")
-//                        .imageScale(.small)
-//                    Text("音が出ます").font(.caption)
-//                }
-                Spacer()
-            }
-            .padding(8)
-
-            Spacer()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 16)
         }
-        .padding(.horizontal, 8)
-        .frame(width: 300, height: 300)
-        .onAppear {
-
-        }
-        .onDisappear() {
-
+        .frame(width: 320, height: 360)
+        .sheet(isPresented: $showSafari) {
+            let urlString = String(localized: "info.url")
+            if let url = URL(string: urlString) {
+                SafariView(url: url)
+            } else {
+                Text("setting.infoUnavailable")
+            }
         }
     }
-    
+
     /// カスタムSafariシート
     struct SafariView: UIViewControllerRepresentable {
         let url: URL
+
         func makeUIViewController(context: Context) -> SFSafariViewController {
-            return SFSafariViewController(url: url)
+            SFSafariViewController(url: url)
         }
+
         func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
     }
 
-    /// 静的広告バナーを一覧表示するビュー
-    struct AdBannerContainerView: View {
-        @Environment(\.dismiss) private var dismiss
-
-        private let banners = AdBanner.supportBanners
+    /// 収益広告のプレビューを表示するビュー
+    struct RevenueAdsShowcaseView: View {
+        private let ads = RevenueAd.previewAds
 
         var body: some View {
-            NavigationView {
-                ScrollView {
-                    LazyVStack(spacing: 20) {
-                        ForEach(banners) { banner in
-                            AdBannerCardView(banner: banner)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 24)
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("setting.revenueAds.title")
+                        .font(.headline)
+                    Text("setting.revenueAds.subtitle")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .background(Color(uiColor: .systemGroupedBackground))
-                .navigationTitle(Text("setting.adBannerTitle"))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "setting.adClose")) {
-                            dismiss()
-                        }
-                    }
+
+                ForEach(ads) { ad in
+                    RevenueAdCardView(ad: ad)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    /// 個別の広告バナーを表示するカード
-    struct AdBannerCardView: View {
-        let banner: AdBanner
+    /// 個別の収益広告カード
+    struct RevenueAdCardView: View {
+        let ad: RevenueAd
         @Environment(\.openURL) private var openURL
 
         var body: some View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: banner.iconName)
+                    Image(systemName: ad.iconName)
                         .font(.title2)
                         .foregroundStyle(.white)
                         .padding(12)
-                        .background(banner.accentColor)
+                        .background(ad.accentColor)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(banner.title)
+                        Text(ad.title)
                             .font(.headline)
-                        Text(banner.description)
+                        Text(ad.description)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -200,29 +118,31 @@ struct SettingView: View {
                     Spacer(minLength: 0)
                 }
 
-                Button {
-                    if let url = banner.url {
+                if let url = ad.url {
+                    Button {
                         openURL(url)
+                    } label: {
+                        Text("setting.revenueAds.openDemo")
+                            .frame(maxWidth: .infinity)
                     }
-                } label: {
-                    Text("setting.adBannerAction")
-                        .frame(maxWidth: .infinity)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(banner.url == nil)
             }
-            .padding(20)
+            .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(Color(uiColor: .secondarySystemBackground))
             )
-            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(Color(uiColor: .separator).opacity(0.15))
+            )
         }
     }
 
-    /// 広告バナー情報
-    struct AdBanner: Identifiable {
+    /// 収益広告のメタデータ
+    struct RevenueAd: Identifiable {
         let id = UUID()
         let title: LocalizedStringKey
         let description: LocalizedStringKey
@@ -230,27 +150,27 @@ struct SettingView: View {
         let iconName: String
         let accentColor: Color
 
-        static let supportBanners: [AdBanner] = [
-            AdBanner(
-                titleKey: "setting.adBanner1.title",
-                descriptionKey: "setting.adBanner1.description",
-                urlKey: "ad.banner1.url",
-                iconName: "hands.sparkles.fill",
-                accentColor: .pink
-            ),
-            AdBanner(
-                titleKey: "setting.adBanner2.title",
-                descriptionKey: "setting.adBanner2.description",
-                urlKey: "ad.banner2.url",
-                iconName: "leaf.fill",
-                accentColor: .green
-            ),
-            AdBanner(
-                titleKey: "setting.adBanner3.title",
-                descriptionKey: "setting.adBanner3.description",
-                urlKey: "ad.banner3.url",
-                iconName: "book.fill",
+        static let previewAds: [RevenueAd] = [
+            RevenueAd(
+                titleKey: "setting.revenueAds.banner.title",
+                descriptionKey: "setting.revenueAds.banner.description",
+                urlKey: "ad.revenue.banner.url",
+                iconName: "rectangle.split.3x1.fill",
                 accentColor: .blue
+            ),
+            RevenueAd(
+                titleKey: "setting.revenueAds.interstitial.title",
+                descriptionKey: "setting.revenueAds.interstitial.description",
+                urlKey: "ad.revenue.interstitial.url",
+                iconName: "square.on.square.dashed",
+                accentColor: .purple
+            ),
+            RevenueAd(
+                titleKey: "setting.revenueAds.rewarded.title",
+                descriptionKey: "setting.revenueAds.rewarded.description",
+                urlKey: "ad.revenue.rewarded.url",
+                iconName: "play.rectangle.fill",
+                accentColor: .orange
             )
         ]
 
@@ -264,86 +184,13 @@ struct SettingView: View {
 
         var url: URL? {
             let urlString = Bundle.main.localizedString(forKey: urlKey, value: nil, table: nil)
-            guard !urlString.isEmpty else { return nil }
+            guard !urlString.isEmpty else {
+                return nil
+            }
             return URL(string: urlString)
         }
     }
-
-    /// 広告動画の表示を管理するビュー
-    struct VideoAdContainerView: View {
-        @Environment(\.dismiss) private var dismiss
-
-        var body: some View {
-            if let adURL = URL(string: String(localized: "ad.video.url")) {
-                VideoAdView(adURL: adURL)
-            } else {
-                VStack(spacing: 16) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.largeTitle)
-                        .foregroundStyle(.yellow)
-                    Text("setting.adUnavailable")
-                        .multilineTextAlignment(.center)
-                        .font(.headline)
-                    Button(String(localized: "setting.adClose")) {
-                        dismiss()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding()
-            }
-        }
-    }
-
-    /// 動画広告を再生するビュー
-    struct VideoAdView: View {
-        let adURL: URL
-        @Environment(\.dismiss) private var dismiss
-        @State private var player: AVPlayer
-
-        init(adURL: URL) {
-            self.adURL = adURL
-            _player = State(initialValue: AVPlayer(url: adURL))
-        }
-
-        var body: some View {
-            NavigationView {
-                VStack(spacing: 24) {
-                    VideoPlayer(player: player)
-                        .aspectRatio(16 / 9, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .padding(.horizontal)
-                        .onAppear {
-                            player.play()
-                        }
-                        .onDisappear {
-                            player.pause()
-                        }
-
-                    Text("setting.adDescription")
-                        .font(.footnote)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Spacer()
-                }
-                .padding(.top, 24)
-                .background(Color(uiColor: .systemBackground))
-                .navigationTitle(Text("setting.adVideoTitle"))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "setting.adClose")) {
-                            player.pause()
-                            dismiss()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
 }
-
 
 #Preview {
     SettingView()
