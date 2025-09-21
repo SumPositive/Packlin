@@ -343,16 +343,16 @@ struct SettingView: View {
     }
 
     /// AdMobの報酬型広告を読み込むクラス
-    final class RewardedAdLoader: NSObject, ObservableObject {
+    final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDelegate {
         @Published private(set) var isLoading = false
         @Published private(set) var isReady = false
         @Published private(set) var errorMessage: String?
 
         var onAdDismissed: (() -> Void)?
-        var onRewardEarned: ((GADAdReward) -> Void)?
+        var onRewardEarned: ((AdReward) -> Void)?
 
         private let adUnitID: String
-        private var rewardedAd: GADRewardedAd?
+        private var rewardedAd: RewardedAd?
 
         init(adUnitID: String) {
             self.adUnitID = adUnitID
@@ -365,8 +365,8 @@ struct SettingView: View {
             isReady = false
             errorMessage = nil
 
-            let request = GADRequest()
-            GADRewardedAd.load(withAdUnitID: adUnitID, request: request) { [weak self] ad, error in
+            let request = Request()
+            RewardedAd.load(with: adUnitID, request: request) { [weak self] ad, error in
                 guard let self else { return }
                 DispatchQueue.main.async {
                     self.isLoading = false
@@ -385,15 +385,15 @@ struct SettingView: View {
         func present(from root: UIViewController) {
             guard let rewardedAd else { return }
             let ad = rewardedAd
-            ad.present(fromRootViewController: root) { [weak self] in
+            ad.present(from: root) { [weak self] in
                 guard let self else { return }
                 self.onRewardEarned?(ad.adReward)
             }
         }
     }
 
-    extension RewardedAdLoader: GADFullScreenContentDelegate {
-        func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    extension RewardedAdLoader: FullScreenContentDelegate {
+        func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 self.isReady = false
@@ -403,7 +403,7 @@ struct SettingView: View {
             }
         }
 
-        func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 self.errorMessage = error.localizedDescription
@@ -441,7 +441,7 @@ struct SettingView: View {
             let viewController = UIViewController()
             viewController.view.backgroundColor = .clear
 
-            let bannerView = GADBannerView(adSize: GADAdSizeFromCGSize(size))
+            let bannerView = BannerView(adSize: adSizeFor(cgSize: size))
             bannerView.adUnitID = adUnitID
             bannerView.rootViewController = viewController
             bannerView.delegate = context.coordinator
@@ -454,7 +454,7 @@ struct SettingView: View {
             ])
 
             context.coordinator.bannerView = bannerView
-            bannerView.load(GADRequest())
+            bannerView.load(Request())
 
             return viewController
         }
@@ -463,8 +463,8 @@ struct SettingView: View {
             context.coordinator.bannerView?.rootViewController = uiViewController
         }
 
-        final class Coordinator: NSObject, GADBannerViewDelegate {
-            weak var bannerView: GADBannerView?
+        final class Coordinator: NSObject, BannerViewDelegate {
+            weak var bannerView: BannerView?
         }
     }
 #else
