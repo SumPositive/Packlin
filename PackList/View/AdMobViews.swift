@@ -96,9 +96,9 @@ struct AdMobBannerCardView: View {
                 size: configuration.size
             )
 
-            Text(configuration.message)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+//            Text(configuration.message)
+//                .font(.footnote)
+//                .foregroundStyle(.secondary)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)

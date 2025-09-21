@@ -97,114 +97,150 @@
         }
       }
     },
-    "ad.banner1.message" : {
+    "ad" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find the latest luggage and travel accessories."
+            "state" : "needs_review",
+            "value" : "App introduction and instructions"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最新のスーツケースやトラベル雑貨をチェック。"
+            "value" : "アプリの紹介・取扱説明"
           }
         }
       }
+    },
+    "ad.banner1.message" : {
+
     },
     "ad.banner1.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Travel Gear Sale"
+            "value" : "Small"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "旅行グッズセール"
+            "state" : "needs_review",
+            "value" : "小"
           }
         }
       }
     },
     "ad.banner2.message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download a printable checklist to stay organized."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "印刷して使えるチェックリストをダウンロード。"
-          }
-        }
-      }
+
     },
     "ad.banner2.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Packing Checklist PDF"
+            "value" : "Midium"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "荷造りチェックリストPDF"
+            "value" : "中"
           }
         }
       }
     },
     "ad.banner3.message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compare plans before your next trip."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "次の旅行に備えてプランを比較しましょう。"
-          }
-        }
-      }
+
     },
     "ad.banner3.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Travel Insurance Quotes"
+            "value" : "Large"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "旅行保険の見積もり"
+            "value" : "大"
           }
         }
       }
     },
-    "ad.video.url" : {
+    "ad.donate.banner" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+            "value" : "Watch the ad and donate"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+            "value" : "広告を見て寄付"
+          }
+        }
+      }
+    },
+    "ad.donate.video" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch a video ad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "動画広告を見て寄付"
+          }
+        }
+      }
+    },
+    "ad.empowering.developers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empowering developers"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開発者を支援する"
+          }
+        }
+      }
+    },
+    "ad.kotora" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ことら送金で寄付"
+          }
+        }
+      }
+    },
+    "ad.video.sound" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With sound"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "音が出ます"
           }
         }
       }
@@ -515,7 +551,6 @@
       }
     },
     "setting.adLoading" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -532,7 +567,6 @@
       }
     },
     "setting.adPlay" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -549,7 +583,6 @@
       }
     },
     "setting.adRetry" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -566,7 +599,6 @@
       }
     },
     "setting.adRewardThanks" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -578,22 +610,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "広告をご視聴いただきありがとうございます！"
-          }
-        }
-      }
-    },
-    "setting.adUnavailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to load the advertisement."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を読み込めませんでした"
           }
         }
       }
@@ -630,18 +646,18 @@
         }
       }
     },
-    "setting.bannerAdUnavailable" : {
+    "setting.info" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Banner could not be loaded."
+            "value" : "App introduction and instructions"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告バナーを読み込めませんでした。"
+            "state" : "needs_review",
+            "value" : "アプリの紹介・取扱説明"
           }
         }
       }
@@ -658,6 +674,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "情報を表示できません"
+          }
+        }
+      }
+    },
+    "setting.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications and Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お知らせ・設定"
           }
         }
       }
@@ -693,27 +725,6 @@
           }
         }
       }
-    },
-    "アプリの紹介・取扱説明" : {
-
-    },
-    "お知らせ・設定" : {
-
-    },
-    "ことら送金で寄付" : {
-
-    },
-    "動画広告を見て寄付" : {
-
-    },
-    "広告を見て寄付" : {
-
-    },
-    "開発者を支援する" : {
-
-    },
-    "音が出ます" : {
-
     }
   },
   "version" : "1.0"

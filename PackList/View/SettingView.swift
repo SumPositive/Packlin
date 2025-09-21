@@ -15,7 +15,7 @@ struct SettingView: View {
         VStack(spacing: 0) {
             HStack {
                 Image(systemName: "gearshape")
-                Text("お知らせ・設定")
+                Text("setting.title")
                 Spacer()
             }
             .padding(8)
@@ -59,7 +59,7 @@ struct SettingView: View {
                 //}
             }) {
                 Image(systemName: "info.circle")
-                Text("アプリの紹介・取扱説明")
+                Text("setting.info")
                 Spacer()
             }
             .padding(8)
@@ -84,7 +84,7 @@ struct SettingView: View {
             VStack {
                 HStack {
                     Image(systemName: "heart")
-                    Text("開発者を支援する")
+                    Text("ad.empowering.developers")
                     Spacer()
                 }
                 .padding(8)
@@ -97,7 +97,7 @@ struct SettingView: View {
                                 showAd = true
                             }
                         }) {
-                            Text("広告を見て寄付")
+                            Text("ad.donate.banner")
                         }
                         .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                         .sheet(isPresented: $showAd) {
@@ -116,7 +116,7 @@ struct SettingView: View {
                                 showAdMovie = true
                             }
                         }) {
-                            Text("動画広告を見て寄付")
+                            Text("ad.donate.video")
                         }
                         .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                         .sheet(isPresented: $showAdMovie) {
@@ -125,7 +125,7 @@ struct SettingView: View {
                         HStack(spacing: 0) {
                             Image(systemName: "exclamationmark.triangle")
                                 .imageScale(.small)
-                            Text("音が出ます").font(.caption)
+                            Text("ad.video.sound").font(.caption)
                         }
                         Spacer()
                     }
@@ -140,7 +140,7 @@ struct SettingView: View {
                                 showDonate = true
                             }
                         }) {
-                            Text("ことら送金で寄付")
+                            Text("ad.kotora")
                         }
                         .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                         .sheet(isPresented: $showDonate) {

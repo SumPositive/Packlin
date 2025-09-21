@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C3D2BB7C2E6A7969002B900A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,12 +90,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C36757AB2E80330F0098BB22 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C3D2BB632E6A7967002B900A = {
 			isa = PBXGroup;
 			children = (
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
+				C36757AB2E80330F0098BB22 /* Frameworks */,
 				C3D2BB6D2E6A7967002B900A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -125,6 +138,7 @@
 			);
 			name = PackList;
 			packageProductDependencies = (
+				C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
 			);
 			productName = PackList;
 			productReference = C3D2BB6C2E6A7967002B900A /* PackList.app */;
@@ -604,6 +618,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C36757AC2E80330F0098BB22 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C3D2BB642E6A7967002B900A /* Project object */;
 }
