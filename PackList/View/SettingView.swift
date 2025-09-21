@@ -14,6 +14,8 @@ struct SettingView: View {
     
     @State private var showSafari = false
     @State private var showAd = false
+    @State private var showAdMovie = false
+    @State private var showDonate = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -58,13 +60,36 @@ struct SettingView: View {
                     }
                 }) {
                     Image(systemName: "heart.fill")
-                    Text("広告を見て寄付する")
+                    Text("広告を見て寄付")
                 }
                 .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
                 .sheet(isPresented: $showAd) {
+                    //TODO:広告バナーを3種類を同時に表示する
+                }
+                Spacer()
+            }
+            .padding(8)
+
+            HStack {
+                // 動画広告を見て寄付する（ボタン）
+                Button(action: {
+                    withAnimation {
+                        // SafariでURLを表示する
+                        showAdMovie = true
+                    }
+                }) {
+                    Image(systemName: "heart.fill")
+                    Text("動画広告を見て寄付")
+                }
+                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
+                .sheet(isPresented: $showAdMovie) {
                     VideoAdContainerView()
                 }
-                
+                HStack(spacing: 0) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .imageScale(.small)
+                    Text("音が出ます").font(.caption)
+                }
                 Spacer()
             }
             .padding(8)
@@ -73,6 +98,29 @@ struct SettingView: View {
 //                .padding(.leading, 20)
 //                .padding(.top, 2)
             
+            HStack {
+                // **＊送金て寄付する（ボタン）
+                Button(action: {
+                    withAnimation {
+                        // SafariでURLを表示する
+                        showDonate = true
+                    }
+                }) {
+                    Image(systemName: "heart.fill")
+                    Text("ことら送金で寄付")
+                }
+                .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
+                .sheet(isPresented: $showDonate) {
+                    //TODO:ことら送金で寄付する
+                }
+//                HStack(spacing: 0) {
+//                    Image(systemName: "exclamationmark.triangle")
+//                        .imageScale(.small)
+//                    Text("音が出ます").font(.caption)
+//                }
+                Spacer()
+            }
+            .padding(8)
 
             Spacer()
         }
