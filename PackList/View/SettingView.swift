@@ -8,6 +8,12 @@
 import SwiftUI
 import SafariServices
 import AVKit
+#if canImport(UIKit)
+import UIKit
+#endif
+#if canImport(GoogleMobileAds)
+import GoogleMobileAds
+#endif
 
 /// 設定画面：Popupで表示する
 struct SettingView: View {
@@ -163,14 +169,33 @@ struct SettingView: View {
     struct BannerAdContainerView: View {
         @Environment(\.dismiss) private var dismiss
 
-        private let banners = BannerAd.sampleBanners
+        private let bannerConfigs = [
+            AdMobBannerConfiguration(
+                title: "ad.banner1.title",
+                message: "ad.banner1.message",
+                adUnitID: "ca-app-pub-3940256099942544/2934735716",
+                size: CGSize(width: 320, height: 50)
+            ),
+            AdMobBannerConfiguration(
+                title: "ad.banner2.title",
+                message: "ad.banner2.message",
+                adUnitID: "ca-app-pub-3940256099942544/2934735716",
+                size: CGSize(width: 320, height: 100)
+            ),
+            AdMobBannerConfiguration(
+                title: "ad.banner3.title",
+                message: "ad.banner3.message",
+                adUnitID: "ca-app-pub-3940256099942544/2934735716",
+                size: CGSize(width: 300, height: 250)
+            )
+        ]
 
         var body: some View {
             NavigationView {
                 ScrollView {
                     VStack(spacing: 16) {
-                        ForEach(banners) { banner in
-                            BannerAdCardView(banner: banner)
+                        ForEach(bannerConfigs) { config in
+                            AdMobBannerCardView(configuration: config)
                         }
                     }
                     .padding()
@@ -189,31 +214,21 @@ struct SettingView: View {
         }
     }
 
-    /// 単一のバナー広告を表示するカード
-    struct BannerAdCardView: View {
-        let banner: BannerAd
+    /// 単一のAdMobバナー広告カード
+    struct AdMobBannerCardView: View {
+        let configuration: AdMobBannerConfiguration
 
         var body: some View {
-            Group {
-                if let destination = banner.destination {
-                    Link(destination: destination) {
-                        cardContent
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    cardContent
-                }
-            }
-        }
-
-        private var cardContent: some View {
             VStack(alignment: .leading, spacing: 12) {
-                Text(banner.title)
+                Text(configuration.title)
                     .font(.headline)
 
-                BannerAdImageView(imageURL: banner.imageURL)
+                AdMobBannerView(
+                    adUnitID: configuration.adUnitID,
+                    size: configuration.size
+                )
 
-                Text(banner.message)
+                Text(configuration.message)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -230,92 +245,257 @@ struct SettingView: View {
         }
     }
 
-    /// バナー広告の画像を読み込んで表示する
-    struct BannerAdImageView: View {
-        let imageURL: URL?
-
-        var body: some View {
-            Group {
-                if let imageURL {
-                    AsyncImage(url: imageURL) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .background(placeholderBackground)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .clipped()
-                        case .failure:
-                            placeholder
-                        @unknown default:
-                            placeholder
-                        }
-                    }
-                } else {
-                    placeholder
-                }
-            }
-            .frame(height: 90)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-
-        private var placeholder: some View {
-            ZStack {
-                placeholderBackground
-                Text("setting.bannerAdUnavailable")
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-                    .padding(8)
-            }
-        }
-
-        private var placeholderBackground: some View {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(uiColor: .tertiarySystemFill))
-        }
-    }
-
-    /// バナー広告の定義
-    struct BannerAd: Identifiable {
+    struct AdMobBannerConfiguration: Identifiable {
         let id = UUID()
         let title: LocalizedStringResource
         let message: LocalizedStringResource
-        let destination: URL?
-        let imageURL: URL?
-
-        static let sampleBanners: [BannerAd] = [
-            BannerAd(
-                title: "ad.banner1.title",
-                message: "ad.banner1.message",
-                destination: URL(string: "https://www.japan.travel/ja/"),
-                imageURL: URL(string: "https://dummyimage.com/600x200/0f9d58/ffffff&text=Travel+Deals")
-            ),
-            BannerAd(
-                title: "ad.banner2.title",
-                message: "ad.banner2.message",
-                destination: URL(string: "https://www.jtb.co.jp/"),
-                imageURL: URL(string: "https://dummyimage.com/600x200/4285f4/ffffff&text=Packing+Checklist")
-            ),
-            BannerAd(
-                title: "ad.banner3.title",
-                message: "ad.banner3.message",
-                destination: URL(string: "https://hoken.mynavi.jp/"),
-                imageURL: URL(string: "https://dummyimage.com/600x200/fbbc05/333333&text=Travel+Insurance")
-            )
-        ]
+        let adUnitID: String
+        let size: CGSize
     }
 
-    /// 広告動画の表示を管理するビュー
+    /// 動画広告の表示を管理するビュー
     struct VideoAdContainerView: View {
+        var body: some View {
+            #if canImport(GoogleMobileAds)
+            AdMobRewardedScreen()
+            #else
+            LegacyVideoAdContainerView()
+            #endif
+        }
+    }
+
+#if canImport(GoogleMobileAds)
+    /// AdMob報酬型広告の表示ビュー
+    struct AdMobRewardedScreen: View {
+        @Environment(\.dismiss) private var dismiss
+        @StateObject private var loader = RewardedAdLoader(adUnitID: "ca-app-pub-3940256099942544/1712485313")
+        @State private var rewardDescription: String?
+
+        var body: some View {
+            NavigationView {
+                VStack(spacing: 24) {
+                    Text("setting.adDescription")
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+
+                    if loader.isLoading {
+                        ProgressView(String(localized: "setting.adLoading"))
+                            .padding()
+                    }
+
+                    if let errorMessage = loader.errorMessage {
+                        VStack(spacing: 8) {
+                            Text(errorMessage)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                            Button(String(localized: "setting.adRetry")) {
+                                loader.loadAd()
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
+
+                    Button(String(localized: "setting.adPlay")) {
+                        presentAd()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!loader.isReady)
+
+                    if let rewardDescription {
+                        Text(rewardDescription)
+                            .font(.footnote)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+
+                    Spacer()
+                }
+                .padding(.top, 24)
+                .background(Color(uiColor: .systemBackground))
+                .navigationTitle(Text("setting.adVideoTitle"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "setting.adClose")) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+            .onAppear {
+                loader.onAdDismissed = {
+                    dismiss()
+                }
+                loader.onRewardEarned = { _ in
+                    rewardDescription = String(localized: "setting.adRewardThanks")
+                }
+            }
+        }
+
+        private func presentAd() {
+            guard let topController = UIApplication.topMostViewController() else {
+                return
+            }
+            loader.present(from: topController)
+        }
+    }
+
+    /// AdMobの報酬型広告を読み込むクラス
+    final class RewardedAdLoader: NSObject, ObservableObject {
+        @Published private(set) var isLoading = false
+        @Published private(set) var isReady = false
+        @Published private(set) var errorMessage: String?
+
+        var onAdDismissed: (() -> Void)?
+        var onRewardEarned: ((GADAdReward) -> Void)?
+
+        private let adUnitID: String
+        private var rewardedAd: GADRewardedAd?
+
+        init(adUnitID: String) {
+            self.adUnitID = adUnitID
+            super.init()
+            loadAd()
+        }
+
+        func loadAd() {
+            isLoading = true
+            isReady = false
+            errorMessage = nil
+
+            let request = GADRequest()
+            GADRewardedAd.load(withAdUnitID: adUnitID, request: request) { [weak self] ad, error in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    if let error {
+                        self.errorMessage = error.localizedDescription
+                        self.rewardedAd = nil
+                    } else if let ad {
+                        self.rewardedAd = ad
+                        ad.fullScreenContentDelegate = self
+                        self.isReady = true
+                    }
+                }
+            }
+        }
+
+        func present(from root: UIViewController) {
+            guard let rewardedAd else { return }
+            let ad = rewardedAd
+            ad.present(fromRootViewController: root) { [weak self] in
+                guard let self else { return }
+                self.onRewardEarned?(ad.adReward)
+            }
+        }
+    }
+
+    extension RewardedAdLoader: GADFullScreenContentDelegate {
+        func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.isReady = false
+                self.rewardedAd = nil
+                self.onAdDismissed?()
+                self.loadAd()
+            }
+        }
+
+        func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.errorMessage = error.localizedDescription
+                self.isReady = false
+                self.rewardedAd = nil
+            }
+        }
+    }
+
+    /// SwiftUIでAdMobバナーを表示するビュー
+    struct AdMobBannerView: View {
+        let adUnitID: String
+        let size: CGSize
+
+        var body: some View {
+            AdMobBannerRepresentable(adUnitID: adUnitID, size: size)
+                .frame(width: size.width, height: size.height)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(uiColor: .tertiarySystemBackground))
+                )
+        }
+    }
+
+    struct AdMobBannerRepresentable: UIViewControllerRepresentable {
+        let adUnitID: String
+        let size: CGSize
+
+        func makeCoordinator() -> Coordinator {
+            Coordinator()
+        }
+
+        func makeUIViewController(context: Context) -> UIViewController {
+            let viewController = UIViewController()
+            viewController.view.backgroundColor = .clear
+
+            let bannerView = GADBannerView(adSize: GADAdSizeFromCGSize(size))
+            bannerView.adUnitID = adUnitID
+            bannerView.rootViewController = viewController
+            bannerView.delegate = context.coordinator
+            bannerView.translatesAutoresizingMaskIntoConstraints = false
+
+            viewController.view.addSubview(bannerView)
+            NSLayoutConstraint.activate([
+                bannerView.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor),
+                bannerView.centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor)
+            ])
+
+            context.coordinator.bannerView = bannerView
+            bannerView.load(GADRequest())
+
+            return viewController
+        }
+
+        func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+            context.coordinator.bannerView?.rootViewController = uiViewController
+        }
+
+        final class Coordinator: NSObject, GADBannerViewDelegate {
+            weak var bannerView: GADBannerView?
+        }
+    }
+#else
+    /// SwiftUIでAdMobが利用できない場合のプレースホルダービュー
+    struct AdMobBannerView: View {
+        let adUnitID: String
+        let size: CGSize
+
+        var body: some View {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(uiColor: .tertiarySystemFill))
+                .overlay(
+                    Text("setting.bannerAdUnavailable")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .padding(8)
+                )
+                .frame(height: size.height)
+                .frame(maxWidth: .infinity)
+        }
+    }
+#endif
+
+#if !canImport(GoogleMobileAds)
+    /// AdMobが利用できない場合の動画広告プレースホルダー
+    struct LegacyVideoAdContainerView: View {
         @Environment(\.dismiss) private var dismiss
 
         var body: some View {
             if let adURL = URL(string: String(localized: "ad.video.url")) {
-                VideoAdView(adURL: adURL)
+                LegacyVideoAdView(adURL: adURL)
             } else {
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle")
@@ -334,8 +514,7 @@ struct SettingView: View {
         }
     }
 
-    /// 動画広告を再生するビュー
-    struct VideoAdView: View {
+    struct LegacyVideoAdView: View {
         let adURL: URL
         @Environment(\.dismiss) private var dismiss
         @State private var player: AVPlayer
@@ -381,6 +560,28 @@ struct SettingView: View {
             }
         }
     }
+#endif
+
+#if canImport(UIKit)
+    extension UIApplication {
+        static func topMostViewController(base: UIViewController? = UIApplication.shared.connectedScenes
+            .compactMap { scene in
+                (scene as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow })?.rootViewController
+            }
+            .first) -> UIViewController? {
+            if let navigationController = base as? UINavigationController {
+                return topMostViewController(base: navigationController.visibleViewController)
+            }
+            if let tabController = base as? UITabBarController, let selected = tabController.selectedViewController {
+                return topMostViewController(base: selected)
+            }
+            if let presented = base?.presentedViewController {
+                return topMostViewController(base: presented)
+            }
+            return base
+        }
+    }
+#endif
 
 }
 
