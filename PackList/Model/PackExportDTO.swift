@@ -20,6 +20,8 @@ struct PackExportDTO: Codable {
         let items: [Item]
     }
 
+    let copyright: String
+    let version: String
     let id: M1Pack.ID
     let order: Int
     let name: String
@@ -31,6 +33,8 @@ struct PackExportDTO: Codable {
 extension M1Pack {
     func exportRepresentation() -> PackExportDTO {
         PackExportDTO(
+            copyright: "2025 sumpo/azukid",
+            version: "3.0",
             id: id,
             order: order,
             name: name,

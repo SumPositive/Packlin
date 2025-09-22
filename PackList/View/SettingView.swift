@@ -86,7 +86,7 @@ struct SettingView: View {
         var body: some View {
             VStack {
                 Button(action: {
-
+                    //TODO: PackExportDTOで保存されたpack.jsonを共有メニューから読み込む
                 }) {
                     Image(systemName: "arrow.down.message")
                     Text("action.json.download")
