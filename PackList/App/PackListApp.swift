@@ -34,6 +34,7 @@ struct PackListApp: App {
     }()
 
     init() {
+        LegacyCoreDataMigrator().migrateIfNeeded(modelContainer: sharedModelContainer)
 #if canImport(GoogleMobileAds)
         // Initialize the Google Mobile Ads SDK.
         MobileAds.shared.start()
