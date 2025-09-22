@@ -40,16 +40,18 @@ struct GroupListView: View {
                             popupAnchor = point
                         }
 
-                        HStack {
-                            Spacer()
-                            NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
-                                Color.clear
+                        GeometryReader { geo in
+                            HStack {
+                                Spacer()
+                                NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
+                                    Color.clear
+                                }
+                                .buttonStyle(.plain)
+                                .frame(width: geo.size.width/2.0) // 画面右半分タップでナビ遷移
+                                .contentShape(Rectangle()) //タップ領域
+                                .background(Color.clear)
+                                .padding(.trailing, 8)
                             }
-                            .contentShape(Rectangle())
-                            .buttonStyle(.plain)
-                            .frame(width: 180)
-                            .padding(.trailing, 8)
-                            .background(Color.clear).contentShape(Rectangle()) //タップ領域
                         }
                     }
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
