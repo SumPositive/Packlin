@@ -22,12 +22,12 @@ import GoogleMobileAds
 #if DEBUG
 // アダプティブ バナー テスト用
 let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
-// インタースティシャル テスト用
+// インタースティシャル（全画面動画）テスト用
 let ADMOB_VIDEO_UnitID  = "ca-app-pub-3940256099942544/4411468910"
 #else
 // アダプティブ バナー 本番用
 let ADMOB_BANNER_UnitID = "ca-app-pub-3916054326181876/5237233709"
-// インタースティシャル 本番用
+// インタースティシャル（全画面動画）本番用
 let ADMOB_VIDEO_UnitID  = "ca-app-pub-3916054326181876/8697912668"
 #endif
 
