@@ -34,6 +34,10 @@ struct PackListApp: App {
     }()
 
     init() {
+        // Migrate： V2-CoreData --> V3-SwiftData
+        LegacyCoreDataMigrator().migrateIfNeeded(modelContainer: sharedModelContainer)
+
+        // AdMob
 #if canImport(GoogleMobileAds)
         // Initialize the Google Mobile Ads SDK.
         MobileAds.shared.start()
