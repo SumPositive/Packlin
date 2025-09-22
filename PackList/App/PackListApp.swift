@@ -13,6 +13,7 @@ import GoogleMobileAds
 
 @main
 struct PackListApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var navigationCoordinator = NavigationCoordinator()
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -58,6 +59,16 @@ struct PackListApp: App {
             }
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { newPhase in
+            guard newPhase == .inactive || newPhase == .background else { return }
+
+            let context = sharedModelContainer.mainContext
+            guard context.hasChanges else { return }
+
+            try? context.save()
+            context.undoManager?.removeAllActions()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
 
     }
 }
