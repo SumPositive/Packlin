@@ -69,13 +69,13 @@ struct GroupListView: View {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
                         // PackViewに戻るときに保存
-                        if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                        if modelContext.hasChanges {
                             do {
                                 try modelContext.save() // Undoスタックがクリアされる
                             } catch {
                                 print("DB保存に失敗.2: \(error)")
                             }
-                            um.removeAllActions()
+                            modelContext.undoManager?.removeAllActions()
                         }
                         dismiss()
                     } label: {
@@ -116,13 +116,13 @@ struct GroupListView: View {
             }
             .onAppear {
                 // PackViewから来たときとItemViewから戻ったときに保存
-                if let um = modelContext.undoManager, 0 < um.groupingLevel {
+                if modelContext.hasChanges {
                     do {
                         try modelContext.save() // Undoスタックがクリアされる
                     } catch {
                         print("DB保存に失敗.1: \(error)")
                     }
-                    um.removeAllActions()
+                    modelContext.undoManager?.removeAllActions()
                 }
                 updateUndoRedo()
             }
