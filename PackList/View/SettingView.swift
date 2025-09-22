@@ -7,6 +7,9 @@
 
 import SwiftUI
 import SafariServices
+import SwiftData
+import UniformTypeIdentifiers
+import Foundation
 
 /// 設定画面：Popupで表示する
 struct SettingView: View {
@@ -82,11 +85,14 @@ struct SettingView: View {
 
     /// カスタム設定
     struct CustomSetView: View {
-        
+        @Environment(\.modelContext) private var modelContext
+        @State private var isPresentingImporter = false
+        @State private var importErrorMessage: String?
+
         var body: some View {
             VStack {
                 Button(action: {
-                    //TODO: PackExportDTOで保存されたpack.jsonを共有メニューから読み込む
+                    isPresentingImporter = true
                 }) {
                     Image(systemName: "arrow.down.message")
                     Text("action.json.download")
@@ -96,6 +102,102 @@ struct SettingView: View {
             }
             .background(Color(.white).opacity(0.5))
             .cornerRadius(10)
+            .fileImporter(
+                isPresented: $isPresentingImporter,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    do {
+                        try importPack(from: url)
+                    } catch {
+                        debugPrint("Failed to import pack: \(error)")
+                        importErrorMessage = String(localized: "setting.import.error.message")
+                    }
+                case .failure(let error):
+                    debugPrint("Failed to import pack: \(error)")
+                    importErrorMessage = String(localized: "setting.import.error.message")
+                }
+            }
+            .alert(
+                "setting.import.error.title",
+                isPresented: Binding(
+                    get: { importErrorMessage != nil },
+                    set: { if !$0 { importErrorMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(importErrorMessage ?? "")
+            }
+        }
+
+        private func importPack(from url: URL) throws {
+            let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+            defer {
+                if shouldStopAccessing {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let dto = try decoder.decode(PackExportDTO.self, from: data)
+
+            try createPack(from: dto)
+        }
+
+        private func createPack(from dto: PackExportDTO) throws {
+            let descriptor = FetchDescriptor<M1Pack>()
+            let packs = (try? modelContext.fetch(descriptor)) ?? []
+            let newOrder = M1Pack.nextPackOrder(packs)
+
+            let undoManager = modelContext.undoManager
+            undoManager?.beginUndoGrouping()
+            defer {
+                if let undoManager, undoManager.groupingLevel > 0 {
+                    undoManager.endUndoGrouping()
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                }
+            }
+
+            let pack = M1Pack(
+                name: dto.name,
+                memo: dto.memo,
+                createdAt: dto.createdAt,
+                order: newOrder
+            )
+            modelContext.insert(pack)
+
+            let groups = dto.groups.sorted { $0.order < $1.order }
+            for (groupIndex, groupDTO) in groups.enumerated() {
+                let group = M2Group(
+                    name: groupDTO.name,
+                    memo: groupDTO.memo,
+                    order: groupIndex,
+                    parent: pack
+                )
+                modelContext.insert(group)
+                pack.child.append(group)
+
+                let items = groupDTO.items.sorted { $0.order < $1.order }
+                for (itemIndex, itemDTO) in items.enumerated() {
+                    let item = M3Item(
+                        name: itemDTO.name,
+                        memo: itemDTO.memo,
+                        check: itemDTO.check,
+                        stock: itemDTO.stock,
+                        need: itemDTO.need,
+                        weight: itemDTO.weight,
+                        order: itemIndex,
+                        parent: group
+                    )
+                    modelContext.insert(item)
+                    group.child.append(item)
+                }
+            }
         }
     }
     
