@@ -14,51 +14,17 @@
         }
       }
     },
-    "action.copy" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copy"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コピー"
-          }
-        }
-      }
-    },
-    "action.cut" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cut"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切り取り"
-          }
-        }
-      }
-    },
     "action.delete" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete"
+            "value" : "delete"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "削除"
           }
         }
@@ -69,30 +35,45 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Duplicate"
+            "value" : "duplicate"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "複製"
           }
         }
       }
     },
-    "action.paste" : {
-      "extractionState" : "stale",
+    "action.json.download" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Paste"
+            "value" : "Load pack.json"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "貼り付け"
+            "value" : "共有pack.jsonを読み込む"
+          }
+        }
+      }
+    },
+    "action.json.upload" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "share"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "共有"
           }
         }
       }
@@ -215,16 +196,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開発者を支援する"
-          }
-        }
-      }
-    },
-    "ad.kotora" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ことら送金で寄付"
           }
         }
       }
@@ -674,6 +645,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "情報を表示できません"
+          }
+        }
+      }
+    },
+    "setting.load.icloud" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloudから復元する"
+          }
+        }
+      }
+    },
+    "setting.save.icloud" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloudに保存する"
           }
         }
       }

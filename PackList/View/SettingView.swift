@@ -20,21 +20,25 @@ struct SettingView: View {
             }
             .padding(8)
             
+            // アプリの紹介・取扱説明
             InformationView()
                 .padding(.vertical, 8)
 
+            // カスタム設定
+            CustomSetView()
+                .padding(.vertical, 8)
+
+            /// 寄付
             DonationView()
                 .padding(.vertical, 8)
 
             Spacer()
         }
         .padding(.horizontal, 8)
-        .frame(width: 300, height: 340)
+        .frame(width: 300, height: 500)
         .onAppear {
-
         }
         .onDisappear() {
-
         }
     }
     
@@ -71,9 +75,30 @@ struct SettingView: View {
                     Text("setting.infoUnavailable")
                 }
             }
+            .background(Color(.white).opacity(0.5))
+            .cornerRadius(10)
         }
     }
 
+    /// カスタム設定
+    struct CustomSetView: View {
+        
+        var body: some View {
+            VStack {
+                Button(action: {
+
+                }) {
+                    Image(systemName: "arrow.down.message")
+                    Text("action.json.download")
+                    Spacer()
+                }
+                .padding(8)
+            }
+            .background(Color(.white).opacity(0.5))
+            .cornerRadius(10)
+        }
+    }
+    
     /// 寄付
     struct DonationView: View {
         @State private var showAd = false
@@ -131,30 +156,11 @@ struct SettingView: View {
                     }
                     .padding(.horizontal, 8)
                     .padding(.bottom, 8)
-                    
-                    HStack {
-                        // **＊送金て寄付する（ボタン）
-                        Button(action: {
-                            withAnimation {
-                                // SafariでURLを表示する
-                                showDonate = true
-                            }
-                        }) {
-                            Text("ad.kotora")
-                        }
-                        .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
-                        .sheet(isPresented: $showDonate) {
-                            //TODO:ことら送金で寄付する
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
                 }
                 .padding(.leading, 26)
             }
             .background(Color(.white).opacity(0.5))
-            .cornerRadius(12)
+            .cornerRadius(10)
         }
     }
 

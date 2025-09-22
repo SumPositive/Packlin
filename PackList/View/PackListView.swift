@@ -200,6 +200,18 @@ struct EditPackView: View {
                 }
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
+
+                Button {
+                    //TODO: pack配下をjsonファイルにして共有メニューを呼び出す
+                } label: {
+                    VStack {
+                        Image(systemName: "arrow.up.message")
+                        Text("action.json.upload")
+                            .font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
                 
                 Spacer()
                 Text("Pack.edit.title").font(.footnote)
