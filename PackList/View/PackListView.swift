@@ -363,6 +363,7 @@ struct EditPackView: View {
         modelContext.delete(group)
     }
 
+    /// PackをJSONファイルにして共有(Export)する
     private func exportPack() {
         do {
             cleanupShareResource()
@@ -386,7 +387,7 @@ struct EditPackView: View {
             debugPrint("Failed to export pack: \(error)")
         }
     }
-
+    /// 一時共有ファイルを削除する
     private func cleanupShareResource() {
         defer {
             shareURL = nil
@@ -396,7 +397,8 @@ struct EditPackView: View {
         guard let shareURL else { return }
         try? FileManager.default.removeItem(at: shareURL)
     }
-
+    /// ファイル名を使用可能文字に制限する
+    ///    shortUUIDをURLセーフにしたが、さらに念の為
     private func sanitizedFileName(from name: String) -> String {
         let base = "Pack_" + name.trimmingCharacters(in: .whitespacesAndNewlines)
         let invalidCharacters = CharacterSet(charactersIn: "\\/:?%*|\"<>\n")
@@ -407,12 +409,7 @@ struct EditPackView: View {
     }
 }
 
-
-#Preview {
-    PackListView()
-//    EditPackView(pack: M1Pack(name: "TEST"))
-}
-
+/// 共有メニュー画面
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
 
@@ -422,3 +419,10 @@ struct ActivityView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+
+
+#Preview {
+    PackListView()
+    //    EditPackView(pack: M1Pack(name: "TEST"))
+}
+

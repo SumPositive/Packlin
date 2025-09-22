@@ -134,6 +134,7 @@ struct SettingView: View {
             }
         }
 
+        /// URLよりJSONファイルをPackExportDTO形式で読み取る
         private func importPack(from url: URL) throws {
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
             defer {
@@ -144,12 +145,21 @@ struct SettingView: View {
 
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
-            let dto = try decoder.decode(PackExportDTO.self, from: data)
+            let dto = try decoder.decode(PackJsonDTO.self, from: data)
+
+            // チェック
+            if dto.copyright != PACK_JSON_DTO_COPYRIGHT {
+                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Copyright mismatch."])
+            }
+            if dto.version != PACK_JSON_DTO_VERSION {
+                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Version mismatch."])
+            }
 
             try createPack(from: dto)
         }
 
-        private func createPack(from dto: PackExportDTO) throws {
+        /// DTOよりPackを追加する
+        private func createPack(from dto: PackJsonDTO) throws {
             let descriptor = FetchDescriptor<M1Pack>()
             let packs = (try? modelContext.fetch(descriptor)) ?? []
             let newOrder = M1Pack.nextPackOrder(packs)

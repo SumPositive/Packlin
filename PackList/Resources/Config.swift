@@ -15,6 +15,10 @@ import SwiftUI
 let DEBUG_SHOW_ORDER_ID = false
 
 
+//-------------------------------------- JSON関係
+let PACK_JSON_DTO_COPYRIGHT = "2025 sumpo／azukid.com"
+let PACK_JSON_DTO_VERSION   = "3.0"
+
 //-------------------------------------- Layout関係
 // CalcRollView 幅
 let APP_WIDTH_MIN : CGFloat = 320      // 最小（SEの幅、全機能が見切れず使用できる状態）

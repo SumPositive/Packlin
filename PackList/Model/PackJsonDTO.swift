@@ -1,6 +1,6 @@
 import Foundation
 
-struct PackExportDTO: Codable {
+struct PackJsonDTO: Codable {
     struct Group: Codable {
         struct Item: Codable {
             let id: M3Item.ID
@@ -31,10 +31,10 @@ struct PackExportDTO: Codable {
 }
 
 extension M1Pack {
-    func exportRepresentation() -> PackExportDTO {
-        PackExportDTO(
-            copyright: "2025 sumpo/azukid",
-            version: "3.0",
+    func exportRepresentation() -> PackJsonDTO {
+        PackJsonDTO(
+            copyright: PACK_JSON_DTO_COPYRIGHT, // Load時に差異チェック
+            version: PACK_JSON_DTO_VERSION, // Load時に差異チェックしてマイグレション
             id: id,
             order: order,
             name: name,
@@ -48,8 +48,8 @@ extension M1Pack {
 }
 
 extension M2Group {
-    func exportRepresentation() -> PackExportDTO.Group {
-        PackExportDTO.Group(
+    func exportRepresentation() -> PackJsonDTO.Group {
+        PackJsonDTO.Group(
             id: id,
             order: order,
             name: name,
@@ -62,8 +62,8 @@ extension M2Group {
 }
 
 extension M3Item {
-    func exportRepresentation() -> PackExportDTO.Group.Item {
-        PackExportDTO.Group.Item(
+    func exportRepresentation() -> PackJsonDTO.Group.Item {
+        PackJsonDTO.Group.Item(
             id: id,
             order: order,
             name: name,
