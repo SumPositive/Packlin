@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 
 struct PackListView: View {
@@ -181,10 +182,12 @@ struct PackListView: View {
 struct EditPackView: View {
     @Bindable var pack: M1Pack
     let onClose: () -> Void
-    
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
+    @State private var shareURL: URL?
+    @State private var isPresentingShare = false
     
     var body: some View {
         VStack {
@@ -202,7 +205,7 @@ struct EditPackView: View {
                 .padding(.horizontal, 8)
 
                 Button {
-                    //TODO: pack配下をjsonファイルにして共有メニューを呼び出す
+                    exportPack()
                 } label: {
                     VStack {
                         Image(systemName: "arrow.up.message")
@@ -262,6 +265,11 @@ struct EditPackView: View {
         }
         .padding(.horizontal, 16)
         .frame(width: 300, height: 190)
+        .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
+            if let shareURL {
+                ActivityView(activityItems: [shareURL])
+            }
+        }
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
@@ -354,10 +362,62 @@ struct EditPackView: View {
         }
         modelContext.delete(group)
     }
+
+    private func exportPack() {
+        do {
+            cleanupShareResource()
+
+            let dto = pack.exportRepresentation()
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted]
+            let data = try encoder.encode(dto)
+
+            let fileName = sanitizedFileName(from: pack.name)
+            let fileURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(fileName)
+                .appendingPathExtension("json")
+
+            try data.write(to: fileURL, options: [.atomic])
+
+            shareURL = fileURL
+            isPresentingShare = true
+        } catch {
+            debugPrint("Failed to export pack: \(error)")
+        }
+    }
+
+    private func cleanupShareResource() {
+        defer {
+            shareURL = nil
+            isPresentingShare = false
+        }
+
+        guard let shareURL else { return }
+        try? FileManager.default.removeItem(at: shareURL)
+    }
+
+    private func sanitizedFileName(from name: String) -> String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = trimmed.isEmpty ? "Pack" : trimmed
+        let invalidCharacters = CharacterSet(charactersIn: "\\/:?%*|\"<>\n")
+        let components = base.components(separatedBy: invalidCharacters)
+        let sanitized = components.joined(separator: "-").replacingOccurrences(of: " ", with: "_")
+        return sanitized.isEmpty ? "Pack" : sanitized
+    }
 }
 
 
 #Preview {
     PackListView()
 //    EditPackView(pack: M1Pack(name: "TEST"))
+}
+
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
