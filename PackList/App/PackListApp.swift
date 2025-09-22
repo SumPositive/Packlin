@@ -59,12 +59,12 @@ struct PackListApp: App {
             }
         }
         .modelContainer(sharedModelContainer)
-        .onChange(of: scenePhase) { newPhase in
+        .onChange(of: scenePhase) { newPhase, oldPhase in
             guard newPhase == .inactive || newPhase == .background else { return }
-
+            // バックかフォアになった時
             let context = sharedModelContainer.mainContext
             guard context.hasChanges else { return }
-
+            // 変更があればDB保存してUndoクリア
             try? context.save()
             context.undoManager?.removeAllActions()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)

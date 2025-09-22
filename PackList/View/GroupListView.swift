@@ -69,7 +69,7 @@ struct GroupListView: View {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
                         // PackViewに戻るときに保存
-                        if modelContext.hasChanges {
+                        if modelContext.hasChanges { // 変更があった時
                             do {
                                 try modelContext.save() // Undoスタックがクリアされる
                             } catch {
@@ -116,7 +116,7 @@ struct GroupListView: View {
             }
             .onAppear {
                 // PackViewから来たときとItemViewから戻ったときに保存
-                if modelContext.hasChanges {
+                if modelContext.hasChanges { // 変更があった時
                     do {
                         try modelContext.save() // Undoスタックがクリアされる
                     } catch {
