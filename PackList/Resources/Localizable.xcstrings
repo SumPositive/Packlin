@@ -51,13 +51,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load pack.json"
+            "value" : "Load Pack_＊.json"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "共有pack.jsonを読み込む"
+            "state" : "needs_review",
+            "value" : "共有Pack_＊.jsonを読み込む"
           }
         }
       }
@@ -415,6 +415,9 @@
         }
       }
     },
+    "OK" : {
+
+    },
     "pack (%lld) [%@]" : {
       "localizations" : {
         "en" : {
@@ -617,38 +620,6 @@
         }
       }
     },
-    "setting.info" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App introduction and instructions"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "アプリの紹介・取扱説明"
-          }
-        }
-      }
-    },
-    "setting.infoUnavailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information unavailable"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "情報を表示できません"
-          }
-        }
-      }
-    },
     "setting.import.error.message" : {
       "localizations" : {
         "en" : {
@@ -681,24 +652,34 @@
         }
       }
     },
-    "setting.load.icloud" : {
-      "extractionState" : "stale",
+    "setting.info" : {
       "localizations" : {
-        "ja" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloudから復元する"
+            "value" : "App introduction and instructions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アプリの紹介・取扱説明"
           }
         }
       }
     },
-    "setting.save.icloud" : {
-      "extractionState" : "stale",
+    "setting.infoUnavailable" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Information unavailable"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloudに保存する"
+            "value" : "情報を表示できません"
           }
         }
       }
