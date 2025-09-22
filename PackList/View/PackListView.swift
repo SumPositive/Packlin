@@ -372,7 +372,8 @@ struct EditPackView: View {
             encoder.outputFormatting = [.prettyPrinted]
             let data = try encoder.encode(dto)
 
-            let fileName = sanitizedFileName(from: pack.name)
+            let fileName = sanitizedFileName(from: pack.name.isEmpty
+                                             ? pack.id : pack.name )
             let fileURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(fileName)
                 .appendingPathExtension("json")
@@ -397,12 +398,12 @@ struct EditPackView: View {
     }
 
     private func sanitizedFileName(from name: String) -> String {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let base = trimmed.isEmpty ? "Pack" : trimmed
+        let base = "Pack_" + name.trimmingCharacters(in: .whitespacesAndNewlines)
         let invalidCharacters = CharacterSet(charactersIn: "\\/:?%*|\"<>\n")
         let components = base.components(separatedBy: invalidCharacters)
-        let sanitized = components.joined(separator: "-").replacingOccurrences(of: " ", with: "_")
-        return sanitized.isEmpty ? "Pack" : sanitized
+        let sanitized = components.joined(separator: "-")
+            .replacingOccurrences(of: " ", with: "_")
+        return sanitized.isEmpty ? "Pack_unnamed" : sanitized
     }
 }
 
