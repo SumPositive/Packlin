@@ -445,7 +445,7 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
     private let fileManager: FileManager
     private let temporaryDirectory: URL
     private let fileAccessQueue = DispatchQueue(label: "jp.sumpositive.packlist.share-item-source")
-    private var temporaryFileURLs = Set<URL>()
+    private var temporaryResourceURLs = Set<URL>()
     private lazy var itemProvider: NSItemProvider = {
         let provider = NSItemProvider()
         provider.suggestedName = suggestedFileName
@@ -457,15 +457,16 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
 
         provider.registerFileRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { [self] completion in
             let result: (URL?, Bool, Error?) = fileAccessQueue.sync {
-                let url = temporaryDirectory
-                    .appendingPathComponent(UUID().uuidString)
-                    .appendingPathExtension("json")
+                let directoryURL = temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
 
                 do {
-                    try self.data.write(to: url, options: [.atomic])
-                    temporaryFileURLs.insert(url)
-                    return (url, false, nil)
+                    try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+                    let fileURL = directoryURL.appendingPathComponent(suggestedFileName)
+                    try self.data.write(to: fileURL, options: [.atomic])
+                    temporaryResourceURLs.insert(directoryURL)
+                    return (fileURL, false, nil)
                 } catch {
+                    try? fileManager.removeItem(at: directoryURL)
                     return (nil, false, error)
                 }
             }
@@ -492,7 +493,10 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
     }
 
     func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        data
+        if #available(iOS 14.0, *) {
+            return itemProvider
+        }
+        return data
     }
 
     func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any {
@@ -515,10 +519,10 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
 
     func cleanup() {
         fileAccessQueue.sync {
-            for url in temporaryFileURLs {
+            for url in temporaryResourceURLs {
                 try? fileManager.removeItem(at: url)
             }
-            temporaryFileURLs.removeAll()
+            temporaryResourceURLs.removeAll()
         }
     }
 
