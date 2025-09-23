@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 
 
 struct PackListView: View {
@@ -190,7 +191,7 @@ struct EditPackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
-    @State private var shareURL: URL?
+    @State private var shareResource: SharePackResource?
     @State private var isPresentingShare = false
     
     var body: some View {
@@ -282,8 +283,8 @@ struct EditPackView: View {
         .padding(.horizontal, 8)
         .frame(width: 320, height: 284)
         .sheet(isPresented: $isPresentingShare) {
-            if let shareURL {
-                ActivityView(activityItems: [shareURL], onComplete: cleanupShareResource)
+            if let shareResource {
+                ActivityView(activityItems: [shareResource.itemSource], onComplete: cleanupShareResource)
             }
         }
         .onAppear {
@@ -397,7 +398,14 @@ struct EditPackView: View {
 
             try data.write(to: fileURL, options: [.atomic])
 
-            shareURL = fileURL
+            shareResource = SharePackResource(
+                url: fileURL,
+                itemSource: PackShareItemSource(
+                    fileURL: fileURL,
+                    suggestedFileName: fileName + ".json",
+                    subject: pack.name.isEmpty ? nil : pack.name
+                )
+            )
             isPresentingShare = true
         } catch {
             debugPrint("Failed to export pack: \(error)")
@@ -408,11 +416,11 @@ struct EditPackView: View {
     ///     そのため、共有完了後に一時ファイルのみを削除しても「ファイルに保存」で保存した
     ///     実体は失われない。
     private func cleanupShareResource() {
-        let currentURL = shareURL
-        shareURL = nil
+        let currentResource = shareResource
+        shareResource = nil
         isPresentingShare = false
 
-        guard let currentURL else { return }
+        guard let currentURL = currentResource?.url else { return }
         let tempDirectory = FileManager.default.temporaryDirectory
             .standardizedFileURL
         let standardizedURL = currentURL.standardizedFileURL
@@ -432,6 +440,43 @@ struct EditPackView: View {
         let sanitized = components.joined(separator: "-")
             .replacingOccurrences(of: " ", with: "_")
         return sanitized.isEmpty ? "Pack_unnamed" : sanitized
+    }
+}
+
+private struct SharePackResource {
+    let url: URL
+    let itemSource: PackShareItemSource
+}
+
+private final class PackShareItemSource: NSObject, UIActivityItemSource {
+    private let fileURL: URL
+    private let suggestedFileName: String
+    private let subject: String?
+
+    init(fileURL: URL, suggestedFileName: String, subject: String?) {
+        self.fileURL = fileURL
+        self.suggestedFileName = suggestedFileName
+        self.subject = subject
+    }
+
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        fileURL
+    }
+
+    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any {
+        if #available(iOS 14.0, *), let provider = NSItemProvider(contentsOf: fileURL) {
+            provider.suggestedName = suggestedFileName
+            return provider
+        }
+        return fileURL
+    }
+
+    func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
+        UTType.json.identifier
+    }
+
+    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String? {
+        subject
     }
 }
 
