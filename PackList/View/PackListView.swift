@@ -429,17 +429,17 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
         let provider = NSItemProvider()
         provider.suggestedName = suggestedFileName
 
-        provider.registerDataRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { completion in
-            completion(data, nil)
+        provider.registerDataRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { [self] completion in
+            completion(self.data, nil)
             return nil
         }
 
-        provider.registerFileRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { completion in
+        provider.registerFileRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { [self] completion in
             let temporaryURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(UUID().uuidString)
                 .appendingPathExtension("json")
             do {
-                try data.write(to: temporaryURL, options: [.atomic])
+                try self.data.write(to: temporaryURL, options: [.atomic])
                 completion(temporaryURL, true, nil)
             } catch {
                 completion(nil, false, error)
