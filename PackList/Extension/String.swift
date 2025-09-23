@@ -2,7 +2,7 @@
 //  String.swift
 //  PackList
 //
-//  Created by Sum Positive on 2025/09/16.
+//  Created by sumpo on 2025/09/16.
 //
 
 import Foundation

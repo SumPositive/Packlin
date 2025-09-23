@@ -51,7 +51,7 @@ struct GroupRowView: View {
                     HStack {
                         Spacer() // 右寄せにするため
                         if 0 < group.stockWeight {
-                            Text(verbatim: "\(group.stockWeight)\(weightUnit)／\(group.needWeight)\(weightUnit)")
+                            Text(verbatim: "\(group.stockWeight.decimalGrouped)\(weightUnit)／\(group.needWeight.decimalGrouped)\(weightUnit)")
                                 .font(FONT_WEIGHT)
                                 .foregroundStyle(COLOR_WEIGHT)
                                 .padding(.horizontal, 8)
@@ -102,7 +102,8 @@ struct GroupRowView: View {
                 COLOR_LIST_SEPARATOR
                     .frame(height: LIST_SEPARATOR_THICKNESS)
                     .ignoresSafeArea(edges: .horizontal)
-                    .padding(.leading, 12)
+                    .padding(.leading, 20)
+                    .padding(.trailing, 8)
             }
         }
     }

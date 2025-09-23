@@ -51,7 +51,7 @@ struct PackRowView: View {
                         HStack {
                             Spacer() // 右寄せにするため
                             if 0 < pack.stockWeight {
-                                Text(verbatim: "\(pack.stockWeight)\(weightUnit)／\(pack.needWeight)\(weightUnit)")
+                                Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
                                     .font(FONT_WEIGHT)
                                     .foregroundStyle(COLOR_WEIGHT)
                                     .padding(.horizontal, 8)
@@ -95,7 +95,8 @@ struct PackRowView: View {
                 COLOR_LIST_SEPARATOR
                     .frame(height: LIST_SEPARATOR_THICKNESS)
                     .ignoresSafeArea(edges: .horizontal)
-                    .padding(.leading, 12)
+                    .padding(.leading, 40)
+                    .padding(.trailing, 20)
             }
         }
     }
