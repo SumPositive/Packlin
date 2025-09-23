@@ -232,6 +232,22 @@
         }
       }
     },
+    "edit.info.swipeToDismiss" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "External tap or swipe to close"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "外部タップまたはスワイプ操作で閉じられます"
+          }
+        }
+      }
+    },
     "edit.memo" : {
       "localizations" : {
         "en" : {
@@ -274,23 +290,6 @@
         }
       }
     },
-    "Group.edit.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "グループ"
-          }
-        }
-      }
-    },
     "info.url" : {
       "localizations" : {
         "en" : {
@@ -313,23 +312,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "item (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "Item.edit.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Item"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "アイテム"
           }
         }
       }
@@ -426,23 +408,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "pack (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "Pack.edit.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pack"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "モチメモ"
           }
         }
       }

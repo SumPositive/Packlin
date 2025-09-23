@@ -275,9 +275,12 @@ struct EditPackView: View {
                     }
                 }
                 .frame(height: 80)
+
+            Text("edit.info.swipeToDismiss")
+                .font(.caption2)
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 280)
+        .frame(width: 320, height: 284)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
