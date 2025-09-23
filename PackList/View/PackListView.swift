@@ -56,6 +56,7 @@ struct PackListView: View {
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
+            .listRowSeparatorTint(COLOR_LIST_SEPARATOR)
             .id(listID)   // listIDが変わるとListが作り直される
             .padding(.top, -8) // headerとPackList間の余白を無くす
             .padding(.horizontal, 0)

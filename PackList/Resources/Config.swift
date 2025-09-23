@@ -63,6 +63,13 @@ let COLOR_ROW_PACK: Color = Color(.systemBackground)
 let COLOR_ROW_GROUP: Color = Color(.systemGray6)
 let COLOR_ROW_ITEM: Color = Color(.systemBackground)
 let COLOR_POPUP_BORDER: Color = Color(.systemGray3)
+let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
+    if traitCollection.userInterfaceStyle == .dark {
+        return UIColor(white: 1.0, alpha: 0.28)
+    } else {
+        return UIColor(white: 0.0, alpha: 0.12)
+    }
+})
 
 
 //-------------------------------------- Font関係
