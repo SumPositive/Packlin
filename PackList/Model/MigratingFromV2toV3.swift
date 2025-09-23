@@ -1,5 +1,5 @@
 //
-//  LegacyCoreDataMigrator.swift
+//  MigratingFromV2toV3.swift
 //  PackList
 //　　　 Migrate： V2-CoreData --> V3-SwiftData
 //
@@ -10,9 +10,9 @@ import Foundation
 import SwiftData
 import CoreData
 
-struct LegacyCoreDataMigrator {
+struct MigratingFromV2toV3 {
     // Migrate 完了フラグ
-    private let migrationFlagKey = "LegacyCoreDataMigrator.migrated"
+    private let migrationFlagKey = "MigratingFromV2toV3.migrated"
 
     @MainActor
     func migrateIfNeeded(modelContainer: ModelContainer) {
@@ -28,7 +28,7 @@ struct LegacyCoreDataMigrator {
             userDefaults.set(true, forKey: migrationFlagKey)
             return
         }
-
+        // V2-CoreDataで使用されているSQLiteへのパスを求める
         let candidates = candidateStoreURLs()
         guard !candidates.isEmpty else { return }
 
@@ -50,7 +50,7 @@ struct LegacyCoreDataMigrator {
             }
         }
     }
-
+    /// V2-CoreDataで使用されているSQLiteへのパスを求める
     private func candidateStoreURLs() -> [URL] {
         let fileManager = FileManager.default
         let searchDirectories: [FileManager.SearchPathDirectory] = [
@@ -60,8 +60,6 @@ struct LegacyCoreDataMigrator {
         let preferredFileNames = [
             "AzPackList.sqlite", // これがV2本番使用名
             "PackList.sqlite",
-            "Motimemo.sqlite",
-            "PackData.sqlite",
             "PackListData.sqlite"
         ]
 
@@ -160,6 +158,7 @@ struct LegacyCoreDataMigrator {
 
 // MARK: - Legacy CoreData Stack
 
+/// V2-CoreData Stack に PackList5（V2最終版）の構造を適用させる
 private struct LegacyCoreDataStack {
     let context: NSManagedObjectContext
 
@@ -195,6 +194,7 @@ private struct LegacyCoreDataStack {
         return result
     }
 
+    /// PackList5（V2最終版）の構造
     private static func makeModel() -> NSManagedObjectModel {
         let model = NSManagedObjectModel()
 
