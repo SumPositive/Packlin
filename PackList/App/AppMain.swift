@@ -1,5 +1,5 @@
 //
-//  PackListApp.swift
+//  AppMain.swift
 //  PackList
 //
 //  Created by sumpo on 2025/09/05.
@@ -12,7 +12,7 @@ import GoogleMobileAds
 #endif
 
 @main
-struct PackListApp: App {
+struct AppMain: App {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var navigationCoordinator = NavigationCoordinator()
     var sharedModelContainer: ModelContainer = {

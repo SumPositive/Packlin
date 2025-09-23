@@ -37,7 +37,7 @@
 		C367576C2E802B9B0098BB22 /* Exceptions for "PackList" folder in "PackList" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Resources/Info.plist,
 			);
 			target = C3D2BB6B2E6A7967002B900A /* PackList */;
 		};
@@ -433,7 +433,7 @@
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PackList/Info.plist;
+				INFOPLIST_FILE = PackList/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3916054326181876~1043090235";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -469,7 +469,7 @@
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PackList/Info.plist;
+				INFOPLIST_FILE = PackList/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "モチメモ";
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3916054326181876~1043090235";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
