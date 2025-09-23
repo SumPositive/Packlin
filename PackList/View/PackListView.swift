@@ -475,8 +475,11 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
         UTType.json.identifier
     }
 
-    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String? {
-        subject
+    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        if let subject {
+            return subject
+        }
+        return suggestedFileName
     }
 }
 
