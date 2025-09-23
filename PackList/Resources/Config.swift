@@ -65,11 +65,12 @@ let COLOR_ROW_ITEM: Color = Color(.systemBackground)
 let COLOR_POPUP_BORDER: Color = Color(.systemGray3)
 let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
     if traitCollection.userInterfaceStyle == .dark {
-        return UIColor(white: 1.0, alpha: 0.28)
+        return UIColor(white: 1.0, alpha: 0.45)
     } else {
-        return UIColor(white: 0.0, alpha: 0.12)
+        return UIColor(white: 0.0, alpha: 0.18)
     }
 })
+let LIST_SEPARATOR_THICKNESS: CGFloat = 1.0
 
 
 //-------------------------------------- Font関係

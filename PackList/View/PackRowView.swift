@@ -76,17 +76,22 @@ struct PackRowView: View {
                             }
                     }
                 )
-                .simultaneousGesture(
-                    SpatialTapGesture()
-                        .onEnded { value in
-                            guard let rf = rowFrame else { return }
-                            let location = value.location
-                            let po = CGPoint(x: rf.width / 2.0,
-                                             y: rf.minY + location.y)
-                            onEdit(pack, po)
-                        }
-                )
+            .simultaneousGesture(
+                SpatialTapGesture()
+                    .onEnded { value in
+                        guard let rf = rowFrame else { return }
+                        let location = value.location
+                        let po = CGPoint(x: rf.width / 2.0,
+                                         y: rf.minY + location.y)
+                        onEdit(pack, po)
+                    }
+            )
+            .overlay(alignment: .bottom) {
+                COLOR_LIST_SEPARATOR
+                    .frame(height: LIST_SEPARATOR_THICKNESS)
+                    .ignoresSafeArea(edges: .horizontal)
             }
+        }
     }
 
 }

@@ -61,7 +61,7 @@ struct GroupListView: View {
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
-            .listRowSeparatorTint(COLOR_LIST_SEPARATOR)
+            .listRowSeparator(.hidden)
             .id(listID)   // listIDが変わるとListが作り直される
             .padding(.horizontal, 0)
             .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))

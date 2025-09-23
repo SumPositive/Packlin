@@ -107,6 +107,11 @@ struct ItemRowView: View {
                     onEdit(item, po)
                 }
         )
+        .overlay(alignment: .bottom) {
+            COLOR_LIST_SEPARATOR
+                .frame(height: LIST_SEPARATOR_THICKNESS)
+                .ignoresSafeArea(edges: .horizontal)
+        }
     }
 
     private func deleteItem() {
