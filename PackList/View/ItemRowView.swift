@@ -15,6 +15,7 @@ struct ItemRowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var rowFrame: CGRect?
+    @State private var checkButtonFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
@@ -41,6 +42,17 @@ struct ItemRowView: View {
             }
             .buttonStyle(BorderlessButtonStyle())
             .padding(.trailing, 8)
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear {
+                            checkButtonFrame = geo.frame(in: .global)
+                        }
+                        .onChange(of: geo.frame(in: .global)) { newFrame, _ in
+                            checkButtonFrame = newFrame
+                        }
+                }
+            )
 
             VStack(alignment: .leading, spacing: 1){
                 item.name.placeholderText("placeholder.item.new")
@@ -102,8 +114,14 @@ struct ItemRowView: View {
                 .onEnded { value in
                     guard let rf = rowFrame else { return }
                     let location = value.location
+                    let globalLocation = CGPoint(x: rf.minX + location.x,
+                                                 y: rf.minY + location.y)
+                    if let checkButtonFrame,
+                       checkButtonFrame.contains(globalLocation) {
+                        return
+                    }
                     let po = CGPoint(x: rf.width / 2.0,
-                                     y: rf.minY + location.y)
+                                     y: globalLocation.y)
                     onEdit(item, po)
                 }
         )

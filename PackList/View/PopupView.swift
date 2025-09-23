@@ -56,6 +56,16 @@ struct PopupView<Content: View>: View {
                                 .stroke(Color.gray.opacity(0.3))
                         )
                 }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 20)
+                        .onEnded { value in
+                            let translation = value.translation
+                            if abs(translation.width) >= 20 || abs(translation.height) >= 20 {
+                                onDismiss()
+                            }
+                        }
+                )
                 .position(popupPosition(screen: screen))
             }
         }
