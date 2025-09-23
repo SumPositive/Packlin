@@ -1,3 +1,10 @@
+//
+//  PackJsonDTO.swift
+//  PackList
+//
+//  Created by sumpo on 2025/09/23.
+//
+
 import Foundation
 
 struct PackJsonDTO: Codable {

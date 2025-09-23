@@ -5,6 +5,7 @@
 //  Created by sumpo on 2025/09/05.
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 #if canImport(GoogleMobileAds)
@@ -36,6 +37,9 @@ struct AppMain: App {
     init() {
         // Migrate： V2-CoreData --> V3-SwiftData
         MigratingFromV2toV3().migrateIfNeeded(modelContainer: sharedModelContainer)
+
+        // M1Packが空ならばサンプルを読み込む
+        loadSamplePacksIfNeeded()
 
         // AdMob
 #if canImport(GoogleMobileAds)
@@ -74,6 +78,53 @@ struct AppMain: App {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
 
+    }
+
+    /// M1Packが空ならばサンプルを読み込む
+    private func loadSamplePacksIfNeeded() {
+        let context = sharedModelContainer.mainContext
+        let descriptor = FetchDescriptor<M1Pack>()
+        guard let existingPacks = try? context.fetch(descriptor), existingPacks.isEmpty else {
+            // M1Packが空でない
+            return
+        }
+        // Bundle サンプル.json ファイル
+        let sampleFileNames = [
+            "Pack_sample1",
+            "Pack_sample2"
+        ]
+
+        var nextOrder = existingPacks.map { $0.order }.max() ?? -1
+        for fileName in sampleFileNames {
+            do {
+                guard let url = Bundle.main.url(forResource: fileName, withExtension: "json") else { continue }
+                let data = try Data(contentsOf: url)
+                let decoder = JSONDecoder()
+                let dto = try decoder.decode(PackJsonDTO.self, from: data)
+
+                // チェック & Migration
+                guard dto.copyright == PACK_JSON_DTO_COPYRIGHT,
+                      dto.version == PACK_JSON_DTO_VERSION else { continue }
+
+                // Pack行
+                nextOrder += 1
+                // PackJsonDTO をDBへインポートする
+                PackImporter.insertPack(from: dto, into: context, order: nextOrder)
+            } catch {
+                debugPrint("Failed to load sample pack \(fileName): \(error)")
+            }
+        }
+
+        if context.hasChanges {
+            do {
+                // DB保存
+                try context.save()
+                // Undoクリア
+                context.undoManager?.removeAllActions()
+            } catch {
+                debugPrint("Failed to save sample packs: \(error)")
+            }
+        }
     }
 }
 
