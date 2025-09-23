@@ -282,9 +282,9 @@ struct EditPackView: View {
         }
         .padding(.horizontal, 8)
         .frame(width: 320, height: 284)
-        .sheet(isPresented: $isPresentingShare) {
+        .sheet(isPresented: $isPresentingShare, onDismiss: { shareResource = nil }) {
             if let shareResource {
-                ActivityView(activityItems: [shareResource.itemSource], onComplete: cleanupShareResource)
+                ActivityView(activityItems: [shareResource.itemSource])
             }
         }
         .onAppear {
@@ -383,7 +383,7 @@ struct EditPackView: View {
     /// PackをJSONファイルにして共有(Export)する
     private func exportPack() {
         do {
-            cleanupShareResource()
+            shareResource = nil
 
             let dto = pack.exportRepresentation()
             let encoder = JSONEncoder()
@@ -392,17 +392,11 @@ struct EditPackView: View {
 
             let fileName = sanitizedFileName(from: pack.name.isEmpty
                                              ? pack.id : pack.name )
-            let fileURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(fileName)
-                .appendingPathExtension("json")
-
-            try data.write(to: fileURL, options: [.atomic])
-
+            let suggestedFileName = fileName + ".json"
             shareResource = SharePackResource(
-                url: fileURL,
                 itemSource: PackShareItemSource(
-                    fileURL: fileURL,
-                    suggestedFileName: fileName + ".json",
+                    data: data,
+                    suggestedFileName: suggestedFileName,
                     subject: pack.name.isEmpty ? nil : pack.name
                 )
             )
@@ -410,26 +404,6 @@ struct EditPackView: View {
         } catch {
             debugPrint("Failed to export pack: \(error)")
         }
-    }
-    /// 一時共有ファイルを削除する
-    ///   - 共有用に書き出したJSONは一時ディレクトリに配置され、共有先へはコピーが渡る。
-    ///     そのため、共有完了後に一時ファイルのみを削除しても「ファイルに保存」で保存した
-    ///     実体は失われない。
-    private func cleanupShareResource() {
-        let currentResource = shareResource
-        shareResource = nil
-        isPresentingShare = false
-
-        guard let currentURL = currentResource?.url else { return }
-        let tempDirectory = FileManager.default.temporaryDirectory
-            .standardizedFileURL
-        let standardizedURL = currentURL.standardizedFileURL
-        let tempPath = tempDirectory.path
-        let filePath = standardizedURL.path
-
-        guard filePath == tempPath || filePath.hasPrefix(tempPath + "/") else { return }
-
-        try? FileManager.default.removeItem(at: standardizedURL)
     }
     /// ファイル名を使用可能文字に制限する
     ///    shortUUIDをURLセーフにしたが、さらに念の為
@@ -444,31 +418,53 @@ struct EditPackView: View {
 }
 
 private struct SharePackResource {
-    let url: URL
     let itemSource: PackShareItemSource
 }
 
 private final class PackShareItemSource: NSObject, UIActivityItemSource {
-    private let fileURL: URL
+    private let data: Data
     private let suggestedFileName: String
     private let subject: String?
+    private lazy var itemProvider: NSItemProvider = {
+        let provider = NSItemProvider()
+        provider.suggestedName = suggestedFileName
 
-    init(fileURL: URL, suggestedFileName: String, subject: String?) {
-        self.fileURL = fileURL
+        provider.registerDataRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { completion in
+            completion(data, nil)
+            return nil
+        }
+
+        provider.registerFileRepresentation(forTypeIdentifier: UTType.json.identifier, visibility: .all) { completion in
+            let temporaryURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("json")
+            do {
+                try data.write(to: temporaryURL, options: [.atomic])
+                completion(temporaryURL, true, nil)
+            } catch {
+                completion(nil, false, error)
+            }
+            return nil
+        }
+
+        return provider
+    }()
+
+    init(data: Data, suggestedFileName: String, subject: String?) {
+        self.data = data
         self.suggestedFileName = suggestedFileName
         self.subject = subject
     }
 
     func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        fileURL
+        data
     }
 
     func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any {
-        if #available(iOS 14.0, *), let provider = NSItemProvider(contentsOf: fileURL) {
-            provider.suggestedName = suggestedFileName
-            return provider
+        if #available(iOS 14.0, *) {
+            return itemProvider
         }
-        return fileURL
+        return data
     }
 
     func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
@@ -486,15 +482,9 @@ private final class PackShareItemSource: NSObject, UIActivityItemSource {
 /// 共有メニュー画面
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
-    var onComplete: (() -> Void)? = nil
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-        controller.completionWithItemsHandler = { _, _, _, _ in
-            DispatchQueue.main.async {
-                onComplete?()
-            }
-        }
         return controller
     }
 
