@@ -173,41 +173,7 @@ struct SettingView: View {
                 }
             }
 
-            let pack = M1Pack(
-                name: dto.name,
-                memo: dto.memo,
-                createdAt: dto.createdAt,
-                order: newOrder
-            )
-            modelContext.insert(pack)
-
-            let groups = dto.groups.sorted { $0.order < $1.order }
-            for (groupIndex, groupDTO) in groups.enumerated() {
-                let group = M2Group(
-                    name: groupDTO.name,
-                    memo: groupDTO.memo,
-                    order: groupIndex,
-                    parent: pack
-                )
-                modelContext.insert(group)
-                pack.child.append(group)
-
-                let items = groupDTO.items.sorted { $0.order < $1.order }
-                for (itemIndex, itemDTO) in items.enumerated() {
-                    let item = M3Item(
-                        name: itemDTO.name,
-                        memo: itemDTO.memo,
-                        check: itemDTO.check,
-                        stock: itemDTO.stock,
-                        need: itemDTO.need,
-                        weight: itemDTO.weight,
-                        order: itemIndex,
-                        parent: group
-                    )
-                    modelContext.insert(item)
-                    group.child.append(item)
-                }
-            }
+            PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
         }
     }
     
