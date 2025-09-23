@@ -54,15 +54,20 @@ struct PackRowView: View {
                                 Text(verbatim: "\(pack.stockWeight)\(weightUnit)／\(pack.needWeight)\(weightUnit)")
                                     .font(FONT_WEIGHT)
                                     .foregroundStyle(COLOR_WEIGHT)
-                                    .padding(.trailing, 8)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(COLOR_ROW_GROUP.opacity(0.85))
+                                    )
                             }
                         }
+                        .padding(.trailing, 8)
                     }
-                    Spacer()
                 }
                 .frame(minHeight: rowHeight)
                 .padding(.vertical, 8)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 16)
                 .contentShape(Rectangle())
                 .background(
                     // Row本体に置くとRowサイズが固定化されてしまうため

@@ -74,20 +74,37 @@ struct ItemRowView: View {
                 HStack {
                     Spacer() // 右寄せにするため
                     if 0 < item.weight {
-                        Text(verbatim: "［\(item.weight)\(weightUnit)］")
-                            .font(FONT_WEIGHT)
+                        Text(verbatim: "\(item.weight)\(weightUnit)")
+                            .font(FONT_STOCK)
                             .foregroundStyle(COLOR_WEIGHT)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(COLOR_ROW_GROUP.opacity(0.85))
+                            )
 
-                        Text(verbatim: "\(item.stock * item.weight)\(weightUnit)／\(item.need * item.weight)\(weightUnit)")
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.trailing, 4)
+                            //    Text(verbatim: "\(item.stock * item.weight)\(weightUnit)／\(item.need * item.weight)\(weightUnit)")
+                            //        .font(FONT_WEIGHT)
+                            //        .foregroundStyle(COLOR_WEIGHT)
+                            //        .padding(.horizontal, 8)
+                            //        .padding(.vertical, 4)
+                            //        .background(
+                            //            Capsule()
+                            //                .fill(COLOR_ROW_GROUP.opacity(0.85))
+                            //        )
                     }
                     Text("\(item.stock)／\(item.need)")
                         .font(FONT_STOCK)
                         .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.trailing, 40)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(COLOR_ROW_GROUP.opacity(0.85))
+                        )
                 }
+                .padding(.trailing, 16)
             }
             .padding(.vertical, 4)
         }

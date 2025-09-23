@@ -281,9 +281,6 @@ struct EditItemView: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
 
-    private var gramUnit: String { String(localized: "unit.gram") }
-    private var pieceUnit: String { String(localized: "unit.piece") }
-
     private var weightBinding: Binding<Int> {
         Binding(get: { item.weight },
                 set: {
@@ -406,7 +403,7 @@ struct EditItemView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .background(Color(.systemBackground))
-                        Text(verbatim: gramUnit)
+                        Text("unit.gram")
                             .font(.caption)
                         Spacer()
                         Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
@@ -426,7 +423,7 @@ struct EditItemView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .background(Color(.systemBackground))
-                        Text(verbatim: pieceUnit)
+                        Text("unit.piece")
                             .font(.caption)
                         Spacer()
                         Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
@@ -446,7 +443,7 @@ struct EditItemView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .background(Color(.systemBackground))
-                        Text(verbatim: pieceUnit)
+                        Text("unit.piece")
                             .font(.caption)
                         Spacer()
                         Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)

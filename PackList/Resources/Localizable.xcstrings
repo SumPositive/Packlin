@@ -678,8 +678,8 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "ｇ"
+            "state" : "needs_review",
+            "value" : "g"
           }
         }
       }

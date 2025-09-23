@@ -54,7 +54,12 @@ struct GroupRowView: View {
                             Text(verbatim: "\(group.stockWeight)\(weightUnit)／\(group.needWeight)\(weightUnit)")
                                 .font(FONT_WEIGHT)
                                 .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(COLOR_ROW_ITEM.opacity(0.85))
+                                )
                         }
                         
                         if isHeader {
@@ -63,14 +68,13 @@ struct GroupRowView: View {
                             }
                         }
                     }
+                    .padding(.trailing, 8)
                 }
-                Spacer()
             }
             .frame(minHeight: rowHeight)
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
             .padding(.vertical, 8)
-            .padding(.leading, 8)
-            .padding(.trailing, 16)
+            .padding(.horizontal, 16)
             .contentShape(Rectangle())
             .background(
                 // Row本体に置くとRowサイズが固定化されてしまうため
