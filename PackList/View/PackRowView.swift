@@ -26,70 +26,89 @@ struct PackRowView: View {
     }
 
     var body: some View {
-            Group {
-                HStack(spacing: 0) {
-                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                        .padding(.trailing, 8)
-                    
-                    VStack(alignment: .leading, spacing: 1) {
-                        pack.name.placeholderText("placeholder.pack.new")
-                            .lineLimit(3)
-                            .font(FONT_NAME)
-                            .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-                        
-                        if !pack.memo.isEmpty {
-                            Text(pack.memo)
-                                .lineLimit(3)
-                                .font(FONT_MEMO)
-                                .foregroundStyle(COLOR_MEMO)
-                                .padding(.leading, 25)
-                        }
-                        if DEBUG_SHOW_ORDER_ID {
-                            Text("pack (\(pack.order)) [\(pack.id)]")
-                        }
-                        
-                        HStack {
-                            Spacer() // 右寄せにするため
-                            if 0 < pack.stockWeight {
-                                Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
-                                    .font(FONT_WEIGHT)
-                                    .foregroundStyle(COLOR_WEIGHT)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(
-                                        Capsule()
-                                            .fill(COLOR_ROW_GROUP.opacity(0.85))
-                                    )
-                            }
-                        }
-                        .padding(.trailing, 8)
-                    }
-                }
-                .frame(minHeight: rowHeight)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .contentShape(Rectangle())
-                .background(
-                    // Row本体に置くとRowサイズが固定化されてしまうため
-                    GeometryReader { geo in
-                        Color.clear
-                            .onAppear {
-                                rowFrame = geo.frame(in: .global)
-                            }
-                            .onChange(of: geo.frame(in: .global)) { newFrame, oldFrame in
-                                rowFrame = newFrame
-                            }
-                    }
-                )
-            .simultaneousGesture(
-                SpatialTapGesture()
-                    .onEnded { value in
-                        guard let rf = rowFrame else { return }
-                        let location = value.location
+        Group {
+            HStack(spacing: 0) {
+                Button { // 編集ボタン
+                    if let rf = rowFrame {
                         let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY + location.y)
+                                         y: rf.minY)
                         onEdit(pack, po)
                     }
+                } label: {
+                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                }
+                .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
+                .tint(.accentColor)
+                .padding(.vertical, 16)
+                .padding(.horizontal, 4)
+                
+                VStack(alignment: .leading, spacing: 1) {
+                    pack.name.placeholderText("placeholder.pack.new")
+                        .lineLimit(3)
+                        .font(FONT_NAME)
+                        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                    
+                    if !pack.memo.isEmpty {
+                        Text(pack.memo)
+                            .lineLimit(3)
+                            .font(FONT_MEMO)
+                            .foregroundStyle(COLOR_MEMO)
+                            .padding(.leading, 25)
+                    }
+                    if DEBUG_SHOW_ORDER_ID {
+                        Text("pack (\(pack.order)) [\(pack.id)]")
+                    }
+                    
+                    HStack {
+                        Spacer() // 右寄せにするため
+                        
+                        if 0 < pack.stockWeight {
+                            Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
+                                .font(FONT_WEIGHT)
+                                .foregroundStyle(COLOR_WEIGHT)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(COLOR_ROW_GROUP.opacity(0.85))
+                                )
+                        }
+                        
+                        Button { // 編集ボタン
+                            if let rf = rowFrame {
+                                let po = CGPoint(x: rf.width / 2.0,
+                                                 y: rf.minY)
+                                onEdit(pack, po)
+                            }
+                        } label: {
+                            Image(systemName: "pencil.and.scribble") // "pencil.and.scribble"
+                        }
+                        .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
+                        .tint(.accentColor)
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Capsule()
+                                .fill(COLOR_ROW_GROUP.opacity(0.85))
+                        )
+                    }
+                    .padding(.trailing, 8)
+                }
+            }
+            .frame(minHeight: rowHeight)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(
+                // Row本体に置くとRowサイズが固定化されてしまうため
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear {
+                            rowFrame = geo.frame(in: .global)
+                        }
+                        .onChange(of: geo.frame(in: .global)) { newFrame, oldFrame in
+                            rowFrame = newFrame
+                        }
+                }
             )
             .overlay(alignment: .bottom) {
                 COLOR_LIST_SEPARATOR

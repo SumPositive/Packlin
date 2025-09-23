@@ -43,9 +43,7 @@ struct PackListView: View {
                                     Color.clear
                                 }
                                 .buttonStyle(.plain)
-                                .frame(width: geo.size.width/2.0) // 画面右半分タップでナビ遷移
-                                .contentShape(Rectangle()) //タップ領域
-                                .background(Color.clear)
+                                //.frame(width: geo.size.width/2.0) // 画面右半分タップでナビ遷移
                                 .padding(.trailing, 8)
                             }
                         }
@@ -100,7 +98,9 @@ struct PackListView: View {
                     .disabled(!canRedo || isShowingPopup)
                     .padding(.horizontal, 8)
                     
-                    Button { addPack() }
+                    Button {
+                        addPack()
+                    }
                     label: {
                         Image(systemName: "plus.message")
                     }
@@ -278,6 +278,7 @@ struct EditPackView: View {
 
             Text("edit.info.swipeToDismiss")
                 .font(.caption2)
+                .padding(.top, 4)
         }
         .padding(.horizontal, 8)
         .frame(width: 320, height: 284)
