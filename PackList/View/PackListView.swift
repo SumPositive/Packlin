@@ -281,9 +281,9 @@ struct EditPackView: View {
         }
         .padding(.horizontal, 8)
         .frame(width: 320, height: 284)
-        .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
+        .sheet(isPresented: $isPresentingShare) {
             if let shareURL {
-                ActivityView(activityItems: [shareURL])
+                ActivityView(activityItems: [shareURL], onComplete: cleanupShareResource)
             }
         }
         .onAppear {
@@ -405,13 +405,12 @@ struct EditPackView: View {
     }
     /// 一時共有ファイルを削除する
     private func cleanupShareResource() {
-        defer {
-            shareURL = nil
-            isPresentingShare = false
-        }
+        let currentURL = shareURL
+        shareURL = nil
+        isPresentingShare = false
 
-        guard let shareURL else { return }
-        try? FileManager.default.removeItem(at: shareURL)
+        guard let currentURL else { return }
+        try? FileManager.default.removeItem(at: currentURL)
     }
     /// ファイル名を使用可能文字に制限する
     ///    shortUUIDをURLセーフにしたが、さらに念の為
@@ -428,9 +427,16 @@ struct EditPackView: View {
 /// 共有メニュー画面
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
+    var onComplete: (() -> Void)? = nil
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, _, _, _ in
+            DispatchQueue.main.async {
+                onComplete?()
+            }
+        }
+        return controller
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
