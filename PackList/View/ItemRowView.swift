@@ -74,7 +74,7 @@ struct ItemRowView: View {
                 HStack {
                     Spacer() // 右寄せにするため
                     if 0 < item.weight {
-                        Text(verbatim: "\(item.weight)\(weightUnit)")
+                        Text(verbatim: "\(item.weight.decimalGrouped)\(weightUnit)")
                             .font(FONT_STOCK)
                             .foregroundStyle(COLOR_WEIGHT)
                             .padding(.horizontal, 8)
@@ -94,7 +94,7 @@ struct ItemRowView: View {
                             //                .fill(COLOR_ROW_GROUP.opacity(0.85))
                             //        )
                     }
-                    Text("\(item.stock)／\(item.need)")
+                    Text("\(item.stock.decimalGrouped)／\(item.need.decimalGrouped)")
                         .font(FONT_STOCK)
                         .foregroundStyle(COLOR_WEIGHT)
                         .padding(.horizontal, 8)

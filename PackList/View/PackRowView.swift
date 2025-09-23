@@ -51,7 +51,7 @@ struct PackRowView: View {
                         HStack {
                             Spacer() // 右寄せにするため
                             if 0 < pack.stockWeight {
-                                Text(verbatim: "\(pack.stockWeight)\(weightUnit)／\(pack.needWeight)\(weightUnit)")
+                                Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
                                     .font(FONT_WEIGHT)
                                     .foregroundStyle(COLOR_WEIGHT)
                                     .padding(.horizontal, 8)
