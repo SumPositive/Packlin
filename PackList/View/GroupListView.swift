@@ -61,7 +61,7 @@ struct GroupListView: View {
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
-            .listRowSeparator(.hidden)
+            .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .id(listID)   // listIDが変わるとListが作り直される
             .padding(.horizontal, 0)
             .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))

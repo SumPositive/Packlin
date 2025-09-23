@@ -56,7 +56,7 @@ struct PackListView: View {
                 .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
-            .listRowSeparator(.hidden)
+            .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .id(listID)   // listIDが変わるとListが作り直される
             .padding(.top, -8) // headerとPackList間の余白を無くす
             .padding(.horizontal, 0)

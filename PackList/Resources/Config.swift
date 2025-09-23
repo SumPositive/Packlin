@@ -27,6 +27,7 @@ let APP_WIDTH_MAX : CGFloat = 9999     // Free
 let APP_HEIGHT_MIN : CGFloat = 150     // 最小（入力行と履歴1行が見える）
 let APP_HEIGHT_MAX : CGFloat = 9999    // Free
 
+let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
 
 //-------------------------------------- MAX関係
 
@@ -65,12 +66,11 @@ let COLOR_ROW_ITEM: Color = Color(.systemBackground)
 let COLOR_POPUP_BORDER: Color = Color(.systemGray3)
 let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
     if traitCollection.userInterfaceStyle == .dark {
-        return UIColor(white: 1.0, alpha: 0.45)
+        return UIColor(white: 1.0, alpha: 0.6)
     } else {
-        return UIColor(white: 0.0, alpha: 0.18)
+        return UIColor(white: 0.0, alpha: 0.4)
     }
 })
-let LIST_SEPARATOR_THICKNESS: CGFloat = 1.0
 
 
 //-------------------------------------- Font関係
