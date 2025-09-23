@@ -22,12 +22,11 @@ struct ItemRowView: View {
     private var weightUnit: String { String(localized: "unit.gram") }
 
     var body: some View {
-        HStack(spacing: 0) {
-            Rectangle()
+        HStack(spacing: 12) {
+            Capsule()
                 .fill(COLOR_ROW_GROUP)
-                .frame(width: 12)
-                .padding(.leading, 0)
-                .padding(.trailing, 8)
+                .frame(width: 8)
+                .padding(.vertical, 10)
 
             Button {
                 item.check.toggle()
@@ -41,7 +40,13 @@ struct ItemRowView: View {
                       : 0 < item.need ? "circle" : "circle.dotted")
             }
             .buttonStyle(BorderlessButtonStyle())
-            .padding(.trailing, 8)
+            .padding(8)
+            .background(
+                Circle()
+                    .fill(COLOR_ROW_GROUP.opacity(0.6))
+            )
+            .clipShape(Circle())
+            .padding(.vertical, 2)
             .background(
                 GeometryReader { geo in
                     Color.clear
@@ -54,7 +59,7 @@ struct ItemRowView: View {
                 }
             )
 
-            VStack(alignment: .leading, spacing: 1){
+            VStack(alignment: .leading, spacing: 6){
                 item.name.placeholderText("placeholder.item.new")
                     .lineLimit(3)
                     .font(FONT_NAME)
@@ -70,31 +75,42 @@ struct ItemRowView: View {
                 if DEBUG_SHOW_ORDER_ID {
                     Text("item (\(item.order)) [\(item.id)]")
                 }
-                
-                HStack {
-                    Spacer() // 右寄せにするため
-                    if 0 < item.weight {
-                        Text(verbatim: "［\(item.weight)\(weightUnit)］")
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
 
-                        Text(verbatim: "\(item.stock * item.weight)\(weightUnit)／\(item.need * item.weight)\(weightUnit)")
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.trailing, 4)
+                HStack(spacing: 8) {
+                    Spacer() // 右寄せにするため
+                    HStack(spacing: 8) {
+                        if 0 < item.weight {
+                            Text(verbatim: "［\(item.weight)\(weightUnit)］")
+                                .font(FONT_WEIGHT)
+                                .foregroundStyle(COLOR_WEIGHT)
+
+                            Text(verbatim: "\(item.stock * item.weight)\(weightUnit)／\(item.need * item.weight)\(weightUnit)")
+                                .font(FONT_WEIGHT)
+                                .foregroundStyle(COLOR_WEIGHT)
+                        }
+
+                        Text("\(item.stock)／\(item.need)")
+                            .font(FONT_STOCK)
+                            .foregroundStyle(.primary)
                     }
-                    Text("\(item.stock)／\(item.need)")
-                        .font(FONT_STOCK)
-                        .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.trailing, 40)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(COLOR_ROW_GROUP.opacity(0.7))
+                    )
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 8)
         }
         .frame(minHeight: rowHeight)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
-        .padding(.leading, 0)
-        .background(COLOR_ROW_ITEM)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(COLOR_ROW_ITEM)
+        )
         .transition(.move(edge: .top).combined(with: .opacity))
         .contentShape(Rectangle())
         .background(
@@ -125,12 +141,6 @@ struct ItemRowView: View {
                     onEdit(item, po)
                 }
         )
-        .overlay(alignment: .bottom) {
-            COLOR_LIST_SEPARATOR
-                .frame(height: LIST_SEPARATOR_THICKNESS)
-                .ignoresSafeArea(edges: .horizontal)
-                .padding(.leading, 12)
-        }
     }
 
     private func deleteItem() {

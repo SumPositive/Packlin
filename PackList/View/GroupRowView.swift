@@ -27,16 +27,25 @@ struct GroupRowView: View {
     
     var body: some View {
         Group {
-            HStack(spacing: 0) {
-                Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-                    .padding(.trailing, 8)
+            HStack(spacing: 12) {
+                Capsule()
+                    .fill(COLOR_ROW_GROUP)
+                    .frame(width: 8)
+                    .padding(.vertical, 10)
 
-                VStack(alignment: .leading, spacing: 1) {
+                Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(COLOR_ROW_GROUP.opacity(0.6))
+                    )
+
+                VStack(alignment: .leading, spacing: 6) {
                     group.name.placeholderText("placeholder.group.new")
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-                    
+
                     if !group.memo.isEmpty {
                         Text(group.memo)
                             .lineLimit(3)
@@ -48,18 +57,29 @@ struct GroupRowView: View {
                         Text("group (\(group.order)) [\(group.id)]")
                     }
                     
-                    HStack {
+                    HStack(spacing: 8) {
                         Spacer() // 右寄せにするため
                         if 0 < group.stockWeight {
                             Text(verbatim: "\(group.stockWeight)\(weightUnit)／\(group.needWeight)\(weightUnit)")
                                 .font(FONT_WEIGHT)
                                 .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.trailing, 4)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(COLOR_ROW_ITEM.opacity(0.7))
+                                )
                         }
-                        
+
                         if isHeader {
                             Button(action: addItem) {
                                 Image(systemName: "plus.circle")
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(COLOR_ROW_GROUP.opacity(0.7))
+                                    )
                             }
                         }
                     }
@@ -68,9 +88,12 @@ struct GroupRowView: View {
             }
             .frame(minHeight: rowHeight)
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
-            .padding(.vertical, 8)
-            .padding(.leading, 8)
-            .padding(.trailing, 16)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(COLOR_ROW_GROUP.opacity(0.8))
+            )
             .contentShape(Rectangle())
             .background(
                 // Row本体に置くとRowサイズが固定化されてしまうため
@@ -94,12 +117,6 @@ struct GroupRowView: View {
                         onEdit(group, po)
                     }
             )
-            .overlay(alignment: .bottom) {
-                COLOR_LIST_SEPARATOR
-                    .frame(height: LIST_SEPARATOR_THICKNESS)
-                    .ignoresSafeArea(edges: .horizontal)
-                    .padding(.leading, 12)
-            }
         }
     }
 
