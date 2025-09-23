@@ -404,13 +404,24 @@ struct EditPackView: View {
         }
     }
     /// 一時共有ファイルを削除する
+    ///   - 共有用に書き出したJSONは一時ディレクトリに配置され、共有先へはコピーが渡る。
+    ///     そのため、共有完了後に一時ファイルのみを削除しても「ファイルに保存」で保存した
+    ///     実体は失われない。
     private func cleanupShareResource() {
         let currentURL = shareURL
         shareURL = nil
         isPresentingShare = false
 
         guard let currentURL else { return }
-        try? FileManager.default.removeItem(at: currentURL)
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .standardizedFileURL
+        let standardizedURL = currentURL.standardizedFileURL
+        let tempPath = tempDirectory.path
+        let filePath = standardizedURL.path
+
+        guard filePath == tempPath || filePath.hasPrefix(tempPath + "/") else { return }
+
+        try? FileManager.default.removeItem(at: standardizedURL)
     }
     /// ファイル名を使用可能文字に制限する
     ///    shortUUIDをURLセーフにしたが、さらに念の為
