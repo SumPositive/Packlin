@@ -86,6 +86,7 @@ let FONT_MEMO: Font = .body
 let FONT_WEIGHT: Font = .body
 let FONT_STOCK: Font = .title2
 
+let FONT_EDIT: Font = .title2
 
 
 

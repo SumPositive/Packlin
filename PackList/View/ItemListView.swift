@@ -322,109 +322,143 @@ struct EditItemView: View {
     }
     
     var body: some View {
-        VStack {
-            HStack {    // Actions
-                Button {
-                    duplicateItem()
-                } label: {
-                    VStack {
-                        Image(systemName: "plus.square.on.square")
-                        Text("action.duplicate")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-
-                Spacer()
-                Text("Item.edit.title").font(.footnote)
-                Spacer()
-
-                Button {
-                    // EditItemViewを閉じる
-                    onClose()
-                    // Itemを削除する
-                    deleteItem()
-                } label: {
-                    VStack {
-                        Image(systemName: "trash")
-                        Text("action.delete")
-                            .font(.caption)
-                    }
-                }
-                .tint(.red)
-                .padding(.horizontal, 8)
-            }
-            .padding(.bottom, 8)
-
+        VStack(spacing: 0) {
             HStack {
                 Text("edit.name")
                     .font(.caption)
                     .padding(4)
-                TextEditor(text: $item.name)
-                    .onChange(of: item.name) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                        }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(height: 60)
+                Spacer()
             }
+            .padding(.bottom, -3)
+            TextEditor(text: $item.name)
+                .font(FONT_EDIT)
+                .onChange(of: item.name) { newValue, oldValue in
+                    // 最大文字数制限
+                    if APP_MAX_NAME_LEN < newValue.count {
+                        item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                    }
+                }
+                .focused($nameIsFocused) // フォーカス状態とバインド
+                .frame(height: 80)
+
             HStack {
                 Text("edit.memo")
                     .font(.caption)
-                    .padding(4)
-                TextEditor(text: $item.memo)
-                    .onChange(of: item.memo) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
-                    }
-                    .frame(height: 60)
+                Spacer()
             }
-            .padding(.bottom, 8)
+            .padding(.top, 8)
+            //.padding(.bottom, 0)
+            TextEditor(text: $item.memo)
+                .font(FONT_EDIT)
+                .onChange(of: item.memo) { newValue, oldValue in
+                    // 最大文字数制限
+                    if APP_MAX_MEMO_LEN < newValue.count {
+                        item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                    }
+                }
+                .frame(height: 80)
 
             HStack {
-                Text("item.field.weight")
-                    .font(.caption)
-                TextField("", value: weightBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                Text(verbatim: gramUnit)
-                    .font(.caption)
-                Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
-                    .labelsHidden()
+                // Action ボタン
+                VStack {
+                    Button {
+                        duplicateItem()
+                    } label: {
+                        VStack {
+                            Image(systemName: "plus.square.on.square")
+                            Text("action.duplicate")
+                                .font(.caption)
+                        }
+                    }
+                    .tint(.accentColor)
+                    .padding(8)
+                    
+                    Spacer()
+                    
+                    Button {
+                        // EditItemViewを閉じる
+                        onClose()
+                        // Itemを削除する
+                        deleteItem()
+                    } label: {
+                        VStack {
+                            Image(systemName: "trash")
+                            Text("action.delete")
+                                .font(.caption)
+                        }
+                    }
+                    .tint(.red)
+                    .padding(8)
+                }
+
+                // 重量・数量
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("item.field.weight")
+                            .font(.caption)
+                        Spacer()
+                    }
+                    .padding(.bottom, -2)
+                    HStack {
+                        TextField("", value: weightBinding, format: .number)
+                            .font(FONT_EDIT)
+                            .frame(width: 80)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .background(Color(.systemBackground))
+                        Text(verbatim: gramUnit)
+                            .font(.caption)
+                        Spacer()
+                        Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
+                            .labelsHidden()
+                    }
+                    .padding(.bottom, 8)
+                    HStack {
+                        Text("item.field.stock")
+                            .font(.caption)
+                        Spacer()
+                    }
+                    .padding(.bottom, -2)
+                    HStack {
+                        TextField("", value: stockBinding, format: .number)
+                            .font(FONT_EDIT)
+                            .frame(width: 80)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .background(Color(.systemBackground))
+                        Text(verbatim: pieceUnit)
+                            .font(.caption)
+                        Spacer()
+                        Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
+                            .labelsHidden()
+                    }
+                    .padding(.bottom, 8)
+                    HStack {
+                        Text("item.field.need")
+                            .font(.caption)
+                        Spacer()
+                    }
+                    .padding(.bottom, -2)
+                    HStack {
+                        TextField("", value: needBinding, format: .number)
+                            .font(FONT_EDIT)
+                            .frame(width: 80)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .background(Color(.systemBackground))
+                        Text(verbatim: pieceUnit)
+                            .font(.caption)
+                        Spacer()
+                        Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
+                            .labelsHidden()
+                    }
+                }
+                .padding(.horizontal, 16)
             }
-            HStack {
-                Text("item.field.stock")
-                    .font(.caption)
-                TextField("", value: stockBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                Text(verbatim: pieceUnit)
-                    .font(.caption)
-                Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
-                    .labelsHidden()
-            }
-            HStack {
-                Text("item.field.need")
-                    .font(.caption)
-                TextField("", value: needBinding, format: .number)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .background(Color.white.opacity(0.7))
-                Text(verbatim: pieceUnit)
-                    .font(.caption)
-                Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
-                    .labelsHidden()
-            }
+            .padding(8)
         }
-        .padding(.horizontal, 16)
-        .frame(width: 300, height: 320)
+        .padding(8)
+        .frame(width: 320, height: 368) // H:380以内にしないとキーボードが被る恐れあり
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()

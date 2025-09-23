@@ -275,6 +275,7 @@
       }
     },
     "Group.edit.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -317,6 +318,7 @@
       }
     },
     "Item.edit.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -369,12 +371,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unit Weight"
+            "value" : "Unit weight"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "個重量"
           }
         }
@@ -429,6 +431,7 @@
       }
     },
     "Pack.edit.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

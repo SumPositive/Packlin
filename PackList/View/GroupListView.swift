@@ -211,8 +211,7 @@ struct EditGroupView: View {
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
                 
-                Spacer()
-                Text("Group.edit.title").font(.footnote)
+                //Text("Group.edit.title").font(.footnote)
                 Spacer()
 
                 Button {
@@ -235,31 +234,39 @@ struct EditGroupView: View {
             HStack {
                 Text("edit.name")
                     .font(.caption)
-                TextEditor(text: $group.name)
-                    .onChange(of: group.name) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                        }
-                    }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-                    .frame(height: 60)
+                Spacer()
             }
+            .padding(.bottom, -7)
+            TextEditor(text: $group.name)
+                .font(FONT_EDIT)
+                .onChange(of: group.name) { newValue, oldValue in
+                    // 最大文字数制限
+                    if APP_MAX_NAME_LEN < newValue.count {
+                        group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                    }
+                }
+                .focused($nameIsFocused) // フォーカス状態とバインド
+                .frame(height: 80)
+
             HStack {
                 Text("edit.memo")
                     .font(.caption)
-                TextEditor(text: $group.memo)
-                    .onChange(of: group.memo) { newValue, oldValue in
-                        // 最大文字数制限
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
-                    }
-                    .frame(height: 60)
+                Spacer()
             }
+            .padding(.top, 8)
+            .padding(.bottom, -7)
+            TextEditor(text: $group.memo)
+                .font(FONT_EDIT)
+                .onChange(of: group.memo) { newValue, oldValue in
+                    // 最大文字数制限
+                    if APP_MAX_MEMO_LEN < newValue.count {
+                        group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                    }
+                }
+                .frame(height: 80)
         }
-        .padding(.horizontal, 16)
-        .frame(width: 300, height: 190)
+        .padding(.horizontal, 8)
+        .frame(width: 320, height: 280)
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
