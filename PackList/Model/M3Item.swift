@@ -31,7 +31,7 @@ final class M3Item {
          memo: String = "",
          check: Bool = false,
          stock: Int = 0,
-         need: Int = 0,
+         need: Int = 1,     // 初期1にした
          weight: Int = 0,
          order: Int = 0,
          parent: M2Group? = nil) {

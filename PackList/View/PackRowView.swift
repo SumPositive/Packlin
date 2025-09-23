@@ -95,7 +95,8 @@ struct PackRowView: View {
                 COLOR_LIST_SEPARATOR
                     .frame(height: LIST_SEPARATOR_THICKNESS)
                     .ignoresSafeArea(edges: .horizontal)
-                    .padding(.leading, 12)
+                    .padding(.leading, 40)
+                    .padding(.trailing, 20)
             }
         }
     }

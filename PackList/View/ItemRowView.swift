@@ -25,7 +25,7 @@ struct ItemRowView: View {
         HStack(spacing: 0) {
             Rectangle()
                 .fill(COLOR_ROW_GROUP)
-                .frame(width: 12)
+                .frame(width: 20)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
 
@@ -36,6 +36,7 @@ struct ItemRowView: View {
                 }else{
                     item.stock = 0
                 }
+                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             } label: {
                 Image(systemName: item.check ? "checkmark.circle"
                       : 0 < item.need ? "circle" : "circle.dotted")
@@ -146,7 +147,8 @@ struct ItemRowView: View {
             COLOR_LIST_SEPARATOR
                 .frame(height: LIST_SEPARATOR_THICKNESS)
                 .ignoresSafeArea(edges: .horizontal)
-                .padding(.leading, 12)
+                .padding(.leading, 20)
+                .padding(.trailing, 8)
         }
     }
 

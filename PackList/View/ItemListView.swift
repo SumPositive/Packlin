@@ -136,6 +136,7 @@ struct ItemListView: View {
         .id(group.id)
         .padding(.horizontal, 0)
         .background(COLOR_ROW_GROUP)
+        .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
     }
     
     @ToolbarContentBuilder
@@ -303,6 +304,8 @@ struct EditItemView: View {
             } else {
                 item.stock = value
             }
+            // チェック更新
+            item.check = (0 < item.stock && item.need <= item.stock)
         })
     }
     private var needBinding: Binding<Int> {
@@ -315,6 +318,8 @@ struct EditItemView: View {
             } else {
                 item.need = value
             }
+            // チェック更新
+            item.check = (0 < item.stock && item.need <= item.stock)
         })
     }
     
