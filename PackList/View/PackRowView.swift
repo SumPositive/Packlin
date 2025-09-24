@@ -22,7 +22,7 @@ struct PackRowView: View {
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
-        return !items.isEmpty && items.allSatisfy { $0.check }
+        return !items.isEmpty && items.allSatisfy { $0.check || $0.need == 0 }
     }
 
     var body: some View {
@@ -35,14 +35,12 @@ struct PackRowView: View {
                         onEdit(pack, po)
                     }
                 } label: {
-                    VStack {
-                        Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                        //Image(systemName: "pencil") // "pencil.and.scribble"
-                    }
+                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                        .imageScale(.large)
                 }
                 .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
                 .tint(.accentColor)
-                .padding(.vertical, 16)
+                .padding(.vertical, 8)
                 .padding(.horizontal, 8)
                 
                 VStack(alignment: .leading, spacing: 1) {
@@ -76,24 +74,6 @@ struct PackRowView: View {
                                         .fill(COLOR_ROW_GROUP.opacity(0.85))
                                 )
                         }
-                        
-//                        Button { // 編集ボタン
-//                            if let rf = rowFrame {
-//                                let po = CGPoint(x: rf.width / 2.0,
-//                                                 y: rf.minY)
-//                                onEdit(pack, po)
-//                            }
-//                        } label: {
-//                            Image(systemName: "pencil.and.scribble") // "pencil.and.scribble"
-//                        }
-//                        .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
-//                        .tint(.accentColor)
-//                        .padding(.vertical, 4)
-//                        .padding(.horizontal, 8)
-//                        .background(
-//                            Capsule()
-//                                .fill(COLOR_ROW_GROUP.opacity(0.85))
-//                        )
                     }
                     .padding(.trailing, 8)
                 }

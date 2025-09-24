@@ -69,15 +69,6 @@ struct GroupListView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
-//                        // PackViewに戻るときに保存
-//                        if modelContext.hasChanges { // 変更があった時
-//                            do {
-//                                try modelContext.save() // Undoスタックがクリアされる
-//                            } catch {
-//                                print("DB保存に失敗.2: \(error)")
-//                            }
-//                            modelContext.undoManager?.removeAllActions()
-//                        }
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.backward")
@@ -116,15 +107,6 @@ struct GroupListView: View {
                 }
             }
             .onAppear {
-//                // PackViewから来たときとItemViewから戻ったときに保存
-//                if modelContext.hasChanges { // 変更があった時
-//                    do {
-//                        try modelContext.save() // Undoスタックがクリアされる
-//                    } catch {
-//                        print("DB保存に失敗.1: \(error)")
-//                    }
-//                    modelContext.undoManager?.removeAllActions()
-//                }
                 updateUndoRedo()
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
@@ -196,9 +178,34 @@ struct EditGroupView: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
     
+    private var allItemsChecked: Bool {
+        !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
+    }
+
     var body: some View {
         VStack {
             HStack {    // Actions
+                // チェックON/OFF
+                Button {
+                    // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+                    checkToggle()
+                } label: {
+                    VStack {
+                        if allItemsChecked {
+                            Image(systemName: "checkmark.rectangle")
+                            Text("action.check.off")
+                                .font(.caption)
+                        }else{
+                            Image(systemName: "rectangle")
+                            Text("action.check.on")
+                                .font(.caption)
+                        }
+                    }
+                }
+                .tint(.purple)
+                .padding(.horizontal, 8)
+                
+                // 複製
                 Button {
                     duplicateGroup()
                 } label: {
@@ -211,9 +218,9 @@ struct EditGroupView: View {
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
                 
-                //Text("Group.edit.title").font(.footnote)
                 Spacer()
 
+                // 削除
                 Button {
                     // EditItemViewを閉じる
                     onClose()
@@ -283,6 +290,21 @@ struct EditGroupView: View {
                 um.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+    }
+
+    /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+    private func checkToggle() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        
+        let toggle = allItemsChecked
+        let items = group.child
+        for item in items {
+            item.check = (!toggle && 0 < item.need)
         }
     }
 

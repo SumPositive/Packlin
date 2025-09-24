@@ -195,41 +195,13 @@ struct EditPackView: View {
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
-        return !items.isEmpty && items.allSatisfy { $0.check }
+        return !items.isEmpty && items.allSatisfy { $0.check || $0.need == 0 }
     }
 
     var body: some View {
         VStack {
             HStack {    // Actions
-                Button {
-                    duplicatePack()
-                } label: {
-                    VStack {
-                        Image(systemName: "plus.square.on.square")
-                        Text("action.duplicate")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-
-                Spacer()
-
-                Button {
-                    exportPack()
-                } label: {
-                    VStack {
-                        Image(systemName: "arrow.up.message")
-                        Text("action.json.upload")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-                
-                //Text("Pack.edit.title").font(.footnote)
-                Spacer()
-
+                // チェックON/OFF
                 Button {
                     // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
                     checkToggle()
@@ -249,8 +221,35 @@ struct EditPackView: View {
                 .tint(.purple)
                 .padding(.horizontal, 8)
                 
-                Spacer()
+                // 複製
+                Button {
+                    duplicatePack()
+                } label: {
+                    VStack {
+                        Image(systemName: "plus.square.on.square")
+                        Text("action.duplicate")
+                            .font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+
+                // 共有
+                Button {
+                    exportPack()
+                } label: {
+                    VStack {
+                        Image(systemName: "arrow.up.message")
+                        Text("action.json.upload")
+                            .font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
                 
+                Spacer()
+
+                // 削除
                 Button {
                     // EditItemViewを閉じる
                     onClose()
@@ -343,7 +342,7 @@ struct EditPackView: View {
         let toggle = allItemsChecked
         let items = pack.child.flatMap { $0.child }
         for item in items {
-            item.check = !toggle
+            item.check = (!toggle && 0 < item.need)
         }
     }
     

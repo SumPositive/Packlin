@@ -15,7 +15,7 @@ struct ItemRowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var rowFrame: CGRect?
-    @State private var checkButtonFrame: CGRect?
+    //@State private var checkButtonFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
@@ -29,6 +29,7 @@ struct ItemRowView: View {
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
 
+            // チェック
             Button {
                 item.check.toggle()
                 if item.check {
@@ -40,20 +41,11 @@ struct ItemRowView: View {
             } label: {
                 Image(systemName: item.check ? "checkmark.circle"
                       : 0 < item.need ? "circle" : "circle.dotted")
+                .imageScale(.large)
             }
             .buttonStyle(BorderlessButtonStyle())
-            .padding(.trailing, 8)
-            .background(
-                GeometryReader { geo in
-                    Color.clear
-                        .onAppear {
-                            checkButtonFrame = geo.frame(in: .global)
-                        }
-                        .onChange(of: geo.frame(in: .global)) { newFrame, _ in
-                            checkButtonFrame = newFrame
-                        }
-                }
-            )
+            .padding(.vertical, 8)
+            .padding(.horizontal, 8)
 
             VStack(alignment: .leading, spacing: 1){
                 item.name.placeholderText("placeholder.item.new")
@@ -74,36 +66,39 @@ struct ItemRowView: View {
                 
                 HStack {
                     Spacer() // 右寄せにするため
-                    if 0 < item.weight {
-                        Text(verbatim: "\(item.weight.decimalGrouped)\(weightUnit)")
+
+                    // 編集
+                    Button {
+                        guard let rf = rowFrame else { return }
+                        let po = CGPoint(x: rf.width / 2.0,
+                                         y: rf.minY)
+                        onEdit(item, po)
+                    } label: {
+                        if 0 < item.weight {
+                            // 個重量
+                            Text(verbatim: "\(item.weight.decimalGrouped)\(weightUnit)")
+                                .font(FONT_STOCK)
+                                .foregroundStyle(COLOR_WEIGHT)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                            
+                        }
+                        // 在庫数／必要数
+                        Text("\(item.stock.decimalGrouped)／\(item.need.decimalGrouped)")
                             .font(FONT_STOCK)
                             .foregroundStyle(COLOR_WEIGHT)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(COLOR_ROW_GROUP.opacity(0.85))
-                            )
 
-                            //    Text(verbatim: "\(item.stock * item.weight)\(weightUnit)／\(item.need * item.weight)\(weightUnit)")
-                            //        .font(FONT_WEIGHT)
-                            //        .foregroundStyle(COLOR_WEIGHT)
-                            //        .padding(.horizontal, 8)
-                            //        .padding(.vertical, 4)
-                            //        .background(
-                            //            Capsule()
-                            //                .fill(COLOR_ROW_GROUP.opacity(0.85))
-                            //        )
+                        Image(systemName: "square.and.pencil")
+                            .tint(.gray)
                     }
-                    Text("\(item.stock.decimalGrouped)／\(item.need.decimalGrouped)")
-                        .font(FONT_STOCK)
-                        .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(COLOR_ROW_GROUP.opacity(0.85))
-                        )
+                    .buttonStyle(BorderlessButtonStyle())
+                    .padding(.horizontal, 8)
+                    .background(
+                        Capsule()
+                            .fill(COLOR_ROW_GROUP.opacity(0.85))
+                    )
                 }
                 .padding(.trailing, 16)
             }
@@ -126,22 +121,6 @@ struct ItemRowView: View {
                         rowFrame = newFrame
                     }
             }
-        )
-        .simultaneousGesture(
-            SpatialTapGesture()
-                .onEnded { value in
-                    guard let rf = rowFrame else { return }
-                    let location = value.location
-                    let globalLocation = CGPoint(x: rf.minX + location.x,
-                                                 y: rf.minY + location.y)
-                    if let checkButtonFrame,
-                       checkButtonFrame.contains(globalLocation) {
-                        return
-                    }
-                    let po = CGPoint(x: rf.width / 2.0,
-                                     y: globalLocation.y)
-                    onEdit(item, po)
-                }
         )
         .overlay(alignment: .bottom) {
             COLOR_LIST_SEPARATOR

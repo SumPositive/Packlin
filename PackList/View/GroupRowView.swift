@@ -22,14 +22,26 @@ struct GroupRowView: View {
     private var weightUnit: String { String(localized: "unit.gram") }
 
     private var allItemsChecked: Bool {
-        !group.child.isEmpty && group.child.allSatisfy { $0.check }
+        !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
     }
     
     var body: some View {
         Group {
             HStack(spacing: 0) {
-                Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-                    .padding(.trailing, 8)
+                Button { // 編集ボタン
+                    if let rf = rowFrame {
+                        let po = CGPoint(x: rf.width / 2.0,
+                                         y: rf.minY)
+                        onEdit(group, po)
+                    }
+                } label: {
+                    Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
+                        .imageScale(.large)
+                }
+                .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
+                .tint(.accentColor)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
                     group.name.placeholderText("placeholder.group.new")
@@ -63,8 +75,11 @@ struct GroupRowView: View {
                         }
                         
                         if isHeader {
+                            // セクションヘッダになる場合
+                            // アイテム追加ボタン
                             Button(action: addItem) {
                                 Image(systemName: "plus.circle")
+                                    .imageScale(.large)
                             }
                         }
                     }
@@ -87,16 +102,6 @@ struct GroupRowView: View {
                             rowFrame = newFrame
                         }
                 }
-            )
-            .simultaneousGesture(
-                SpatialTapGesture()
-                    .onEnded { value in
-                        guard let rf = rowFrame else { return }
-                        let location = value.location
-                        let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY + location.y)
-                        onEdit(group, po)
-                    }
             )
             .overlay(alignment: .bottom) {
                 COLOR_LIST_SEPARATOR

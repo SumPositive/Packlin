@@ -21,6 +21,7 @@ struct ItemListView: View {
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var listID = UUID() // Listリフレッシュ用
+    @State private var editingGroup: M2Group?
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
     
@@ -29,7 +30,7 @@ struct ItemListView: View {
     }
     
     // Popup表示中はナビバーボタンを非活性にするためのフラグ
-    private var isShowingPopup: Bool { editingItem != nil }
+    private var isShowingPopup: Bool { editingGroup != nil || editingItem != nil }
     
     var body: some View {
         ZStack {
@@ -49,6 +50,21 @@ struct ItemListView: View {
                     .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                         updateUndoRedo()
                     }
+            }
+            //----------------------------------
+            //(ZStack 1) Popupで表示
+            if let group = editingGroup {
+                PopupView(anchor: popupAnchor) {
+                    editingGroup = nil
+                    popupAnchor = nil
+                } content: {
+                    EditGroupView(group: group) {
+                        //.onClose：内から閉じる場合
+                        editingGroup = nil
+                        popupAnchor = nil
+                    }
+                }
+                .zIndex(1)
             }
             //----------------------------------
             //(ZStack 1) Popupで表示
@@ -119,8 +135,8 @@ struct ItemListView: View {
                 }
         } header: {
             GroupRowView(group: group, isHeader: true) { selected, point in
-                //editingGroup = selected
-                //popupAnchor = point
+                editingGroup = selected
+                popupAnchor = point
             }
             .background(COLOR_ROW_GROUP)
             .contentShape(Rectangle())
@@ -154,6 +170,7 @@ struct ItemListView: View {
             .padding(.trailing, 8)
             .disabled(isShowingPopup)
             
+            // Undo
             Button {
                 withAnimation {
                     modelContext.undoManager?.undo()
@@ -167,6 +184,7 @@ struct ItemListView: View {
         }
         
         ToolbarItemGroup(placement: .navigationBarTrailing) {
+            // Redo
             Button {
                 withAnimation {
                     modelContext.undoManager?.redo()
