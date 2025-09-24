@@ -68,16 +68,16 @@ struct AppMain: App {
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { newPhase, oldPhase in
-            guard newPhase == .background else { return }
-            // バックになった時
+            guard newPhase == .inactive || newPhase == .background else { return }
+            // バックになる前
             let context = sharedModelContainer.mainContext
             if context.hasChanges {
                 // 変更があればDB保存
                 try? context.save()
-                // Undoクリア
-                context.undoManager?.removeAllActions()
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             }
+            // Undoクリア
+            context.undoManager?.removeAllActions()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
 
     }
