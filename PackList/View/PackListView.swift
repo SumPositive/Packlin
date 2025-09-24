@@ -163,8 +163,14 @@ struct PackListView: View {
             updateUndoRedo()
         }
 
-        let newPack = M1Pack(name: "", order: M1Pack.nextPackOrder(packs))
+        let minOrder = packs.map { $0.order }.min() ?? 0
+        let newPack = M1Pack(name: "", order: minOrder - 1)
         modelContext.insert(newPack)
+
+        let descriptor = FetchDescriptor<M1Pack>()
+        if let allPacks = try? modelContext.fetch(descriptor) {
+            M1Pack.normalizePackOrder(allPacks)
+        }
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {

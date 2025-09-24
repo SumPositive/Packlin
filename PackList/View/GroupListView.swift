@@ -145,10 +145,11 @@ struct GroupListView: View {
             updateUndoRedo()
         }
 
-        let newGroup = M2Group(name: "", order: pack.nextGroupOrder(), parent: pack)
+        let minOrder = pack.child.map { $0.order }.min() ?? 0
+        let newGroup = M2Group(name: "", order: minOrder - 1, parent: pack)
         modelContext.insert(newGroup)
         withAnimation {
-            pack.child.append(newGroup)
+            pack.child.insert(newGroup, at: 0)
             pack.normalizeGroupOrder()
         }
     }

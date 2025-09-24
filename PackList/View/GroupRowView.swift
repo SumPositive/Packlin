@@ -121,13 +121,14 @@ struct GroupRowView: View {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
 
-        let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
+        let minOrder = group.child.map { $0.order }.min() ?? 0
+        let newItem = M3Item(name: "", order: minOrder - 1, parent: group)
         modelContext.insert(newItem)
         withAnimation {
-            group.child.append(newItem)
+            group.child.insert(newItem, at: 0)
             group.normalizeItemOrder()
         }
     }
-    
+
 }
 
