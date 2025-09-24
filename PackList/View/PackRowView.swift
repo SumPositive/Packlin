@@ -35,12 +35,15 @@ struct PackRowView: View {
                         onEdit(pack, po)
                     }
                 } label: {
-                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                    VStack {
+                        Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                        //Image(systemName: "pencil") // "pencil.and.scribble"
+                    }
                 }
                 .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
                 .tint(.accentColor)
                 .padding(.vertical, 16)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 8)
                 
                 VStack(alignment: .leading, spacing: 1) {
                     pack.name.placeholderText("placeholder.pack.new")
@@ -74,23 +77,23 @@ struct PackRowView: View {
                                 )
                         }
                         
-                        Button { // 編集ボタン
-                            if let rf = rowFrame {
-                                let po = CGPoint(x: rf.width / 2.0,
-                                                 y: rf.minY)
-                                onEdit(pack, po)
-                            }
-                        } label: {
-                            Image(systemName: "pencil.and.scribble") // "pencil.and.scribble"
-                        }
-                        .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
-                        .tint(.accentColor)
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 8)
-                        .background(
-                            Capsule()
-                                .fill(COLOR_ROW_GROUP.opacity(0.85))
-                        )
+//                        Button { // 編集ボタン
+//                            if let rf = rowFrame {
+//                                let po = CGPoint(x: rf.width / 2.0,
+//                                                 y: rf.minY)
+//                                onEdit(pack, po)
+//                            }
+//                        } label: {
+//                            Image(systemName: "pencil.and.scribble") // "pencil.and.scribble"
+//                        }
+//                        .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
+//                        .tint(.accentColor)
+//                        .padding(.vertical, 4)
+//                        .padding(.horizontal, 8)
+//                        .background(
+//                            Capsule()
+//                                .fill(COLOR_ROW_GROUP.opacity(0.85))
+//                        )
                     }
                     .padding(.trailing, 8)
                 }

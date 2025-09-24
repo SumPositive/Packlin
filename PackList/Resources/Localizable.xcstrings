@@ -14,6 +14,38 @@
         }
       }
     },
+    "action.check.off" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check OFF"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チェックOFF"
+          }
+        }
+      }
+    },
+    "action.check.on" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check ON"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チェックON"
+          }
+        }
+      }
+    },
     "action.delete" : {
       "localizations" : {
         "en" : {

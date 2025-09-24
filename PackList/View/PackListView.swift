@@ -193,6 +193,11 @@ struct EditPackView: View {
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
     
+    private var allItemsChecked: Bool {
+        let items = pack.child.flatMap { $0.child }
+        return !items.isEmpty && items.allSatisfy { $0.check }
+    }
+
     var body: some View {
         VStack {
             HStack {    // Actions
@@ -225,6 +230,27 @@ struct EditPackView: View {
                 //Text("Pack.edit.title").font(.footnote)
                 Spacer()
 
+                Button {
+                    // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+                    checkToggle()
+                } label: {
+                    VStack {
+                        if allItemsChecked {
+                            Image(systemName: "checkmark.message")
+                            Text("action.check.off")
+                                .font(.caption)
+                        }else{
+                            Image(systemName: "message")
+                            Text("action.check.on")
+                                .font(.caption)
+                        }
+                    }
+                }
+                .tint(.purple)
+                .padding(.horizontal, 8)
+                
+                Spacer()
+                
                 Button {
                     // EditItemViewを閉じる
                     onClose()
@@ -281,7 +307,7 @@ struct EditPackView: View {
                 .padding(.top, 4)
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 284)
+        .frame(width: 320, height: 300)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
@@ -303,6 +329,21 @@ struct EditPackView: View {
                 um.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+    }
+
+    /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+    private func checkToggle() {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+
+        let toggle = allItemsChecked
+        let items = pack.child.flatMap { $0.child }
+        for item in items {
+            item.check = !toggle
         }
     }
     

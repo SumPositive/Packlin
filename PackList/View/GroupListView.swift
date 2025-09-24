@@ -69,15 +69,15 @@ struct GroupListView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
-                        // PackViewに戻るときに保存
-                        if modelContext.hasChanges { // 変更があった時
-                            do {
-                                try modelContext.save() // Undoスタックがクリアされる
-                            } catch {
-                                print("DB保存に失敗.2: \(error)")
-                            }
-                            modelContext.undoManager?.removeAllActions()
-                        }
+//                        // PackViewに戻るときに保存
+//                        if modelContext.hasChanges { // 変更があった時
+//                            do {
+//                                try modelContext.save() // Undoスタックがクリアされる
+//                            } catch {
+//                                print("DB保存に失敗.2: \(error)")
+//                            }
+//                            modelContext.undoManager?.removeAllActions()
+//                        }
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.backward")
@@ -116,15 +116,15 @@ struct GroupListView: View {
                 }
             }
             .onAppear {
-                // PackViewから来たときとItemViewから戻ったときに保存
-                if modelContext.hasChanges { // 変更があった時
-                    do {
-                        try modelContext.save() // Undoスタックがクリアされる
-                    } catch {
-                        print("DB保存に失敗.1: \(error)")
-                    }
-                    modelContext.undoManager?.removeAllActions()
-                }
+//                // PackViewから来たときとItemViewから戻ったときに保存
+//                if modelContext.hasChanges { // 変更があった時
+//                    do {
+//                        try modelContext.save() // Undoスタックがクリアされる
+//                    } catch {
+//                        print("DB保存に失敗.1: \(error)")
+//                    }
+//                    modelContext.undoManager?.removeAllActions()
+//                }
                 updateUndoRedo()
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
