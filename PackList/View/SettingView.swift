@@ -38,7 +38,7 @@ struct SettingView: View {
             Spacer()
         }
         .padding(.horizontal, 8)
-        .frame(width: 300, height: 500)
+        .frame(width: 320, height: 500)
         .onAppear {
         }
         .onDisappear() {
@@ -92,7 +92,7 @@ struct SettingView: View {
         @State private var importErrorMessage: String?
 
         var body: some View {
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
 
                 // 共有 Pack_*.json を読み込む
                 Button(action: {
@@ -102,16 +102,13 @@ struct SettingView: View {
                     Text("action.json.download")
                     Spacer()
                 }
-                .padding(8)
-
+                .padding(EdgeInsets(top: 8, leading: 8, bottom: 0, trailing: 8))
+                
                 // 新規追加の位置
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "arrow.up.arrow.down")
-                        Text("setting.insertion.title")
-                        Spacer()
-                    }
-
+                HStack {
+                    Image(systemName: "arrow.up.arrow.down")
+                    Text("setting.insertion.title")
+                    Spacer()
                     Picker("setting.insertion.title", selection: $insertionPosition) {
                         ForEach(InsertionPosition.allCases) { position in
                             Text(position.localizedKey)
@@ -120,7 +117,7 @@ struct SettingView: View {
                     }
                     .pickerStyle(.segmented)
                 }
-                .padding(8)
+                .padding(EdgeInsets(top: 8, leading: 8, bottom: 0, trailing: 8))
 
                 Toggle(isOn: $showNeedWeight) {
                     HStack {
@@ -215,14 +212,15 @@ struct SettingView: View {
         @State private var showDonate = false
 
         var body: some View {
-            VStack {
+            VStack(spacing: 0) {
                 HStack {
                     Image(systemName: "heart")
                     Text("ad.empowering.developers")
                     Spacer()
                 }
                 .padding(8)
-                VStack {
+
+                VStack(spacing: 0) {
                     HStack {
                         // 広告を見て寄付する（ボタン）
                         Button(action: {
