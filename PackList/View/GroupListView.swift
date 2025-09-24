@@ -48,9 +48,6 @@ struct GroupListView: View {
                                     Color.clear
                                 }
                                 .buttonStyle(.plain)
-                                .frame(width: geo.size.width/2.0) // 画面右半分タップでナビ遷移
-                                .contentShape(Rectangle()) //タップ領域
-                                .background(Color.clear)
                                 .padding(.trailing, 8)
                             }
                         }

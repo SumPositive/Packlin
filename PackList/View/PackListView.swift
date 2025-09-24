@@ -44,7 +44,6 @@ struct PackListView: View {
                                     Color.clear
                                 }
                                 .buttonStyle(.plain)
-                                //.frame(width: geo.size.width/2.0) // 画面右半分タップでナビ遷移
                                 .padding(.trailing, 8)
                             }
                         }

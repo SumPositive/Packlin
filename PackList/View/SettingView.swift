@@ -92,6 +92,8 @@ struct SettingView: View {
 
         var body: some View {
             VStack(spacing: 12) {
+
+                // 共有 Pack_*.json を読み込む
                 Button(action: {
                     isPresentingImporter = true
                 }) {
@@ -101,6 +103,7 @@ struct SettingView: View {
                 }
                 .padding(8)
 
+                // 新規追加の位置
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "arrow.up.arrow.down")
@@ -120,7 +123,7 @@ struct SettingView: View {
             }
             .background(Color(.white).opacity(0.5))
             .cornerRadius(10)
-            .fileImporter(
+            .fileImporter( // ファイル読み込み
                 isPresented: $isPresentingImporter,
                 allowedContentTypes: [.json],
                 allowsMultipleSelection: false
