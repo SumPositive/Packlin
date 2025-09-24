@@ -45,7 +45,9 @@ struct ItemRowView: View {
             }
             .buttonStyle(BorderlessButtonStyle())
             .padding(.vertical, 8)
-            .padding(.horizontal, 8)
+//            .padding(.horizontal, 8)
+            .padding(.trailing, 4)
+            .padding(.leading, 0)
 
             VStack(alignment: .leading, spacing: 1){
                 item.name.placeholderText("placeholder.item.new")

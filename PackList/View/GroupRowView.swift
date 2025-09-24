@@ -41,7 +41,8 @@ struct GroupRowView: View {
                 .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
                 .tint(.accentColor)
                 .padding(.vertical, 8)
-                .padding(.horizontal, 8)
+                .padding(.trailing, 4)
+                .padding(.leading, 0)
 
                 VStack(alignment: .leading, spacing: 1) {
                     group.name.placeholderText("placeholder.group.new")
