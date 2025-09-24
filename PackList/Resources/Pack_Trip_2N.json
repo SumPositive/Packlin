@@ -1,0 +1,105 @@
+{
+  "name": "サンプル：出張（2泊）",
+  "order": 2,
+  "copyright": "2025 sumpo／azukid.com",
+  "memo": "2泊出張、衣類を2セットに増量",
+  "groups": [
+    {
+      "order": 0,
+      "name": "必須品",
+      "memo": "貴重品",
+      "id": "d-LPJSTHMUAVjMJE",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "stock": 0,
+          "order": 0,
+          "id": "4m8oE0MxjmQLUK0i",
+          "need": 1,
+          "name": "財布・身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "stock": 0,
+          "order": 1,
+          "id": "zibCcs5Nb4ppIkxM",
+          "need": 1,
+          "name": "名刺入れ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "order": 1,
+      "name": "電子機器",
+      "memo": "",
+      "id": "ucVPn6ueo1rpoOCS",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "stock": 0,
+          "order": 0,
+          "id": "IEG2qajZiZcQ5JBq",
+          "need": 1,
+          "name": "ノートPC",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "stock": 0,
+          "order": 1,
+          "id": "a7gppHnBYkAXFf8J",
+          "need": 1,
+          "name": "ACアダプタ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "stock": 0,
+          "order": 2,
+          "id": "RFTnQaLmsQbFWLk0",
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "name": "衣類",
+      "memo": "",
+      "id": "yWbeuDMSB7OfR-Fg",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "stock": 0,
+          "order": 0,
+          "id": "rSXUrg9W21M67yq-",
+          "need": 2,
+          "name": "ワイシャツ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "stock": 0,
+          "order": 2,
+          "id": "4432nofvg-InjOFF",
+          "need": 1,
+          "name": "下着・靴下",
+          "memo": ""
+        }
+      ]
+    }
+  ],
+  "version": "3.0",
+  "id": "ad6dvbCzfG5fUwFH",
+  "createdAt": 1758719028.63422
+}

@@ -92,8 +92,12 @@ struct AppMain: App {
         }
         // Bundle サンプル.json ファイル
         let sampleFileNames = [
-            "Pack_sample1",
-            "Pack_sample2"
+            "Pack_Trip_1N",
+            "Pack_Trip_2N",
+            "Pack_Fuji_1N",
+            "Pack_Travel_1week",
+            "Pack_DayHike",
+            "Pack_BabyTrip_1N2D",
         ]
 
         var nextOrder = existingPacks.map { $0.order }.max() ?? -1

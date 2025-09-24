@@ -304,7 +304,17 @@ struct EditGroupView: View {
         let toggle = allItemsChecked
         let items = group.child
         for item in items {
-            item.check = (!toggle && 0 < item.need)
+            if toggle {
+                // ON --> OFF
+                item.check = false
+                item.stock = 0
+            }else{
+                // OFF --> ON
+                item.check = (0 < item.need)
+                if item.stock < item.need {
+                    item.stock = item.need
+                }
+            }
         }
     }
 
