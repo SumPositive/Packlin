@@ -12,6 +12,7 @@ import UIKit
 
 struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -43,7 +44,6 @@ struct PackListView: View {
                                     Color.clear
                                 }
                                 .buttonStyle(.plain)
-                                //.frame(width: geo.size.width/2.0) // 画面右半分タップでナビ遷移
                                 .padding(.trailing, 8)
                             }
                         }
@@ -163,8 +163,23 @@ struct PackListView: View {
             updateUndoRedo()
         }
 
-        let newPack = M1Pack(name: "", order: M1Pack.nextPackOrder(packs))
+        let newOrder: Int
+        switch insertionPosition {
+        case .head:
+            let minOrder = packs.map { $0.order }.min() ?? 0
+            newOrder = minOrder - 1
+        case .tail:
+            let maxOrder = packs.map { $0.order }.max() ?? -1
+            newOrder = maxOrder + 1
+        }
+
+        let newPack = M1Pack(name: "", order: newOrder)
         modelContext.insert(newPack)
+
+        let descriptor = FetchDescriptor<M1Pack>()
+        if let allPacks = try? modelContext.fetch(descriptor) {
+            M1Pack.normalizePackOrder(allPacks)
+        }
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {

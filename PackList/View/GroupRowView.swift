@@ -15,6 +15,7 @@ struct GroupRowView: View {
     let onEdit: (M2Group, CGPoint) -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
@@ -28,21 +29,24 @@ struct GroupRowView: View {
     var body: some View {
         Group {
             HStack(spacing: 0) {
-                Button { // 編集ボタン
-                    if let rf = rowFrame {
-                        let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY)
-                        onEdit(group, po)
-                    }
-                } label: {
-                    Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-                        .imageScale(.large)
-                }
-                .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
-                .tint(.accentColor)
-                .padding(.vertical, 8)
-                .padding(.trailing, 4)
-                .padding(.leading, 0)
+
+                Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
+                    .imageScale(.large)
+//                Button { // 編集ボタン
+//                    if let rf = rowFrame {
+//                        let po = CGPoint(x: rf.width / 2.0,
+//                                         y: rf.minY)
+//                        onEdit(group, po)
+//                    }
+//                } label: {
+//                    Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
+//                        .imageScale(.large)
+//                }
+//                .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
+//                .tint(.accentColor)
+//                .padding(.vertical, 8)
+//                .padding(.trailing, 4)
+//                .padding(.leading, 0)
 
                 VStack(alignment: .leading, spacing: 1) {
                     group.name.placeholderText("placeholder.group.new")
@@ -63,18 +67,33 @@ struct GroupRowView: View {
                     
                     HStack {
                         Spacer() // 右寄せにするため
-                        if 0 < group.stockWeight {
-                            Text(verbatim: "\(group.stockWeight.decimalGrouped)\(weightUnit)／\(group.needWeight.decimalGrouped)\(weightUnit)")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(COLOR_ROW_ITEM.opacity(0.85))
-                                )
-                        }
                         
+                        // 編集
+                        Button {
+                            guard let rf = rowFrame else { return }
+                            let po = CGPoint(x: rf.width / 2.0,
+                                             y: rf.minY)
+                            onEdit(group, po)
+                        } label: {
+                            if 0 < group.stockWeight {
+                                Text(verbatim: "\(group.stockWeight.decimalGrouped)\(weightUnit)／\(group.needWeight.decimalGrouped)\(weightUnit)")
+                                    .font(FONT_WEIGHT)
+                                    .foregroundStyle(COLOR_WEIGHT)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                            }
+
+                            Image(systemName: "square.and.pencil")
+                                .tint(.gray)
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                        .padding(.vertical, 2)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Capsule()
+                                .fill(COLOR_ROW_ITEM.opacity(0.85))
+                        )
+
                         if isHeader {
                             // セクションヘッダになる場合
                             // アイテム追加ボタン
@@ -121,13 +140,28 @@ struct GroupRowView: View {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
 
-        let newItem = M3Item(name: "", order: group.nextItemOrder(), parent: group)
+        let newOrder: Int
+        switch insertionPosition {
+        case .head:
+            let minOrder = group.child.map { $0.order }.min() ?? 0
+            newOrder = minOrder - 1
+        case .tail:
+            let maxOrder = group.child.map { $0.order }.max() ?? -1
+            newOrder = maxOrder + 1
+        }
+
+        let newItem = M3Item(name: "", order: newOrder, parent: group)
         modelContext.insert(newItem)
         withAnimation {
-            group.child.append(newItem)
+            switch insertionPosition {
+            case .head:
+                group.child.insert(newItem, at: 0)
+            case .tail:
+                group.child.append(newItem)
+            }
             group.normalizeItemOrder()
         }
     }
-    
+
 }
 

@@ -28,21 +28,9 @@ struct PackRowView: View {
     var body: some View {
         Group {
             HStack(spacing: 0) {
-                Button { // 編集ボタン
-                    if let rf = rowFrame {
-                        let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY)
-                        onEdit(pack, po)
-                    }
-                } label: {
-                    Image(systemName: allItemsChecked ? "checkmark.message" : "message")
-                        .imageScale(.large)
-                }
-                .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
-                .tint(.accentColor)
-                .padding(.vertical, 8)
-                .padding(.trailing, 4)
-                .padding(.leading, 0)
+
+                Image(systemName: allItemsChecked ? "checkmark.message" : "message")
+                    .imageScale(.large)
 
                 VStack(alignment: .leading, spacing: 1) {
                     pack.name.placeholderText("placeholder.pack.new")
@@ -64,17 +52,31 @@ struct PackRowView: View {
                     HStack {
                         Spacer() // 右寄せにするため
                         
-                        if 0 < pack.stockWeight {
-                            Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
-                                .font(FONT_WEIGHT)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(COLOR_ROW_GROUP.opacity(0.85))
-                                )
+                        // 編集
+                        Button {
+                            guard let rf = rowFrame else { return }
+                            let po = CGPoint(x: rf.width / 2.0,
+                                             y: rf.minY)
+                            onEdit(pack, po)
+                        } label: {
+                            if 0 < pack.stockWeight {
+                                Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
+                                    .font(FONT_WEIGHT)
+                                    .foregroundStyle(COLOR_WEIGHT)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                            }
+
+                            Image(systemName: "square.and.pencil")
+                                .tint(.gray)
                         }
+                        .buttonStyle(BorderlessButtonStyle())
+                        .padding(.vertical, 2)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Capsule()
+                                .fill(COLOR_ROW_GROUP.opacity(0.85))
+                        )
                     }
                     .padding(.trailing, 8)
                 }

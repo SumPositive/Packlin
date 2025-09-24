@@ -86,11 +86,14 @@ struct SettingView: View {
     /// カスタム設定
     struct CustomSetView: View {
         @Environment(\.modelContext) private var modelContext
+        @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @State private var isPresentingImporter = false
         @State private var importErrorMessage: String?
 
         var body: some View {
-            VStack {
+            VStack(spacing: 12) {
+
+                // 共有 Pack_*.json を読み込む
                 Button(action: {
                     isPresentingImporter = true
                 }) {
@@ -99,10 +102,28 @@ struct SettingView: View {
                     Spacer()
                 }
                 .padding(8)
+
+                // 新規追加の位置
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "arrow.up.arrow.down")
+                        Text("setting.insertion.title")
+                        Spacer()
+                    }
+
+                    Picker("setting.insertion.title", selection: $insertionPosition) {
+                        ForEach(InsertionPosition.allCases) { position in
+                            Text(position.localizedKey)
+                                .tag(position)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(8)
             }
             .background(Color(.white).opacity(0.5))
             .cornerRadius(10)
-            .fileImporter(
+            .fileImporter( // ファイル読み込み
                 isPresented: $isPresentingImporter,
                 allowedContentTypes: [.json],
                 allowsMultipleSelection: false
