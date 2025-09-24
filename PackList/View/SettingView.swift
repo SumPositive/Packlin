@@ -87,6 +87,7 @@ struct SettingView: View {
     struct CustomSetView: View {
         @Environment(\.modelContext) private var modelContext
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
         @State private var isPresentingImporter = false
         @State private var importErrorMessage: String?
 
@@ -118,6 +119,15 @@ struct SettingView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                }
+                .padding(8)
+
+                Toggle(isOn: $showNeedWeight) {
+                    HStack {
+                        Image(systemName: "scalemass")
+                        Text("setting.needWeight.title")
+                        Spacer()
+                    }
                 }
                 .padding(8)
             }

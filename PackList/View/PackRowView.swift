@@ -14,11 +14,22 @@ struct PackRowView: View {
     let onEdit: (M1Pack, CGPoint) -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { pack.name.isEmpty }
     private var weightUnit: String { String(localized: "unit.gram") }
+
+    private var weightLabelText: String? {
+        if showNeedWeight {
+            guard pack.stockWeight > 0 || pack.needWeight > 0 else { return nil }
+            return "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)"
+        } else {
+            guard pack.stockWeight > 0 else { return nil }
+            return "\(pack.stockWeight.decimalGrouped)\(weightUnit)"
+        }
+    }
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
@@ -59,8 +70,8 @@ struct PackRowView: View {
                                              y: rf.minY)
                             onEdit(pack, po)
                         } label: {
-                            if 0 < pack.stockWeight {
-                                Text(verbatim: "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)")
+                            if let weightLabelText = weightLabelText {
+                                Text(verbatim: weightLabelText)
                                     .font(FONT_WEIGHT)
                                     .foregroundStyle(COLOR_WEIGHT)
                                     .padding(.horizontal, 8)

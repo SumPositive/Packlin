@@ -732,6 +732,22 @@
         }
       }
     },
+    "setting.needWeight.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show need weight"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "必要重量を表示"
+          }
+        }
+      }
+    },
     "setting.title" : {
       "localizations" : {
         "en" : {

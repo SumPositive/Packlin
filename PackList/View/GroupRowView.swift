@@ -16,11 +16,22 @@ struct GroupRowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { group.name.isEmpty }
     private var weightUnit: String { String(localized: "unit.gram") }
+
+    private var weightLabelText: String? {
+        if showNeedWeight {
+            guard group.stockWeight > 0 || group.needWeight > 0 else { return nil }
+            return "\(group.stockWeight.decimalGrouped)\(weightUnit)／\(group.needWeight.decimalGrouped)\(weightUnit)"
+        } else {
+            guard group.stockWeight > 0 else { return nil }
+            return "\(group.stockWeight.decimalGrouped)\(weightUnit)"
+        }
+    }
 
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
@@ -75,8 +86,8 @@ struct GroupRowView: View {
                                              y: rf.minY)
                             onEdit(group, po)
                         } label: {
-                            if 0 < group.stockWeight {
-                                Text(verbatim: "\(group.stockWeight.decimalGrouped)\(weightUnit)／\(group.needWeight.decimalGrouped)\(weightUnit)")
+                            if let weightLabelText = weightLabelText {
+                                Text(verbatim: weightLabelText)
                                     .font(FONT_WEIGHT)
                                     .foregroundStyle(COLOR_WEIGHT)
                                     .padding(.horizontal, 8)
