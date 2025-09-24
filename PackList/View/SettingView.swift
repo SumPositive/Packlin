@@ -86,17 +86,35 @@ struct SettingView: View {
     /// カスタム設定
     struct CustomSetView: View {
         @Environment(\.modelContext) private var modelContext
+        @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @State private var isPresentingImporter = false
         @State private var importErrorMessage: String?
 
         var body: some View {
-            VStack {
+            VStack(spacing: 12) {
                 Button(action: {
                     isPresentingImporter = true
                 }) {
                     Image(systemName: "arrow.down.message")
                     Text("action.json.download")
                     Spacer()
+                }
+                .padding(8)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "arrow.up.arrow.down")
+                        Text("setting.insertion.title")
+                        Spacer()
+                    }
+
+                    Picker("setting.insertion.title", selection: $insertionPosition) {
+                        ForEach(InsertionPosition.allCases) { position in
+                            Text(position.localizedKey)
+                                .tag(position)
+                        }
+                    }
+                    .pickerStyle(.segmented)
                 }
                 .padding(8)
             }

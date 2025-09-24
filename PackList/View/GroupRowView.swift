@@ -15,6 +15,7 @@ struct GroupRowView: View {
     let onEdit: (M2Group, CGPoint) -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
@@ -121,11 +122,25 @@ struct GroupRowView: View {
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
 
-        let minOrder = group.child.map { $0.order }.min() ?? 0
-        let newItem = M3Item(name: "", order: minOrder - 1, parent: group)
+        let newOrder: Int
+        switch insertionPosition {
+        case .head:
+            let minOrder = group.child.map { $0.order }.min() ?? 0
+            newOrder = minOrder - 1
+        case .tail:
+            let maxOrder = group.child.map { $0.order }.max() ?? -1
+            newOrder = maxOrder + 1
+        }
+
+        let newItem = M3Item(name: "", order: newOrder, parent: group)
         modelContext.insert(newItem)
         withAnimation {
-            group.child.insert(newItem, at: 0)
+            switch insertionPosition {
+            case .head:
+                group.child.insert(newItem, at: 0)
+            case .tail:
+                group.child.append(newItem)
+            }
             group.normalizeItemOrder()
         }
     }

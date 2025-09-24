@@ -92,3 +92,25 @@ let FONT_EDIT: Font = .title2
 
 // Setting 初期値
 
+enum AppStorageKey {
+    static let insertionPosition = "setting.insertionPosition"
+}
+
+enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
+    case head
+    case tail
+
+    static let `default`: InsertionPosition = .tail
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .head:
+            return "setting.insertion.head"
+        case .tail:
+            return "setting.insertion.tail"
+        }
+    }
+}
+

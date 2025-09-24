@@ -13,6 +13,7 @@ struct GroupListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -145,11 +146,25 @@ struct GroupListView: View {
             updateUndoRedo()
         }
 
-        let minOrder = pack.child.map { $0.order }.min() ?? 0
-        let newGroup = M2Group(name: "", order: minOrder - 1, parent: pack)
+        let newOrder: Int
+        switch insertionPosition {
+        case .head:
+            let minOrder = pack.child.map { $0.order }.min() ?? 0
+            newOrder = minOrder - 1
+        case .tail:
+            let maxOrder = pack.child.map { $0.order }.max() ?? -1
+            newOrder = maxOrder + 1
+        }
+
+        let newGroup = M2Group(name: "", order: newOrder, parent: pack)
         modelContext.insert(newGroup)
         withAnimation {
-            pack.child.insert(newGroup, at: 0)
+            switch insertionPosition {
+            case .head:
+                pack.child.insert(newGroup, at: 0)
+            case .tail:
+                pack.child.append(newGroup)
+            }
             pack.normalizeGroupOrder()
         }
     }
