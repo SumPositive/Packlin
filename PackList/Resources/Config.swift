@@ -95,6 +95,7 @@ let FONT_EDIT: Font = .title2
 enum AppStorageKey {
     // 新規追加の位置
     static let insertionPosition = "setting.insertionPosition"
+    static let showNeedWeight = "setting.showNeedWeight"
 }
 
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
