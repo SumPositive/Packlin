@@ -84,6 +84,25 @@ struct ItemListView: View {
             }
         }
         .coordinateSpace(name: "itemList")
+        .contentShape(Rectangle())
+        .highPriorityGesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { value in
+                    let horizontal = value.translation.width
+                    let vertical = value.translation.height
+
+                    if isShowingPopup {
+                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
+                        editingGroup = nil
+                        editingItem = nil
+                        popupAnchor = nil
+                        return
+                    }
+
+                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    dismiss()
+                }
+        )
     }
     
     @ViewBuilder
