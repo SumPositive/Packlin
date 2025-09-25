@@ -127,6 +127,24 @@ struct GroupListView: View {
                 .zIndex(1)
             }
         }
+        .contentShape(Rectangle())
+        .highPriorityGesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { value in
+                    let horizontal = value.translation.width
+                    let vertical = value.translation.height
+
+                    if isShowingPopup {
+                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
+                        editingGroup = nil
+                        popupAnchor = nil
+                        return
+                    }
+
+                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    dismiss()
+                }
+        )
     }
 
     private func updateUndoRedo() {
