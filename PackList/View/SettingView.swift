@@ -13,35 +13,93 @@ import Foundation
 
 /// 設定画面：Popupで表示する
 struct SettingView: View {
-    
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Image(systemName: "gearshape")
-                Text("setting.title")
-                Spacer()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                header
+
+                SettingSection {
+                    InformationView()
+                }
+
+                SettingSection {
+                    CustomSetView()
+                }
+
+                SettingSection {
+                    DonationView()
+                }
             }
-            .padding(8)
-            
-            // アプリの紹介・取扱説明
-            InformationView()
-                .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollIndicators(.never)
+        .frame(width: 340, height: 520)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(uiColor: .systemGroupedBackground))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.6 : 0.2), lineWidth: 0.5)
+        )
+    }
 
-            // カスタム設定
-            CustomSetView()
-                .padding(.vertical, 8)
+    private var header: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "gearshape")
+                .font(.title3.weight(.semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.primary)
 
-            /// 寄付
-            DonationView()
-                .padding(.vertical, 8)
+            Text("setting.title")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.primary)
 
             Spacer()
         }
-        .padding(.horizontal, 8)
-        .frame(width: 320, height: 500)
-        .onAppear {
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private struct SettingSection<Content: View>: View {
+        @Environment(\.colorScheme) private var colorScheme
+        private let content: Content
+
+        init(@ViewBuilder content: () -> Content) {
+            self.content = content()
         }
-        .onDisappear() {
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 16) {
+                content
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(backgroundColor)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.2), lineWidth: 0.5)
+            )
+            .shadow(color: shadowColor, radius: 12, x: 0, y: 6)
+        }
+
+        private var backgroundColor: Color {
+            if colorScheme == .dark {
+                return Color(uiColor: .tertiarySystemBackground)
+            } else {
+                return Color(uiColor: .systemBackground)
+            }
+        }
+
+        private var shadowColor: Color {
+            colorScheme == .dark ? Color.black.opacity(0.45) : Color.black.opacity(0.12)
         }
     }
     
@@ -65,11 +123,16 @@ struct SettingView: View {
                     showSafari = true
                 //}
             }) {
-                Image(systemName: "info.circle")
-                Text("setting.info")
-                Spacer()
+                Label {
+                    Text("setting.info")
+                        .font(.body.weight(.medium))
+                } icon: {
+                    Image(systemName: "info.circle")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(8)
+            .buttonStyle(.plain)
             .sheet(isPresented: $showSafari) {
                 let urlString = String(localized: "info.url")
                 if let url = URL(string: urlString) {
@@ -78,8 +141,6 @@ struct SettingView: View {
                     Text("setting.infoUnavailable")
                 }
             }
-            .background(Color(.white).opacity(0.5))
-            .cornerRadius(10)
         }
     }
 
@@ -92,23 +153,34 @@ struct SettingView: View {
         @State private var importErrorMessage: String?
 
         var body: some View {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 20) {
 
                 // 共有 Pack_*.json を読み込む
                 Button(action: {
                     isPresentingImporter = true
                 }) {
-                    Image(systemName: "arrow.down.message")
-                    Text("action.json.download")
-                    Spacer()
+                    Label {
+                        Text("action.json.download")
+                            .font(.body.weight(.medium))
+                    } icon: {
+                        Image(systemName: "arrow.down.message")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(EdgeInsets(top: 8, leading: 8, bottom: 0, trailing: 8))
-                
+                .buttonStyle(.borderedProminent)
+                .tint(.accentColor)
+
                 // 新規追加の位置
-                HStack {
-                    Image(systemName: "arrow.up.arrow.down")
-                    Text("setting.insertion.title")
-                    Spacer()
+                VStack(alignment: .leading, spacing: 8) {
+                    Label {
+                        Text("setting.insertion.title")
+                            .font(.callout)
+                    } icon: {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+
                     Picker("setting.insertion.title", selection: $insertionPosition) {
                         ForEach(InsertionPosition.allCases) { position in
                             Text(position.localizedKey)
@@ -117,19 +189,17 @@ struct SettingView: View {
                     }
                     .pickerStyle(.segmented)
                 }
-                .padding(EdgeInsets(top: 8, leading: 8, bottom: 0, trailing: 8))
 
                 Toggle(isOn: $showNeedWeight) {
-                    HStack {
-                        Image(systemName: "scalemass")
+                    Label {
                         Text("setting.needWeight.title")
-                        Spacer()
+                            .font(.body)
+                    } icon: {
+                        Image(systemName: "scalemass")
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
-                .padding(8)
             }
-            .background(Color(.white).opacity(0.5))
-            .cornerRadius(10)
             .fileImporter( // ファイル読み込み
                 isPresented: $isPresentingImporter,
                 allowedContentTypes: [.json],
@@ -212,36 +282,33 @@ struct SettingView: View {
         @State private var showDonate = false
 
         var body: some View {
-            VStack(spacing: 0) {
-                HStack {
-                    Image(systemName: "heart")
+            VStack(alignment: .leading, spacing: 20) {
+                Label {
                     Text("ad.empowering.developers")
-                    Spacer()
+                        .font(.body.weight(.medium))
+                } icon: {
+                    Image(systemName: "heart")
+                        .symbolRenderingMode(.hierarchical)
                 }
-                .padding(8)
 
-                VStack(spacing: 0) {
-                    HStack {
-                        // 広告を見て寄付する（ボタン）
-                        Button(action: {
-                            withAnimation {
-                                // SafariでURLを表示する
-                                showAd = true
-                            }
-                        }) {
-                            Text("ad.donate.banner")
+                VStack(alignment: .leading, spacing: 16) {
+                    // 広告を見て寄付する（ボタン）
+                    Button(action: {
+                        withAnimation {
+                            // SafariでURLを表示する
+                            showAd = true
                         }
-                        .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
-                        .sheet(isPresented: $showAd) {
-                            AdMobBannerContainerView()
-                        }
-                        Spacer()
+                    }) {
+                        Text("ad.donate.banner")
+                            .frame(maxWidth: .infinity)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
-                    
-                    HStack {
-                        // 動画広告を見て寄付する（ボタン）
+                    .buttonStyle(.borderedProminent)
+                    .tint(.pink)
+                    .sheet(isPresented: $showAd) {
+                        AdMobBannerContainerView()
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
                         Button(action: {
                             withAnimation {
                                 // SafariでURLを表示する
@@ -249,25 +316,25 @@ struct SettingView: View {
                             }
                         }) {
                             Text("ad.donate.video")
+                                .frame(maxWidth: .infinity)
                         }
-                        .contentShape(Rectangle()) // paddingを含む領域全体をタップ対象にする
+                        .buttonStyle(.borderedProminent)
+                        .tint(.purple)
                         .sheet(isPresented: $showAdMovie) {
                             AdMobVideoContainerView()
                         }
-                        HStack(spacing: 0) {
+
+                        HStack(spacing: 4) {
                             Image(systemName: "exclamationmark.triangle")
                                 .imageScale(.small)
-                            Text("ad.video.sound").font(.caption)
+                                .symbolRenderingMode(.hierarchical)
+                            Text("ad.video.sound")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        Spacer()
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
                 }
-                .padding(.leading, 26)
             }
-            .background(Color(.white).opacity(0.5))
-            .cornerRadius(10)
         }
     }
 
