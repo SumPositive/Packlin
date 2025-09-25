@@ -176,6 +176,15 @@ struct PackListView: View {
         let newPack = M1Pack(name: "", order: newOrder)
         modelContext.insert(newPack)
 
+        // 新規モチメモ作成時に初期グループとアイテムを1つずつ追加する
+        let initialGroup = M2Group(name: "", order: 0, parent: newPack)
+        modelContext.insert(initialGroup)
+        newPack.child.append(initialGroup)
+
+        let initialItem = M3Item(name: "", order: 0, parent: initialGroup)
+        modelContext.insert(initialItem)
+        initialGroup.child.append(initialItem)
+
         let descriptor = FetchDescriptor<M1Pack>()
         if let allPacks = try? modelContext.fetch(descriptor) {
             M1Pack.normalizePackOrder(allPacks)
