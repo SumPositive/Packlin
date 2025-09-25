@@ -90,15 +90,17 @@ struct ItemListView: View {
                 .onEnded { value in
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
-                    guard horizontal > 80, abs(vertical) < 50 else { return }
 
                     if isShowingPopup {
+                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
                         editingGroup = nil
                         editingItem = nil
                         popupAnchor = nil
-                    } else {
-                        dismiss()
+                        return
                     }
+
+                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    dismiss()
                 }
         )
     }
