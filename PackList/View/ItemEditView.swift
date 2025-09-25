@@ -11,11 +11,25 @@
 import SwiftUI
 import SwiftData
 
+enum ItemEditPresentationStyle {
+    case popup
+    case navigation
+}
+
 /// Item 編集
 /// 外枠 frameを固定サイズにして、内側をレイアウトしている
 struct ItemEditView: View {
     @Bindable var item: M3Item
+    let style: ItemEditPresentationStyle
     let onClose: () -> Void
+
+    init(item: M3Item,
+         style: ItemEditPresentationStyle = .popup,
+         onClose: @escaping () -> Void) {
+        self._item = Bindable(item)
+        self.style = style
+        self.onClose = onClose
+    }
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var nameIsFocused: Bool
@@ -198,7 +212,9 @@ struct ItemEditView: View {
             .padding(8)
         }
         .padding(8)
-        .frame(width: 320, height: 368) // H:380以内にしないとキーボードが被る恐れあり
+        .frame(width: style == .popup ? 320 : nil,
+               height: style == .popup ? 368 : nil) // H:380以内にしないとキーボードが被る恐れあり
+        .frame(maxWidth: style == .navigation ? .infinity : nil)
         .onAppear {
             // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()

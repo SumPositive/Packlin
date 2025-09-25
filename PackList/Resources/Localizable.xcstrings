@@ -415,6 +415,22 @@
         }
       }
     },
+    "navigation.itemNotFound" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item not found"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイテムが見つかりません"
+          }
+        }
+      }
+    },
     "navigation.packNotFound" : {
       "localizations" : {
         "en" : {

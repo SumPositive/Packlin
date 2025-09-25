@@ -12,6 +12,7 @@ import UIKit
 struct ItemRowView: View {
     let item: M3Item
     let onEdit: (M3Item, CGPoint) -> Void
+    let onTap: (M3Item) -> Void
 
     @Environment(\.modelContext) private var modelContext
     @State private var rowFrame: CGRect?
@@ -20,6 +21,14 @@ struct ItemRowView: View {
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
     private var weightUnit: String { String(localized: "unit.gram") }
+
+    init(item: M3Item,
+         onEdit: @escaping (M3Item, CGPoint) -> Void,
+         onTap: @escaping (M3Item) -> Void = { _ in }) {
+        self.item = item
+        self.onEdit = onEdit
+        self.onTap = onTap
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -112,6 +121,9 @@ struct ItemRowView: View {
         .background(COLOR_ROW_ITEM)
         .transition(.move(edge: .top).combined(with: .opacity))
         .contentShape(Rectangle())
+        .onTapGesture {
+            onTap(item)
+        }
         .background(
             // Row本体に置くとRowサイズが固定化されてしまうため
             GeometryReader { geo in

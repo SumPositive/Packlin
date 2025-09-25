@@ -14,9 +14,10 @@ import SwiftData
 struct ItemListView: View {
     let pack: M1Pack
     let initialGroup: M2Group
-    
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationCoordinator: NavigationCoordinator
     
     @State private var canUndo = false
     @State private var canRedo = false
@@ -130,6 +131,13 @@ struct ItemListView: View {
                 ItemRowView(item: item) { selected, point in
                     editingItem = selected
                     popupAnchor = point
+                } onTap: { selected in
+                    guard !isShowingPopup else { return }
+                    navigationCoordinator.path.append(
+                        .itemEdit(packID: pack.id,
+                                  groupID: group.id,
+                                  itemID: selected.id)
+                    )
                 }
                 .contentShape(Rectangle()) // D&D の当たり判定を広げる
                 // 一次元方式：どのセクションにもドロップ可能にするため、行をドラッグ可能に
