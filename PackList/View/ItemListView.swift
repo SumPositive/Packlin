@@ -88,10 +88,15 @@ struct ItemListView: View {
         .highPriorityGesture(
             DragGesture(minimumDistance: 30)
                 .onEnded { value in
-                    guard !isShowingPopup else { return }
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
-                    if horizontal > 80, abs(vertical) < 50 {
+                    guard horizontal > 80, abs(vertical) < 50 else { return }
+
+                    if isShowingPopup {
+                        editingGroup = nil
+                        editingItem = nil
+                        popupAnchor = nil
+                    } else {
                         dismiss()
                     }
                 }
