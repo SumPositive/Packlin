@@ -43,21 +43,7 @@ struct GroupRowView: View {
 
                 Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
                     .imageScale(.large)
-//                Button { // 編集ボタン
-//                    if let rf = rowFrame {
-//                        let po = CGPoint(x: rf.width / 2.0,
-//                                         y: rf.minY)
-//                        onEdit(group, po)
-//                    }
-//                } label: {
-//                    Image(systemName: allItemsChecked ? "checkmark.rectangle" : "rectangle")
-//                        .imageScale(.large)
-//                }
-//                .buttonStyle(.borderless) // これが無いとRow全域がタップ領域になる
-//                .tint(.accentColor)
-//                .padding(.vertical, 8)
-//                .padding(.trailing, 4)
-//                .padding(.leading, 0)
+                    .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
                     group.name.placeholderText("placeholder.group.new")

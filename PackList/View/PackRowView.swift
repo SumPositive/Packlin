@@ -42,6 +42,7 @@ struct PackRowView: View {
 
                 Image(systemName: allItemsChecked ? "checkmark.message" : "message")
                     .imageScale(.large)
+                    .padding(.trailing, 8)
 
                 VStack(alignment: .leading, spacing: 1) {
                     pack.name.placeholderText("placeholder.pack.new")
