@@ -134,9 +134,11 @@ struct ItemListView: View {
                 } onTap: { selected in
                     guard !isShowingPopup else { return }
                     navigationCoordinator.path.append(
-                        .itemEdit(packID: pack.id,
-                                  groupID: group.id,
-                                  itemID: selected.id)
+                        AppDestination.itemEdit(
+                            packID: pack.id,
+                            groupID: group.id,
+                            itemID: selected.id
+                        )
                     )
                 }
                 .contentShape(Rectangle()) // D&D の当たり判定を広げる
