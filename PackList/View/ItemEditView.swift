@@ -20,6 +20,14 @@ struct ItemEditView: View {
     @FocusState private var focusedField: Field?
     @State private var canUndo = false
     @State private var canRedo = false
+    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
+    @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
+    @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
+    @State private var isShowingMoveSheet = false
+    @State private var selectedPackID: String
+    @State private var selectedGroupID: String
+    @State private var keepSourceItem = false
+    @State private var moveInsertPosition: MoveInsertPosition = .end
 
     private let sectionCornerRadius: CGFloat = 12
 
@@ -36,11 +44,29 @@ struct ItemEditView: View {
         case memo
     }
 
+    private enum MoveInsertPosition: String, CaseIterable, Identifiable {
+        case start
+        case end
+
+        var id: String { rawValue }
+
+        var titleKey: LocalizedStringKey {
+            switch self {
+            case .start:
+                return "item.move.position.start"
+            case .end:
+                return "item.move.position.end"
+            }
+        }
+    }
+
     init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void) {
         self.pack = pack
         self.group = group
         self._item = Bindable(item)
         self.onDismiss = onDismiss
+        self._selectedPackID = State(initialValue: pack.id)
+        self._selectedGroupID = State(initialValue: group.id)
     }
 
     var body: some View {
@@ -61,9 +87,8 @@ struct ItemEditView: View {
                     HStack(spacing: 12) {
                         // 移動
                         Button {
-                            //TODO: PopupでPackとGroupを選択するためのプルダウンリストを設置。その下に移動元を残すコピーチェックを設置。その次に移動先をグループの先頭か末尾を選択できるようにする。次に移動またはコピーボタンを設置。それを押すと処理を実行してPopupを閉じる。PackとGroupを選択するためのプルダウンリストは、直前の選択を保持する。
-                            
-                            onDismiss()
+                            prepareMoveSheet()
+                            isShowingMoveSheet = true
                         } label: {
                             Label("action.move", systemImage: "hand.point.up.left.and.text")
                                 .frame(width: 90, height: 44)
@@ -227,6 +252,22 @@ struct ItemEditView: View {
         .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
             updateUndoRedo()
         }
+        .sheet(isPresented: $isShowingMoveSheet) {
+            ItemMoveSheetView(
+                packs: sortedPacks,
+                selectedPackID: $selectedPackID,
+                selectedGroupID: $selectedGroupID,
+                keepOriginal: $keepSourceItem,
+                insertPosition: $moveInsertPosition,
+                disableConfirm: selectedDestinationGroup == nil,
+                onConfirm: handleMoveConfirmation,
+                onCancel: { isShowingMoveSheet = false }
+            )
+        }
+        .onChange(of: selectedPackID) { _, _ in
+            guard isShowingMoveSheet else { return }
+            syncGroupSelection(useStoredPreference: false)
+        }
     }
 
     private func duplicateItem() {
@@ -277,6 +318,125 @@ struct ItemEditView: View {
             canUndo = false
             canRedo = false
         }
+    }
+
+    private var sortedPacks: [M1Pack] {
+        packs.sorted { $0.order < $1.order }
+    }
+
+    private var selectedPack: M1Pack? {
+        sortedPacks.first(where: { $0.id == selectedPackID })
+    }
+
+    private var selectedDestinationGroup: M2Group? {
+        guard let pack = selectedPack else { return nil }
+        return pack.child.sorted { $0.order < $1.order }
+            .first(where: { $0.id == selectedGroupID })
+    }
+
+    private func prepareMoveSheet() {
+        keepSourceItem = false
+
+        if let storedPack = sortedPacks.first(where: { $0.id == lastMovePackID }) {
+            selectedPackID = storedPack.id
+        } else if sortedPacks.contains(where: { $0.id == pack.id }) {
+            selectedPackID = pack.id
+        } else if let firstPack = sortedPacks.first {
+            selectedPackID = firstPack.id
+        } else {
+            selectedPackID = ""
+        }
+
+        syncGroupSelection(useStoredPreference: true)
+    }
+
+    private func syncGroupSelection(useStoredPreference: Bool) {
+        guard let pack = selectedPack else {
+            selectedGroupID = ""
+            return
+        }
+
+        let groups = pack.child.sorted { $0.order < $1.order }
+
+        if useStoredPreference,
+           let storedGroup = groups.first(where: { $0.id == lastMoveGroupID }) {
+            selectedGroupID = storedGroup.id
+            return
+        }
+
+        if let currentSelection = groups.first(where: { $0.id == selectedGroupID }) {
+            selectedGroupID = currentSelection.id
+            return
+        }
+
+        if pack.id == group.parent?.id,
+           let currentGroup = groups.first(where: { $0.id == group.id }) {
+            selectedGroupID = currentGroup.id
+            return
+        }
+
+        if let firstGroup = groups.first {
+            selectedGroupID = firstGroup.id
+        } else {
+            selectedGroupID = ""
+        }
+    }
+
+    private func handleMoveConfirmation() {
+        guard let destinationGroup = selectedDestinationGroup else { return }
+
+        performMoveOrCopy(to: destinationGroup, copy: keepSourceItem)
+        lastMovePackID = selectedPackID
+        lastMoveGroupID = destinationGroup.id
+        isShowingMoveSheet = false
+        onDismiss()
+    }
+
+    private func performMoveOrCopy(to destinationGroup: M2Group, copy: Bool) {
+        modelContext.undoManager?.beginUndoGrouping()
+        defer {
+            modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+
+        if !copy,
+           let sourceGroup = item.parent {
+            var sourceItems = sourceGroup.child.sorted { $0.order < $1.order }
+            if let index = sourceItems.firstIndex(where: { $0.id == item.id }) {
+                sourceItems.remove(at: index)
+                sourceGroup.child = sourceItems
+                sourceGroup.normalizeItemOrder()
+            }
+        }
+
+        var destinationItems = destinationGroup.child.sorted { $0.order < $1.order }
+        let insertIndex: Int
+        switch moveInsertPosition {
+        case .start:
+            insertIndex = 0
+        case .end:
+            insertIndex = destinationItems.count
+        }
+        let clampedIndex = max(0, min(insertIndex, destinationItems.count))
+
+        if copy {
+            let newItem = M3Item(name: item.name,
+                                 memo: item.memo,
+                                 stock: item.stock,
+                                 need: item.need,
+                                 weight: item.weight,
+                                 order: clampedIndex,
+                                 parent: destinationGroup)
+            modelContext.insert(newItem)
+            destinationItems.insert(newItem, at: clampedIndex)
+        } else {
+            item.parent = destinationGroup
+            destinationItems.insert(item, at: clampedIndex)
+        }
+
+        destinationGroup.child = destinationItems
+        destinationGroup.normalizeItemOrder()
     }
 }
 
@@ -414,6 +574,82 @@ private struct ItemQuantityEditor: View {
             .padding(.horizontal, 10)
             .background(COLOR_BACK_INPUT)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+private struct ItemMoveSheetView: View {
+    let packs: [M1Pack]
+    @Binding var selectedPackID: String
+    @Binding var selectedGroupID: String
+    @Binding var keepOriginal: Bool
+    @Binding var insertPosition: ItemEditView.MoveInsertPosition
+    let disableConfirm: Bool
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    private var sortedPacks: [M1Pack] {
+        packs.sorted { $0.order < $1.order }
+    }
+
+    private var selectedPack: M1Pack? {
+        sortedPacks.first(where: { $0.id == selectedPackID })
+    }
+
+    private var availableGroups: [M2Group] {
+        guard let pack = selectedPack else { return [] }
+        return pack.child.sorted { $0.order < $1.order }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("item.move.destinationPack") {
+                    Picker("item.move.destinationPack", selection: $selectedPackID) {
+                        ForEach(sortedPacks, id: \.id) { pack in
+                            pack.name.placeholderText("placeholder.pack.new")
+                                .tag(pack.id)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                }
+
+                Section("item.move.destinationGroup") {
+                    Picker("item.move.destinationGroup", selection: $selectedGroupID) {
+                        ForEach(availableGroups, id: \.id) { group in
+                            group.name.placeholderText("placeholder.group.new")
+                                .tag(group.id)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                    .disabled(availableGroups.isEmpty)
+                }
+
+                Section {
+                    Toggle("item.move.keepOriginal", isOn: $keepOriginal)
+                }
+
+                Section("item.move.position") {
+                    Picker("item.move.position", selection: $insertPosition) {
+                        ForEach(ItemEditView.MoveInsertPosition.allCases) { position in
+                            Text(position.titleKey)
+                                .tag(position)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+            }
+            .navigationTitle("action.move")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("action.cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(keepOriginal ? "action.duplicate" : "action.move", action: onConfirm)
+                        .disabled(disableConfirm)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 
