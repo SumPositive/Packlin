@@ -44,7 +44,7 @@ struct ItemEditView: View {
         case memo
     }
 
-    private enum MoveInsertPosition: String, CaseIterable, Identifiable {
+    enum MoveInsertPosition: String, CaseIterable, Identifiable {
         case start
         case end
 
