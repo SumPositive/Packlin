@@ -328,6 +328,22 @@
         }
       }
     },
+    "edit.actions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作"
+          }
+        }
+      }
+    },
     "edit.name" : {
       "localizations" : {
         "en" : {
@@ -376,6 +392,22 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "item (%1$lld) [%2$@]"
+          }
+        }
+      }
+    },
+    "item.section.quantity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数量"
           }
         }
       }
