@@ -17,6 +17,8 @@ struct ItemEditView: View {
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
+    @State private var canUndo = false
+    @State private var canRedo = false
 
     private enum Field: Hashable {
         case name
@@ -88,8 +90,46 @@ struct ItemEditView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle(item.name.placeholderText("placeholder.item.new"))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    withAnimation {
+                        modelContext.undoManager?.undo()
+                    }
+                    updateUndoRedo()
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                } label: {
+                    Label("action.undo", systemImage: "arrow.uturn.backward")
+                }
+                .disabled(!canUndo)
+                .labelStyle(.iconOnly)
+
+                Button {
+                    withAnimation {
+                        modelContext.undoManager?.redo()
+                    }
+                    updateUndoRedo()
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                } label: {
+                    Label("action.redo", systemImage: "arrow.uturn.forward")
+                }
+                .disabled(!canRedo)
+                .labelStyle(.iconOnly)
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 50, coordinateSpace: .local)
+                .onEnded { value in
+                    let horizontal = value.translation.width
+                    let vertical = abs(value.translation.height)
+                    if horizontal > 80 && horizontal > vertical {
+                        onDismiss()
+                    }
+                }
+        )
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()
+            updateUndoRedo()
             if item.name.isEmpty {
                 focusedField = .name
             }
@@ -101,6 +141,9 @@ struct ItemEditView: View {
                 undoManager.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+            updateUndoRedo()
         }
     }
 
@@ -141,6 +184,16 @@ struct ItemEditView: View {
         }
         modelContext.delete(item)
         onDismiss()
+    }
+
+    private func updateUndoRedo() {
+        if let undoManager = modelContext.undoManager {
+            canUndo = undoManager.canUndo
+            canRedo = undoManager.canRedo
+        } else {
+            canUndo = false
+            canRedo = false
+        }
     }
 }
 
