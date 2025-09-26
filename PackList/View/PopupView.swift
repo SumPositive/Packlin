@@ -48,7 +48,7 @@ struct PopupView<Content: View>: View {
                         .padding(4) // Popupの外枠として見える
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(COLOR_POPUP_BORDER)
+                                .fill(COLOR_BACK_POPUP)
                                 .shadow(radius: 5)
                         )
                         .overlay(

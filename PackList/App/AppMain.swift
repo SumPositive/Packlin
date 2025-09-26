@@ -55,16 +55,18 @@ struct AppMain: App {
         WindowGroup {
             NavigationStack(path: $navigationCoordinator.path) {
                 PackListView()
-                    .environmentObject(navigationCoordinator)
                     .navigationDestination(for: AppDestination.self) { destination in
                         switch destination {
                         case .groupList(let packID):
                             GroupListScene(packID: packID)
                         case .itemList(let packID, let groupID):
                             ItemListScene(packID: packID, groupID: groupID)
+                        case .itemEdit(let packID, let groupID, let itemID):
+                            ItemEditScene(packID: packID, groupID: groupID, itemID: itemID)
                         }
                     }
             }
+            .environmentObject(navigationCoordinator)
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { newPhase, oldPhase in

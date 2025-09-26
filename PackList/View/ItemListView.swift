@@ -5,7 +5,7 @@
 //  Created by sumpo on 2025/09/14.
 //
 //　Item移動がGroupを超えて可能にするためListでなくLazyVStackを利用、そのため
-//　RowのswipeActionsが使えなくなるので、ItemEditView上にActionsボタンを表示することにした
+//　RowのswipeActionsが使えなくなるので、PopupとしてItemQuickEditViewを用意している
 //
 
 import SwiftUI
@@ -14,9 +14,10 @@ import SwiftData
 struct ItemListView: View {
     let pack: M1Pack
     let initialGroup: M2Group
-    
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationCoordinator: NavigationCoordinator
     
     @State private var canUndo = false
     @State private var canRedo = false
@@ -74,11 +75,7 @@ struct ItemListView: View {
                     editingItem = nil
                     popupAnchor = nil
                 } content: {
-                    ItemEditView(item: item) {
-                        //.onClose：EditItemView内から閉じる場合
-                        editingItem = nil
-                        popupAnchor = nil
-                    }
+                    ItemQuickEditView(item: item)
                 }
                 .zIndex(1)
             }
@@ -130,6 +127,15 @@ struct ItemListView: View {
                 ItemRowView(item: item) { selected, point in
                     editingItem = selected
                     popupAnchor = point
+                } onTap: { selected in
+                    guard !isShowingPopup else { return }
+                    navigationCoordinator.path.append(
+                        AppDestination.itemEdit(
+                            packID: pack.id,
+                            groupID: group.id,
+                            itemID: selected.id
+                        )
+                    )
                 }
                 .contentShape(Rectangle()) // D&D の当たり判定を広げる
                 // 一次元方式：どのセクションにもドロップ可能にするため、行をドラッグ可能に

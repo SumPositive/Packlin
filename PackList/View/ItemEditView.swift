@@ -4,228 +4,239 @@
 //
 //  Created by sumpo on 2025/09/14.
 //
-//　Item移動がGroupを超えて可能にするためListでなくLazyVStackを利用、そのため
-//　RowのswipeActionsが使えなくなるので、ItemEditView上にActionsボタンを表示することにした
-//
 
 import SwiftUI
 import SwiftData
+import UIKit
 
-/// Item 編集
-/// 外枠 frameを固定サイズにして、内側をレイアウトしている
+/// 画面遷移用のアイテム編集ビュー
 struct ItemEditView: View {
+    let pack: M1Pack
+    let group: M2Group
     @Bindable var item: M3Item
-    let onClose: () -> Void
+    let onDismiss: () -> Void
 
     @Environment(\.modelContext) private var modelContext
-    @FocusState private var nameIsFocused: Bool
+    @FocusState private var focusedField: Field?
+    @State private var canUndo = false
+    @State private var canRedo = false
 
-    private var weightBinding: Binding<Int> {
-        Binding(get: { item.weight },
-                set: {
-            // 入力制約
-            let value = max(0, $0)
-            if APP_MAX_WEIGHT_NUM < value {
-                item.weight = APP_MAX_WEIGHT_NUM
-            } else {
-                item.weight = value
-            }
-        })
+    private let sectionCornerRadius: CGFloat = 12
+
+    private var nameFieldMinHeight: CGFloat {
+        UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
     }
-    private var stockBinding: Binding<Int> {
-        Binding(get: { item.stock },
-                set: {
-            // 入力制約
-            let value = max(0, $0)
-            if APP_MAX_STOCK_NUM < value {
-                item.stock = APP_MAX_STOCK_NUM
-            } else {
-                item.stock = value
-            }
-            // チェック更新
-            item.check = (0 < item.stock && item.need <= item.stock)
-        })
+
+    //private var sectionFieldBackground: Color { Color(.secondarySystemBackground) }
+    //private var sectionButtonBackground: Color { Color(.systemBackground) }
+    //private var sectionButtonBorder: Color { Color(.quaternarySystemFill) }
+
+    private enum Field: Hashable {
+        case name
+        case memo
     }
-    private var needBinding: Binding<Int> {
-        Binding(get: { item.need },
-                set: {
-            // 入力制約
-            let value = max(0, $0)
-            if APP_MAX_NEED_NUM < value {
-                item.need = APP_MAX_NEED_NUM
-            } else {
-                item.need = value
-            }
-            // チェック更新
-            item.check = (0 < item.stock && item.need <= item.stock)
-        })
+
+    init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void) {
+        self.pack = pack
+        self.group = group
+        self._item = Bindable(item)
+        self.onDismiss = onDismiss
     }
-    
+
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("edit.name")
-                    .font(.caption)
-                    .padding(4)
-                Spacer()
-            }
-            .padding(.bottom, -3)
-            TextEditor(text: $item.name)
-                .font(FONT_EDIT)
-                .onChange(of: item.name) { newValue, oldValue in
-                    // 最大文字数制限
-                    if APP_MAX_NAME_LEN < newValue.count {
-                        item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                    }
-                }
-                .focused($nameIsFocused) // フォーカス状態とバインド
-                .frame(height: 80)
-
-            HStack {
-                Text("edit.memo")
-                    .font(.caption)
-                Spacer()
-            }
-            .padding(.top, 8)
-            //.padding(.bottom, 0)
-            TextEditor(text: $item.memo)
-                .font(FONT_EDIT)
-                .onChange(of: item.memo) { newValue, oldValue in
-                    // 最大文字数制限
-                    if APP_MAX_MEMO_LEN < newValue.count {
-                        item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                    }
-                }
-                .frame(height: 80)
-
-            HStack {
-                // Action ボタン
-                VStack {
-                    Button {
-                        duplicateItem()
-                    } label: {
-                        VStack {
-                            Image(systemName: "plus.square.on.square")
-                            Text("action.duplicate")
-                                .font(.caption)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                //    // 見出し
+                //    VStack(alignment: .leading, spacing: 4) {
+                //        // パック名 表示
+                //        pack.name.placeholderText("placeholder.pack.new")
+                //            .font(.caption)
+                //            .foregroundStyle(.secondary)
+                //        // グループ名 表示
+                //        group.name.placeholderText("placeholder.group.new")
+                //            .font(.headline)
+                //    }
+                // 操作
+                EditorSection(title: "edit.actions") {
+                    HStack(spacing: 12) {
+                        // 移動
+                        Button {
+                            //TODO: PopupでPackとGroupを選択するためのプルダウンリストを設置。その下に移動元を残すコピーチェックを設置。その次に移動先をグループの先頭か末尾を選択できるようにする。次に移動またはコピーボタンを設置。それを押すと処理を実行してPopupを閉じる。PackとGroupを選択するためのプルダウンリストは、直前の選択を保持する。
+                            
+                            onDismiss()
+                        } label: {
+                            Label("action.move", systemImage: "hand.point.up.left.and.text")
+                                .frame(width: 90, height: 44)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                )
                         }
-                    }
-                    .tint(.accentColor)
-                    .padding(8)
-                    
-                    Spacer()
-                    
-                    Button {
-                        // EditItemViewを閉じる
-                        onClose()
-                        // Itemを削除する
-                        deleteItem()
-                    } label: {
-                        VStack {
-                            Image(systemName: "trash")
-                            Text("action.delete")
-                                .font(.caption)
+                        .accessibilityLabel(Text("action.duplicate"))
+                        
+                        // 複写
+                        Button {
+                            duplicateItem()
+                            onDismiss()
+                        } label: {
+                            Label("action.duplicate", systemImage: "plus.square.on.square")
+                                .frame(width: 90, height: 44)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                )
                         }
+                        .accessibilityLabel(Text("action.duplicate"))
+                        
+                        // 右端へ
+                        Spacer()
+                        // 削除
+                        Button(role: .destructive) {
+                            deleteItem()
+                            onDismiss()
+                        } label: {
+                            Label("action.delete", systemImage: "trash")
+                                .frame(width: 84, height: 44)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                )
+                        }
+                        .accessibilityLabel(Text("action.delete"))
                     }
-                    .tint(.red)
-                    .padding(8)
+                }
+                // 名称
+                EditorSection(title: "edit.name") {
+                    TextField("", text: $item.name, prompt: Text("placeholder.item.new"), axis: .vertical)
+                        .font(FONT_EDIT)
+                        .focused($focusedField, equals: .name)
+                        .textInputAutocapitalization(.sentences)
+                        .lineLimit(6)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .frame(minHeight: nameFieldMinHeight, alignment: .top)
+                        .background(COLOR_BACK_INPUT)
+                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                        .onChange(of: item.name) { newValue, _ in
+                            if APP_MAX_NAME_LEN < newValue.count {
+                                item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                            }
+                        }
+                }
+                // メモ
+                EditorSection(title: "edit.memo") {
+                    TextEditor(text: $item.memo)
+                        .font(FONT_EDIT)
+                        .focused($focusedField, equals: .memo)
+                        .frame(minHeight: 120)
+                        .scrollContentBackground(.hidden)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 8)
+                        .background(COLOR_BACK_INPUT)
+                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                        .onChange(of: item.memo) { newValue, _ in
+                            if APP_MAX_MEMO_LEN < newValue.count {
+                                item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                            }
+                        }
                 }
 
-                // 重量・数量
-                VStack(spacing: 0) {
-                    HStack {
-                        Text("item.field.weight")
-                            .font(.caption)
-                        Spacer()
-                    }
-                    .padding(.bottom, -2)
-                    HStack {
-                        TextField("", value: weightBinding, format: .number)
-                            .font(FONT_EDIT)
-                            .frame(width: 80)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .background(Color(.systemBackground))
-                        Text("unit.gram")
-                            .font(.caption)
-                        Spacer()
-                        Stepper("", value: weightBinding, in: 0...APP_MAX_WEIGHT_NUM)
-                            .labelsHidden()
-                    }
-                    .padding(.bottom, 8)
-                    HStack {
-                        Text("item.field.stock")
-                            .font(.caption)
-                        Spacer()
-                    }
-                    .padding(.bottom, -2)
-                    HStack {
-                        TextField("", value: stockBinding, format: .number)
-                            .font(FONT_EDIT)
-                            .frame(width: 80)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .background(Color(.systemBackground))
-                        Text("unit.piece")
-                            .font(.caption)
-                        Spacer()
-                        Stepper("", value: stockBinding, in: 0...APP_MAX_STOCK_NUM)
-                            .labelsHidden()
-                    }
-                    .padding(.bottom, 8)
-                    HStack {
-                        Text("item.field.need")
-                            .font(.caption)
-                        Spacer()
-                    }
-                    .padding(.bottom, -2)
-                    HStack {
-                        TextField("", value: needBinding, format: .number)
-                            .font(FONT_EDIT)
-                            .frame(width: 80)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .background(Color(.systemBackground))
-                        Text("unit.piece")
-                            .font(.caption)
-                        Spacer()
-                        Stepper("", value: needBinding, in: 0...APP_MAX_NEED_NUM)
-                            .labelsHidden()
-                    }
+                // 数量
+                EditorSection(title: "item.section.quantity") {
+                    // 数量 編集
+                    ItemQuantityEditor(item: item)
+                        //.background(COLOR_ROW_GROUP)
+                        //.cornerRadius(8)
+                        .padding(.leading, 16)
                 }
-                .padding(.horizontal, 16)
             }
-            .padding(8)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
         }
-        .padding(8)
-        .frame(width: 320, height: 368) // H:380以内にしないとキーボードが被る恐れあり
+        .scrollDismissesKeyboard(.interactively)
+        .background(COLOR_BACK_POPUP) // Color(.systemGroupedBackground))
+        .navigationTitle(item.name.placeholderText("placeholder.item.new"))
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarLeading) {
+                Button {
+                    onDismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                }
+                .padding(.trailing, 8)
+
+                Button {
+                    withAnimation {
+                        modelContext.undoManager?.undo()
+                    }
+                    updateUndoRedo()
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .disabled(!canUndo)
+            }
+
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    withAnimation {
+                        modelContext.undoManager?.redo()
+                    }
+                    updateUndoRedo()
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .disabled(!canRedo)
+                .padding(.trailing, 8)
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 50, coordinateSpace: .local)
+                .onEnded { value in
+                    let horizontal = value.translation.width
+                    let vertical = abs(value.translation.height)
+                    if horizontal > 80 && horizontal > vertical {
+                        onDismiss()
+                    }
+                }
+        )
         .onAppear {
-            // UndoGrouping
             modelContext.undoManager?.beginUndoGrouping()
+            updateUndoRedo()
             if item.name.isEmpty {
-                nameIsFocused = true
+                focusedField = .name
             }
         }
-        .onDisappear() {
-            // 末尾のスペースと改行を除去
+        .onDisappear {
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
-            // UndoGrouping
-            if let um = modelContext.undoManager, 0 < um.groupingLevel {
-                um.endUndoGrouping()
+            if let undoManager = modelContext.undoManager, undoManager.groupingLevel > 0 {
+                undoManager.endUndoGrouping()
             }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
+            updateUndoRedo()
+        }
     }
 
-    /// 現在のItemを複製して現在行に追加する
     private func duplicateItem() {
         modelContext.undoManager?.beginUndoGrouping()
         defer {
             modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
-        
+
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo,
                              stock: item.stock, need: item.need, weight: item.weight,
@@ -234,21 +245,20 @@ struct ItemEditView: View {
         modelContext.insert(newItem)
         withAnimation {
             if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-                // 現在行の下に追加
                 parent.child.insert(newItem, at: index + 1)
             }
             parent.normalizeItemOrder()
         }
     }
-    
-    /// 現在のItemを削除する
+
     private func deleteItem() {
         modelContext.undoManager?.beginUndoGrouping()
         defer {
             modelContext.undoManager?.endUndoGrouping()
+            updateUndoRedo()
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
-        // itemを削除：group側から削除して整列する
+
         if let group = item.parent,
            let index = group.child.firstIndex(where: { $0.id == item.id }) {
             withAnimation {
@@ -258,7 +268,173 @@ struct ItemEditView: View {
         }
         modelContext.delete(item)
     }
-    
+
+    private func updateUndoRedo() {
+        if let undoManager = modelContext.undoManager {
+            canUndo = undoManager.canUndo
+            canRedo = undoManager.canRedo
+        } else {
+            canUndo = false
+            canRedo = false
+        }
+    }
 }
 
+/// Popup用の簡易編集ビュー（数量のみ）
+struct ItemQuickEditView: View {
+    @Bindable var item: M3Item
 
+    @Environment(\.modelContext) private var modelContext
+
+    init(item: M3Item) {
+        self._item = Bindable(item)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // アイテム名称表示
+            item.name.placeholderText("placeholder.item.new")
+                .font(FONT_NAME)
+                .foregroundStyle(item.name.isEmpty ? COLOR_NAME_EMPTY : COLOR_NAME)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            // 数量 編集
+            ItemQuantityEditor(item: item)
+        }
+        .padding(8)
+        .frame(width: 300)
+        .onAppear {
+            modelContext.undoManager?.beginUndoGrouping()
+        }
+        .onDisappear {
+            if let undoManager = modelContext.undoManager, undoManager.groupingLevel > 0 {
+                undoManager.endUndoGrouping()
+            }
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+        }
+    }
+}
+
+// 数量 編集
+private struct ItemQuantityEditor: View {
+    @Bindable var item: M3Item
+
+    init(item: M3Item) {
+        self._item = Bindable(item)
+    }
+
+    private struct FieldConfig {
+        let title: LocalizedStringKey
+        let unit: LocalizedStringKey
+        let maxValue: Int
+        let binding: Binding<Int>
+    }
+
+    private var fields: [FieldConfig] {
+        [
+            // 個重量
+            FieldConfig(title: "item.field.weight", unit: "unit.gram",
+                        maxValue: APP_MAX_WEIGHT_NUM, binding: weightBinding),
+            // 在庫数
+            FieldConfig(title: "item.field.stock", unit: "unit.piece",
+                        maxValue: APP_MAX_STOCK_NUM, binding: stockBinding),
+            // 必要数
+            FieldConfig(title: "item.field.need", unit: "unit.piece",
+                        maxValue: APP_MAX_NEED_NUM, binding: needBinding)
+        ]
+    }
+
+    private var weightBinding: Binding<Int> {
+        Binding(get: { item.weight }, set: { newValue in
+            let value = max(0, newValue)
+            if APP_MAX_WEIGHT_NUM < value {
+                item.weight = APP_MAX_WEIGHT_NUM
+            } else {
+                item.weight = value
+            }
+        })
+    }
+
+    private var stockBinding: Binding<Int> {
+        Binding(get: { item.stock }, set: { newValue in
+            let value = max(0, newValue)
+            if APP_MAX_STOCK_NUM < value {
+                item.stock = APP_MAX_STOCK_NUM
+            } else {
+                item.stock = value
+            }
+            item.check = (0 < item.stock && item.need <= item.stock)
+        })
+    }
+
+    private var needBinding: Binding<Int> {
+        Binding(get: { item.need }, set: { newValue in
+            let value = max(0, newValue)
+            if APP_MAX_NEED_NUM < value {
+                item.need = APP_MAX_NEED_NUM
+            } else {
+                item.need = value
+            }
+            item.check = (0 < item.stock && item.need <= item.stock)
+        })
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
+                HStack(alignment: .center, spacing: 0) {
+                    // 見出し
+                    Text(field.title)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 60)
+                    // 数値入力
+                    numberField(for: field, width: 75)
+                    // 単位
+                    Text(field.unit)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30)
+                    // ステッパー
+                    Stepper("", value: field.binding, in: 0...field.maxValue)
+                        .labelsHidden()
+                }
+            }
+        }
+        .padding(8)
+    }
+
+    private func numberField(for field: FieldConfig, width: CGFloat) -> some View {
+        TextField("", value: field.binding, format: .number)
+            .font(FONT_EDIT)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.trailing)
+            .frame(width: width)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .background(COLOR_BACK_INPUT)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+private struct EditorSection<Content: View>: View {
+    private let title: LocalizedStringKey?
+    private let content: Content
+
+    init(title: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let title {
+                Text(title)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+            }
+            content
+        }
+    }
+}
