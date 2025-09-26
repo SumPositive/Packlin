@@ -134,7 +134,7 @@ struct ItemEditScene: View {
         if let pack = packs.first,
            let group = groups.first,
            let item = items.first {
-            ItemEditNavigationContent(
+            ItemEditView(
                 pack: pack,
                 group: group,
                 item: item,
@@ -143,48 +143,5 @@ struct ItemEditScene: View {
         } else {
             Text("navigation.itemNotFound")
         }
-    }
-}
-
-private struct ItemEditNavigationContent: View {
-    let pack: M1Pack
-    let group: M2Group
-    @Bindable var item: M3Item
-    let onDismiss: () -> Void
-
-    init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void) {
-        self.pack = pack
-        self.group = group
-        self._item = Bindable(item)
-        self.onDismiss = onDismiss
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 4) {
-                    pack.name.placeholderText("placeholder.pack.new")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    group.name.placeholderText("placeholder.group.new")
-                        .font(.headline)
-                }
-
-                ItemEditView(item: item, style: .navigation) {
-                    onDismiss()
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.secondarySystemBackground))
-                )
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .background(Color(.systemGroupedBackground))
-        .ignoresSafeArea(edges: .bottom)
-        .navigationTitle(item.name.placeholderText("placeholder.item.new"))
-        .navigationBarTitleDisplayMode(.inline)
     }
 }

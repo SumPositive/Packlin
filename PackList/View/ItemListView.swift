@@ -5,7 +5,7 @@
 //  Created by sumpo on 2025/09/14.
 //
 //　Item移動がGroupを超えて可能にするためListでなくLazyVStackを利用、そのため
-//　RowのswipeActionsが使えなくなるので、ItemEditView上にActionsボタンを表示することにした
+//　RowのswipeActionsが使えなくなるので、PopupとしてItemQuickEditViewを用意している
 //
 
 import SwiftUI
@@ -75,11 +75,7 @@ struct ItemListView: View {
                     editingItem = nil
                     popupAnchor = nil
                 } content: {
-                    ItemEditView(item: item) {
-                        //.onClose：EditItemView内から閉じる場合
-                        editingItem = nil
-                        popupAnchor = nil
-                    }
+                    ItemQuickEditView(item: item)
                 }
                 .zIndex(1)
             }

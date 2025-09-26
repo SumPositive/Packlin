@@ -110,6 +110,11 @@ struct ItemRowView: View {
                         Capsule()
                             .fill(COLOR_ROW_GROUP.opacity(0.85))
                     )
+
+                    Image(systemName: "chevron.right")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .padding(.leading, 4)
                 }
                 .padding(.trailing, 16)
             }
