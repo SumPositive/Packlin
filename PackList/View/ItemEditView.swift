@@ -603,31 +603,32 @@ private struct ItemMoveSheetView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // 移動先のPack
                 Section("item.move.destinationPack") {
-                    Picker("item.move.destinationPack", selection: $selectedPackID) {
+                    Picker("", selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
                             pack.name.placeholderText("placeholder.pack.new")
                                 .tag(pack.id)
+                                .lineLimit(1)
                         }
                     }
                     .pickerStyle(.navigationLink)
+                    .lineLimit(1)
                 }
-
+                // 移動先のGroup
                 Section("item.move.destinationGroup") {
-                    Picker("item.move.destinationGroup", selection: $selectedGroupID) {
+                    Picker("", selection: $selectedGroupID) {
                         ForEach(availableGroups, id: \.id) { group in
                             group.name.placeholderText("placeholder.group.new")
                                 .tag(group.id)
+                                .lineLimit(1)
                         }
                     }
                     .pickerStyle(.navigationLink)
+                    .lineLimit(1)
                     .disabled(availableGroups.isEmpty)
                 }
-
-                Section {
-                    Toggle("item.move.keepOriginal", isOn: $keepOriginal)
-                }
-
+                // 移動先は先頭か末尾か
                 Section("item.move.position") {
                     Picker("item.move.position", selection: $insertPosition) {
                         ForEach(ItemEditView.MoveInsertPosition.allCases) { position in
@@ -637,8 +638,12 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+                // 移動 or コピー
+                Section {
+                    Toggle("item.move.keepOriginal", isOn: $keepOriginal)
+                }
             }
-            .navigationTitle("action.move")
+            //.navigationTitle("action.move")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel", action: onCancel)
