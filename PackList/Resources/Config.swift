@@ -53,17 +53,22 @@ let APP_MAX_NEED_NUM : Int   = 999      // 個数
 //Color.systemBlue     // システムの青色
 //Color.systemGray     // システムのグレー
 
+// 文字表示色
 let COLOR_TITLE: Color = .secondary         // App Name
-
 let COLOR_NAME: Color = .primary
 let COLOR_NAME_EMPTY: Color = .secondary
 let COLOR_MEMO: Color = .primary
 let COLOR_WEIGHT: Color = .primary
 
+// 背景色
+let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)   // View背景
+let COLOR_BACK_INPUT: Color = Color(.systemBackground)   // 文字や数字の入力部背景
+let COLOR_BACK_POPUP: Color = Color(.systemGray3)       // Popupの背景、Viewより濃い
+
+
 let COLOR_ROW_PACK: Color = Color(.systemBackground)
 let COLOR_ROW_GROUP: Color = Color(.systemGray6)
 let COLOR_ROW_ITEM: Color = Color(.systemBackground)
-let COLOR_POPUP_BORDER: Color = Color(.systemGray3)
 let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
     if traitCollection.userInterfaceStyle == .dark {
         return UIColor(white: 1.0, alpha: 0.6)

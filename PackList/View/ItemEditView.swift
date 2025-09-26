@@ -27,9 +27,9 @@ struct ItemEditView: View {
         UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
     }
 
-    private var sectionFieldBackground: Color { Color(.secondarySystemBackground) }
-    private var sectionButtonBackground: Color { Color(.systemBackground) }
-    private var sectionButtonBorder: Color { Color(.quaternarySystemFill) }
+    //private var sectionFieldBackground: Color { Color(.secondarySystemBackground) }
+    //private var sectionButtonBackground: Color { Color(.systemBackground) }
+    //private var sectionButtonBorder: Color { Color(.quaternarySystemFill) }
 
     private enum Field: Hashable {
         case name
@@ -46,14 +46,72 @@ struct ItemEditView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                VStack(alignment: .leading, spacing: 4) {
-                    pack.name.placeholderText("placeholder.pack.new")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    group.name.placeholderText("placeholder.group.new")
-                        .font(.headline)
+                //    // 見出し
+                //    VStack(alignment: .leading, spacing: 4) {
+                //        // パック名 表示
+                //        pack.name.placeholderText("placeholder.pack.new")
+                //            .font(.caption)
+                //            .foregroundStyle(.secondary)
+                //        // グループ名 表示
+                //        group.name.placeholderText("placeholder.group.new")
+                //            .font(.headline)
+                //    }
+                // 操作
+                EditorSection(title: "edit.actions") {
+                    HStack(spacing: 12) {
+                        // 移動
+                        Button {
+                            //TODO: PopupでPackとGroupを選択するためのプルダウンリストを設置。その下に移動元を残すコピーチェックを設置。その次に移動先をグループの先頭か末尾を選択できるようにする。次に移動またはコピーボタンを設置。それを押すと処理を実行してPopupを閉じる。PackとGroupを選択するためのプルダウンリストは、直前の選択を保持する。
+                            
+                            onDismiss()
+                        } label: {
+                            Label("action.move", systemImage: "hand.point.up.left.and.text")
+                                .frame(width: 90, height: 44)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                )
+                        }
+                        .accessibilityLabel(Text("action.duplicate"))
+                        
+                        // 複写
+                        Button {
+                            duplicateItem()
+                            onDismiss()
+                        } label: {
+                            Label("action.duplicate", systemImage: "plus.square.on.square")
+                                .frame(width: 90, height: 44)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                )
+                        }
+                        .accessibilityLabel(Text("action.duplicate"))
+                        
+                        // 右端へ
+                        Spacer()
+                        // 削除
+                        Button(role: .destructive) {
+                            deleteItem()
+                            onDismiss()
+                        } label: {
+                            Label("action.delete", systemImage: "trash")
+                                .frame(width: 84, height: 44)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                )
+                        }
+                        .accessibilityLabel(Text("action.delete"))
+                    }
                 }
-
+                // 名称
                 EditorSection(title: "edit.name") {
                     TextField("", text: $item.name, prompt: Text("placeholder.item.new"), axis: .vertical)
                         .font(FONT_EDIT)
@@ -63,7 +121,7 @@ struct ItemEditView: View {
                         .padding(.vertical, 8)
                         .padding(.horizontal, 12)
                         .frame(minHeight: nameFieldMinHeight, alignment: .top)
-                        .background(sectionFieldBackground)
+                        .background(COLOR_BACK_INPUT)
                         .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                         .onChange(of: item.name) { newValue, _ in
                             if APP_MAX_NAME_LEN < newValue.count {
@@ -71,7 +129,7 @@ struct ItemEditView: View {
                             }
                         }
                 }
-
+                // メモ
                 EditorSection(title: "edit.memo") {
                     TextEditor(text: $item.memo)
                         .font(FONT_EDIT)
@@ -80,7 +138,7 @@ struct ItemEditView: View {
                         .scrollContentBackground(.hidden)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 8)
-                        .background(sectionFieldBackground)
+                        .background(COLOR_BACK_INPUT)
                         .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                         .onChange(of: item.memo) { newValue, _ in
                             if APP_MAX_MEMO_LEN < newValue.count {
@@ -89,49 +147,20 @@ struct ItemEditView: View {
                         }
                 }
 
+                // 数量
                 EditorSection(title: "item.section.quantity") {
-                    ItemQuantityEditor(item: item, layout: .form)
-                }
-
-                EditorSection(title: "edit.actions") {
-                    HStack(spacing: 12) {
-                        Button {
-                            duplicateItem()
-                        } label: {
-                            Label("action.duplicate", systemImage: "plus.square.on.square")
-                                .labelStyle(.iconOnly)
-                                .frame(width: 44, height: 44)
-                                .background(sectionButtonBackground)
-                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                        .strokeBorder(sectionButtonBorder, lineWidth: 1)
-                                )
-                        }
-                        .accessibilityLabel(Text("action.duplicate"))
-
-                        Button(role: .destructive) {
-                            deleteItem()
-                        } label: {
-                            Label("action.delete", systemImage: "trash")
-                                .labelStyle(.iconOnly)
-                                .frame(width: 44, height: 44)
-                                .background(sectionButtonBackground)
-                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                        .strokeBorder(sectionButtonBorder, lineWidth: 1)
-                                )
-                        }
-                        .accessibilityLabel(Text("action.delete"))
-                    }
+                    // 数量 編集
+                    ItemQuantityEditor(item: item)
+                        //.background(COLOR_ROW_GROUP)
+                        //.cornerRadius(8)
+                        .padding(.leading, 16)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(Color(.systemGroupedBackground))
+        .background(COLOR_BACK_POPUP) // Color(.systemGroupedBackground))
         .navigationTitle(item.name.placeholderText("placeholder.item.new"))
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
@@ -168,13 +197,6 @@ struct ItemEditView: View {
                 }
                 .disabled(!canRedo)
                 .padding(.trailing, 8)
-
-                Button {
-                    duplicateItem()
-                } label: {
-                    Image(systemName: "plus.rectangle")
-                }
-                .accessibilityLabel(Text("action.duplicate"))
             }
         }
         .simultaneousGesture(
@@ -245,7 +267,6 @@ struct ItemEditView: View {
             }
         }
         modelContext.delete(item)
-        onDismiss()
     }
 
     private func updateUndoRedo() {
@@ -271,16 +292,17 @@ struct ItemQuickEditView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // アイテム名称表示
             item.name.placeholderText("placeholder.item.new")
                 .font(FONT_NAME)
                 .foregroundStyle(item.name.isEmpty ? COLOR_NAME_EMPTY : COLOR_NAME)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
-
-            ItemQuantityEditor(item: item, layout: .popup)
+            // 数量 編集
+            ItemQuantityEditor(item: item)
         }
-        .padding(12)
-        .frame(width: 280)
+        .padding(8)
+        .frame(width: 300)
         .onAppear {
             modelContext.undoManager?.beginUndoGrouping()
         }
@@ -293,18 +315,12 @@ struct ItemQuickEditView: View {
     }
 }
 
+// 数量 編集
 private struct ItemQuantityEditor: View {
-    enum Layout {
-        case popup
-        case form
-    }
-
     @Bindable var item: M3Item
-    let layout: Layout
 
-    init(item: M3Item, layout: Layout) {
+    init(item: M3Item) {
         self._item = Bindable(item)
-        self.layout = layout
     }
 
     private struct FieldConfig {
@@ -316,9 +332,15 @@ private struct ItemQuantityEditor: View {
 
     private var fields: [FieldConfig] {
         [
-            FieldConfig(title: "item.field.weight", unit: "unit.gram", maxValue: APP_MAX_WEIGHT_NUM, binding: weightBinding),
-            FieldConfig(title: "item.field.stock", unit: "unit.piece", maxValue: APP_MAX_STOCK_NUM, binding: stockBinding),
-            FieldConfig(title: "item.field.need", unit: "unit.piece", maxValue: APP_MAX_NEED_NUM, binding: needBinding)
+            // 個重量
+            FieldConfig(title: "item.field.weight", unit: "unit.gram",
+                        maxValue: APP_MAX_WEIGHT_NUM, binding: weightBinding),
+            // 在庫数
+            FieldConfig(title: "item.field.stock", unit: "unit.piece",
+                        maxValue: APP_MAX_STOCK_NUM, binding: stockBinding),
+            // 必要数
+            FieldConfig(title: "item.field.need", unit: "unit.piece",
+                        maxValue: APP_MAX_NEED_NUM, binding: needBinding)
         ]
     }
 
@@ -358,45 +380,28 @@ private struct ItemQuantityEditor: View {
     }
 
     var body: some View {
-        switch layout {
-        case .popup:
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(field.title)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        HStack(alignment: .center, spacing: 8) {
-                            numberField(for: field, width: 68)
-                            Text(field.unit)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Stepper("", value: field.binding, in: 0...field.maxValue)
-                                .labelsHidden()
-                        }
-                    }
-                }
-            }
-        case .form:
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
-                    HStack(alignment: .center, spacing: 12) {
-                        Text(field.title)
-                            .font(.subheadline)
-                            .frame(minWidth: 110, alignment: .leading)
-                        Spacer()
-                        HStack(alignment: .center, spacing: 8) {
-                            numberField(for: field, width: 80)
-                            Text(field.unit)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Stepper("", value: field.binding, in: 0...field.maxValue)
-                                .labelsHidden()
-                        }
-                    }
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
+                HStack(alignment: .center, spacing: 0) {
+                    // 見出し
+                    Text(field.title)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 60)
+                    // 数値入力
+                    numberField(for: field, width: 75)
+                    // 単位
+                    Text(field.unit)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30)
+                    // ステッパー
+                    Stepper("", value: field.binding, in: 0...field.maxValue)
+                        .labelsHidden()
                 }
             }
         }
+        .padding(8)
     }
 
     private func numberField(for field: FieldConfig, width: CGFloat) -> some View {
@@ -407,7 +412,7 @@ private struct ItemQuantityEditor: View {
             .frame(width: width)
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .background(Color(.systemBackground))
+            .background(COLOR_BACK_INPUT)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }

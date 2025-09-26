@@ -51,7 +51,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "delete"
+            "value" : "Del"
           }
         },
         "ja" : {
@@ -67,45 +67,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "duplicate"
+            "value" : "Dupe"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "複製"
-          }
-        }
-      }
-    },
-    "action.redo" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "やり直す"
-          }
-        }
-      }
-    },
-    "action.undo" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "元に戻す"
           }
         }
       }
@@ -131,13 +99,63 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "share"
+            "value" : "Share"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "共有"
+          }
+        }
+      }
+    },
+    "action.move" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動"
+          }
+        }
+      }
+    },
+    "action.redo" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やり直す"
+          }
+        }
+      }
+    },
+    "action.undo" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元に戻す"
           }
         }
       }
@@ -296,6 +314,22 @@
         }
       }
     },
+    "edit.actions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作"
+          }
+        }
+      }
+    },
     "edit.info.swipeToDismiss" : {
       "localizations" : {
         "en" : {
@@ -324,22 +358,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メモ"
-          }
-        }
-      }
-    },
-    "edit.actions" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actions"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "操作"
           }
         }
       }
@@ -396,22 +414,6 @@
         }
       }
     },
-    "item.section.quantity" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quantity"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "数量"
-          }
-        }
-      }
-    },
     "item.field.need" : {
       "localizations" : {
         "en" : {
@@ -456,6 +458,22 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "個重量"
+          }
+        }
+      }
+    },
+    "item.section.quantity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数量"
           }
         }
       }
