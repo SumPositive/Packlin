@@ -28,6 +28,10 @@ struct ItemEditView: View {
     @State private var selectedGroupID: String
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
+    @AppStorage("itemEdit.move.lastInsertPosition")
+    private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
+    @AppStorage("itemEdit.move.lastKeepOriginal")
+    private var lastMoveKeepOriginal: Bool = false
 
     private let sectionCornerRadius: CGFloat = 12
 
@@ -335,7 +339,12 @@ struct ItemEditView: View {
     }
 
     private func prepareMoveSheet() {
-        keepSourceItem = false
+        keepSourceItem = lastMoveKeepOriginal
+        if let storedInsertPosition = MoveInsertPosition(rawValue: lastMoveInsertPositionRawValue) {
+            moveInsertPosition = storedInsertPosition
+        } else {
+            moveInsertPosition = .end
+        }
 
         if let storedPack = sortedPacks.first(where: { $0.id == lastMovePackID }) {
             selectedPackID = storedPack.id
@@ -388,6 +397,8 @@ struct ItemEditView: View {
         performMoveOrCopy(to: destinationGroup, copy: keepSourceItem)
         lastMovePackID = selectedPackID
         lastMoveGroupID = destinationGroup.id
+        lastMoveInsertPositionRawValue = moveInsertPosition.rawValue
+        lastMoveKeepOriginal = keepSourceItem
         isShowingMoveSheet = false
         onDismiss()
     }
@@ -614,6 +625,7 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.navigationLink)
                     .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 // 移動先のGroup
                 Section("item.move.destinationGroup") {
@@ -626,6 +638,7 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.navigationLink)
                     .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .disabled(availableGroups.isEmpty)
                 }
                 // 移動先は先頭か末尾か
@@ -653,6 +666,7 @@ private struct ItemMoveSheetView: View {
                         .disabled(disableConfirm)
                 }
             }
+            .listSectionSpacing(.custom(12))
         }
         .presentationDetents([.medium])
     }
