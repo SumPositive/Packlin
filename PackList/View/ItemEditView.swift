@@ -620,10 +620,9 @@ private struct ItemMoveSheetView: View {
                     // 移動先のPack
                     Picker("item.move.destinationPack", selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
-                            pack.name
+                            pack.name.truncTail(20)
                                 .placeholderText("placeholder.pack.new")
                                 .tag(pack.id)
-                                .lineLimit(1)
                         }
                     }
                     .pickerStyle(.menu)  // メニュー型
@@ -631,7 +630,7 @@ private struct ItemMoveSheetView: View {
                     // 移動先のGroup
                     Picker("item.move.destinationGroup", selection: $selectedGroupID) {
                         ForEach(availableGroups, id: \.id) { group in
-                            group.name
+                            group.name.truncTail(20)
                                 .placeholderText("placeholder.group.new")
                                 .tag(group.id)
                         }
@@ -654,10 +653,7 @@ private struct ItemMoveSheetView: View {
                     // コピーを作成する
                     Toggle("item.move.keepOriginal", isOn: $keepOriginal)
                 }
-                //.listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
             }
-            //.navigationTitle("action.move")
-            //.listSectionSpacing(.custom(8))
             //.listSectionSpacing(.compact)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -669,7 +665,7 @@ private struct ItemMoveSheetView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.height(340), .fraction(1)])
     }
 }
 

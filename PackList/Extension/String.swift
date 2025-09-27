@@ -11,6 +11,14 @@ import SwiftUI
 
 extension String {
 
+    /// 末尾切り捨て
+    func truncTail(_ len: Int) -> String {
+        if self == nil || len <= 0 || self.count <= len {
+            return self
+        }
+        return String(self.prefix(len - 1)) + "…"
+    }
+
     /// 末尾の「空白・改行」を削除
     var trimTrailSpacesAndNewlines: String {
         replacingOccurrences(
