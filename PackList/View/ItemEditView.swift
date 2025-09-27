@@ -28,6 +28,10 @@ struct ItemEditView: View {
     @State private var selectedGroupID: String
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
+    @AppStorage("itemEdit.move.lastInsertPosition")
+    private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
+    @AppStorage("itemEdit.move.lastKeepOriginal")
+    private var lastMoveKeepOriginal: Bool = false
 
     private let sectionCornerRadius: CGFloat = 12
 
@@ -335,7 +339,12 @@ struct ItemEditView: View {
     }
 
     private func prepareMoveSheet() {
-        keepSourceItem = false
+        keepSourceItem = lastMoveKeepOriginal
+        if let storedInsertPosition = MoveInsertPosition(rawValue: lastMoveInsertPositionRawValue) {
+            moveInsertPosition = storedInsertPosition
+        } else {
+            moveInsertPosition = .end
+        }
 
         if let storedPack = sortedPacks.first(where: { $0.id == lastMovePackID }) {
             selectedPackID = storedPack.id
@@ -388,6 +397,8 @@ struct ItemEditView: View {
         performMoveOrCopy(to: destinationGroup, copy: keepSourceItem)
         lastMovePackID = selectedPackID
         lastMoveGroupID = destinationGroup.id
+        lastMoveInsertPositionRawValue = moveInsertPosition.rawValue
+        lastMoveKeepOriginal = keepSourceItem
         isShowingMoveSheet = false
         onDismiss()
     }
@@ -577,6 +588,7 @@ private struct ItemQuantityEditor: View {
     }
 }
 
+/// アイテム移動 シート
 private struct ItemMoveSheetView: View {
     let packs: [M1Pack]
     @Binding var selectedPackID: String
@@ -614,7 +626,9 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.navigationLink)
                     .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                 // 移動先のGroup
                 Section("item.move.destinationGroup") {
                     Picker("", selection: $selectedGroupID) {
@@ -626,8 +640,10 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.navigationLink)
                     .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .disabled(availableGroups.isEmpty)
                 }
+                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                 // 移動先は先頭か末尾か
                 Section("item.move.position") {
                     Picker("item.move.position", selection: $insertPosition) {
@@ -638,12 +654,15 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                 // 移動 or コピー
                 Section {
                     Toggle("item.move.keepOriginal", isOn: $keepOriginal)
                 }
+                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
             }
             //.navigationTitle("action.move")
+            .listSectionSpacing(.custom(8))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel", action: onCancel)
