@@ -478,18 +478,34 @@
         }
       }
     },
+    "item.move.destination" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "移動先"
+          }
+        }
+      }
+    },
     "item.move.destinationGroup" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Destination group"
+            "value" : "Group"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "移動先のグループ"
+            "state" : "needs_review",
+            "value" : "グループ"
           }
         }
       }
@@ -499,13 +515,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Destination pack"
+            "value" : "Pack"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "移動先のパック"
+            "state" : "needs_review",
+            "value" : "パック"
           }
         }
       }
@@ -520,8 +536,24 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "移動元を残す（複製）"
+            "state" : "translated",
+            "value" : "コピーを作成する（複製）"
+          }
+        }
+      }
+    },
+    "item.move.original" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動元"
           }
         }
       }
@@ -531,13 +563,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Destination insert position"
+            "value" : "Insert position"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "移動先の挿入位置"
+            "state" : "needs_review",
+            "value" : "挿入位置"
           }
         }
       }
@@ -547,13 +579,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "End"
+            "value" : "End of the group"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "末尾"
+            "state" : "needs_review",
+            "value" : "グループの末尾へ"
           }
         }
       }
@@ -563,13 +595,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Beginning"
+            "value" : "Beginning of the group"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "先頭"
+            "state" : "needs_review",
+            "value" : "グループの先頭へ"
           }
         }
       }

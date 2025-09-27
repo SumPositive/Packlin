@@ -615,37 +615,31 @@ private struct ItemMoveSheetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // 移動先のPack
-                Section("item.move.destinationPack") {
-                    Picker("", selection: $selectedPackID) {
+                // 移動先
+                Section("item.move.destination") {
+                    // 移動先のPack
+                    Picker("item.move.destinationPack", selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
-                            pack.name.placeholderText("placeholder.pack.new")
+                            pack.name
+                                .placeholderText("placeholder.pack.new")
                                 .tag(pack.id)
                                 .lineLimit(1)
                         }
                     }
-                    .pickerStyle(.navigationLink)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-                // 移動先のGroup
-                Section("item.move.destinationGroup") {
-                    Picker("", selection: $selectedGroupID) {
+                    .pickerStyle(.menu)  // メニュー型
+
+                    // 移動先のGroup
+                    Picker("item.move.destinationGroup", selection: $selectedGroupID) {
                         ForEach(availableGroups, id: \.id) { group in
-                            group.name.placeholderText("placeholder.group.new")
+                            group.name
+                                .placeholderText("placeholder.group.new")
                                 .tag(group.id)
-                                .lineLimit(1)
                         }
                     }
-                    .pickerStyle(.navigationLink)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .pickerStyle(.menu)  // メニュー型
                     .disabled(availableGroups.isEmpty)
-                }
-                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-                // 移動先は先頭か末尾か
-                Section("item.move.position") {
+
+                    // 移動先は先頭か末尾か
                     Picker("item.move.position", selection: $insertPosition) {
                         ForEach(ItemEditView.MoveInsertPosition.allCases) { position in
                             Text(position.titleKey)
@@ -654,15 +648,17 @@ private struct ItemMoveSheetView: View {
                     }
                     .pickerStyle(.segmented)
                 }
-                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-                // 移動 or コピー
-                Section {
+
+                // 移動元
+                Section("item.move.original") {
+                    // コピーを作成する
                     Toggle("item.move.keepOriginal", isOn: $keepOriginal)
                 }
-                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+                //.listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
             }
             //.navigationTitle("action.move")
-            .listSectionSpacing(.custom(8))
+            //.listSectionSpacing(.custom(8))
+            //.listSectionSpacing(.compact)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel", action: onCancel)
