@@ -16,7 +16,6 @@ struct PackListView: View {
 
     @State private var canUndo = false
     @State private var canRedo = false
-    @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
     @State private var isShowSetting: Bool = false
@@ -51,11 +50,9 @@ struct PackListView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
                 .onMove(perform: movePack)
-                .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            .id(listID)   // listIDが変わるとListが作り直される
             //.padding(.top, -8) // headerとPackList間の余白を無くす
             .padding(.horizontal, 0)
             .safeAreaInset(edge: .top) {
@@ -74,7 +71,6 @@ struct PackListView: View {
                         withAnimation {
                             modelContext.undoManager?.undo()
                         }
-                        listID = UUID()  // ここで List を再描画
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
@@ -90,7 +86,6 @@ struct PackListView: View {
                         withAnimation {
                             modelContext.undoManager?.redo()
                         }
-                        listID = UUID()  // ここで List を再描画
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
