@@ -144,10 +144,8 @@ struct ItemListView: View {
 
             // Undo
             Button {
-                withAnimation {
-                    modelContext.undoManager?.undo()
-                }
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                canUndo = false
+                modelContext.undoManager?.performUndo()
             } label: {
                 Image(systemName: "arrow.uturn.backward")
             }
@@ -161,10 +159,8 @@ struct ItemListView: View {
 
             // Redo
             Button {
-                withAnimation {
-                    modelContext.undoManager?.redo()
-                }
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                canRedo = false
+                modelContext.undoManager?.performRedo()
             } label: {
                 Image(systemName: "arrow.uturn.forward")
             }
@@ -182,10 +178,11 @@ struct ItemListView: View {
     }
 
     private func moveItem(from source: IndexSet, to destination: Int) {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         var items = sortedItems

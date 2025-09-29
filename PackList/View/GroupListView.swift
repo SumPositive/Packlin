@@ -72,10 +72,8 @@ struct GroupListView: View {
                     .padding(.trailing, 8)
 
                     Button {
-                        withAnimation {
-                            modelContext.undoManager?.undo()
-                        }
-                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                        canUndo = false
+                        modelContext.undoManager?.performUndo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
@@ -83,10 +81,8 @@ struct GroupListView: View {
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button {
-                        withAnimation {
-                            modelContext.undoManager?.redo()
-                        }
-                        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                        canRedo = false
+                        modelContext.undoManager?.performRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                     }
@@ -150,12 +146,12 @@ struct GroupListView: View {
     }
 
     private func addGroup() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-
         let newOrder: Int
         switch insertionPosition {
         case .head:
@@ -180,10 +176,11 @@ struct GroupListView: View {
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         var groups = sortedGroups

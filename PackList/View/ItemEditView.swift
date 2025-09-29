@@ -203,11 +203,8 @@ struct ItemEditView: View {
                 .padding(.trailing, 8)
 
                 Button {
-                    withAnimation {
-                        modelContext.undoManager?.undo()
-                    }
-                    updateUndoRedo()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    canUndo = false
+                    modelContext.undoManager?.performUndo()
                 } label: {
                     Image(systemName: "arrow.uturn.backward")
                 }
@@ -216,11 +213,8 @@ struct ItemEditView: View {
 
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
-                    withAnimation {
-                        modelContext.undoManager?.redo()
-                    }
-                    updateUndoRedo()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    canRedo = false
+                    modelContext.undoManager?.performRedo()
                 } label: {
                     Image(systemName: "arrow.uturn.forward")
                 }
@@ -239,8 +233,8 @@ struct ItemEditView: View {
                 }
         )
         .onAppear {
-            modelContext.undoManager?.beginUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping BEGIN
+            modelContext.undoManager?.groupingBegin()
             if item.name.isEmpty {
                 focusedField = .name
             }
@@ -248,10 +242,8 @@ struct ItemEditView: View {
         .onDisappear {
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
-            if let undoManager = modelContext.undoManager, undoManager.groupingLevel > 0 {
-                undoManager.endUndoGrouping()
-            }
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
             updateUndoRedo()
@@ -275,13 +267,12 @@ struct ItemEditView: View {
     }
 
     private func duplicateItem() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-
         guard let parent = item.parent else { return }
         let newItem = M3Item(name: item.name, memo: item.memo,
                              stock: item.stock, need: item.need, weight: item.weight,
@@ -297,13 +288,13 @@ struct ItemEditView: View {
     }
 
     private func deleteItem() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-
+        
         if let group = item.parent,
            let index = group.child.firstIndex(where: { $0.id == item.id }) {
             withAnimation {
@@ -404,11 +395,11 @@ struct ItemEditView: View {
     }
 
     private func performMoveOrCopy(to destinationGroup: M2Group, copy: Bool) {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         if !copy,
@@ -475,13 +466,12 @@ struct ItemQuickEditView: View {
         .padding(8)
         .frame(width: 300)
         .onAppear {
-            modelContext.undoManager?.beginUndoGrouping()
+            // Undo grouping BEGIN
+            modelContext.undoManager?.groupingBegin()
         }
         .onDisappear {
-            if let undoManager = modelContext.undoManager, undoManager.groupingLevel > 0 {
-                undoManager.endUndoGrouping()
-            }
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
     }
 }
