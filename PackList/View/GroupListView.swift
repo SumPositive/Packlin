@@ -17,7 +17,6 @@ struct GroupListView: View {
 
     @State private var canUndo = false
     @State private var canRedo = false
-    @State private var listID = UUID() // Listリフレッシュ用
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
 
@@ -56,11 +55,9 @@ struct GroupListView: View {
                     .background(COLOR_ROW_GROUP)
                 }
                 .onMove(perform: moveGroup)
-                .environment(\.editMode, .constant(.active))
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            .id(listID)   // listIDが変わるとListが作り直される
             .padding(.horizontal, 0)
             .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
             .navigationBarBackButtonHidden(true)
@@ -78,7 +75,6 @@ struct GroupListView: View {
                         withAnimation {
                             modelContext.undoManager?.undo()
                         }
-                        listID = UUID()  // ここで List を再描画
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
@@ -90,7 +86,6 @@ struct GroupListView: View {
                         withAnimation {
                             modelContext.undoManager?.redo()
                         }
-                        listID = UUID()  // ここで List を再描画
                         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
