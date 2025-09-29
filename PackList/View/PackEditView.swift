@@ -140,8 +140,6 @@ struct PackEditView: View {
             }
         }
         .onAppear {
-            // UndoGrouping
-            modelContext.undoManager?.beginUndoGrouping()
             if pack.name.isEmpty {
                 nameIsFocused = true
             }
@@ -150,10 +148,6 @@ struct PackEditView: View {
             // 末尾のスペースと改行を除去
             pack.name = pack.name.trimTrailSpacesAndNewlines
             pack.memo = pack.memo.trimTrailSpacesAndNewlines
-            // UndoGrouping
-            if let um = modelContext.undoManager, 0 < um.groupingLevel {
-                um.endUndoGrouping()
-            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }

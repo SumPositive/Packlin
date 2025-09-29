@@ -144,10 +144,7 @@ struct ItemListView: View {
 
             // Undo
             Button {
-                withAnimation {
-                    modelContext.undoManager?.undo()
-                }
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                modelContext.undoManager?.performUndo(updateState: updateUndoRedo)
             } label: {
                 Image(systemName: "arrow.uturn.backward")
             }
@@ -161,10 +158,7 @@ struct ItemListView: View {
 
             // Redo
             Button {
-                withAnimation {
-                    modelContext.undoManager?.redo()
-                }
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                modelContext.undoManager?.performRedo(updateState: updateUndoRedo)
             } label: {
                 Image(systemName: "arrow.uturn.forward")
             }

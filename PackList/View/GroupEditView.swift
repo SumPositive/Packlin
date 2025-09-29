@@ -113,8 +113,6 @@ struct GroupEditView: View {
         .padding(.horizontal, 8)
         .frame(width: 320, height: 280)
         .onAppear {
-            // UndoGrouping
-            modelContext.undoManager?.beginUndoGrouping()
             if group.name.isEmpty {
                 nameIsFocused = true
             }
@@ -123,10 +121,6 @@ struct GroupEditView: View {
             // 末尾のスペースと改行を除去
             group.name = group.name.trimTrailSpacesAndNewlines
             group.memo = group.memo.trimTrailSpacesAndNewlines
-            // UndoGrouping
-            if let um = modelContext.undoManager, 0 < um.groupingLevel {
-                um.endUndoGrouping()
-            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }

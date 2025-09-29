@@ -203,11 +203,7 @@ struct ItemEditView: View {
                 .padding(.trailing, 8)
 
                 Button {
-                    withAnimation {
-                        modelContext.undoManager?.undo()
-                    }
-                    updateUndoRedo()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    modelContext.undoManager?.performUndo(updateState: updateUndoRedo)
                 } label: {
                     Image(systemName: "arrow.uturn.backward")
                 }
@@ -216,11 +212,7 @@ struct ItemEditView: View {
 
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
-                    withAnimation {
-                        modelContext.undoManager?.redo()
-                    }
-                    updateUndoRedo()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                    modelContext.undoManager?.performRedo(updateState: updateUndoRedo)
                 } label: {
                     Image(systemName: "arrow.uturn.forward")
                 }
@@ -239,7 +231,6 @@ struct ItemEditView: View {
                 }
         )
         .onAppear {
-            modelContext.undoManager?.beginUndoGrouping()
             updateUndoRedo()
             if item.name.isEmpty {
                 focusedField = .name
@@ -248,9 +239,6 @@ struct ItemEditView: View {
         .onDisappear {
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
-            if let undoManager = modelContext.undoManager, undoManager.groupingLevel > 0 {
-                undoManager.endUndoGrouping()
-            }
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
