@@ -65,10 +65,6 @@ enum AppDestination: Hashable, Codable {
     }
 }
 
-final class NavigationCoordinator: ObservableObject {
-    @Published var path = NavigationPath()
-}
-
 struct GroupListScene: View {
     let packID: M1Pack.ID
 
@@ -104,7 +100,7 @@ struct ItemListScene: View {
 
     var body: some View {
         if let pack = packs.first, let group = groups.first {
-            ItemListView(pack: pack, initialGroup: group)
+            ItemListView(pack: pack, group: group)
         } else {
             Text("navigation.groupNotFound")
         }
