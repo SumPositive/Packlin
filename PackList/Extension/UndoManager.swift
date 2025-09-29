@@ -8,8 +8,27 @@
 import Foundation
 import SwiftUI
 
+/// 自動イベントグルーピングを無効化した上で、独自にグルーピングするための拡張
+/// 　undoManager.groupsByEvent = false になっていること、
+/// 　さもなくばcloseAllUndoGroupsでオーバーEndで 落ちる
 public extension UndoManager {
+
+    /// Undo grouping BEGIN
+    func groupingBegin() {
+        beginUndoGrouping()
+        // 各画面にあるUndo/Redoアイコンを更新する
+        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+    }
     
+    /// Undo grouping END
+    func groupingEnd() {
+        if 0 < groupingLevel {
+            endUndoGrouping()
+        }
+        // 各画面にあるUndo/Redoアイコンを更新する
+        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+    }
+
     /// 全てのグルーピングを閉じる
     func closeAllUndoGroups() {
         while 0 < groupingLevel {
@@ -17,6 +36,7 @@ public extension UndoManager {
         }
     }
     
+    /// Undo
     func performUndo() {
         // 全てのグルーピングを閉じる（閉じずにUndoするとクラッシュ）
         closeAllUndoGroups()
@@ -26,7 +46,8 @@ public extension UndoManager {
         // 各画面にあるUndo/Redoアイコンを更新する
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
-    
+
+    /// Redo
     func performRedo() {
         // 全てのグルーピングを閉じる（閉じずにRedoするとクラッシュ）
         closeAllUndoGroups()
@@ -37,19 +58,4 @@ public extension UndoManager {
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
     
-    /// Undo grouping BEGIN
-    func groupingBegin() {
-        beginUndoGrouping()
-        // 各画面にあるUndo/Redoアイコンを更新する
-        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-    }
-
-    /// Undo grouping END
-    func groupingEnd() {
-        if 0 < groupingLevel {
-            endUndoGrouping()
-        }
-        // 各画面にあるUndo/Redoアイコンを更新する
-        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-    }
 }
