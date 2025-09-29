@@ -16,7 +16,7 @@ let DEBUG_SHOW_ORDER_ID = false
 
 
 //-------------------------------------- JSON関係
-let PACK_JSON_DTO_COPYRIGHT = "2025 sumpo／azukid.com" // 差異あれば読み込みエラー
+let PACK_JSON_DTO_COPYRIGHT = "2025_sumpo@azukid.com" // 差異あれば読み込みエラー
 let PACK_JSON_DTO_VERSION   = "3.0" // マイグレーション用
 
 //-------------------------------------- Layout関係
