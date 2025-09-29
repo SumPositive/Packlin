@@ -26,9 +26,9 @@ let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 let ADMOB_VIDEO_UnitID  = "ca-app-pub-3940256099942544/4411468910"
 #else
 // アダプティブ バナー 本番用
-let ADMOB_BANNER_UnitID = "ca-app-pub-3916054326181876/5237233709"
+let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 // インタースティシャル（全画面動画）本番用
-let ADMOB_VIDEO_UnitID  = "ca-app-pub-3916054326181876/8697912668"
+let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
 #endif
 
 
