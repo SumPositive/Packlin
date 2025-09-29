@@ -15,7 +15,7 @@ import SwiftUI
 public extension UndoManager {
 
     private struct AssociatedKeys {
-        static var manualGroupingCount = "manualGroupingCount"
+        static var manualGroupingCount: UInt8 = 0
     }
 
     private var manualGroupingCount: Int {
