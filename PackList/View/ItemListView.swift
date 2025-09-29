@@ -63,7 +63,6 @@ struct ItemListView: View {
                 }
             }
             .listStyle(.plain)
-            .environment(\.editMode, .constant(.active))
             .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -153,6 +152,10 @@ struct ItemListView: View {
         }
 
         ToolbarItemGroup(placement: .navigationBarTrailing) {
+            EditButton()
+                .disabled(isShowingPopup)
+                .padding(.trailing, 8)
+
             // Redo
             Button {
                 withAnimation {
