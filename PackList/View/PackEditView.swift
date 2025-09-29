@@ -140,6 +140,8 @@ struct PackEditView: View {
             }
         }
         .onAppear {
+            // Undo grouping BEGIN
+            modelContext.undoManager?.groupingBegin()
             if pack.name.isEmpty {
                 nameIsFocused = true
             }
@@ -148,16 +150,18 @@ struct PackEditView: View {
             // 末尾のスペースと改行を除去
             pack.name = pack.name.trimTrailSpacesAndNewlines
             pack.memo = pack.memo.trimTrailSpacesAndNewlines
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
     }
 
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
     private func checkToggle() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         let toggle = allItemsChecked
@@ -179,12 +183,13 @@ struct PackEditView: View {
     
     /// 現在のPackを複製して現在行に追加する
     private func duplicatePack() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-        
+
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
         let newOrder = M1Pack.nextPackOrder(packs)
@@ -222,10 +227,11 @@ struct PackEditView: View {
     
     /// 現在のPackを削除する
     private func deletePack() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
         // groupとその配下を削除
         for group in pack.child {

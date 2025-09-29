@@ -68,7 +68,8 @@ struct PackListView: View {
                     .padding(.horizontal, 8)
                     
                     Button {
-                        modelContext.undoManager?.performUndo(updateState: updateUndoRedo)
+                        canUndo = false
+                        modelContext.undoManager?.performUndo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
@@ -80,7 +81,8 @@ struct PackListView: View {
                     Spacer()
                     
                     Button {
-                        modelContext.undoManager?.performRedo(updateState: updateUndoRedo)
+                        canRedo = false
+                        modelContext.undoManager?.performRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                     }
@@ -146,10 +148,11 @@ struct PackListView: View {
     }
 
     private func addPack() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         let newOrder: Int
@@ -181,10 +184,11 @@ struct PackListView: View {
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         var items = packs

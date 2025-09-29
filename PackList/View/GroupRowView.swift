@@ -131,12 +131,12 @@ struct GroupRowView: View {
     }
 
     private func addItem() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-
         let newOrder: Int
         switch insertionPosition {
         case .head:

@@ -72,7 +72,8 @@ struct GroupListView: View {
                     .padding(.trailing, 8)
 
                     Button {
-                        modelContext.undoManager?.performUndo(updateState: updateUndoRedo)
+                        canUndo = false
+                        modelContext.undoManager?.performUndo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                     }
@@ -80,7 +81,8 @@ struct GroupListView: View {
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button {
-                        modelContext.undoManager?.performRedo(updateState: updateUndoRedo)
+                        canRedo = false
+                        modelContext.undoManager?.performRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                     }
@@ -144,12 +146,12 @@ struct GroupListView: View {
     }
 
     private func addGroup() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-
         let newOrder: Int
         switch insertionPosition {
         case .head:
@@ -174,10 +176,11 @@ struct GroupListView: View {
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            updateUndoRedo()
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
 
         var groups = sortedGroups

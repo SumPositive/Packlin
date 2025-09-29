@@ -113,6 +113,8 @@ struct GroupEditView: View {
         .padding(.horizontal, 8)
         .frame(width: 320, height: 280)
         .onAppear {
+            // Undo grouping BEGIN
+            modelContext.undoManager?.groupingBegin()
             if group.name.isEmpty {
                 nameIsFocused = true
             }
@@ -121,18 +123,19 @@ struct GroupEditView: View {
             // 末尾のスペースと改行を除去
             group.name = group.name.trimTrailSpacesAndNewlines
             group.memo = group.memo.trimTrailSpacesAndNewlines
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
     }
 
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
     private func checkToggle() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-        
         let toggle = allItemsChecked
         let items = group.child
         for item in items {
@@ -152,12 +155,12 @@ struct GroupEditView: View {
 
     /// 現在のGroupを複製して現在行に追加する
     private func duplicateGroup() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
-        
         guard let parent = group.parent else { return }
         let newGroup = M2Group(name: group.name, memo: group.memo,
                                order: parent.nextGroupOrder(),
@@ -185,10 +188,11 @@ struct GroupEditView: View {
 
     /// 現在のGroupを削除する
     private func deleteGroup() {
-        modelContext.undoManager?.beginUndoGrouping()
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
         defer {
-            modelContext.undoManager?.endUndoGrouping()
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
         }
         // groupの配下を削除
         for item in group.child {

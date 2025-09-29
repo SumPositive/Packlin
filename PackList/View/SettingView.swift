@@ -261,14 +261,11 @@ struct SettingView: View {
             let descriptor = FetchDescriptor<M1Pack>()
             let packs = (try? modelContext.fetch(descriptor)) ?? []
             let newOrder = M1Pack.nextPackOrder(packs)
-
-            let undoManager = modelContext.undoManager
-            undoManager?.beginUndoGrouping()
+            // Undo grouping BEGIN
+            modelContext.undoManager?.groupingBegin()
             defer {
-                if let undoManager, undoManager.groupingLevel > 0 {
-                    undoManager.endUndoGrouping()
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-                }
+                // Undo grouping END
+                modelContext.undoManager?.groupingEnd()
             }
             // PackJsonDTO をDBへインポートする
             PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
