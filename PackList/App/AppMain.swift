@@ -27,9 +27,7 @@ struct AppMain: App {
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
             // Undo/Redo のために UndoManager を設定
-            let undoManager = UndoManager()
-            undoManager.groupsByEvent = false // 自動イベントグルーピングを無効化する。独自にBegin/Endするため
-            container.mainContext.undoManager = undoManager
+            container.mainContext.undoManager = UndoManager()
             return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
