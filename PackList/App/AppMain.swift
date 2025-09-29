@@ -15,7 +15,7 @@ import GoogleMobileAds
 @main
 struct AppMain: App {
     @Environment(\.scenePhase) private var scenePhase
-    @StateObject private var navigationCoordinator = NavigationCoordinator()
+    @State private var navigationPath = NavigationPath()
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             M1Pack.self,
@@ -53,7 +53,7 @@ struct AppMain: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $navigationCoordinator.path) {
+            NavigationStack(path: $navigationPath) {
                 PackListView()
                     .navigationDestination(for: AppDestination.self) { destination in
                         switch destination {
@@ -66,7 +66,6 @@ struct AppMain: App {
                         }
                     }
             }
-            .environmentObject(navigationCoordinator)
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { newPhase, oldPhase in
