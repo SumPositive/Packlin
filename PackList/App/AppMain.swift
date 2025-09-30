@@ -70,6 +70,9 @@ struct AppMain: App {
             }
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: navigationPath) { newPath, oldPath in
+            handleNavigationTransition(from: oldPath, to: newPath)
+        }
         .onChange(of: scenePhase) { newPhase, oldPhase in
             guard newPhase == .inactive || newPhase == .background else { return }
             // バックになる前
@@ -135,6 +138,18 @@ struct AppMain: App {
                 debugPrint("Failed to save sample packs: \(error)")
             }
         }
+    }
+
+    /// 画面遷移時のUndo制御
+    private func handleNavigationTransition(from oldPath: NavigationPath, to newPath: NavigationPath) {
+        guard newPath.count > oldPath.count else { return }
+
+        let context = sharedModelContainer.mainContext
+        if context.hasChanges {
+            try? context.save()
+        }
+        context.undoManager?.removeAllActions()
+        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 }
 
