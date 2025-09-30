@@ -8,23 +8,23 @@
 import SwiftUI
 
 enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
+    case unchecked
     case lackCount
     case lackWeight
     case stockWeight
-    case unchecked
 
     var id: String { rawValue }
 
     var title: LocalizedStringKey {
         switch self {
         case .lackCount:
-            return "不足個数順"
+            return "item.sort.title.lackCount" //"不足個数順"
         case .lackWeight:
-            return "不足重量順"
+            return "item.sort.title.lackWeight" //"不足重量順"
         case .stockWeight:
-            return "在庫重量順"
+            return "item.sort.title.stockWeight" //"在庫重量順"
         case .unchecked:
-            return "未チェック順"
+            return "item.sort.title.unchecked" //"未チェック順"
         }
     }
 
@@ -82,16 +82,24 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
         return lhs.id < rhs.id
     }
 
+    /// 未チェック sort key
     private func uncheckedKey(for item: M3Item) -> Int {
-        if !item.check {
-            return 0
+        if item.check {
+            if item.need == 0 {
+                return 4 // チェック＆不要
+            }
+            else if item.stock < item.need {
+                return 2 // チェック＆不足
+            }
+            return 3 // チェック
+        }else{
+            if item.need == 0 {
+                return 5 // 未チェック＆不要
+            }
+            else if item.stock < item.need {
+                return 0 // 未チェック＆不足
+            }
+            return 1 // 未チェック＆充足
         }
-        if item.need == 0 {
-            return 3
-        }
-        if item.need <= item.stock {
-            return 1
-        }
-        return 2
     }
 }

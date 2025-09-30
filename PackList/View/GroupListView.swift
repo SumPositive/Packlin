@@ -58,7 +58,8 @@ struct GroupListView: View {
                     .onMove(perform: moveGroup)
                 }
 
-                Section(header: Text("ソート")) {
+                // 並べ替え一覧
+                Section(header: Text("group.section.sort")) {
                     ForEach(ItemSortOption.allCases) { option in
                         NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
                             HStack {
@@ -66,17 +67,18 @@ struct GroupListView: View {
                                     .font(FONT_NAME)
                                     .foregroundStyle(COLOR_NAME)
                                 Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(.secondary)
+                                //Image(systemName: "chevron.right")
+                                //    .foregroundStyle(.secondary)
                             }
                             .frame(minHeight: rowHeight)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 8)
                         }
                         .buttonStyle(.plain)
                         .listRowInsets(EdgeInsets())
-                        .listRowBackground(COLOR_ROW_GROUP)
+                        //.listRowBackground(COLOR_ROW_GROUP)
                         .disabled(isShowingPopup)
                     }
+                    .padding(.horizontal, 16)
                 }
             }
             .listStyle(.plain)
