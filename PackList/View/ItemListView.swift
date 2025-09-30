@@ -107,8 +107,8 @@ struct ItemListView: View {
             }
         }
         .contentShape(Rectangle())
-        .highPriorityGesture(
-            DragGesture(minimumDistance: 30)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30, coordinateSpace: .local)
                 .onEnded { value in
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
