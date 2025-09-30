@@ -64,11 +64,9 @@ struct GroupListView: View {
                         NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
                             HStack {
                                 Text(option.title)
-                                    .font(FONT_NAME)
-                                    .foregroundStyle(COLOR_NAME)
+                                    .font(FONT_MEMO)
+                                    .foregroundStyle(COLOR_MEMO)
                                 Spacer()
-                                //Image(systemName: "chevron.right")
-                                //    .foregroundStyle(.secondary)
                             }
                             .frame(minHeight: rowHeight)
                             .padding(.horizontal, 8)
