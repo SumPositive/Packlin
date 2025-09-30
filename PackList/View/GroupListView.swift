@@ -33,28 +33,53 @@ struct GroupListView: View {
     var body: some View {
         ZStack {
             List {
-                ForEach(sortedGroups) { group in
-                    ZStack {
-                        GroupRowView(group: group, isHeader: false) { selected, point in
-                            editingGroup = selected
-                            popupAnchor = point
-                        }
+                Section {
+                    ForEach(sortedGroups) { group in
+                        ZStack {
+                            GroupRowView(group: group, isHeader: false) { selected, point in
+                                editingGroup = selected
+                                popupAnchor = point
+                            }
 
-                        GeometryReader { geo in
-                            HStack {
-                                Spacer()
-                                NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
-                                    Color.clear
+                            GeometryReader { geo in
+                                HStack {
+                                    Spacer()
+                                    NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
+                                        Color.clear
+                                    }
+                                    .buttonStyle(.plain)
+                                    .padding(.trailing, 8)
                                 }
-                                .buttonStyle(.plain)
-                                .padding(.trailing, 8)
                             }
                         }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .background(COLOR_ROW_GROUP)
                     }
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    .background(COLOR_ROW_GROUP)
+                    .onMove(perform: moveGroup)
                 }
-                .onMove(perform: moveGroup)
+
+                // 並べ替え一覧
+                Section(header: Text("group.section.sort")) {
+                    ForEach(ItemSortOption.allCases) { option in
+                        NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
+                            HStack {
+                                Text(option.title)
+                                    .font(FONT_NAME)
+                                    .foregroundStyle(COLOR_NAME)
+                                Spacer()
+                                //Image(systemName: "chevron.right")
+                                //    .foregroundStyle(.secondary)
+                            }
+                            .frame(minHeight: rowHeight)
+                            .padding(.horizontal, 8)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowInsets(EdgeInsets())
+                        //.listRowBackground(COLOR_ROW_GROUP)
+                        .disabled(isShowingPopup)
+                    }
+                    .padding(.horizontal, 16)
+                }
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
