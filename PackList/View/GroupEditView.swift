@@ -84,7 +84,7 @@ struct GroupEditView: View {
             .padding(.bottom, -7)
             TextEditor(text: $group.name)
                 .font(FONT_EDIT)
-                .onChange(of: group.name) { newValue, oldValue in
+                .onChange(of: group.name) { oldValue, newValue in
                     // 最大文字数制限
                     if APP_MAX_NAME_LEN < newValue.count {
                         group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
@@ -102,7 +102,7 @@ struct GroupEditView: View {
             .padding(.bottom, -7)
             TextEditor(text: $group.memo)
                 .font(FONT_EDIT)
-                .onChange(of: group.memo) { newValue, oldValue in
+                .onChange(of: group.memo) { oldValue, newValue in
                     // 最大文字数制限
                     if APP_MAX_MEMO_LEN < newValue.count {
                         group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))

@@ -19,7 +19,7 @@ extension View {
                             onChange(proxy.size)
                         }
                     }
-                    .onChange(of: proxy.size) { newSize, oldSize in
+                    .onChange(of: proxy.size) { oldSize, newSize in
                         DispatchQueue.main.async {
                             onChange(newSize)
                         }

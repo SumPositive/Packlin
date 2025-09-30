@@ -102,7 +102,7 @@ struct PackEditView: View {
             .padding(.bottom, -7)
             TextEditor(text: $pack.name)
                 .font(FONT_EDIT)
-                .onChange(of: pack.name) { newValue, oldValue in
+                .onChange(of: pack.name) { oldValue, newValue in
                     // 最大文字数制限
                     if APP_MAX_NAME_LEN < newValue.count {
                         pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
@@ -120,7 +120,7 @@ struct PackEditView: View {
             .padding(.bottom, -7)
             TextEditor(text: $pack.memo)
                 .font(FONT_EDIT)
-                .onChange(of: pack.memo) { newValue, oldValue in
+                .onChange(of: pack.memo) { oldValue, newValue in
                     // 最大文字数制限
                     if APP_MAX_MEMO_LEN < newValue.count {
                         pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
