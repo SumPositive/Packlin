@@ -33,27 +33,6 @@ struct GroupListView: View {
     var body: some View {
         ZStack {
             List {
-                Section(header: Text("ソート")) {
-                    ForEach(ItemSortOption.allCases) { option in
-                        NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
-                            HStack {
-                                Text(option.title)
-                                    .font(FONT_NAME)
-                                    .foregroundStyle(COLOR_NAME)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(minHeight: rowHeight)
-                            .padding(.horizontal, 16)
-                        }
-                        .buttonStyle(.plain)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(COLOR_ROW_GROUP)
-                        .disabled(isShowingPopup)
-                    }
-                }
-
                 Section {
                     ForEach(sortedGroups) { group in
                         ZStack {
@@ -77,6 +56,27 @@ struct GroupListView: View {
                         .background(COLOR_ROW_GROUP)
                     }
                     .onMove(perform: moveGroup)
+                }
+
+                Section(header: Text("ソート")) {
+                    ForEach(ItemSortOption.allCases) { option in
+                        NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
+                            HStack {
+                                Text(option.title)
+                                    .font(FONT_NAME)
+                                    .foregroundStyle(COLOR_NAME)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(minHeight: rowHeight)
+                            .padding(.horizontal, 16)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(COLOR_ROW_GROUP)
+                        .disabled(isShowingPopup)
+                    }
                 }
             }
             .listStyle(.plain)
