@@ -523,7 +523,7 @@ private struct ItemQuantityEditor: View {
             } else {
                 item.stock = value
             }
-            item.check = (0 < item.stock && item.need <= item.stock)
+            //連動しない item.check = (0 < item.stock && item.need <= item.stock)
         })
     }
 
@@ -535,7 +535,7 @@ private struct ItemQuantityEditor: View {
             } else {
                 item.need = value
             }
-            item.check = (0 < item.stock && item.need <= item.stock)
+            //連動しない item.check = (0 < item.stock && item.need <= item.stock)
         })
     }
 

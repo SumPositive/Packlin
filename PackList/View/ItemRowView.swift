@@ -15,7 +15,6 @@ struct ItemRowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var rowFrame: CGRect?
-    //@State private var checkButtonFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
@@ -38,20 +37,16 @@ struct ItemRowView: View {
             // チェック
             Button {
                 item.check.toggle()
-                if item.check {
-                    item.stock = item.need
-                }else{
-                    item.stock = 0
-                }
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             } label: {
-                Image(systemName: item.check ? "checkmark.circle"
-                      : 0 < item.need ? "circle" : "circle.dotted")
+                Image(systemName
+                      : item.check ? "checkmark.circle"     // Check ON
+                      : item.need == 0 ? "circle.fill"      // Need = 0
+                      : item.need <= item.stock ? "circle.circle"
+                      : "circle")
                 .imageScale(.large)
             }
             .buttonStyle(BorderlessButtonStyle())
             .padding(.vertical, 8)
-//            .padding(.horizontal, 8)
             .padding(.trailing, 4)
             .padding(.leading, 0)
 
