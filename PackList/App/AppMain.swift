@@ -70,18 +70,24 @@ struct AppMain: App {
             }
         }
         .modelContainer(sharedModelContainer)
-        .onChange(of: scenePhase) { newPhase, oldPhase in
-            guard newPhase == .inactive || newPhase == .background else { return }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            guard oldPhase == .inactive, newPhase == .background else { return }
             // バックになる前
             let context = sharedModelContainer.mainContext
-            if context.hasChanges {
-                // 変更があればDB保存
-                try? context.save()
-                // Undoクリア
-                context.undoManager?.removeAllActions()
-                // Undo/Redoボタン更新
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            }
+            //if context.hasChanges {
+                do {
+                    // 変更があればDB保存
+                    try context.save()
+                    // Undoクリア
+                    context.undoManager?.closeAllUndoGroups()
+                    context.undoManager?.removeAllActions()
+                    // Undo/Redoボタン更新
+                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+                }
+                catch {
+                    debugPrint("Failed to context.save: \(error)")
+                }
+            //}
         }
 
     }
@@ -130,11 +136,13 @@ struct AppMain: App {
                 // DB保存
                 try context.save()
                 // Undoクリア
+                context.undoManager?.closeAllUndoGroups()
                 context.undoManager?.removeAllActions()
             } catch {
                 debugPrint("Failed to save sample packs: \(error)")
             }
         }
     }
+
 }
 

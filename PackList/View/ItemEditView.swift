@@ -23,13 +23,16 @@ struct ItemEditView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
+
     @State private var isShowingMoveSheet = false
     @State private var selectedPackID: String
     @State private var selectedGroupID: String
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
+
     @AppStorage("itemEdit.move.lastInsertPosition")
     private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
+
     @AppStorage("itemEdit.move.lastKeepOriginal")
     private var lastMoveKeepOriginal: Bool = false
 
@@ -38,10 +41,6 @@ struct ItemEditView: View {
     private var nameFieldMinHeight: CGFloat {
         UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
     }
-
-    //private var sectionFieldBackground: Color { Color(.secondarySystemBackground) }
-    //private var sectionButtonBackground: Color { Color(.systemBackground) }
-    //private var sectionButtonBorder: Color { Color(.quaternarySystemFill) }
 
     private enum Field: Hashable {
         case name

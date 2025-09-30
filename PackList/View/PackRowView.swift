@@ -103,7 +103,7 @@ struct PackRowView: View {
                         .onAppear {
                             rowFrame = geo.frame(in: .global)
                         }
-                        .onChange(of: geo.frame(in: .global)) { newFrame, oldFrame in
+                        .onChange(of: geo.frame(in: .global)) { oldFrame, newFrame in
                             rowFrame = newFrame
                         }
                 }
