@@ -172,8 +172,11 @@ struct ItemListView: View {
 
     private func updateUndoRedo() {
         if let um = modelContext.undoManager {
-            canUndo = um.canUndo
+            canUndo = um.canUndo && modelContext.hasChanges // && 編集なければ非活性
             canRedo = um.canRedo
+        } else {
+            canUndo = false
+            canRedo = false
         }
     }
 

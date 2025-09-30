@@ -306,9 +306,9 @@ struct ItemEditView: View {
     }
 
     private func updateUndoRedo() {
-        if let undoManager = modelContext.undoManager {
-            canUndo = undoManager.canUndo
-            canRedo = undoManager.canRedo
+        if let um = modelContext.undoManager {
+            canUndo = um.canUndo && modelContext.hasChanges // && 編集なければ非活性
+            canRedo = um.canRedo
         } else {
             canUndo = false
             canRedo = false
