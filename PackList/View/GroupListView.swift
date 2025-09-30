@@ -33,28 +33,51 @@ struct GroupListView: View {
     var body: some View {
         ZStack {
             List {
-                ForEach(sortedGroups) { group in
-                    ZStack {
-                        GroupRowView(group: group, isHeader: false) { selected, point in
-                            editingGroup = selected
-                            popupAnchor = point
-                        }
-
-                        GeometryReader { geo in
+                Section(header: Text("ソート")) {
+                    ForEach(ItemSortOption.allCases) { option in
+                        NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
                             HStack {
+                                Text(option.title)
+                                    .font(FONT_NAME)
+                                    .foregroundStyle(COLOR_NAME)
                                 Spacer()
-                                NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
-                                    Color.clear
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(minHeight: rowHeight)
+                            .padding(.horizontal, 16)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(COLOR_ROW_GROUP)
+                        .disabled(isShowingPopup)
+                    }
+                }
+
+                Section {
+                    ForEach(sortedGroups) { group in
+                        ZStack {
+                            GroupRowView(group: group, isHeader: false) { selected, point in
+                                editingGroup = selected
+                                popupAnchor = point
+                            }
+
+                            GeometryReader { geo in
+                                HStack {
+                                    Spacer()
+                                    NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
+                                        Color.clear
+                                    }
+                                    .buttonStyle(.plain)
+                                    .padding(.trailing, 8)
                                 }
-                                .buttonStyle(.plain)
-                                .padding(.trailing, 8)
                             }
                         }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .background(COLOR_ROW_GROUP)
                     }
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    .background(COLOR_ROW_GROUP)
+                    .onMove(perform: moveGroup)
                 }
-                .onMove(perform: moveGroup)
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している

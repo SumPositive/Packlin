@@ -13,18 +13,21 @@ enum AppDestination: Hashable, Codable {
     case groupList(packID: M1Pack.ID)
     case itemList(packID: M1Pack.ID, groupID: M2Group.ID)
     case itemEdit(packID: M1Pack.ID, groupID: M2Group.ID, itemID: M3Item.ID)
+    case itemSortList(packID: M1Pack.ID, sort: ItemSortOption)
 
     private enum CodingKeys: String, CodingKey {
         case caseName
         case packID
         case groupID
         case itemID
+        case sort
     }
 
     private enum CaseName: String, Codable {
         case groupList
         case itemList
         case itemEdit
+        case itemSortList
     }
 
     func encode(to encoder: Encoder) throws {
@@ -42,6 +45,10 @@ enum AppDestination: Hashable, Codable {
             try container.encode(packID, forKey: .packID)
             try container.encode(groupID, forKey: .groupID)
             try container.encode(itemID, forKey: .itemID)
+        case .itemSortList(let packID, let sort):
+            try container.encode(CaseName.itemSortList, forKey: .caseName)
+            try container.encode(packID, forKey: .packID)
+            try container.encode(sort, forKey: .sort)
         }
     }
 
@@ -61,6 +68,10 @@ enum AppDestination: Hashable, Codable {
             let groupID = try container.decode(M2Group.ID.self, forKey: .groupID)
             let itemID = try container.decode(M3Item.ID.self, forKey: .itemID)
             self = .itemEdit(packID: packID, groupID: groupID, itemID: itemID)
+        case .itemSortList:
+            let packID = try container.decode(M1Pack.ID.self, forKey: .packID)
+            let sort = try container.decode(ItemSortOption.self, forKey: .sort)
+            self = .itemSortList(packID: packID, sort: sort)
         }
     }
 }
@@ -138,6 +149,27 @@ struct ItemEditScene: View {
             )
         } else {
             Text("navigation.itemNotFound")
+        }
+    }
+}
+
+struct ItemSortListScene: View {
+    let packID: M1Pack.ID
+    let sort: ItemSortOption
+
+    @Query private var packs: [M1Pack]
+
+    init(packID: M1Pack.ID, sort: ItemSortOption) {
+        self.packID = packID
+        self.sort = sort
+        _packs = Query(filter: #Predicate<M1Pack> { $0.id == packID })
+    }
+
+    var body: some View {
+        if let pack = packs.first {
+            ItemSortListView(pack: pack, sortOption: sort)
+        } else {
+            Text("navigation.packNotFound")
         }
     }
 }
