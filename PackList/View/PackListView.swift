@@ -47,13 +47,14 @@ struct PackListView: View {
                             }
                         }
                     }
+                    .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
                 .onMove(perform: movePack)
             }
             .listStyle(.plain)
-            .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            //.padding(.top, -8) // headerとPackList間の余白を無くす
+            .listRowSeparator(.hidden)
+            // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 0)
             .safeAreaInset(edge: .top) {
                 HStack {
@@ -93,7 +94,13 @@ struct PackListView: View {
                         addPack()
                     }
                     label: {
-                        Image(systemName: "plus.message")
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                            Image(systemName: "plus")
+                                .imageScale(.small)
+                                .padding(.top, 4)
+                        }
                     }
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 8)

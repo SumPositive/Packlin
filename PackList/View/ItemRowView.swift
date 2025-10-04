@@ -28,49 +28,45 @@ struct ItemRowView: View {
 
     var body: some View {
         HStack(spacing: 0) {
+            // グループ縦線
             Rectangle()
                 .fill(COLOR_ROW_GROUP)
-                .frame(width: 20)
+                .frame(width: 12)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
 
-            // チェック
-            Button {
-                item.check.toggle()
-            } label: {
-                Image(systemName
-                      : item.check ? "checkmark.circle"     // Check ON
-                      : item.need == 0 ? "circle.fill"      // Need = 0
-                      : item.need <= item.stock ? "circle.circle"
-                      : "circle")
-                .imageScale(.large)
-            }
-            .buttonStyle(BorderlessButtonStyle())
-            .padding(.vertical, 8)
-            .padding(.trailing, 4)
-            .padding(.leading, 0)
-
-            VStack(alignment: .leading, spacing: 1){
-                item.name.placeholderText("placeholder.item.new")
-                    .lineLimit(3)
-                    .font(FONT_NAME)
-                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-
-                if !item.memo.isEmpty {
-                    Text(item.memo)
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    // チェック
+                    Button {
+                        item.check.toggle()
+                    } label: {
+                        Image(systemName
+                              : item.check ? "checkmark.circle"     // Check ON
+                              : item.need == 0 ? "circle.fill"      // Need = 0
+                              : item.need <= item.stock ? "circle.circle"
+                              : "circle")
+                        .imageScale(.large)
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                    .padding(.top, 8)
+                    .padding(.bottom, 12)// タップ範囲を広げるため
+                    .padding(.leading, 0)
+                    .padding(.trailing, 8)
+                    // 名称
+                    item.name.placeholderText("placeholder.item.new")
                         .lineLimit(3)
-                        .font(FONT_MEMO)
-                        .foregroundStyle(COLOR_MEMO)
-                        .padding(.leading, 25)
+                        .font(FONT_NAME)
+                        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                    Spacer()
                 }
-                if DEBUG_SHOW_ORDER_ID {
-                    Text("item (\(item.order)) [\(item.id)]")
-                }
-                
-                HStack {
-                    Spacer() // 右寄せにするため
 
-                    // 編集
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .frame(width: 24, height: 1)
+                        .foregroundStyle(.clear)
+
+                    // 数量編集
                     Button {
                         guard let rf = rowFrame else { return }
                         let po = CGPoint(x: rf.width / 2.0,
@@ -93,8 +89,8 @@ struct ItemRowView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
 
-                        Image(systemName: "square.and.pencil")
-                            .tint(.gray)
+                        //Image(systemName: "square.and.pencil")
+                        //    .tint(.accentColor).opacity(0.7)
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     .padding(.horizontal, 8)
@@ -102,8 +98,20 @@ struct ItemRowView: View {
                         Capsule()
                             .fill(COLOR_ROW_GROUP.opacity(0.85))
                     )
+
+                    if !item.memo.isEmpty {
+                        Text(item.memo)
+                            .lineLimit(3)
+                            .font(FONT_MEMO)
+                            .foregroundStyle(COLOR_MEMO)
+                            .padding(.leading, 4)
+                    }
+                    Spacer()
                 }
-                .padding(.trailing, 16)
+
+                if DEBUG_SHOW_ORDER_ID {
+                    Text("item (\(item.order)) [\(item.id)]")
+                }
             }
             .padding(.vertical, 4)
         }
@@ -129,8 +137,8 @@ struct ItemRowView: View {
             COLOR_LIST_SEPARATOR
                 .frame(height: LIST_SEPARATOR_THICKNESS)
                 .ignoresSafeArea(edges: .horizontal)
-                .padding(.leading, 20)
-                .padding(.trailing, 8)
+                .padding(.leading, 50)
+                .padding(.trailing, 30)
         }
     }
 

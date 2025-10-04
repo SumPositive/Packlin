@@ -35,13 +35,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check OFF"
+            "value" : "All check OFF"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "チェックOFF"
+            "state" : "needs_review",
+            "value" : "全チェックOFF"
           }
         }
       }
@@ -51,13 +51,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check ON"
+            "value" : "All check ON"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "チェックON"
+            "state" : "needs_review",
+            "value" : "全チェックON"
           }
         }
       }

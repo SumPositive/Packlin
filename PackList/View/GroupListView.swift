@@ -52,8 +52,10 @@ struct GroupListView: View {
                                 }
                             }
                         }
+                        .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .background(COLOR_ROW_GROUP)
+                        //.background(COLOR_ROW_GROUP)
                     }
                     .onMove(perform: moveGroup)
                 }
@@ -69,12 +71,18 @@ struct GroupListView: View {
                                 Spacer()
                             }
                             .frame(minHeight: rowHeight)
-                            .padding(.horizontal, 8)
+                            .overlay(alignment: .bottom) {
+                                // 独自の下線
+                                COLOR_LIST_SEPARATOR
+                                    .frame(height: LIST_SEPARATOR_THICKNESS)
+                                    .ignoresSafeArea(edges: .horizontal)
+                                    .padding(.horizontal, 0)
+                            }
                         }
                         .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets())
-                        //.listRowBackground(COLOR_ROW_GROUP)
-                        .disabled(isShowingPopup)
+                        .padding(.horizontal, 32)
                     }
                     .padding(.horizontal, 16)
                 }
@@ -113,7 +121,7 @@ struct GroupListView: View {
                     .padding(.trailing, 8)
 
                     Button(action: addGroup) {
-                        Image(systemName: "plus.rectangle")
+                        Image(systemName: "plus.square")
                     }
                     .disabled(isShowingPopup)
                 }

@@ -30,11 +30,11 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         if allItemsChecked {
-                            Image(systemName: "checkmark.rectangle")
+                            Image(systemName: "checkmark.square")
                             Text("action.check.off")
                                 .font(.caption)
                         }else{
-                            Image(systemName: "rectangle")
+                            Image(systemName: "square")
                             Text("action.check.on")
                                 .font(.caption)
                         }

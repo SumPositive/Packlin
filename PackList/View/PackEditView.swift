@@ -34,12 +34,20 @@ struct PackEditView: View {
                     checkToggle()
                 } label: {
                     VStack {
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                            
+                            if allItemsChecked {
+                                Image(systemName: "checkmark")
+                                    .imageScale(.small)
+                                    .padding(.top, 4)
+                            }
+                        }
                         if allItemsChecked {
-                            Image(systemName: "checkmark.message")
                             Text("action.check.off")
                                 .font(.caption)
                         }else{
-                            Image(systemName: "message")
                             Text("action.check.on")
                                 .font(.caption)
                         }

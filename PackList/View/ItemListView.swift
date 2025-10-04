@@ -15,6 +15,8 @@ struct ItemListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var editingGroup: M2Group?
@@ -45,7 +47,6 @@ struct ItemListView: View {
                                 popupAnchor = point
                             }
                         }
-                        .buttonStyle(.plain)
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .listRowBackground(COLOR_ROW_ITEM)
@@ -153,9 +154,9 @@ struct ItemListView: View {
         }
 
         ToolbarItemGroup(placement: .navigationBarTrailing) {
-            EditButton()
-                .disabled(isShowingPopup)
-                .padding(.trailing, 8)
+            //EditButton()
+            //    .disabled(isShowingPopup)
+            //    .padding(.trailing, 8)
 
             // Redo
             Button {
@@ -166,8 +167,45 @@ struct ItemListView: View {
             }
             .disabled(!canRedo || isShowingPopup)
             .padding(.trailing, 8)
+            // アイテム追加ボタン
+            Button(action: addItem) {
+                Image(systemName: "plus.circle")
+                    .imageScale(.large)
+                    .padding(.trailing, 8)
+            }
+            .disabled(isShowingPopup)
         }
+    }
 
+    /// アイテム追加
+    private func addItem() {
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+        let newOrder: Int
+        switch insertionPosition {
+            case .head:
+                let minOrder = group.child.map { $0.order }.min() ?? 0
+                newOrder = minOrder - 1
+            case .tail:
+                let maxOrder = group.child.map { $0.order }.max() ?? -1
+                newOrder = maxOrder + 1
+        }
+        
+        let newItem = M3Item(name: "", order: newOrder, parent: group)
+        modelContext.insert(newItem)
+        withAnimation {
+            switch insertionPosition {
+                case .head:
+                    group.child.insert(newItem, at: 0)
+                case .tail:
+                    group.child.append(newItem)
+            }
+            group.normalizeItemOrder()
+        }
     }
 
     private func updateUndoRedo() {
