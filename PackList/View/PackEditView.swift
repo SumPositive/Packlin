@@ -24,6 +24,8 @@ struct PackEditView: View {
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
+    @State private var isShowingCheckAlert = false
+    @State private var pendingCheckAlert: CheckAlertType = .checkOn
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
@@ -35,8 +37,7 @@ struct PackEditView: View {
             HStack {    // Actions
                 // チェックON/OFF
                 Button {
-                    // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-                    checkToggle()
+                    prepareCheckAlert()
                 } label: {
                     VStack {
                         ZStack {
@@ -163,6 +164,31 @@ struct PackEditView: View {
                 ActivityView(activityItems: [shareURL])
             }
         }
+        .alert(alertTitle, isPresented: $isShowingCheckAlert, actions: {
+            switch pendingCheckAlert {
+            case .checkOn:
+                Button("alert.check.on.only") {
+                    checkOnSufficient = false
+                    applyCheckToggle(shouldCheck: true, adjustStock: false)
+                }
+                Button("alert.check.on.sufficient") {
+                    checkOnSufficient = true
+                    applyCheckToggle(shouldCheck: true, adjustStock: true)
+                }
+            case .checkOff:
+                Button("alert.check.off.only") {
+                    checkOffInsufficient = false
+                    applyCheckToggle(shouldCheck: false, adjustStock: false)
+                }
+                Button("alert.check.off.insufficient") {
+                    checkOffInsufficient = true
+                    applyCheckToggle(shouldCheck: false, adjustStock: true)
+                }
+            }
+            Button("action.cancel", role: .cancel) {}
+        }, message: {
+            Text(alertMessage)
+        })
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
@@ -180,7 +206,7 @@ struct PackEditView: View {
     }
 
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-    private func checkToggle() {
+    private func applyCheckToggle(shouldCheck: Bool, adjustStock: Bool) {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
         defer {
@@ -188,27 +214,52 @@ struct PackEditView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        let toggle = allItemsChecked
         let items = pack.child.flatMap { $0.child }
         for item in items {
-            if toggle {
-                // ON --> OFF
-                item.check = false
-                // チェックOFF時に不足（在庫数＝0）にする
-                if checkOffInsufficient {
-                    item.stock = 0
-                }
-            }else{
+            if shouldCheck {
                 // OFF --> ON
                 item.check = (0 < item.need)
                 // チェックON時に充足（在庫数＝必要数）にする
-                if checkOnSufficient {
+                if adjustStock {
                     item.stock = item.need
+                }
+            } else {
+                // ON --> OFF
+                item.check = false
+                // チェックOFF時に不足（在庫数＝0）にする
+                if adjustStock {
+                    item.stock = 0
                 }
             }
         }
     }
-    
+
+    private func prepareCheckAlert() {
+        let items = pack.child.flatMap { $0.child }
+        guard !items.isEmpty else { return }
+
+        pendingCheckAlert = allItemsChecked ? .checkOff : .checkOn
+        isShowingCheckAlert = true
+    }
+
+    private var alertTitle: String {
+        switch pendingCheckAlert {
+        case .checkOn:
+            return String(localized: "alert.check.on.title")
+        case .checkOff:
+            return String(localized: "alert.check.off.title")
+        }
+    }
+
+    private var alertMessage: String {
+        switch pendingCheckAlert {
+        case .checkOn:
+            return String(localized: "alert.check.on.message")
+        case .checkOff:
+            return String(localized: "alert.check.off.message")
+        }
+    }
+
     /// 現在のPackを複製して現在行に追加する
     private func duplicatePack() {
         // Undo grouping BEGIN
@@ -329,5 +380,10 @@ struct PackEditView: View {
             .replacingOccurrences(of: " ", with: "_")
         return sanitized.isEmpty ? "Pack_unnamed" : sanitized
     }
+}
+
+private enum CheckAlertType {
+    case checkOn
+    case checkOff
 }
 
