@@ -76,7 +76,7 @@ struct GroupListView: View {
                                 COLOR_LIST_SEPARATOR
                                     .frame(height: LIST_SEPARATOR_THICKNESS)
                                     .ignoresSafeArea(edges: .horizontal)
-                                    .padding(.horizontal, 0)
+                                    .padding(.horizontal, 4)
                             }
                         }
                         .buttonStyle(.plain)
