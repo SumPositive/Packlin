@@ -30,10 +30,15 @@ struct PackRowView: View {
             return "\(pack.stockWeight.decimalGrouped)\(weightUnit)"
         }
     }
-    
+    // 全チェック済み
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
         return !items.isEmpty && items.allSatisfy { $0.check || $0.need == 0 }
+    }
+    // 全充足（不足なし）  "Sufficient stock"
+    private var allSufficientStock: Bool {
+        let items = pack.child.flatMap { $0.child }
+        return !items.isEmpty && items.allSatisfy { $0.need == 0 || $0.need <= $0.stock }
     }
 
     var body: some View {
@@ -53,6 +58,11 @@ struct PackRowView: View {
 
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
+                                    .imageScale(.small)
+                                    .padding(.top, 4)
+                            }
+                            else if allSufficientStock {
+                                Image(systemName: "circle")
                                     .imageScale(.small)
                                     .padding(.top, 4)
                             }

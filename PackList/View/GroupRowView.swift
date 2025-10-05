@@ -33,11 +33,15 @@ struct GroupRowView: View {
             return "\(group.stockWeight.decimalGrouped)\(weightUnit)"
         }
     }
-
+    // 全チェック済み
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
     }
-    
+    // 全充足（不足なし）  "Sufficient stock"
+    private var allSufficientStock: Bool {
+        !group.child.isEmpty && group.child.allSatisfy { $0.need == 0 || $0.need <= $0.stock }
+    }
+
     var body: some View {
         Group {
             VStack(spacing: 0) {
@@ -49,7 +53,10 @@ struct GroupRowView: View {
                                          y: rf.minY)
                         onEdit(group, po)
                     } label: {
-                        Image(systemName: allItemsChecked ? "checkmark.square" : "square")
+                        Image(systemName
+                              : allItemsChecked ? "checkmark.square"
+                              : allSufficientStock ? "circle.square"
+                              : "square")
                             .imageScale(.large)
                             .padding(.leading, 0)
                             .padding(.trailing, 8)
