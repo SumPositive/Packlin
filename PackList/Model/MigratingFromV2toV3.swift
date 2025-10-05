@@ -88,11 +88,11 @@ struct MigratingFromV2toV3 {
     @MainActor
     private func importLegacyPacks(_ legacyPacks: [LegacyPackDTO], into context: ModelContext) {
         let sortedPacks = legacyPacks
-            .sorted { lhs, rhs in
-                if lhs.order == rhs.order {
-                    return lhs.name.localizedCompare(rhs.name) == .orderedAscending
+            .sorted { ll, rr in
+                if ll.order == rr.order {
+                    return ll.name.localizedCompare(rr.name) == .orderedAscending
                 }
-                return lhs.order < rhs.order
+                return ll.order < rr.order
             }
 
         for (packIndex, packDTO) in sortedPacks.enumerated() {
@@ -105,11 +105,11 @@ struct MigratingFromV2toV3 {
             context.insert(pack)
 
             let groups = packDTO.groups
-                .sorted { lhs, rhs in
-                    if lhs.order == rhs.order {
-                        return lhs.name.localizedCompare(rhs.name) == .orderedAscending
+                .sorted { ll, rr in
+                    if ll.order == rr.order {
+                        return ll.name.localizedCompare(rr.name) == .orderedAscending
                     }
-                    return lhs.order < rhs.order
+                    return ll.order < rr.order
                 }
 
             for (groupIndex, groupDTO) in groups.enumerated() {
@@ -123,11 +123,11 @@ struct MigratingFromV2toV3 {
                 pack.child.append(group)
 
                 let items = groupDTO.items
-                    .sorted { lhs, rhs in
-                        if lhs.order == rhs.order {
-                            return lhs.name.localizedCompare(rhs.name) == .orderedAscending
+                    .sorted { ll, rr in
+                        if ll.order == rr.order {
+                            return ll.name.localizedCompare(rr.name) == .orderedAscending
                         }
-                        return lhs.order < rhs.order
+                        return ll.order < rr.order
                     }
 
                 for (itemIndex, itemDTO) in items.enumerated() {

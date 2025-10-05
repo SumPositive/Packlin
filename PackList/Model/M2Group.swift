@@ -41,11 +41,18 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
 
     /// 子アイテムの order を連番に整理する
     func normalizeItemOrder() {
-        //NG// child = child.sorted { $0.order < $1.order }
-        //OK// Arry順のまま連番を付与
-        for (index, item) in child.enumerated() {
+        let sorted = child.sorted { ll, rr in
+            if ll.order != rr.order {
+                return ll.order < rr.order
+            }
+            return ll.id < rr.id
+        }
+
+        for (index, item) in sorted.enumerated() {
             item.order = index
         }
+
+        child = sorted
     }
 
     /// 次の order 値を取得する

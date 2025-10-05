@@ -42,11 +42,18 @@ final class M1Pack {
     
     /// 子グループの order を連番に整理する
     func normalizeGroupOrder() {
-        //NG// child = child.sorted { $0.order < $1.order }
-        //OK// Arry順のまま連番を付与
-        for (index, group) in child.enumerated() {
+        let sorted = child.sorted { ll, rr in
+            if ll.order != rr.order {
+                return ll.order < rr.order
+            }
+            return ll.id < rr.id
+        }
+
+        for (index, group) in sorted.enumerated() {
             group.order = index
         }
+
+        child = sorted
     }
 
     /// 次のグループの order 値を取得する
