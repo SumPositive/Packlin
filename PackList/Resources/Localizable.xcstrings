@@ -317,13 +317,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "External tap or swipe to close"
+            "value" : "Close by tapping outside or swiping"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "外部タップまたはスワイプ操作で閉じられます"
+            "value" : "外部タップまたはスワイプ操作で閉じる"
           }
         }
       }
@@ -1116,6 +1116,55 @@
         }
       }
     },
+    "setting.checkOffInsufficient.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set stock to insufficient (stock = 0) when unchecked"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チェックOFF時に不足（在庫数＝0）にする"
+          }
+        }
+      }
+    },
+    "setting.checkOnSufficient.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set stock to sufficient (stock = required quantity) when checked"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チェックON時に充足（在庫数＝必要数）にする"
+          }
+        }
+      }
+    },
+    "setting.customSet.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "カスタム設定"
+          }
+        }
+      }
+    },
     "setting.import.error.message" : {
       "localizations" : {
         "en" : {
@@ -1233,13 +1282,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show need weight"
+            "value" : "Display required weight"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "必要重量を表示"
+            "state" : "needs_review",
+            "value" : "必要重量を表示する"
           }
         }
       }
@@ -1249,13 +1298,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notifications and Settings"
+            "value" : "Custom settings"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "お知らせ・設定"
+            "state" : "needs_review",
+            "value" : "カスタム設定"
           }
         }
       }

@@ -16,7 +16,12 @@ struct PackEditView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+
+    @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
+    @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+
     @FocusState private var nameIsFocused: Bool
+
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
     
@@ -37,10 +42,12 @@ struct PackEditView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
                                     .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                     .padding(.top, 4)
                             }
                         }
@@ -55,13 +62,14 @@ struct PackEditView: View {
                 }
                 .tint(.purple)
                 .padding(.horizontal, 8)
-                
+
                 // 複製
                 Button {
                     duplicatePack()
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("action.duplicate")
                             .font(.caption)
                     }
@@ -74,13 +82,19 @@ struct PackEditView: View {
                     exportPack()
                 } label: {
                     VStack {
-                        Image(systemName: "arrow.up.message")
+                        ZStack {
+                            Image(systemName: "case")
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            Image(systemName: "arrow.up")
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .padding(.top, -16)
+                        }
                         Text("action.json.upload")
                             .font(.caption)
                     }
                 }
                 .tint(.accentColor)
-                .padding(.horizontal, 8)
+                .padding(.leading, 16)
                 
                 Spacer()
 
@@ -93,6 +107,7 @@ struct PackEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("action.delete")
                             .font(.caption)
                     }
@@ -138,6 +153,7 @@ struct PackEditView: View {
 
             Text("edit.info.swipeToDismiss")
                 .font(.caption2)
+                .foregroundStyle(.secondary)
                 .padding(.top, 4)
         }
         .padding(.horizontal, 8)
@@ -178,9 +194,17 @@ struct PackEditView: View {
             if toggle {
                 // ON --> OFF
                 item.check = false
+                // チェックOFF時に不足（在庫数＝0）にする
+                if checkOffInsufficient {
+                    item.stock = 0
+                }
             }else{
                 // OFF --> ON
                 item.check = (0 < item.need)
+                // チェックON時に充足（在庫数＝必要数）にする
+                if checkOnSufficient {
+                    item.stock = item.need
+                }
             }
         }
     }

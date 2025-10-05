@@ -106,6 +106,7 @@ struct GroupListView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.backward")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)
                     .padding(.trailing, 8)
@@ -115,6 +116,7 @@ struct GroupListView: View {
                         modelContext.undoManager?.performUndo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!canUndo || isShowingPopup)
                 }
@@ -124,12 +126,14 @@ struct GroupListView: View {
                         modelContext.undoManager?.performRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!canRedo || isShowingPopup)
                     .padding(.trailing, 8)
 
                     Button(action: addGroup) {
                         Image(systemName: "plus.square")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)
                 }
@@ -190,6 +194,7 @@ struct GroupListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.square")
                             .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("groupList.footer.checked")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -198,6 +203,7 @@ struct GroupListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "circle.square")
                             .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("groupList.footer.inStock")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -206,6 +212,7 @@ struct GroupListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "square")
                             .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("groupList.footer.outOfStock")
                             .font(.footnote)
                             .foregroundStyle(.secondary)

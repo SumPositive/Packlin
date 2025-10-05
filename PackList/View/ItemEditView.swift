@@ -198,6 +198,7 @@ struct ItemEditView: View {
                     onDismiss()
                 } label: {
                     Image(systemName: "chevron.backward")
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .padding(.trailing, 8)
 
@@ -206,6 +207,7 @@ struct ItemEditView: View {
                     modelContext.undoManager?.performUndo()
                 } label: {
                     Image(systemName: "arrow.uturn.backward")
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .disabled(!canUndo)
             }
@@ -216,6 +218,7 @@ struct ItemEditView: View {
                     modelContext.undoManager?.performRedo()
                 } label: {
                     Image(systemName: "arrow.uturn.forward")
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .disabled(!canRedo)
                 .padding(.trailing, 8)

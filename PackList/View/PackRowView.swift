@@ -55,15 +55,18 @@ struct PackRowView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
 
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
                                     .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                     .padding(.top, 4)
                             }
                             else if allSufficientStock {
                                 Image(systemName: "circle")
                                     .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                     .padding(.top, 4)
                             }
                         }

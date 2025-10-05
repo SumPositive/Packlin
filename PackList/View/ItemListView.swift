@@ -141,6 +141,7 @@ struct ItemListView: View {
             }) {
                 HStack(spacing: 0) {
                     Image(systemName: "chevron.backward")
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     //Text("Group")
                 }
             }
@@ -153,6 +154,7 @@ struct ItemListView: View {
                 modelContext.undoManager?.performUndo()
             } label: {
                 Image(systemName: "arrow.uturn.backward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .disabled(!canUndo || isShowingPopup)
         }
@@ -168,6 +170,7 @@ struct ItemListView: View {
                 modelContext.undoManager?.performRedo()
             } label: {
                 Image(systemName: "arrow.uturn.forward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .disabled(!canRedo || isShowingPopup)
             .padding(.trailing, 8)
@@ -175,6 +178,7 @@ struct ItemListView: View {
             Button(action: addItem) {
                 Image(systemName: "plus.circle")
                     .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     .padding(.trailing, 8)
             }
             .disabled(isShowingPopup)
@@ -193,6 +197,7 @@ struct ItemListView: View {
                 Group {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.checkmark.circle")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -200,6 +205,7 @@ struct ItemListView: View {
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.circle")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.inStock")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -207,6 +213,7 @@ struct ItemListView: View {
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.outOfStock")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -214,6 +221,7 @@ struct ItemListView: View {
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.fill")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.circle.fill")
                             .font(.footnote)
                             .foregroundStyle(.secondary)

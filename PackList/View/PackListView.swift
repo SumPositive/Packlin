@@ -71,6 +71,7 @@ struct PackListView: View {
                         isShowSetting = true
                     } label: {
                         Image(systemName: "gearshape")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 8)
@@ -80,6 +81,7 @@ struct PackListView: View {
                         modelContext.undoManager?.performUndo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!canUndo || isShowingPopup)
                     .padding(.horizontal, 8)
@@ -93,6 +95,7 @@ struct PackListView: View {
                         modelContext.undoManager?.performRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!canRedo || isShowingPopup)
                     .padding(.horizontal, 8)
@@ -104,8 +107,10 @@ struct PackListView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Image(systemName: "plus")
                                 .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
                     }
@@ -168,8 +173,10 @@ struct PackListView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Image(systemName: "checkmark")
                                 .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
                         Text("packList.footer.checked")
@@ -181,8 +188,10 @@ struct PackListView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Image(systemName: "circle")
                                 .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
                         Text("packList.footer.inStock")
@@ -193,6 +202,7 @@ struct PackListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "case")
                             .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("packList.footer.outOfStock")
                             .font(.footnote)
                             .foregroundStyle(.secondary)

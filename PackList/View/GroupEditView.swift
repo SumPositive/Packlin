@@ -14,8 +14,12 @@ struct GroupEditView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+
+    @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
+    @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+
     @FocusState private var nameIsFocused: Bool
-    
+
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
     }
@@ -31,10 +35,12 @@ struct GroupEditView: View {
                     VStack {
                         if allItemsChecked {
                             Image(systemName: "checkmark.square")
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Text("action.check.off")
                                 .font(.caption)
                         }else{
                             Image(systemName: "square")
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Text("action.check.on")
                                 .font(.caption)
                         }
@@ -49,6 +55,7 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("action.duplicate")
                             .font(.caption)
                     }
@@ -67,6 +74,7 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("action.delete")
                             .font(.caption)
                     }
@@ -142,9 +150,17 @@ struct GroupEditView: View {
             if toggle {
                 // ON --> OFF
                 item.check = false
+                // チェックOFF時に不足（在庫数＝0）にする
+                if checkOffInsufficient {
+                    item.stock = 0
+                }
             }else{
                 // OFF --> ON
                 item.check = (0 < item.need)
+                // チェックON時に充足（在庫数＝必要数）にする
+                if checkOnSufficient {
+                    item.stock = item.need
+                }
             }
         }
     }

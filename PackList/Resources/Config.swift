@@ -99,16 +99,22 @@ let FONT_EDIT: Font = .title2
 
 // Setting 初期値
 
+/// 不揮発保存する
 enum AppStorageKey {
     // 新規追加の位置
     static let insertionPosition = "setting.insertionPosition"
+    // 必要重量を表示する
     static let showNeedWeight = "setting.showNeedWeight"
+    // チェックON時に充足（在庫数＝必要数）にする
+    static let checkOnSufficient = "setting.checkOnSufficient"
+    // チェックOFF時に不足（在庫数＝0）にする
+    static let checkOffInsufficient = "setting.checkOffInsufficient"
 }
-
+/// 新規追加する位置
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
     // 選択肢
-    case head
-    case tail
+    case head // 先頭
+    case tail // 末尾
     // 初期値
     static let `default`: InsertionPosition = .head
 

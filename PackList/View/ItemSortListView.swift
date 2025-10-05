@@ -106,6 +106,7 @@ struct ItemSortListView: View {
             }) {
                 HStack(spacing: 0) {
                     Image(systemName: "chevron.backward")
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
             }
             .padding(.trailing, 8)
@@ -116,6 +117,7 @@ struct ItemSortListView: View {
                 modelContext.undoManager?.performUndo()
             } label: {
                 Image(systemName: "arrow.uturn.backward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .disabled(!canUndo || isShowingPopup)
         }
@@ -126,6 +128,7 @@ struct ItemSortListView: View {
                 modelContext.undoManager?.performRedo()
             } label: {
                 Image(systemName: "arrow.uturn.forward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .disabled(!canRedo || isShowingPopup)
             .padding(.trailing, 8)

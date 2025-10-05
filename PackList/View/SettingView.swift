@@ -21,14 +21,19 @@ struct SettingView: View {
                 header
 
                 SettingSection {
+                    // 情報
                     InformationView()
+                    // 共有
+                    ShareView()
                 }
 
                 SettingSection {
+                    // カスタム設定
                     CustomSetView()
                 }
 
                 SettingSection {
+                    // 応援・寄付
                     DonationView()
                 }
             }
@@ -37,16 +42,7 @@ struct SettingView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollIndicators(.never)
-        .frame(width: 340, height: 520)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(uiColor: .systemGroupedBackground))
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.6 : 0.2), lineWidth: 0.5)
-        )
+        .frame(width: 340, height: 540)
     }
 
     private var header: some View {
@@ -126,9 +122,10 @@ struct SettingView: View {
                 Label {
                     Text("setting.info")
                         .font(.body.weight(.medium))
+                        .foregroundColor(.accentColor)
                 } icon: {
                     Image(systemName: "info.circle")
-                        .symbolRenderingMode(.hierarchical)
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -144,79 +141,51 @@ struct SettingView: View {
         }
     }
 
-    /// カスタム設定
-    struct CustomSetView: View {
+    /// 共有
+    struct ShareView: View {
         @Environment(\.modelContext) private var modelContext
-        @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
+     
         @State private var isPresentingImporter = false
         @State private var importErrorMessage: String?
-
+        
         var body: some View {
-            VStack(alignment: .leading, spacing: 20) {
-
-                // 共有 Pack_*.json を読み込む
-                Button(action: {
-                    isPresentingImporter = true
-                }) {
-                    Label {
-                        Text("action.json.download")
-                            .font(.body.weight(.medium))
-                    } icon: {
-                        Image(systemName: "arrow.down.message")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.accentColor)
-
-                // 新規追加の位置
-                VStack(alignment: .leading, spacing: 8) {
-                    Label {
-                        Text("setting.insertion.title")
-                            .font(.callout)
-                    } icon: {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-
-                    Picker("setting.insertion.title", selection: $insertionPosition) {
-                        ForEach(InsertionPosition.allCases) { position in
-                            Text(position.localizedKey)
-                                .tag(position)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                }
-
-                Toggle(isOn: $showNeedWeight) {
-                    Label {
-                        Text("setting.needWeight.title")
-                            .font(.body)
-                    } icon: {
-                        Image(systemName: "scalemass")
-                            .symbolRenderingMode(.hierarchical)
+            // 共有 Pack_*.json を読み込む
+            Button(action: {
+                isPresentingImporter = true
+            }) {
+                Label {
+                    Text("action.json.download")
+                        .font(.body.weight(.medium))
+                        .foregroundColor(.accentColor)
+                } icon: {
+                    ZStack {
+                        Image(systemName: "case")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        Image(systemName: "arrow.down")
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .padding(.top, 20)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .buttonStyle(.plain)
             .fileImporter( // ファイル読み込み
                 isPresented: $isPresentingImporter,
                 allowedContentTypes: [.json],
                 allowsMultipleSelection: false
             ) { result in
                 switch result {
-                case .success(let urls):
-                    guard let url = urls.first else { return }
-                    do {
-                        try importPack(from: url)
-                    } catch {
+                    case .success(let urls):
+                        guard let url = urls.first else { return }
+                        do {
+                            try importPack(from: url)
+                        } catch {
+                            debugPrint("Failed to import pack: \(error)")
+                            importErrorMessage = String(localized: "setting.import.error.message")
+                        }
+                    case .failure(let error):
                         debugPrint("Failed to import pack: \(error)")
                         importErrorMessage = String(localized: "setting.import.error.message")
-                    }
-                case .failure(let error):
-                    debugPrint("Failed to import pack: \(error)")
-                    importErrorMessage = String(localized: "setting.import.error.message")
                 }
             }
             .alert(
@@ -231,7 +200,6 @@ struct SettingView: View {
                 Text(importErrorMessage ?? "")
             }
         }
-
         /// URLよりJSONファイルをPackExportDTO形式で読み取る
         private func importPack(from url: URL) throws {
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
@@ -240,11 +208,11 @@ struct SettingView: View {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-
+            
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let dto = try decoder.decode(PackJsonDTO.self, from: data)
-
+            
             // チェック
             if dto.copyright != PACK_JSON_DTO_COPYRIGHT {
                 throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Copyright mismatch."])
@@ -252,10 +220,10 @@ struct SettingView: View {
             if dto.version != PACK_JSON_DTO_VERSION {
                 throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Version mismatch."])
             }
-
+            
             try createPack(from: dto)
         }
-
+        
         /// DTOよりPackを追加する
         private func createPack(from dto: PackJsonDTO) throws {
             let descriptor = FetchDescriptor<M1Pack>()
@@ -272,7 +240,70 @@ struct SettingView: View {
         }
     }
     
-    /// 寄付
+    /// カスタム設定
+    struct CustomSetView: View {
+        @Environment(\.modelContext) private var modelContext
+
+        @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
+        @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
+        @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 20) {
+                // 新規追加の位置
+                HStack(spacing: 8) {
+                    Label {
+                        Text("setting.insertion.title")
+                            .font(.callout)
+                    } icon: {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+
+                    Picker("setting.insertion.title", selection: $insertionPosition) {
+                        ForEach(InsertionPosition.allCases) { position in
+                            Text(position.localizedKey)
+                                .tag(position)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                // 必要重量を表示する
+                Toggle(isOn: $showNeedWeight) {
+                    Label {
+                        Text("setting.needWeight.title")
+                            .font(.body)
+                    } icon: {
+                        Image(systemName: "scalemass")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+                // チェックON時に充足（在庫数＝必要数）にする
+                Toggle(isOn: $checkOnSufficient) {
+                    Label {
+                        Text("setting.checkOnSufficient.title")
+                            .font(.body)
+                    } icon: {
+                        Image(systemName: "circle.circle")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+                // チェックOFF時に不足（在庫数＝0）にする
+                Toggle(isOn: $checkOffInsufficient) {
+                    Label {
+                        Text("setting.checkOffInsufficient.title")
+                            .font(.body)
+                    } icon: {
+                        Image(systemName: "circle")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+    }
+    
+    /// 応援・寄付
     struct DonationView: View {
         @State private var showAd = false
         @State private var showAdMovie = false

@@ -14,6 +14,10 @@ struct ItemRowView: View {
     let onEdit: (M3Item, CGPoint) -> Void
 
     @Environment(\.modelContext) private var modelContext
+
+    @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
+    @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
@@ -40,6 +44,17 @@ struct ItemRowView: View {
                     // チェック
                     Button {
                         item.check.toggle()
+                        if item.check {
+                            if checkOnSufficient {
+                                // チェックON時に充足（在庫数＝必要数）にする
+                                item.stock = item.need
+                            }
+                        }else{
+                            if checkOffInsufficient {
+                                // チェックOFF時に不足（在庫数＝0）にする
+                                item.stock = 0
+                            }
+                        }
                     } label: {
                         Image(systemName
                               : item.check ? "checkmark.circle"     // Check ON
@@ -47,6 +62,7 @@ struct ItemRowView: View {
                               : item.need <= item.stock ? "circle.circle"
                               : "circle")
                         .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     .padding(.top, 8)
