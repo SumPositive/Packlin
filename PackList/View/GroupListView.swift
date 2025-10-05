@@ -197,7 +197,6 @@ struct GroupListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("groupList.footer.checked")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -206,7 +205,6 @@ struct GroupListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("groupList.footer.inStock")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -215,10 +213,10 @@ struct GroupListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("groupList.footer.outOfStock")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+                .foregroundStyle(.secondary)
                 .padding(.leading, 16)
             }
             .padding(.top, 20)

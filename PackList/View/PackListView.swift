@@ -187,7 +187,6 @@ struct PackListView: View {
                         }
                         Text("packList.footer.checked")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -202,7 +201,6 @@ struct PackListView: View {
                         }
                         Text("packList.footer.inStock")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -211,10 +209,10 @@ struct PackListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("packList.footer.outOfStock")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+                .foregroundStyle(.secondary)
                 .padding(.leading, 16)
             }
             .padding(.top, 20)

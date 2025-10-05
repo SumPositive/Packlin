@@ -200,7 +200,6 @@ struct ItemListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.checkmark.circle")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -208,7 +207,6 @@ struct ItemListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.inStock")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -216,7 +214,6 @@ struct ItemListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.outOfStock")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
@@ -224,10 +221,10 @@ struct ItemListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("itemList.footer.circle.fill")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+                .foregroundStyle(.secondary)
                 .padding(.leading, 16)
             }
             .padding(.top, 20)

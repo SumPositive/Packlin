@@ -59,7 +59,7 @@ struct PackRowView: View {
                     } label: {
                         ZStack {
                             if #available(iOS 18.0, *) {
-                                let deley = Double(allItems) * 0.1 // 呼吸間隔
+                                let deley = Double(allItems) * 0.3 // 呼吸間隔
                                 Image(systemName: "case")
                                     .imageScale(.large)
                                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる

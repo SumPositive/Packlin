@@ -58,7 +58,7 @@ struct GroupRowView: View {
                         onEdit(group, po)
                     } label: {
                         if #available(iOS 18.0, *) {
-                            let deley = Double(allItems) * 0.1 // 呼吸間隔
+                            let deley = Double(allItems) * 0.5 // 呼吸間隔
                             Image(systemName
                                   : allItemsChecked ? "checkmark.square"
                                   : allSufficientStock ? "circle.square"
