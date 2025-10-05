@@ -59,9 +59,8 @@ struct GroupListView: View {
                     }
                     .onMove(perform: moveGroup)
                 }
-
                 // 並べ替え一覧
-                Section(header: Text("group.section.sort")) {
+                Section {
                     ForEach(ItemSortOption.allCases) { option in
                         NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
                             HStack {
@@ -85,6 +84,15 @@ struct GroupListView: View {
                         .padding(.horizontal, 32)
                     }
                     .padding(.horizontal, 16)
+                }
+                header: {
+                    // セクション・ヘッダー
+                    Text("group.section.sort")
+                }
+                footer: {
+                    // セクション・フッター：操作説明、アイコン説明
+                    FooterView()
+                        .listRowSeparator(.hidden) // 下線なし
                 }
             }
             .listStyle(.plain)
@@ -168,6 +176,50 @@ struct GroupListView: View {
                 }
         )
     }
+
+    /// フッター：操作説明、アイコン説明
+    struct FooterView: View {
+        var body: some View {
+            VStack(spacing: 8) {
+                Text("groupList.footer.description")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Group {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.square")
+                            .imageScale(.large)
+                        Text("groupList.footer.checked")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "circle.square")
+                            .imageScale(.large)
+                        Text("groupList.footer.inStock")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "square")
+                            .imageScale(.large)
+                        Text("groupList.footer.outOfStock")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.leading, 16)
+            }
+            .padding(.top, 20)
+            .padding(.leading, 30)
+            .padding(.trailing, 8)
+        }
+    }
+
 
     private func updateUndoRedo() {
         if let um = modelContext.undoManager {

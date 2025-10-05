@@ -62,11 +62,9 @@ struct ItemListView: View {
                     .contentShape(Rectangle())
                     .disabled(isShowingPopup)
                 } footer: {
-                    Text("itemList.footer.description")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 12)
+                    // フッター：操作説明、アイコン説明
+                    FooterView()
+                        .listRowSeparator(.hidden) // 下線なし
                 }
             }
             .listStyle(.plain)
@@ -183,6 +181,54 @@ struct ItemListView: View {
         }
     }
 
+    /// フッター：操作説明、アイコン説明
+    struct FooterView: View {
+        var body: some View {
+            VStack(spacing: 8) {
+                Text("itemList.footer.description")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Group {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle")
+                        Text("itemList.footer.checkmark.circle")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "circle.circle")
+                        Text("itemList.footer.inStock")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "circle")
+                        Text("itemList.footer.outOfStock")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "circle.fill")
+                        Text("itemList.footer.circle.fill")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.leading, 16)
+            }
+            .padding(.top, 20)
+            .padding(.leading, 30)
+            .padding(.trailing, 8)
+        }
+    }
+    
+    
     /// アイテム追加
     private func addItem() {
         // Undo grouping BEGIN
