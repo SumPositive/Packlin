@@ -41,6 +41,10 @@ struct GroupRowView: View {
     private var allSufficientStock: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.need == 0 || $0.need <= $0.stock }
     }
+    // 全アイテム数
+    private var allItems: Int {
+        return group.child.count
+    }
 
     var body: some View {
         Group {
@@ -53,15 +57,30 @@ struct GroupRowView: View {
                                          y: rf.minY)
                         onEdit(group, po)
                     } label: {
-                        Image(systemName
-                              : allItemsChecked ? "checkmark.square"
-                              : allSufficientStock ? "circle.square"
-                              : "square")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .padding(.leading, 0)
-                            .padding(.trailing, 8)
-                            .padding(.vertical, 8)
+                        if #available(iOS 18.0, *) {
+                            let deley = Double(allItems) * 0.1 // 呼吸間隔
+                            Image(systemName
+                                  : allItemsChecked ? "checkmark.square"
+                                  : allSufficientStock ? "circle.square"
+                                  : "square")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolEffect(.breathe.pulse.byLayer,
+                                              options: .repeat(.periodic(delay: deley))) // 呼吸
+                                .padding(.leading, 0)
+                                .padding(.trailing, 8)
+                                .padding(.vertical, 8)
+                        } else {
+                            Image(systemName
+                                  : allItemsChecked ? "checkmark.square"
+                                  : allSufficientStock ? "circle.square"
+                                  : "square")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .padding(.leading, 0)
+                                .padding(.trailing, 8)
+                                .padding(.vertical, 8)
+                        }
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     // 名称

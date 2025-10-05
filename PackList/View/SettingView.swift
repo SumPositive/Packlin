@@ -47,10 +47,18 @@ struct SettingView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "gearshape")
-                .font(.title3.weight(.semibold))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.primary)
+            if #available(iOS 18.0, *) {
+                Image(systemName: "gearshape")
+                    .font(.title3.weight(.semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.primary)
+                    .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
+            } else {
+                Image(systemName: "gearshape")
+                    .font(.title3.weight(.semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.primary)
+            }
 
             Text("setting.title")
                 .font(.title3.weight(.semibold))

@@ -40,6 +40,11 @@ struct PackRowView: View {
         let items = pack.child.flatMap { $0.child }
         return !items.isEmpty && items.allSatisfy { $0.need == 0 || $0.need <= $0.stock }
     }
+    // 全アイテム数
+    private var allItems: Int {
+        let items = pack.child.flatMap { $0.child }
+        return items.count
+    }
 
     var body: some View {
         Group {
@@ -53,10 +58,20 @@ struct PackRowView: View {
                         onEdit(pack, po)
                     } label: {
                         ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-
+                            if #available(iOS 18.0, *) {
+                                let deley = Double(allItems) * 0.1 // 呼吸間隔
+                                Image(systemName: "case")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                    .symbolEffect(.breathe.pulse.byLayer,
+                                                  options: .repeat(.periodic(delay: deley))) // 呼吸
+                                
+                            } else {
+                                Image(systemName: "case")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            }
+                            
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
                                     .imageScale(.small)

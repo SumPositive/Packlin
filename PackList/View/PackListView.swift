@@ -70,8 +70,14 @@ struct PackListView: View {
                         popupAnchor = nil // 中央
                         isShowSetting = true
                     } label: {
-                        Image(systemName: "gearshape")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        if #available(iOS 18.0, *) {
+                            Image(systemName: "gearshape")
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
+                        } else {
+                            Image(systemName: "gearshape")
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        }
                     }
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 8)
