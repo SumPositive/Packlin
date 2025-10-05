@@ -280,6 +280,134 @@
         }
       }
     },
+    "alert.check.off.insufficient" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn checks OFF and set stock to zero"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不足（在庫数＝0）にする"
+          }
+        }
+      }
+    },
+    "alert.check.off.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose how to update stock when turning all checks OFF."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在庫数の処理を選択してください"
+          }
+        }
+      }
+    },
+    "alert.check.off.only" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn checks OFF only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チェックOFFのみ"
+          }
+        }
+      }
+    },
+    "alert.check.off.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn all checks OFF"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全チェックOFF"
+          }
+        }
+      }
+    },
+    "alert.check.on.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose how to update stock when turning all checks ON."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在庫数の処理を選択してください"
+          }
+        }
+      }
+    },
+    "alert.check.on.only" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn checks ON only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チェックONのみ"
+          }
+        }
+      }
+    },
+    "alert.check.on.sufficient" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn checks ON and match stock to need"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "充足（在庫数＝必要数）にする"
+          }
+        }
+      }
+    },
+    "alert.check.on.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn all checks ON"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全チェックON"
+          }
+        }
+      }
+    },
     "app.title" : {
       "localizations" : {
         "en" : {
@@ -1144,23 +1272,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "チェックON時に充足（在庫数＝必要数）にする"
-          }
-        }
-      }
-    },
-    "setting.customSet.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Custom settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "カスタム設定"
           }
         }
       }
