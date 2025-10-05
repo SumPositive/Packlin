@@ -18,12 +18,14 @@ struct ItemEditView: View {
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
-    @State private var canUndo = false
-    @State private var canRedo = false
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
+    // 不揮発保存：チェックと在庫数を連動させる
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
     @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
 
+    @State private var canUndo = false
+    @State private var canRedo = false
     @State private var isShowingMoveSheet = false
     @State private var selectedPackID: String
     @State private var selectedGroupID: String
@@ -242,8 +244,13 @@ struct ItemEditView: View {
             }
         }
         .onDisappear {
+            // Trim
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
+            // チェックと在庫数を連動させる
+            if linkCheckWithStock {
+                item.check = (0 < item.need && item.need <= item.stock)
+            }
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
@@ -449,6 +456,8 @@ struct ItemQuickEditView: View {
     @Bindable var item: M3Item
 
     @Environment(\.modelContext) private var modelContext
+    // 不揮発保存：チェックと在庫数を連動させる
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
 
     init(item: M3Item) {
         self._item = Bindable(item)
@@ -472,6 +481,10 @@ struct ItemQuickEditView: View {
             modelContext.undoManager?.groupingBegin()
         }
         .onDisappear {
+            // チェックと在庫数を連動させる
+            if linkCheckWithStock {
+                item.check = (0 < item.need && item.need <= item.stock)
+            }
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }

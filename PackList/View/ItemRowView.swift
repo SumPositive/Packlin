@@ -15,8 +15,7 @@ struct ItemRowView: View {
 
     @Environment(\.modelContext) private var modelContext
 
-    @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
-    @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
 
     @State private var rowFrame: CGRect?
 
@@ -45,13 +44,13 @@ struct ItemRowView: View {
                     Button {
                         item.check.toggle()
                         if item.check {
-                            if checkOnSufficient {
-                                // チェックON時に充足（在庫数＝必要数）にする
+                            if linkCheckWithStock {
+                                // チェックと在庫数を連動させる
                                 item.stock = item.need
                             }
                         }else{
-                            if checkOffInsufficient {
-                                // チェックOFF時に不足（在庫数＝0）にする
+                            if linkCheckWithStock {
+                                // チェックと在庫数を連動させる
                                 item.stock = 0
                             }
                         }

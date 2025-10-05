@@ -16,9 +16,8 @@ struct PackEditView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-
-    @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
-    @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+    // 不揮発保存：チェックと在庫数を連動させる
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
 
     @FocusState private var nameIsFocused: Bool
 
@@ -194,15 +193,15 @@ struct PackEditView: View {
             if toggle {
                 // ON --> OFF
                 item.check = false
-                // チェックOFF時に不足（在庫数＝0）にする
-                if checkOffInsufficient {
+                // チェックと在庫数を連動させる
+                if linkCheckWithStock {
                     item.stock = 0
                 }
             }else{
                 // OFF --> ON
                 item.check = (0 < item.need)
-                // チェックON時に充足（在庫数＝必要数）にする
-                if checkOnSufficient {
+                // チェックと在庫数を連動させる
+                if linkCheckWithStock {
                     item.stock = item.need
                 }
             }

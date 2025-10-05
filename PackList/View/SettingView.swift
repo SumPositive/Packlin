@@ -246,8 +246,7 @@ struct SettingView: View {
 
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
-        @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
-        @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
+        @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
 
         var body: some View {
             VStack(alignment: .leading, spacing: 20) {
@@ -279,24 +278,16 @@ struct SettingView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                // チェックON時に充足（在庫数＝必要数）にする
-                Toggle(isOn: $checkOnSufficient) {
+                // チェックと在庫数を連動する
+                Toggle(isOn: $linkCheckWithStock) {
                     Label {
-                        Text("setting.checkOnSufficient.title")
+                        Text("setting.linkCheckWithStock.title")
                             .font(.body)
                     } icon: {
-                        Image(systemName: "circle.circle")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-                // チェックOFF時に不足（在庫数＝0）にする
-                Toggle(isOn: $checkOffInsufficient) {
-                    Label {
-                        Text("setting.checkOffInsufficient.title")
-                            .font(.body)
-                    } icon: {
-                        Image(systemName: "circle")
-                            .symbolRenderingMode(.hierarchical)
+                        ZStack{
+                            Image(systemName: "checkmark.circle")
+                                .symbolRenderingMode(.hierarchical)
+                        }
                     }
                 }
             }

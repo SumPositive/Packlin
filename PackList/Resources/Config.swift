@@ -105,10 +105,8 @@ enum AppStorageKey {
     static let insertionPosition = "setting.insertionPosition"
     // 必要重量を表示する
     static let showNeedWeight = "setting.showNeedWeight"
-    // チェックON時に充足（在庫数＝必要数）にする
-    static let checkOnSufficient = "setting.checkOnSufficient"
-    // チェックOFF時に不足（在庫数＝0）にする
-    static let checkOffInsufficient = "setting.checkOffInsufficient"
+    // チェックと在庫数を連動させる　　　Link check status with stock quantity
+    static let linkCheckWithStock = "setting.linkCheckWithStock"
 }
 /// 新規追加する位置
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {

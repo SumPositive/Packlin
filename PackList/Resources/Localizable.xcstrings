@@ -1116,55 +1116,6 @@
         }
       }
     },
-    "setting.checkOffInsufficient.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set stock to insufficient (stock = 0) when unchecked"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "チェックOFF時に不足（在庫数＝0）にする"
-          }
-        }
-      }
-    },
-    "setting.checkOnSufficient.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set stock to sufficient (stock = required quantity) when checked"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "チェックON時に充足（在庫数＝必要数）にする"
-          }
-        }
-      }
-    },
-    "setting.customSet.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Custom settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "カスタム設定"
-          }
-        }
-      }
-    },
     "setting.import.error.message" : {
       "localizations" : {
         "en" : {
@@ -1273,6 +1224,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新規追加の位置"
+          }
+        }
+      }
+    },
+    "setting.linkCheckWithStock.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link check status with stock quantity"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "チェックと在庫数を連動させる"
           }
         }
       }
