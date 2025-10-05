@@ -39,20 +39,14 @@ struct AdMobBannerContainerView: View {
 
     private let bannerConfigs = [
         AdMobBannerConfiguration(
-            title: "ad.banner1.title",
-            message: "ad.banner1.message",
             adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
             size: CGSize(width: 320, height: 50)
         ),
         AdMobBannerConfiguration(
-            title: "ad.banner2.title",
-            message: "ad.banner2.message",
             adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 320, height: 100)
         ),
         AdMobBannerConfiguration(
-            title: "ad.banner3.title",
-            message: "ad.banner3.message",
             adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 300, height: 250)
         )
@@ -88,35 +82,24 @@ struct AdMobBannerCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(configuration.title)
-                .font(.headline)
 
             AdMobBannerView(
                 adUnitID: configuration.adUnitID,
                 size: configuration.size
             )
 
-//            Text(configuration.message)
-//                .font(.footnote)
-//                .foregroundStyle(.secondary)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 24)
                 .fill(Color(uiColor: .secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.primary.opacity(0.05))
         )
     }
 }
 
 struct AdMobBannerConfiguration: Identifiable {
     let id = UUID()
-    let title: LocalizedStringResource
-    let message: LocalizedStringResource
     let adUnitID: String
     let size: CGSize
 }

@@ -314,8 +314,14 @@ struct SettingView: View {
                     Text("ad.empowering.developers")
                         .font(.body.weight(.medium))
                 } icon: {
-                    Image(systemName: "heart")
-                        .symbolRenderingMode(.hierarchical)
+                    if #available(iOS 18.0, *) {
+                        Image(systemName: "heart.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
+                    } else {
+                        Image(systemName: "heart.fill")
+                            .symbolRenderingMode(.hierarchical)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
@@ -342,8 +348,19 @@ struct SettingView: View {
                                 showAdMovie = true
                             }
                         }) {
-                            Text("ad.donate.video")
-                                .frame(maxWidth: .infinity)
+                            VStack(spacing: 2) {
+                                Text("ad.donate.video")
+                                    .frame(maxWidth: .infinity)
+
+                                HStack(spacing: 4) {
+                                    Image(systemName: "exclamationmark.triangle")
+                                        .imageScale(.small)
+                                        .symbolRenderingMode(.hierarchical)
+                                    Text("ad.video.sound")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(.purple)
@@ -351,14 +368,6 @@ struct SettingView: View {
                             AdMobVideoContainerView()
                         }
 
-                        HStack(spacing: 4) {
-                            Image(systemName: "exclamationmark.triangle")
-                                .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical)
-                            Text("ad.video.sound")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
                     }
                 }
             }

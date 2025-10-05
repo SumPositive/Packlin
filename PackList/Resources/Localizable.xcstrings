@@ -159,75 +159,18 @@
         }
       }
     },
-    "ad.banner1.message" : {
-
-    },
-    "ad.banner1.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Small"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "小"
-          }
-        }
-      }
-    },
-    "ad.banner2.message" : {
-
-    },
-    "ad.banner2.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Midium"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中"
-          }
-        }
-      }
-    },
-    "ad.banner3.message" : {
-
-    },
-    "ad.banner3.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Large"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "大"
-          }
-        }
-      }
-    },
     "ad.donate.banner" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Watch the ad and donate"
+            "value" : "Donate by watching an ad"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を見て寄付"
+            "state" : "needs_review",
+            "value" : "広告を見て寄付する"
           }
         }
       }
@@ -237,13 +180,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Watch a video ad"
+            "value" : "Donate by watching a video ad"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "動画広告を見て寄付"
+            "value" : "動画広告を見て寄付する"
           }
         }
       }
@@ -253,13 +196,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empowering developers"
+            "value" : "Support the developer"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "開発者を支援する"
+            "state" : "needs_review",
+            "value" : "開発者を応援する"
           }
         }
       }
@@ -269,13 +212,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "With sound"
+            "value" : "Sound may play"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "音が出ます"
+            "value" : "音が出る場合があります"
           }
         }
       }
@@ -1265,13 +1208,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Custom settings"
+            "value" : "Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "カスタム設定"
+            "value" : "設定"
           }
         }
       }
