@@ -668,6 +668,22 @@
         }
       }
     },
+    "itemList.footer.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-press an item to open quick actions. Drag the handle to reorder."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイテムを長押しするとクイック操作が開きます。ハンドルをドラッグして並べ替えられます。"
+          }
+        }
+      }
+    },
     "Key" : {
       "extractionState" : "manual"
     },

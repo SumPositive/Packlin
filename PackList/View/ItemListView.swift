@@ -61,6 +61,12 @@ struct ItemListView: View {
                     .background(COLOR_ROW_GROUP)
                     .contentShape(Rectangle())
                     .disabled(isShowingPopup)
+                } footer: {
+                    Text("itemList.footer.description")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 12)
                 }
             }
             .listStyle(.plain)
