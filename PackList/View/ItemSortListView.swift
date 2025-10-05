@@ -181,62 +181,62 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
         
         switch self {
             case .lackCount:
-                return items.sorted(by: { lhs, rhs in
-                    compare(lhs: lhs,
-                            rhs: rhs,
-                            primary: lhs.need - lhs.stock,
-                            rhsPrimary: rhs.need - rhs.stock)
+                return items.sorted(by: { ll, rr in
+                    compare(ll: ll,
+                            rr: rr,
+                            primary: ll.need - ll.stock,
+                            rrPrimary: rr.need - rr.stock)
                 })
             case .lackWeight:
-                return items.sorted(by: { lhs, rhs in
-                    let lhsValue = (lhs.need - lhs.stock) * lhs.weight
-                    let rhsValue = (rhs.need - rhs.stock) * rhs.weight
-                    return compare(lhs: lhs,
-                                   rhs: rhs,
-                                   primary: lhsValue,
-                                   rhsPrimary: rhsValue)
+                return items.sorted(by: { ll, rr in
+                    let llValue = (ll.need - ll.stock) * ll.weight
+                    let rrValue = (rr.need - rr.stock) * rr.weight
+                    return compare(ll: ll,
+                                   rr: rr,
+                                   primary: llValue,
+                                   rrPrimary: rrValue)
                 })
             case .stockWeight:
-                return items.sorted(by: { lhs, rhs in
-                    let lhsValue = lhs.stock * lhs.weight
-                    let rhsValue = rhs.stock * rhs.weight
-                    return compare(lhs: lhs,
-                                   rhs: rhs,
-                                   primary: lhsValue,
-                                   rhsPrimary: rhsValue)
+                return items.sorted(by: { ll, rr in
+                    let llValue = ll.stock * ll.weight
+                    let rrValue = rr.stock * rr.weight
+                    return compare(ll: ll,
+                                   rr: rr,
+                                   primary: llValue,
+                                   rrPrimary: rrValue)
                 })
             case .unchecked:
-                return items.sorted(by: { lhs, rhs in
-                    let lhsValue = uncheckedKey(for: lhs)
-                    let rhsValue = uncheckedKey(for: rhs)
-                    if lhsValue != rhsValue {
-                        return lhsValue < rhsValue
+                return items.sorted(by: { ll, rr in
+                    let llValue = uncheckedKey(for: ll)
+                    let rrValue = uncheckedKey(for: rr)
+                    if llValue != rrValue {
+                        return llValue < rrValue
                     }
                     // 同じとき、Groupに遡って比較する
-                    return fallbackCompare(lhs: lhs, rhs: rhs)
+                    return fallbackCompare(ll: ll, rr: rr)
                 })
         }
     }
     // 比較
-    private func compare(lhs: M3Item, rhs: M3Item,
-                         primary: Int, rhsPrimary: Int) -> Bool {
-        if primary != rhsPrimary {
-            return primary > rhsPrimary
+    private func compare(ll: M3Item, rr: M3Item,
+                         primary: Int, rrPrimary: Int) -> Bool {
+        if primary != rrPrimary {
+            return primary > rrPrimary
         }
         // 同じとき、Groupに遡って比較する
-        return fallbackCompare(lhs: lhs, rhs: rhs)
+        return fallbackCompare(ll: ll, rr: rr)
     }
     // Groupに遡って比較する
-    private func fallbackCompare(lhs: M3Item, rhs: M3Item) -> Bool {
-        let lhsGroupOrder = lhs.parent?.order ?? Int.max
-        let rhsGroupOrder = rhs.parent?.order ?? Int.max
-        if lhsGroupOrder != rhsGroupOrder {
-            return lhsGroupOrder < rhsGroupOrder
+    private func fallbackCompare(ll: M3Item, rr: M3Item) -> Bool {
+        let llGroupOrder = ll.parent?.order ?? Int.max
+        let rrGroupOrder = rr.parent?.order ?? Int.max
+        if llGroupOrder != rrGroupOrder {
+            return llGroupOrder < rrGroupOrder
         }
-        if lhs.order != rhs.order {
-            return lhs.order < rhs.order
+        if ll.order != rr.order {
+            return ll.order < rr.order
         }
-        return lhs.id < rhs.id
+        return ll.id < rr.id
     }
     /// 未チェック一覧のソート条件
     private func uncheckedKey(for item: M3Item) -> Int {
