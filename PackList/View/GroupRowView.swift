@@ -104,7 +104,7 @@ struct GroupRowView: View {
                             .padding(.vertical, 4)
                             .background(
                                 Capsule()
-                                    .fill(COLOR_ROW_ITEM.opacity(0.85))
+                                    .fill(COLOR_ROW_GROUP)
                             )
                     }else{
                         Rectangle()

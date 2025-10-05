@@ -61,15 +61,22 @@ let COLOR_NAME_EMPTY: Color = .secondary
 let COLOR_MEMO: Color = .primary
 let COLOR_WEIGHT: Color = .primary
 
-// 背景色
-let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)   // View背景
-let COLOR_BACK_INPUT: Color = Color(.systemBackground)   // 文字や数字の入力部背景
-let COLOR_BACK_POPUP: Color = Color(.systemGray3)       // Popupの背景、Viewより濃い
-
-
-let COLOR_ROW_PACK: Color = Color(.systemBackground)
-let COLOR_ROW_GROUP: Color = Color(.systemGray6)
-let COLOR_ROW_ITEM: Color = Color(.systemBackground)
+// View背景
+let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)
+// 文字や数字の入力部背景
+let COLOR_BACK_INPUT: Color = Color(.systemBackground)
+// Popupの背景、Viewより濃い
+let COLOR_BACK_POPUP: Color = Color(.systemGray3)
+// 行（セル）の背景
+let COLOR_ROW_BACK: Color = Color(.systemBackground)
+// グループセクション、カプセル色
+let COLOR_ROW_GROUP: Color = Color(UIColor { traitCollection in
+    if traitCollection.userInterfaceStyle == .dark {
+        return .systemGray4
+    } else {
+        return .systemGray6
+    }
+})
 // 行の下線色
 let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
     if traitCollection.userInterfaceStyle == .dark {

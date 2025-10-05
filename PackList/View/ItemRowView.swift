@@ -111,7 +111,7 @@ struct ItemRowView: View {
                     .padding(.horizontal, 8)
                     .background(
                         Capsule()
-                            .fill(COLOR_ROW_GROUP.opacity(0.85))
+                            .fill(COLOR_ROW_GROUP)
                     )
 
                     if !item.memo.isEmpty {
@@ -133,7 +133,7 @@ struct ItemRowView: View {
         .frame(minHeight: rowHeight)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
         .padding(.leading, 0)
-        .background(COLOR_ROW_ITEM)
+        .background(COLOR_ROW_BACK)
         .transition(.move(edge: .top).combined(with: .opacity))
         .contentShape(Rectangle())
         .background(

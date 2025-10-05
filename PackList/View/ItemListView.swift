@@ -49,7 +49,7 @@ struct ItemListView: View {
                         }
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .listRowBackground(COLOR_ROW_ITEM)
+                        .listRowBackground(COLOR_ROW_BACK)
                         .disabled(isShowingPopup)
                     }
                     .onMove(perform: moveItem)

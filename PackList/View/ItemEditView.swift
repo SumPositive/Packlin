@@ -181,8 +181,6 @@ struct ItemEditView: View {
                 EditorSection(title: "item.section.quantity") {
                     // 数量 編集
                     ItemQuantityEditor(item: item)
-                        //.background(COLOR_ROW_GROUP)
-                        //.cornerRadius(8)
                         .padding(.leading, 16)
                 }
             }
@@ -190,7 +188,7 @@ struct ItemEditView: View {
             .padding(.vertical, 12)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(COLOR_BACK_POPUP) // Color(.systemGroupedBackground))
+        .background(COLOR_ROW_GROUP) 
         .navigationTitle(item.name.placeholderText("placeholder.item.new"))
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)

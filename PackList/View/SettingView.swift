@@ -61,7 +61,7 @@ struct SettingView: View {
             }
 
             Text("setting.title")
-                .font(.title3.weight(.semibold))
+                .font(.title3.weight(.regular))
                 .foregroundStyle(.primary)
 
             Spacer()
@@ -96,14 +96,14 @@ struct SettingView: View {
 
         private var backgroundColor: Color {
             if colorScheme == .dark {
-                return Color(uiColor: .tertiarySystemBackground)
+                return Color(uiColor: .systemGray3)
             } else {
-                return Color(uiColor: .systemBackground)
+                return Color(uiColor: .systemGray6)
             }
         }
 
         private var shadowColor: Color {
-            colorScheme == .dark ? Color.black.opacity(0.45) : Color.black.opacity(0.12)
+            colorScheme == .dark ? Color.black.opacity(0.65) : Color.black.opacity(0.12)
         }
     }
     
@@ -122,14 +122,12 @@ struct SettingView: View {
         
         var body: some View {
             Button(action: {
-                //withAnimation {
-                    // SafariでURLを表示する
-                    showSafari = true
-                //}
+                // SafariでURLを表示する
+                showSafari = true
             }) {
                 Label {
                     Text("setting.info")
-                        .font(.body.weight(.medium))
+                        .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
                     Image(systemName: "info.circle")
@@ -163,7 +161,7 @@ struct SettingView: View {
             }) {
                 Label {
                     Text("action.json.download")
-                        .font(.body.weight(.medium))
+                        .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
                     ZStack {
