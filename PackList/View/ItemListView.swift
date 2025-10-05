@@ -50,7 +50,6 @@ struct ItemListView: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .listRowBackground(COLOR_ROW_BACK)
-                        .disabled(isShowingPopup)
                     }
                     .onMove(perform: moveItem)
                 } header: {
@@ -59,8 +58,7 @@ struct ItemListView: View {
                         popupAnchor = point
                     }
                     .background(COLOR_ROW_GROUP)
-                    .contentShape(Rectangle())
-                    .disabled(isShowingPopup)
+                    //.padding(.top, -20) // 上余白を無くすため、GroupRowで＋20、ここでー20
                 } footer: {
                     // フッター：操作説明、アイコン説明
                     FooterView()

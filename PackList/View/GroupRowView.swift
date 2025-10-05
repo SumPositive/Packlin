@@ -131,6 +131,7 @@ struct GroupRowView: View {
                 }
             }
             .frame(minHeight: rowHeight)
+            //.padding(.top, isHeader ? 20 : 0) // セクションヘッダになる場合＋20
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
