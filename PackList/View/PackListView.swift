@@ -29,28 +29,35 @@ struct PackListView: View {
     var body: some View {
         ZStack {
             List {
-                ForEach(packs) { pack in
-                    ZStack {
-                        PackRowView(pack: pack) { selected, point in
-                            editingPack = selected
-                            popupAnchor = point
-                        }
-
-                        GeometryReader { geo in
-                            HStack(spacing: 0) {
-                                Spacer()
-                                NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
-                                    Color.clear
+                Section {
+                    ForEach(packs) { pack in
+                        ZStack {
+                            PackRowView(pack: pack) { selected, point in
+                                editingPack = selected
+                                popupAnchor = point
+                            }
+                            
+                            GeometryReader { geo in
+                                HStack(spacing: 0) {
+                                    Spacer()
+                                    NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
+                                        Color.clear
+                                    }
+                                    .buttonStyle(.plain)
+                                    .padding(.trailing, 8)
                                 }
-                                .buttonStyle(.plain)
-                                .padding(.trailing, 8)
                             }
                         }
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .onMove(perform: movePack)
                 }
-                .onMove(perform: movePack)
+                footer: {
+                    // フッター：操作説明、アイコン説明
+                    FooterView()
+                        .listRowSeparator(.hidden) // 下線なし
+                }
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden)
@@ -144,6 +151,59 @@ struct PackListView: View {
                 }
                 .zIndex(2)
             }
+        }
+    }
+
+    /// フッター：操作説明、アイコン説明
+    struct FooterView: View {
+        var body: some View {
+            VStack(spacing: 8) {
+                Text("packList.footer.description")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Group {
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                            Image(systemName: "checkmark")
+                                .imageScale(.small)
+                                .padding(.top, 4)
+                        }
+                        Text("packList.footer.checked")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                            Image(systemName: "circle")
+                                .imageScale(.small)
+                                .padding(.top, 4)
+                        }
+                        Text("packList.footer.inStock")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "case")
+                            .imageScale(.large)
+                        Text("packList.footer.outOfStock")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.leading, 16)
+            }
+            .padding(.top, 20)
+            .padding(.leading, 30)
+            .padding(.trailing, 8)
         }
     }
 
