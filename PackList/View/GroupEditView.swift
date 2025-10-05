@@ -15,10 +15,10 @@ struct GroupEditView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @AppStorage(AppStorageKey.checkOnSufficient) private var checkOnSufficient: Bool = false
-    @AppStorage(AppStorageKey.checkOffInsufficient) private var checkOffInsufficient: Bool = false
-
     @FocusState private var nameIsFocused: Bool
+
+    @State private var isShowingCheckAlert = false
+    @State private var pendingCheckAlert: CheckAlertType = .checkOn
 
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
@@ -29,8 +29,7 @@ struct GroupEditView: View {
             HStack {    // Actions
                 // チェックON/OFF
                 Button {
-                    // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-                    checkToggle()
+                    prepareCheckAlert()
                 } label: {
                     VStack {
                         if allItemsChecked {
@@ -120,6 +119,27 @@ struct GroupEditView: View {
         }
         .padding(.horizontal, 8)
         .frame(width: 320, height: 280)
+        .alert(alertTitle, isPresented: $isShowingCheckAlert, actions: {
+            switch pendingCheckAlert {
+            case .checkOn:
+                Button("alert.check.on.only") {
+                    applyCheckToggle(shouldCheck: true, adjustStock: false)
+                }
+                Button("alert.check.on.sufficient") {
+                    applyCheckToggle(shouldCheck: true, adjustStock: true)
+                }
+            case .checkOff:
+                Button("alert.check.off.only") {
+                    applyCheckToggle(shouldCheck: false, adjustStock: false)
+                }
+                Button("alert.check.off.insufficient") {
+                    applyCheckToggle(shouldCheck: false, adjustStock: true)
+                }
+            }
+            Button("action.cancel", role: .cancel) {}
+        }, message: {
+            Text(alertMessage)
+        })
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
@@ -137,31 +157,58 @@ struct GroupEditView: View {
     }
 
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-    private func checkToggle() {
+    ///   - shouldCheck:  True=チェックONにする／OFFにする
+    ///   - adjustStock:  True=在庫数も変更する／しない
+    private func applyCheckToggle(shouldCheck: Bool, adjustStock: Bool) {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
         defer {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-        let toggle = allItemsChecked
         let items = group.child
         for item in items {
-            if toggle {
-                // ON --> OFF
-                item.check = false
-                // チェックOFF時に不足（在庫数＝0）にする
-                if checkOffInsufficient {
-                    item.stock = 0
-                }
-            }else{
+            if shouldCheck {
                 // OFF --> ON
                 item.check = (0 < item.need)
                 // チェックON時に充足（在庫数＝必要数）にする
-                if checkOnSufficient {
+                if adjustStock {
                     item.stock = item.need
                 }
+            } else {
+                // ON --> OFF
+                item.check = false
+                // チェックOFF時に不足（在庫数＝0）にする
+                if adjustStock {
+                    item.stock = 0
+                }
             }
+        }
+    }
+
+    /// 全チェック・アラート表示
+    private func prepareCheckAlert() {
+        guard !group.child.isEmpty else { return }
+
+        pendingCheckAlert = allItemsChecked ? .checkOff : .checkOn
+        isShowingCheckAlert = true
+    }
+    /// 全チェック・アラート　タイトル
+    private var alertTitle: String {
+        switch pendingCheckAlert {
+        case .checkOn:
+            return String(localized: "alert.check.on.title")
+        case .checkOff:
+            return String(localized: "alert.check.off.title")
+        }
+    }
+    /// 全チェック・アラート　メッセージ
+    private var alertMessage: String {
+        switch pendingCheckAlert {
+        case .checkOn:
+            return String(localized: "alert.check.on.message")
+        case .checkOff:
+            return String(localized: "alert.check.off.message")
         }
     }
 
@@ -219,5 +266,11 @@ struct GroupEditView: View {
         modelContext.delete(group)
     }
 
+}
+
+/// 全チェック・アラート　タイプ
+private enum CheckAlertType {
+    case checkOn  // ONにする
+    case checkOff // OFFにする
 }
 
