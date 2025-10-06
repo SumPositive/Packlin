@@ -281,7 +281,7 @@
 				"$(DWARF_DSYM_FOLDER_PATH)/UserMessagingPlatform.framework.dSYM",
 			);
 			runOnlyForDeploymentPostprocessing = 1;
-			shellPath = /bin/sh;
+			shellPath = /bin/bash;
 			shellScript = "set -euo pipefail\n\nif [ \"${CONFIGURATION}\" != \"Release\" ]; then\n  exit 0\nfi\n\nPACKAGE_ARTIFACTS=\"${BUILD_DIR%/Build/*}/SourcePackages/artifacts\"\nFRAMEWORKS=(\"GoogleMobileAds\" \"UserMessagingPlatform\")\n\nfor framework in \"${FRAMEWORKS[@]}\"; do\n  while IFS= read -r -d '' dsym; do\n    echo \"Copying ${dsym##*/}\"\n    rsync -a \"${dsym}\" \"${DWARF_DSYM_FOLDER_PATH}/\"\n  done < <(find \"${PACKAGE_ARTIFACTS}\" -name \"${framework}.framework.dSYM\" -print0)\ndone\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
