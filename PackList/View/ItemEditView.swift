@@ -16,6 +16,7 @@ struct ItemEditView: View {
     @Bindable var item: M3Item
     let onDismiss: () -> Void
     let onSelectItem: (M3Item) -> Void
+    let adjacentItemProvider: ((M3Item, Int) -> M3Item?)?
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
@@ -74,12 +75,18 @@ struct ItemEditView: View {
         }
     }
 
-    init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void, onSelectItem: @escaping (M3Item) -> Void) {
+    init(pack: M1Pack,
+         group: M2Group,
+         item: M3Item,
+         onDismiss: @escaping () -> Void,
+         onSelectItem: @escaping (M3Item) -> Void,
+         adjacentItemProvider: ((M3Item, Int) -> M3Item?)? = nil) {
         self.pack = pack
         self.group = group
         self._item = Bindable(item)
         self.onDismiss = onDismiss
         self.onSelectItem = onSelectItem
+        self.adjacentItemProvider = adjacentItemProvider
         self._selectedPackID = State(initialValue: pack.id)
         self._selectedGroupID = State(initialValue: group.id)
     }
@@ -242,10 +249,45 @@ struct ItemEditView: View {
                 }
 
                 // 数量
-                EditorSection(title: "item.section.quantity") {
-                    // 数量 編集
-                    ItemQuantityEditor(item: item)
-                        .padding(.leading, 16)
+                EditorSection {
+                    // 数量
+                    Text("item.section.quantity")
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+
+                    HStack(spacing: 0) {
+                        // アイテム・アイコン・チェック
+                        Button {
+                            item.check.toggle()
+                            if item.check {
+                                if linkCheckWithStock {
+                                    // チェックと在庫数を連動させる
+                                    item.stock = item.need
+                                }
+                            }else{
+                                if linkCheckWithStock {
+                                    // チェックと在庫数を連動させる
+                                    item.stock = 0
+                                }
+                            }
+                        } label: {
+                            Image(systemName
+                                  : item.check ? "checkmark.circle"     // Check ON
+                                  : item.need == 0 ? "circle.fill"      // Need = 0
+                                  : item.need <= item.stock ? "circle.circle"
+                                  : "circle")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                        .padding(8)
+
+                        // 数量 編集
+                        ItemQuantityEditor(item: item)
+                            //.padding(.leading, 0)
+                    }
                 }
             }
             .padding(.horizontal, 20)
@@ -547,6 +589,10 @@ struct ItemEditView: View {
     /// 前後のアイテムを取得する
     /// - Parameter offset: 移動量 (-1)1つ前のアイテム　(+1)1つ次のアイテム
     private func adjacentItem(offset: Int) -> M3Item? {
+        if let provider = adjacentItemProvider {
+            return provider(item, offset)
+        }
+
         guard offset != 0,
               let parent = item.parent else { return nil }
 
@@ -810,7 +856,7 @@ private struct EditorSection<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             if let title {
                 Text(title)
                     .font(.footnote)

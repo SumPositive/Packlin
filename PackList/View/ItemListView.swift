@@ -39,7 +39,8 @@ struct ItemListView: View {
                             value: AppDestination.itemEdit(
                                 packID: pack.id,
                                 groupID: group.id,
-                                itemID: item.id
+                                itemID: item.id,
+                                sort: nil
                             )
                         ) {
                             ItemRowView(item: item) { selected, point in
