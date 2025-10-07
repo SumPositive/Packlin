@@ -189,7 +189,7 @@ struct ItemEditView: View {
                             Spacer()
                             // 消去
                             Button(role: .destructive) {
-                                //TODO: 現在の編集内容をクリア（M3Itemの初期値に）する
+                                resetItemToInitialState()
                             } label: {
                                 Label("action.item.erase", systemImage: "eraser")
                                     .frame(width: 90, height: 44)
@@ -355,6 +355,24 @@ struct ItemEditView: View {
             }
             parent.normalizeItemOrder()
         }
+    }
+
+    private func resetItemToInitialState() {
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+
+        item.name = ""
+        item.memo = ""
+        item.check = false
+        item.stock = 0
+        item.need = 1
+        item.weight = 0
+
+        focusedField = .name
     }
 
     private func deleteItem() {
