@@ -44,6 +44,14 @@ struct ItemEditView: View {
         UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
     }
 
+    private var canItemLineDown: Bool {
+        if let group = item.parent {
+            return (item.order < group.child.count - 1)
+        }else{
+            return false
+        }
+    }
+    
     private enum Field: Hashable {
         case name
         case memo
@@ -89,56 +97,94 @@ struct ItemEditView: View {
                 //    }
                 // 操作
                 EditorSection(title: "edit.actions") {
-                    HStack(spacing: 12) {
-                        // 移動
-                        Button {
-                            prepareMoveSheet()
-                            isShowingMoveSheet = true
-                        } label: {
-                            Label("action.move", systemImage: "hand.point.up.left.and.text")
-                                .frame(width: 90, height: 44)
-                                .background(COLOR_BACK_INPUT)
-                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                )
+                    VStack {
+                        HStack(spacing: 10) {
+                            // 上・前へ
+                            Button {
+                                //TODO: 前のアイテム（item.order -1）に移動する
+                            } label: {
+                                Label("action.item.line.up", systemImage: "arrow.up.circle")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.item.line.up"))
+                            .disabled(item.order == 0)
+                            
+                            // 複製
+                            Button {
+                                duplicateItem()
+                                onDismiss()
+                            } label: {
+                                Label("action.duplicate", systemImage: "plus.square.on.square")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.duplicate"))
+                            
+                            // 移動
+                            Button {
+                                prepareMoveSheet()
+                                isShowingMoveSheet = true
+                            } label: {
+                                Label("action.move", systemImage: "hand.point.up.left.and.text")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.duplicate"))
+                            
+                            // 右端へ
+                            Spacer()
+                            // 削除
+                            Button(role: .destructive) {
+                                deleteItem()
+                                onDismiss()
+                            } label: {
+                                Label("action.delete", systemImage: "trash")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.delete"))
                         }
-                        .accessibilityLabel(Text("action.duplicate"))
-                        
-                        // 複写
-                        Button {
-                            duplicateItem()
-                            onDismiss()
-                        } label: {
-                            Label("action.duplicate", systemImage: "plus.square.on.square")
-                                .frame(width: 90, height: 44)
-                                .background(COLOR_BACK_INPUT)
-                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                )
+                        // 2段目
+                        HStack(spacing: 10) {
+                            // 下・次へ
+                            Button {
+                                //TODO: 次のアイテム（item.order +1）に移動する
+                            } label: {
+                                Label("action.item.line.down", systemImage: "arrow.down.circle")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.item.line.down"))
+                            .disabled(!canItemLineDown)
+
+                            Spacer()
                         }
-                        .accessibilityLabel(Text("action.duplicate"))
-                        
-                        // 右端へ
-                        Spacer()
-                        // 削除
-                        Button(role: .destructive) {
-                            deleteItem()
-                            onDismiss()
-                        } label: {
-                            Label("action.delete", systemImage: "trash")
-                                .frame(width: 84, height: 44)
-                                .background(COLOR_BACK_INPUT)
-                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                )
-                        }
-                        .accessibilityLabel(Text("action.delete"))
                     }
                 }
                 // 名称
