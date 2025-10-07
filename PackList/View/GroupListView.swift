@@ -85,12 +85,12 @@ struct GroupListView: View {
                     .padding(.horizontal, 16)
                 }
                 header: {
-                    // セクション・ヘッダー
+                    // セクション2・ヘッダー
                     Text("group.section.sort")
                 }
                 footer: {
-                    // セクション・フッター：操作説明、アイコン説明
-                    FooterView()
+                    // セクション2・フッター：操作説明、アイコン説明
+                    Section2FooterView()
                         .listRowSeparator(.hidden) // 下線なし
                 }
             }
@@ -179,9 +179,9 @@ struct GroupListView: View {
                 }
         )
     }
-
-    /// フッター：操作説明、アイコン説明
-    struct FooterView: View {
+    
+    /// セクション2・フッター：操作説明、アイコン説明
+    struct Section2FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
                 Text("groupList.footer.description")

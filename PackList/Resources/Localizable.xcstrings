@@ -1219,6 +1219,22 @@
         }
       }
     },
+    "setting.keepItemOrder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Order While Editing"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集で並べ替えない"
+          }
+        }
+      }
+    },
     "setting.linkCheckWithStock.title" : {
       "localizations" : {
         "en" : {

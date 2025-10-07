@@ -16,6 +16,8 @@ struct ItemSortListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage(AppStorageKey.keepItemOrder) private var keepItemOrder: Bool = false
+
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var editingItem: M3Item?
@@ -29,33 +31,47 @@ struct ItemSortListView: View {
 
     var body: some View {
         ZStack {
-            List {
-                ForEach(sortedItems) { item in
-                    if let group = item.parent {
-                        NavigationLink(
-                            value: AppDestination.itemEdit(
-                                packID: pack.id,
-                                groupID: group.id,
-                                itemID: item.id,
-                                sort: sortOption
-                            )
-                        ) {
-                            ItemRowView(item: item) { selected, point in
-                                editingItem = selected
-                                popupAnchor = point
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .listRowBackground(COLOR_ROW_BACK)
+            VStack {
+                // 編集で並べ替えない　"Keep Order While Editing"
+                Toggle(isOn: $keepItemOrder) {
+                    Label {
+                        Spacer()
+                        Text("setting.keepItemOrder")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    } icon: {
                     }
                 }
+                .padding(.trailing, 16)
+                // 並べ替え一覧
+                List {
+                    ForEach(sortedItems) { item in
+                        if let group = item.parent {
+                            NavigationLink(
+                                value: AppDestination.itemEdit(
+                                    packID: pack.id,
+                                    groupID: group.id,
+                                    itemID: item.id,
+                                    sort: sortOption
+                                )
+                            ) {
+                                ItemRowView(item: item) { selected, point in
+                                    editingItem = selected
+                                    popupAnchor = point
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowBackground(COLOR_ROW_BACK)
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .listRowSeparator(.hidden)
+                .padding(.leading, 0)
+                .padding(.trailing, 8)
             }
-            .listStyle(.plain)
-            .listRowSeparator(.hidden)
-            .padding(.leading, 0)
-            .padding(.trailing, 8)
             .navigationTitle(sortOption.title)
             .navigationBarBackButtonHidden(true)
             .toolbar {

@@ -114,6 +114,8 @@ enum AppStorageKey {
     static let showNeedWeight = "setting.showNeedWeight"
     // チェックと在庫数を連動させる　　　Link check status with stock quantity
     static let linkCheckWithStock = "setting.linkCheckWithStock"
+    // アイテム並べ替え一覧を編集時に並べ替えない
+    static let keepItemOrder = "setting.keepItemOrder"
 }
 /// 新規追加する位置
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
