@@ -187,8 +187,9 @@ struct ItemEditView: View {
                             .accessibilityLabel(Text("action.duplicate"))
 
                             Spacer()
-                            // 消去
+                            // 消す
                             Button(role: .destructive) {
+                                // アイテムを初期値にリセット
                                 resetItemToInitialState()
                             } label: {
                                 Label("action.item.erase", systemImage: "eraser")
@@ -357,6 +358,7 @@ struct ItemEditView: View {
         }
     }
 
+    /// 現在のアイテムを初期値にリセットする
     private func resetItemToInitialState() {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -364,14 +366,14 @@ struct ItemEditView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-
+        // 初期値をセット
         item.name = ""
         item.memo = ""
         item.check = false
         item.stock = 0
         item.need = 1
         item.weight = 0
-
+        // フォーカスを.nameへ
         focusedField = .name
     }
 
