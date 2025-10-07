@@ -57,30 +57,16 @@ struct GroupRowView: View {
                                          y: rf.minY)
                         onEdit(group, po)
                     } label: {
-                        if #available(iOS 18.0, *) {
-                            let deley = Double(allItems) * 0.5 // 呼吸間隔
-                            Image(systemName
-                                  : allItemsChecked ? "checkmark.square"
-                                  : allSufficientStock ? "circle.square"
-                                  : "square")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .symbolEffect(.breathe.pulse.byLayer,
-                                              options: .repeat(.periodic(delay: deley))) // 呼吸
-                                .padding(.leading, 0)
-                                .padding(.trailing, 8)
-                                .padding(.vertical, 8)
-                        } else {
-                            Image(systemName
-                                  : allItemsChecked ? "checkmark.square"
-                                  : allSufficientStock ? "circle.square"
-                                  : "square")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .padding(.leading, 0)
-                                .padding(.trailing, 8)
-                                .padding(.vertical, 8)
-                        }
+                        Image(systemName
+                              : allItemsChecked ? "checkmark.square"
+                              : allSufficientStock ? "circle.square"
+                              : "square")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                        .padding(.leading, 0)
+                        .padding(.trailing, 8)
+                        .padding(.vertical, 8)
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     // 名称

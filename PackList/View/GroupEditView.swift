@@ -34,17 +34,24 @@ struct GroupEditView: View {
                     VStack {
                         if allItemsChecked {
                             Image(systemName: "checkmark.square")
+                                .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                             Text("action.check.off")
                                 .font(.caption)
                         }else{
                             Image(systemName: "square")
+                                .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                             Text("action.check.on")
                                 .font(.caption)
                         }
                     }
                 }
+                .frame(width: 88) // on/off変化時に幅が変わらないように
                 .tint(.purple)
                 .padding(.horizontal, 8)
                 
@@ -54,7 +61,10 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
+                            //.imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                         Text("action.duplicate")
                             .font(.caption)
                     }
@@ -73,7 +83,10 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
+                            //.imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                        
                         Text("action.delete")
                             .font(.caption)
                     }
@@ -86,6 +99,7 @@ struct GroupEditView: View {
             HStack {
                 Text("edit.name")
                     .font(.caption)
+                    .foregroundStyle(.secondary)
                 Spacer()
             }
             .padding(.bottom, -7)
@@ -103,6 +117,7 @@ struct GroupEditView: View {
             HStack {
                 Text("edit.memo")
                     .font(.caption)
+                    .foregroundStyle(.secondary)
                 Spacer()
             }
             .padding(.top, 8)

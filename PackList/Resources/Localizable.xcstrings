@@ -99,13 +99,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load Pack_＊.json"
+            "value" : "Download Pack_＊.json"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "共有Pack_＊.jsonを読み込む"
+            "state" : "translated",
+            "value" : "共有Pack_＊.jsonを取り込む"
           }
         }
       }

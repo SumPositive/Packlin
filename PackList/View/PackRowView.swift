@@ -58,20 +58,11 @@ struct PackRowView: View {
                         onEdit(pack, po)
                     } label: {
                         ZStack {
-                            if #available(iOS 18.0, *) {
-                                let deley = Double(allItems) * 0.3 // 呼吸間隔
-                                Image(systemName: "case")
-                                    .imageScale(.large)
-                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                    .symbolEffect(.breathe.pulse.byLayer,
-                                                  options: .repeat(.periodic(delay: deley))) // 呼吸
-                                
-                            } else {
-                                Image(systemName: "case")
-                                    .imageScale(.large)
-                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            }
-                            
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolEffect(.bounce.up.byLayer, options: .nonRepeating) // Once
+
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
                                     .imageScale(.small)

@@ -110,15 +110,9 @@ struct PackListView: View {
                         addPack()
                     }
                     label: {
-                        ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            Image(systemName: "plus")
-                                .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .padding(.top, 4)
-                        }
+                        Image(systemName: "cross.case")
+                            //.imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 8)

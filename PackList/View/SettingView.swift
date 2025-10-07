@@ -49,15 +49,11 @@ struct SettingView: View {
         HStack(spacing: 12) {
             if #available(iOS 18.0, *) {
                 Image(systemName: "gearshape")
-                    .font(.title3.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(.primary)
                     .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
             } else {
                 Image(systemName: "gearshape")
-                    .font(.title3.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(.primary)
             }
 
             Text("setting.title")
@@ -164,13 +160,8 @@ struct SettingView: View {
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
-                    ZStack {
-                        Image(systemName: "case")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Image(systemName: "arrow.down")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .padding(.top, 20)
-                    }
+                    Image(systemName: "square.and.arrow.down")
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

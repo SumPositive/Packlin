@@ -62,6 +62,7 @@ struct ItemRowView: View {
                               : "circle")
                         .imageScale(.large)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     .padding(.top, 8)

@@ -42,7 +42,8 @@ struct PackEditView: View {
                             Image(systemName: "case")
                                 .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            
+                                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
                                     .imageScale(.small)
@@ -59,6 +60,7 @@ struct PackEditView: View {
                         }
                     }
                 }
+                .frame(width: 88) // on/off変化時に幅が変わらないように
                 .tint(.purple)
                 .padding(.horizontal, 8)
 
@@ -68,7 +70,10 @@ struct PackEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
+                            //.imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                         Text("action.duplicate")
                             .font(.caption)
                     }
@@ -81,13 +86,11 @@ struct PackEditView: View {
                     exportPack()
                 } label: {
                     VStack {
-                        ZStack {
-                            Image(systemName: "case")
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            Image(systemName: "arrow.up")
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .padding(.top, -16)
-                        }
+                        Image(systemName: "square.and.arrow.up")
+                            //.imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                         Text("action.json.upload")
                             .font(.caption)
                     }
@@ -106,7 +109,10 @@ struct PackEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
+                            //.imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+
                         Text("action.delete")
                             .font(.caption)
                     }
@@ -119,6 +125,7 @@ struct PackEditView: View {
             HStack {
                 Text("edit.name")
                     .font(.caption)
+                    .foregroundStyle(.secondary)
                 Spacer()
             }
             .padding(.bottom, -7)
@@ -136,6 +143,7 @@ struct PackEditView: View {
             HStack {
                 Text("edit.memo")
                     .font(.caption)
+                    .foregroundStyle(.secondary)
                 Spacer()
             }
             .padding(.top, 8)
