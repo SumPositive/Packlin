@@ -186,10 +186,21 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("action.duplicate"))
 
+                            // キーボードを隠す
+                            Button {
+                                dismissKeyboard()
+
+                            } label: {
+                                Image(systemName: "keyboard.chevron.compact.down")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            }
+
                             Spacer()
-                            // 消去
+                            // 消す
                             Button(role: .destructive) {
-                                //TODO: 現在の編集内容をクリア（M3Itemの初期値に）する
+                                // アイテムを初期値にリセット
+                                resetItemToInitialState()
                             } label: {
                                 Label("action.item.erase", systemImage: "eraser")
                                     .frame(width: 90, height: 44)
@@ -251,7 +262,7 @@ struct ItemEditView: View {
             .padding(.vertical, 12)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(COLOR_ROW_GROUP) 
+        .background(COLOR_ROW_GROUP)
         .navigationTitle(item.name.placeholderText("placeholder.item.new"))
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
@@ -355,6 +366,25 @@ struct ItemEditView: View {
             }
             parent.normalizeItemOrder()
         }
+    }
+
+    /// 現在のアイテムを初期値にリセットする
+    private func resetItemToInitialState() {
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+        // 初期値をセット
+        item.name = ""
+        item.memo = ""
+        item.check = false
+        item.stock = 0
+        item.need = 1
+        item.weight = 0
+        // フォーカスを.nameへ
+        //focusedField = .name
     }
 
     private func deleteItem() {
@@ -543,6 +573,13 @@ struct ItemEditView: View {
 
         return orderedItems[destinationIndex]
     }
+    
+    /// キーボードを隠す
+    private func dismissKeyboard() {
+        focusedField = nil
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
 }
 
 /// Popup用の簡易編集ビュー（数量のみ）
