@@ -186,16 +186,6 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("action.duplicate"))
 
-                            // キーボードを隠す
-                            Button {
-                                dismissKeyboard()
-
-                            } label: {
-                                Image(systemName: "keyboard.chevron.compact.down")
-                                    .imageScale(.large)
-                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            }
-
                             Spacer()
                             // 消す
                             Button(role: .destructive) {
@@ -299,12 +289,17 @@ struct ItemEditView: View {
             }
         }
         .simultaneousGesture(
-            DragGesture(minimumDistance: 50, coordinateSpace: .local)
+            DragGesture(minimumDistance: 30, coordinateSpace: .local)
                 .onEnded { value in
                     let horizontal = value.translation.width
-                    let vertical = abs(value.translation.height)
-                    if horizontal > 80 && horizontal > vertical {
+                    let vertical = value.translation.height
+                    if 80 < horizontal, abs(vertical) < abs(horizontal) {
+                        // 右へスワイプ時、閉じる
                         onDismiss()
+                    }
+                    else if vertical < -20, abs(horizontal) < abs(vertical) {
+                        // 下へスワイプ時、キーボードを隠す
+                        dismissKeyboard()
                     }
                 }
         )
