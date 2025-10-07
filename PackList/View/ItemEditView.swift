@@ -103,6 +103,7 @@ struct ItemEditView: View {
                         HStack(spacing: 20) {
                             // 上・前へ
                             Button {
+                                // (-1) 1つ前のアイテムを編集対象に切り替える
                                 selectAdjacentItem(by: -1)
                             } label: {
                                 Label("action.item.line.up", systemImage: "arrow.up.circle")
@@ -154,6 +155,7 @@ struct ItemEditView: View {
                         HStack(spacing: 20) {
                             // 下・次へ
                             Button {
+                                // (+1) 1つ次のアイテムを編集対象に切り替える
                                 selectAdjacentItem(by: 1)
                             } label: {
                                 Label("action.item.line.down", systemImage: "arrow.down.circle")
@@ -187,7 +189,7 @@ struct ItemEditView: View {
                             Spacer()
                             // 消去
                             Button(role: .destructive) {
-
+                                //TODO: 現在の編集内容をクリア（M3Itemの初期値に）する
                             } label: {
                                 Label("action.item.erase", systemImage: "eraser")
                                     .frame(width: 90, height: 44)
@@ -509,13 +511,16 @@ struct ItemEditView: View {
         destinationGroup.normalizeItemOrder()
     }
 
+    /// 編集対象のアイテムを選択する（前へ、次へ）
+    /// - Parameter offset: 移動量 (-1)1つ前へ　(+1)1つ次へ
     private func selectAdjacentItem(by offset: Int) {
         guard let target = adjacentItem(offset: offset) else { return }
         withAnimation {
             onSelectItem(target)
         }
     }
-
+    /// 前後のアイテムを取得する
+    /// - Parameter offset: 移動量 (-1)1つ前のアイテム　(+1)1つ次のアイテム
     private func adjacentItem(offset: Int) -> M3Item? {
         guard offset != 0,
               let parent = item.parent else { return nil }
