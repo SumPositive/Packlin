@@ -100,7 +100,7 @@ struct ItemEditView: View {
                 // 操作
                 EditorSection(title: "edit.actions") {
                     VStack {
-                        HStack(spacing: 10) {
+                        HStack(spacing: 20) {
                             // 上・前へ
                             Button {
                                 selectAdjacentItem(by: -1)
@@ -133,23 +133,6 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("action.duplicate"))
                             
-                            // 移動
-                            Button {
-                                prepareMoveSheet()
-                                isShowingMoveSheet = true
-                            } label: {
-                                Label("action.move", systemImage: "hand.point.up.left.and.text")
-                                    .frame(width: 90, height: 44)
-                                    .background(COLOR_BACK_INPUT)
-                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                    )
-                            }
-                            .accessibilityLabel(Text("action.duplicate"))
-                            
-                            // 右端へ
                             Spacer()
                             // 削除
                             Button(role: .destructive) {
@@ -168,7 +151,7 @@ struct ItemEditView: View {
                             .accessibilityLabel(Text("action.delete"))
                         }
                         // 2段目
-                        HStack(spacing: 10) {
+                        HStack(spacing: 20) {
                             // 下・次へ
                             Button {
                                 selectAdjacentItem(by: 1)
@@ -185,7 +168,37 @@ struct ItemEditView: View {
                             .accessibilityLabel(Text("action.item.line.down"))
                             .disabled(!canSelectNextItem)
 
+                            // 移動
+                            Button {
+                                prepareMoveSheet()
+                                isShowingMoveSheet = true
+                            } label: {
+                                Label("action.move", systemImage: "hand.point.up.left.and.text")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.duplicate"))
+
                             Spacer()
+                            // 消去
+                            Button(role: .destructive) {
+
+                            } label: {
+                                Label("action.item.erase", systemImage: "eraser")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.item.erase"))
                         }
                     }
                 }
