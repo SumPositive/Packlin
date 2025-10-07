@@ -121,35 +121,51 @@ struct ItemListScene: View {
 struct ItemEditScene: View {
     let packID: M1Pack.ID
     let groupID: M2Group.ID
-    let itemID: M3Item.ID
 
     @Environment(\.dismiss) private var dismiss
     @Query private var packs: [M1Pack]
     @Query private var groups: [M2Group]
     @Query private var items: [M3Item]
+    @State private var currentItemID: M3Item.ID
 
     init(packID: M1Pack.ID, groupID: M2Group.ID, itemID: M3Item.ID) {
         self.packID = packID
         self.groupID = groupID
-        self.itemID = itemID
         _packs = Query(filter: #Predicate<M1Pack> { $0.id == packID })
         _groups = Query(filter: #Predicate<M2Group> { $0.id == groupID })
-        _items = Query(filter: #Predicate<M3Item> { $0.id == itemID })
+        _items = Query(
+            filter: #Predicate<M3Item> { $0.parent?.id == groupID },
+            sort: [SortDescriptor(\M3Item.order)]
+        )
+        _currentItemID = State(initialValue: itemID)
     }
 
     var body: some View {
         if let pack = packs.first,
            let group = groups.first,
-           let item = items.first {
+           let item = resolvedItem {
             ItemEditView(
                 pack: pack,
                 group: group,
                 item: item,
-                onDismiss: { dismiss() }
+                onDismiss: { dismiss() },
+                onSelectItem: { selected in currentItemID = selected.id }
             )
+            .onAppear {
+                if currentItemID != item.id {
+                    currentItemID = item.id
+                }
+            }
         } else {
             Text("navigation.itemNotFound")
         }
+    }
+
+    private var resolvedItem: M3Item? {
+        if let current = items.first(where: { $0.id == currentItemID }) {
+            return current
+        }
+        return items.first
     }
 }
 
