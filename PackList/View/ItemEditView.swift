@@ -186,6 +186,16 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("action.duplicate"))
 
+                            // キーボードを隠す
+                            Button {
+                                dismissKeyboard()
+
+                            } label: {
+                                Image(systemName: "keyboard.chevron.compact.down")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            }
+
                             Spacer()
                             // 消す
                             Button(role: .destructive) {
@@ -252,7 +262,7 @@ struct ItemEditView: View {
             .padding(.vertical, 12)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(COLOR_ROW_GROUP) 
+        .background(COLOR_ROW_GROUP)
         .navigationTitle(item.name.placeholderText("placeholder.item.new"))
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
@@ -374,7 +384,7 @@ struct ItemEditView: View {
         item.need = 1
         item.weight = 0
         // フォーカスを.nameへ
-        focusedField = .name
+        //focusedField = .name
     }
 
     private func deleteItem() {
@@ -563,6 +573,13 @@ struct ItemEditView: View {
 
         return orderedItems[destinationIndex]
     }
+    
+    /// キーボードを隠す
+    private func dismissKeyboard() {
+        focusedField = nil
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
 }
 
 /// Popup用の簡易編集ビュー（数量のみ）
