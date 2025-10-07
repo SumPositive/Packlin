@@ -63,8 +63,8 @@ struct AppMain: App {
                             GroupListScene(packID: packID)
                         case .itemList(let packID, let groupID):
                             ItemListScene(packID: packID, groupID: groupID)
-                        case .itemEdit(let packID, let groupID, let itemID):
-                            ItemEditScene(packID: packID, groupID: groupID, itemID: itemID)
+                        case .itemEdit(let packID, let groupID, let itemID, let sort):
+                            ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
                         case .itemSortList(let packID, let sort):
                             ItemSortListScene(packID: packID, sort: sort)
                         }

@@ -16,6 +16,7 @@ struct ItemEditView: View {
     @Bindable var item: M3Item
     let onDismiss: () -> Void
     let onSelectItem: (M3Item) -> Void
+    let adjacentItemProvider: ((M3Item, Int) -> M3Item?)?
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
@@ -74,12 +75,18 @@ struct ItemEditView: View {
         }
     }
 
-    init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void, onSelectItem: @escaping (M3Item) -> Void) {
+    init(pack: M1Pack,
+         group: M2Group,
+         item: M3Item,
+         onDismiss: @escaping () -> Void,
+         onSelectItem: @escaping (M3Item) -> Void,
+         adjacentItemProvider: ((M3Item, Int) -> M3Item?)? = nil) {
         self.pack = pack
         self.group = group
         self._item = Bindable(item)
         self.onDismiss = onDismiss
         self.onSelectItem = onSelectItem
+        self.adjacentItemProvider = adjacentItemProvider
         self._selectedPackID = State(initialValue: pack.id)
         self._selectedGroupID = State(initialValue: group.id)
     }
@@ -547,6 +554,10 @@ struct ItemEditView: View {
     /// 前後のアイテムを取得する
     /// - Parameter offset: 移動量 (-1)1つ前のアイテム　(+1)1つ次のアイテム
     private func adjacentItem(offset: Int) -> M3Item? {
+        if let provider = adjacentItemProvider {
+            return provider(item, offset)
+        }
+
         guard offset != 0,
               let parent = item.parent else { return nil }
 
