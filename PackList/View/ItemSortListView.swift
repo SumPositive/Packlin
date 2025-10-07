@@ -22,9 +22,18 @@ struct ItemSortListView: View {
     @State private var canRedo = false
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
+    @State private var cachedItems: [M3Item] = []
 
-    private var sortedItems: [M3Item] {
+    private var baseSortedItems: [M3Item] {
         sortOption.sortedItems(from: pack).filter { $0.parent != nil }
+    }
+
+    private var displayedItems: [M3Item] {
+        keepItemOrder ? cachedItems : baseSortedItems
+    }
+
+    private var baseSortedItemIDs: [M3Item.ID] {
+        baseSortedItems.map(\.id)
     }
 
     private var isShowingPopup: Bool { editingItem != nil }
@@ -45,7 +54,7 @@ struct ItemSortListView: View {
                 .padding(.trailing, 16)
                 // 並べ替え一覧
                 List {
-                    ForEach(sortedItems) { item in
+                    ForEach(displayedItems) { item in
                         if let group = item.parent {
                             NavigationLink(
                                 value: AppDestination.itemEdit(
@@ -79,9 +88,16 @@ struct ItemSortListView: View {
             }
             .onAppear {
                 updateUndoRedo()
+                refreshDisplayedItems(forceReset: true)
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()
+            }
+            .onChange(of: keepItemOrder) { _ in
+                refreshDisplayedItems(forceReset: true)
+            }
+            .onChange(of: baseSortedItemIDs) { _ in
+                refreshDisplayedItems()
             }
 
             if let item = editingItem {
@@ -159,6 +175,28 @@ struct ItemSortListView: View {
             canUndo = false
             canRedo = false
         }
+    }
+
+    private func refreshDisplayedItems(forceReset: Bool = false) {
+        let items = baseSortedItems
+
+        guard keepItemOrder else {
+            cachedItems = items
+            return
+        }
+
+        if forceReset || cachedItems.isEmpty {
+            cachedItems = items
+            return
+        }
+
+        let map = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+        var updated = cachedItems.compactMap { map[$0.id] }
+        let existingIDs = Set(updated.map { $0.id })
+        let appended = items.filter { !existingIDs.contains($0.id) }
+        updated.append(contentsOf: appended)
+
+        cachedItems = updated
     }
 }
 
