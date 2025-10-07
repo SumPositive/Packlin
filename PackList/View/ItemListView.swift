@@ -16,6 +16,7 @@ struct ItemListView: View {
     @Environment(\.dismiss) private var dismiss
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -61,9 +62,11 @@ struct ItemListView: View {
                     .background(COLOR_ROW_GROUP)
                     //.padding(.top, -20) // 上余白を無くすため、GroupRowで＋20、ここでー20
                 } footer: {
-                    // フッター：操作説明、アイコン説明
-                    FooterView()
-                        .listRowSeparator(.hidden) // 下線なし
+                    if footerMessage {
+                        // フッター：操作説明、アイコン説明
+                        FooterView()
+                            .listRowSeparator(.hidden) // 下線なし
+                    }
                 }
             }
             .listStyle(.plain)

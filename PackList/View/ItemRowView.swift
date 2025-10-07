@@ -28,6 +28,18 @@ struct ItemRowView: View {
         self.item = item
         self.onEdit = onEdit
     }
+    // 数量表示Text
+    private var quantityLabelText: String {
+        var text: String = ""
+        if 0 < item.weight {
+            // 個重量
+            text = "\(item.weight.decimalGrouped)\(weightUnit)　"
+        }
+        // 在庫数／必要数
+        text += "\(item.stock.decimalGrouped)／\(item.need.decimalGrouped)"
+        return text
+    }
+
 
     var body: some View {
         HStack(spacing: 0) {
@@ -78,8 +90,9 @@ struct ItemRowView: View {
                 }
 
                 HStack(spacing: 0) {
+                    // インデント
                     Rectangle()
-                        .frame(width: 24, height: 1)
+                        .frame(width: 30, height: 1)
                         .foregroundStyle(.clear)
 
                     // 数量編集
@@ -89,27 +102,14 @@ struct ItemRowView: View {
                                          y: rf.minY)
                         onEdit(item, po)
                     } label: {
-                        if 0 < item.weight {
-                            // 個重量
-                            Text(verbatim: "\(item.weight.decimalGrouped)\(weightUnit)")
-                                .font(FONT_STOCK)
-                                .foregroundStyle(COLOR_WEIGHT)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                            
-                        }
-                        // 在庫数／必要数
-                        Text("\(item.stock.decimalGrouped)／\(item.need.decimalGrouped)")
-                            .font(FONT_STOCK)
+                        // 数量表示
+                        Text(quantityLabelText)
+                            .font(FONT_WEIGHT)
                             .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-
-                        //Image(systemName: "square.and.pencil")
-                        //    .tint(.accentColor).opacity(0.7)
                     }
                     .buttonStyle(BorderlessButtonStyle())
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 3)
                     .background(
                         Capsule()
                             .fill(COLOR_ROW_GROUP)
