@@ -249,10 +249,45 @@ struct ItemEditView: View {
                 }
 
                 // 数量
-                EditorSection(title: "item.section.quantity") {
-                    // 数量 編集
-                    ItemQuantityEditor(item: item)
-                        .padding(.leading, 16)
+                EditorSection {
+                    // 数量
+                    Text("item.section.quantity")
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+
+                    HStack(spacing: 0) {
+                        // アイテム・アイコン・チェック
+                        Button {
+                            item.check.toggle()
+                            if item.check {
+                                if linkCheckWithStock {
+                                    // チェックと在庫数を連動させる
+                                    item.stock = item.need
+                                }
+                            }else{
+                                if linkCheckWithStock {
+                                    // チェックと在庫数を連動させる
+                                    item.stock = 0
+                                }
+                            }
+                        } label: {
+                            Image(systemName
+                                  : item.check ? "checkmark.circle"     // Check ON
+                                  : item.need == 0 ? "circle.fill"      // Need = 0
+                                  : item.need <= item.stock ? "circle.circle"
+                                  : "circle")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                        .padding(8)
+
+                        // 数量 編集
+                        ItemQuantityEditor(item: item)
+                            //.padding(.leading, 0)
+                    }
                 }
             }
             .padding(.horizontal, 20)
@@ -821,7 +856,7 @@ private struct EditorSection<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             if let title {
                 Text(title)
                     .font(.footnote)

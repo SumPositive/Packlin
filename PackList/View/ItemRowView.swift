@@ -40,7 +40,7 @@ struct ItemRowView: View {
 
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
-                    // チェック
+                    // アイテム・アイコン・チェック
                     Button {
                         item.check.toggle()
                         if item.check {
