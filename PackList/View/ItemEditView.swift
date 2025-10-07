@@ -15,6 +15,7 @@ struct ItemEditView: View {
     let group: M2Group
     @Bindable var item: M3Item
     let onDismiss: () -> Void
+    let onSelectItem: (M3Item) -> Void
 
     @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
@@ -44,12 +45,12 @@ struct ItemEditView: View {
         UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
     }
 
-    private var canItemLineDown: Bool {
-        if let group = item.parent {
-            return (item.order < group.child.count - 1)
-        }else{
-            return false
-        }
+    private var canSelectPreviousItem: Bool {
+        adjacentItem(offset: -1) != nil
+    }
+
+    private var canSelectNextItem: Bool {
+        adjacentItem(offset: 1) != nil
     }
     
     private enum Field: Hashable {
@@ -73,11 +74,12 @@ struct ItemEditView: View {
         }
     }
 
-    init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void) {
+    init(pack: M1Pack, group: M2Group, item: M3Item, onDismiss: @escaping () -> Void, onSelectItem: @escaping (M3Item) -> Void) {
         self.pack = pack
         self.group = group
         self._item = Bindable(item)
         self.onDismiss = onDismiss
+        self.onSelectItem = onSelectItem
         self._selectedPackID = State(initialValue: pack.id)
         self._selectedGroupID = State(initialValue: group.id)
     }
@@ -98,10 +100,10 @@ struct ItemEditView: View {
                 // 操作
                 EditorSection(title: "edit.actions") {
                     VStack {
-                        HStack(spacing: 10) {
+                        HStack(spacing: 20) {
                             // 上・前へ
                             Button {
-                                //TODO: 前のアイテム（item.order -1）に移動する
+                                selectAdjacentItem(by: -1)
                             } label: {
                                 Label("action.item.line.up", systemImage: "arrow.up.circle")
                                     .frame(width: 90, height: 44)
@@ -113,7 +115,7 @@ struct ItemEditView: View {
                                     )
                             }
                             .accessibilityLabel(Text("action.item.line.up"))
-                            .disabled(item.order == 0)
+                            .disabled(!canSelectPreviousItem)
                             
                             // 複製
                             Button {
@@ -131,23 +133,6 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("action.duplicate"))
                             
-                            // 移動
-                            Button {
-                                prepareMoveSheet()
-                                isShowingMoveSheet = true
-                            } label: {
-                                Label("action.move", systemImage: "hand.point.up.left.and.text")
-                                    .frame(width: 90, height: 44)
-                                    .background(COLOR_BACK_INPUT)
-                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                    )
-                            }
-                            .accessibilityLabel(Text("action.duplicate"))
-                            
-                            // 右端へ
                             Spacer()
                             // 削除
                             Button(role: .destructive) {
@@ -166,10 +151,10 @@ struct ItemEditView: View {
                             .accessibilityLabel(Text("action.delete"))
                         }
                         // 2段目
-                        HStack(spacing: 10) {
+                        HStack(spacing: 20) {
                             // 下・次へ
                             Button {
-                                //TODO: 次のアイテム（item.order +1）に移動する
+                                selectAdjacentItem(by: 1)
                             } label: {
                                 Label("action.item.line.down", systemImage: "arrow.down.circle")
                                     .frame(width: 90, height: 44)
@@ -181,9 +166,39 @@ struct ItemEditView: View {
                                     )
                             }
                             .accessibilityLabel(Text("action.item.line.down"))
-                            .disabled(!canItemLineDown)
+                            .disabled(!canSelectNextItem)
+
+                            // 移動
+                            Button {
+                                prepareMoveSheet()
+                                isShowingMoveSheet = true
+                            } label: {
+                                Label("action.move", systemImage: "hand.point.up.left.and.text")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.duplicate"))
 
                             Spacer()
+                            // 消去
+                            Button(role: .destructive) {
+
+                            } label: {
+                                Label("action.item.erase", systemImage: "eraser")
+                                    .frame(width: 90, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("action.item.erase"))
                         }
                     }
                 }
@@ -492,6 +507,36 @@ struct ItemEditView: View {
 
         destinationGroup.child = destinationItems
         destinationGroup.normalizeItemOrder()
+    }
+
+    private func selectAdjacentItem(by offset: Int) {
+        guard let target = adjacentItem(offset: offset) else { return }
+        withAnimation {
+            onSelectItem(target)
+        }
+    }
+
+    private func adjacentItem(offset: Int) -> M3Item? {
+        guard offset != 0,
+              let parent = item.parent else { return nil }
+
+        let orderedItems = parent.child.sorted { lhs, rhs in
+            if lhs.order != rhs.order {
+                return lhs.order < rhs.order
+            }
+            return lhs.id < rhs.id
+        }
+
+        guard let currentIndex = orderedItems.firstIndex(where: { $0.id == item.id }) else {
+            return nil
+        }
+
+        let destinationIndex = currentIndex + offset
+        guard orderedItems.indices.contains(destinationIndex) else {
+            return nil
+        }
+
+        return orderedItems[destinationIndex]
     }
 }
 
