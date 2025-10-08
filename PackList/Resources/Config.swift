@@ -12,7 +12,7 @@ import SwiftUI
 // 全モジュールで参照される固定値(let) （#define 同様の使い方）
 
 //-------------------------------------- DEBUG
-let DEBUG_SHOW_ORDER_ID = false
+let DEBUG_SHOW_ORDER_ID = true
 
 
 //-------------------------------------- JSON関係
