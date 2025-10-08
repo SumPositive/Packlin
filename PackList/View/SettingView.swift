@@ -179,11 +179,11 @@ struct SettingView: View {
                             importAlert = .success(packName: importedPack.name)
                         } catch {
                             debugPrint("Failed to import pack: \(error)")
-                            importAlert = .failure(message: String(localized: "setting.import.error.message"))
+                            importAlert = .failure(message: error.localizedDescription)
                         }
                     case .failure(let error):
                         debugPrint("Failed to import pack: \(error)")
-                        importAlert = .failure(message: String(localized: "setting.import.error.message"))
+                        importAlert = .failure(message: error.localizedDescription)
                 }
             }
             .alert(item: $importAlert) { alert in
