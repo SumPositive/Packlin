@@ -17,20 +17,23 @@ struct GroupRowView: View {
     @Environment(\.modelContext) private var modelContext
 
     @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
+    @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = false
 
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { group.name.isEmpty }
-    private var weightUnit: String { String(localized: "unit.gram") }
+    private var weightUnit: String {
+        weightDisplayInKg ? String(localized: "unit.kilogram") : String(localized: "unit.gram")
+    }
 
     private var weightLabelText: String? {
         if showNeedWeight {
             guard group.stockWeight > 0 || group.needWeight > 0 else { return nil }
-            return "\(group.stockWeight.decimalGrouped)\(weightUnit)／\(group.needWeight.decimalGrouped)\(weightUnit)"
+            return "\(formattedWeight(group.stockWeight))\(weightUnit)／\(formattedWeight(group.needWeight))\(weightUnit)"
         } else {
             guard group.stockWeight > 0 else { return nil }
-            return "\(group.stockWeight.decimalGrouped)\(weightUnit)"
+            return "\(formattedWeight(group.stockWeight))\(weightUnit)"
         }
     }
     // 全チェック済み
@@ -145,5 +148,16 @@ struct GroupRowView: View {
         }
     }
 
+}
+
+private extension GroupRowView {
+    func formattedWeight(_ weight: Int) -> String {
+        if weightDisplayInKg {
+            let kilogram = Double(weight) / 1000.0
+            return kilogram.oneDecimalGrouped
+        } else {
+            return weight.decimalGrouped
+        }
+    }
 }
 

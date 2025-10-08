@@ -118,6 +118,8 @@ enum AppStorageKey {
     static let autoItemReorder = "setting.autoItemReorder"
     // フッターの説明文（非表示/表示）
     static let footerMessage = "setting.footerMessage"
+    // 重量計をKgで表示
+    static let weightDisplayInKg = "setting.weightDisplayInKg"
 }
 
 /// 新規追加する位置

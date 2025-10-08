@@ -273,6 +273,7 @@ struct SettingView: View {
 
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
+        @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = false
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
         @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
@@ -305,6 +306,16 @@ struct SettingView: View {
                             .font(.body)
                     } icon: {
                         Image(systemName: "scalemass")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+                // 重量計をKgで表示
+                Toggle(isOn: $weightDisplayInKg) {
+                    Label {
+                        Text("setting.weightDisplayInKg.title")
+                            .font(.body)
+                    } icon: {
+                        Image(systemName: "scalemass.fill")
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
