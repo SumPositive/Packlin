@@ -157,30 +157,7 @@ struct ItemRowView: View {
                 .padding(.leading, 50)
                 .padding(.trailing, 30)
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button {
-                copyItemToClipboard()
-            } label: {
-                Label("コピー", systemImage: "doc.on.doc")
-            }
-            .tint(.blue)
-
-            Button {
-                pasteItemAbove()
-            } label: {
-                Label("上にペースト", systemImage: "arrow.up.doc")
-            }
-            .tint(.green)
-            .disabled(!hasClipboardItem || item.parent == nil)
-
-            Button {
-                pasteItemBelow()
-            } label: {
-                Label("下にペースト", systemImage: "arrow.down.doc")
-            }
-            .tint(.green)
-            .disabled(!hasClipboardItem || item.parent == nil)
-
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ
             Button {
                 cutItemToClipboard()
             } label: {
@@ -188,6 +165,21 @@ struct ItemRowView: View {
             }
             .tint(.orange)
             .disabled(item.parent == nil)
+
+            Button {
+                pasteItemAbove()
+            } label: {
+                Label("ペースト", systemImage: "arrow.up.doc")
+            }
+            .tint(.green)
+            .disabled(!hasClipboardItem || item.parent == nil)
+
+            Button {
+                copyItemToClipboard()
+            } label: {
+                Label("コピー", systemImage: "doc.on.doc")
+            }
+            .tint(.blue)
         }
     }
 
