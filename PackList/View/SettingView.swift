@@ -148,7 +148,7 @@ struct SettingView: View {
         @Environment(\.modelContext) private var modelContext
      
         @State private var isPresentingImporter = false
-        @State private var importErrorMessage: String?
+        @State private var importAlert: ImportAlert?
         
         var body: some View {
             // 共有 Pack_*.json を読み込む
@@ -175,37 +175,34 @@ struct SettingView: View {
                     case .success(let urls):
                         guard let url = urls.first else { return }
                         do {
-                            try importPack(from: url)
+                            let importedPack = try importPack(from: url)
+                            importAlert = .success(packName: importedPack.name)
                         } catch {
                             debugPrint("Failed to import pack: \(error)")
-                            importErrorMessage = String(localized: "setting.import.error.message")
+                            importAlert = .failure(message: String(localized: "setting.import.error.message"))
                         }
                     case .failure(let error):
                         debugPrint("Failed to import pack: \(error)")
-                        importErrorMessage = String(localized: "setting.import.error.message")
+                        importAlert = .failure(message: String(localized: "setting.import.error.message"))
                 }
             }
-            .alert(
-                "setting.import.error.title",
-                isPresented: Binding(
-                    get: { importErrorMessage != nil },
-                    set: { if !$0 { importErrorMessage = nil } }
+            .alert(item: $importAlert) { alert in
+                Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    dismissButton: .default(Text("OK"))
                 )
-            ) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(importErrorMessage ?? "")
             }
         }
         /// URLよりJSONファイルをPackExportDTO形式で読み取る
-        private func importPack(from url: URL) throws {
+        private func importPack(from url: URL) throws -> M1Pack {
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
             defer {
                 if shouldStopAccessing {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-            
+
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let dto = try decoder.decode(PackJsonDTO.self, from: data)
@@ -218,11 +215,11 @@ struct SettingView: View {
                 throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Version mismatch."])
             }
             
-            try createPack(from: dto)
+            return try createPack(from: dto)
         }
-        
+
         /// DTOよりPackを追加する
-        private func createPack(from dto: PackJsonDTO) throws {
+        private func createPack(from dto: PackJsonDTO) throws -> M1Pack {
             let descriptor = FetchDescriptor<M1Pack>()
             let packs = (try? modelContext.fetch(descriptor)) ?? []
             let newOrder = M1Pack.nextPackOrder(packs)
@@ -233,7 +230,40 @@ struct SettingView: View {
                 modelContext.undoManager?.groupingEnd()
             }
             // PackJsonDTO をDBへインポートする
-            PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
+            return PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
+        }
+
+        private enum ImportAlert: Identifiable {
+            case success(packName: String)
+            case failure(message: String)
+
+            var id: String {
+                switch self {
+                case .success(let packName):
+                    return "success-\(packName)"
+                case .failure:
+                    return "failure"
+                }
+            }
+
+            var title: String {
+                switch self {
+                case .success:
+                    return String(localized: "setting.import.success.title")
+                case .failure:
+                    return String(localized: "setting.import.error.title")
+                }
+            }
+
+            var message: String {
+                switch self {
+                case .success(let packName):
+                    let format = String(localized: "setting.import.success.message")
+                    return String(format: format, packName)
+                case .failure(let message):
+                    return message
+                }
+            }
         }
     }
     

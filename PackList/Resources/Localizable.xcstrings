@@ -1129,6 +1129,38 @@
         }
       }
     },
+    "setting.import.success.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has been imported."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ を取り込みました"
+          }
+        }
+      }
+    },
+    "setting.import.success.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import completed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込みが完了しました"
+          }
+        }
+      }
+    },
     "setting.info" : {
       "localizations" : {
         "en" : {
