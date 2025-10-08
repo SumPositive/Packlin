@@ -590,13 +590,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "End of the group"
+            "value" : "Bottom of Group"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "グループの末尾へ"
+            "state" : "translated",
+            "value" : "グループの末尾"
           }
         }
       }
@@ -606,13 +606,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Beginning of the group"
+            "value" : "Top of Group"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "グループの先頭へ"
+            "state" : "translated",
+            "value" : "グループの先頭"
           }
         }
       }
@@ -1289,22 +1289,6 @@
         }
       }
     },
-    "setting.weightDisplayInKg.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show weight scale in Kg"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "重量計をKgで表示"
-          }
-        }
-      }
-    },
     "setting.title" : {
       "localizations" : {
         "en" : {
@@ -1317,6 +1301,22 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "設定"
+          }
+        }
+      }
+    },
+    "setting.weightDisplayInKg.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show weight scale in Kg"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "重量計をKgで表示"
           }
         }
       }

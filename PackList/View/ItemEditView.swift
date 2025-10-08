@@ -798,22 +798,29 @@ private struct ItemMoveSheetView: View {
                 // 移動先
                 Section("item.move.destination") {
                     // 移動先のPack
-                    Picker("", systemImage: "case", selection: $selectedPackID) {
+                    Picker(selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
                             pack.name.truncTail(20)
                                 .placeholderText("placeholder.pack.new")
                                 .tag(pack.id)
                         }
+                    } label: {
+                        Label("", systemImage: "case")
+                            .foregroundStyle(.secondary) // ← ここで色を変更
                     }
                     .pickerStyle(.menu)  // メニュー型
 
+                    
                     // 移動先のGroup
-                    Picker("", systemImage: "square", selection: $selectedGroupID) {
+                    Picker(selection: $selectedGroupID) {
                         ForEach(availableGroups, id: \.id) { group in
                             group.name.truncTail(20)
                                 .placeholderText("placeholder.group.new")
                                 .tag(group.id)
                         }
+                    } label: {
+                        Label("", systemImage: "square")
+                            .foregroundStyle(.secondary) // ← ここで色を変更
                     }
                     .pickerStyle(.menu)  // メニュー型
                     .disabled(availableGroups.isEmpty)

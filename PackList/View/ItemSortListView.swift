@@ -55,6 +55,8 @@ struct ItemSortListView: View {
     var body: some View {
         ZStack {
             VStack {
+                // アイテムを検索
+                searchHeader
                 // 並べ替え一覧
                 List {
                     Section {
@@ -79,8 +81,6 @@ struct ItemSortListView: View {
                                 .listRowBackground(COLOR_ROW_BACK)
                             }
                         }
-                    } header: {
-                        searchHeader
                     }
                 }
                 .listStyle(.plain)
@@ -153,8 +153,9 @@ struct ItemSortListView: View {
         )
     }
 
+    /// アイテムを検索
     private var searchHeader: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
@@ -176,14 +177,14 @@ struct ItemSortListView: View {
                 }
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color(uiColor: .secondarySystemBackground))
             )
         }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 8)
+        .padding(.horizontal, 50)
+        .padding(.bottom, 4)
     }
 
     @ToolbarContentBuilder
