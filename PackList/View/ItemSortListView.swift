@@ -23,6 +23,7 @@ struct ItemSortListView: View {
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
     @State private var cachedItems: [M3Item] = []
+    @State private var searchText: String = ""
 
     private var baseSortedItems: [M3Item] {
         sortOption.sortedItems(from: pack).filter { $0.parent != nil }
@@ -30,6 +31,19 @@ struct ItemSortListView: View {
 
     private var displayedItems: [M3Item] {
         autoItemReorder ? baseSortedItems : cachedItems
+    }
+
+    private var trimmedSearchText: String {
+        searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var filteredItems: [M3Item] {
+        let keyword = trimmedSearchText
+        guard !keyword.isEmpty else { return displayedItems }
+        return displayedItems.filter { item in
+            item.name.localizedCaseInsensitiveContains(keyword) ||
+            item.memo.localizedCaseInsensitiveContains(keyword)
+        }
     }
 
     private var baseSortedItemIDs: [M3Item.ID] {
@@ -43,26 +57,30 @@ struct ItemSortListView: View {
             VStack {
                 // 並べ替え一覧
                 List {
-                    ForEach(displayedItems) { item in
-                        if let group = item.parent {
-                            NavigationLink(
-                                value: AppDestination.itemEdit(
-                                    packID: pack.id,
-                                    groupID: group.id,
-                                    itemID: item.id,
-                                    sort: sortOption
-                                )
-                            ) {
-                                ItemRowView(item: item) { selected, point in
-                                    editingItem = selected
-                                    popupAnchor = point
+                    Section {
+                        ForEach(filteredItems) { item in
+                            if let group = item.parent {
+                                NavigationLink(
+                                    value: AppDestination.itemEdit(
+                                        packID: pack.id,
+                                        groupID: group.id,
+                                        itemID: item.id,
+                                        sort: sortOption
+                                    )
+                                ) {
+                                    ItemRowView(item: item) { selected, point in
+                                        editingItem = selected
+                                        popupAnchor = point
+                                    }
                                 }
+                                .buttonStyle(.plain)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                .listRowBackground(COLOR_ROW_BACK)
                             }
-                            .buttonStyle(.plain)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                            .listRowBackground(COLOR_ROW_BACK)
                         }
+                    } header: {
+                        searchHeader
                     }
                 }
                 .listStyle(.plain)
@@ -133,6 +151,39 @@ struct ItemSortListView: View {
                     dismiss()
                 }
         )
+    }
+
+    private var searchHeader: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+
+                TextField(LocalizedStringKey("item.sort.search.placeholder"), text: $searchText)
+                    .textFieldStyle(.plain)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+
+                if !trimmedSearchText.isEmpty {
+                    Button {
+                        searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.tertiary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(LocalizedStringKey("action.clear"))
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(uiColor: .secondarySystemBackground))
+            )
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
     }
 
     @ToolbarContentBuilder

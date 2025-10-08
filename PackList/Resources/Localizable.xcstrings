@@ -20,6 +20,22 @@
         }
       }
     },
+    "action.clear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリア"
+          }
+        }
+      }
+    },
     "action.check.off" : {
       "localizations" : {
         "en" : {
@@ -613,6 +629,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "数量"
+          }
+        }
+      }
+    },
+    "item.sort.search.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search items"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "アイテムを検索"
           }
         }
       }
