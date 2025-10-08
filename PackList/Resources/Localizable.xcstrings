@@ -1289,6 +1289,22 @@
         }
       }
     },
+    "setting.weightDisplayInKg.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show weight scale in Kg"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "重量計をKgで表示"
+          }
+        }
+      }
+    },
     "setting.title" : {
       "localizations" : {
         "en" : {
@@ -1317,6 +1333,22 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "g"
+          }
+        }
+      }
+    },
+    "unit.kilogram" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kg"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "kg"
           }
         }
       }

@@ -15,19 +15,22 @@ struct PackRowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
+    @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = false
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { pack.name.isEmpty }
-    private var weightUnit: String { String(localized: "unit.gram") }
+    private var weightUnit: String {
+        weightDisplayInKg ? String(localized: "unit.kilogram") : String(localized: "unit.gram")
+    }
 
     private var weightLabelText: String? {
         if showNeedWeight {
             guard pack.stockWeight > 0 || pack.needWeight > 0 else { return nil }
-            return "\(pack.stockWeight.decimalGrouped)\(weightUnit)／\(pack.needWeight.decimalGrouped)\(weightUnit)"
+            return "\(formattedWeight(pack.stockWeight))\(weightUnit)／\(formattedWeight(pack.needWeight))\(weightUnit)"
         } else {
             guard pack.stockWeight > 0 else { return nil }
-            return "\(pack.stockWeight.decimalGrouped)\(weightUnit)"
+            return "\(formattedWeight(pack.stockWeight))\(weightUnit)"
         }
     }
     // 全チェック済み
@@ -150,5 +153,17 @@ struct PackRowView: View {
         }
     }
 
+}
+
+private extension PackRowView {
+    func formattedWeight(_ weight: Int) -> String {
+        if weightDisplayInKg {
+            // g単位の値をKgへ変換し、Formatterで小数第一位に丸める
+            let kilogram = Double(weight) / 1000.0
+            return kilogram.oneDecimalGrouped
+        } else {
+            return weight.decimalGrouped
+        }
+    }
 }
 
