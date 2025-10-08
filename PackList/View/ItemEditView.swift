@@ -367,6 +367,7 @@ struct ItemEditView: View {
             updateUndoRedo()
         }
         .sheet(isPresented: $isShowingMoveSheet) {
+            // 移動 設定シート
             ItemMoveSheetView(
                 packs: sortedPacks,
                 selectedPackID: $selectedPackID,
@@ -466,6 +467,7 @@ struct ItemEditView: View {
             .first(where: { $0.id == selectedGroupID })
     }
 
+    /// 移動　シート
     private func prepareMoveSheet() {
         keepSourceItem = lastMoveKeepOriginal
         if let storedInsertPosition = MoveInsertPosition(rawValue: lastMoveInsertPositionRawValue) {
@@ -530,7 +532,7 @@ struct ItemEditView: View {
         isShowingMoveSheet = false
         onDismiss()
     }
-
+    /// 移動 or 複写を実行する
     private func performMoveOrCopy(to destinationGroup: M2Group, copy: Bool) {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -643,6 +645,7 @@ struct ItemQuickEditView: View {
                 .foregroundStyle(item.name.isEmpty ? COLOR_NAME_EMPTY : COLOR_NAME)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
+                .padding(.horizontal, 8)
             // 数量 編集
             ItemQuantityEditor(item: item)
         }
@@ -765,7 +768,7 @@ private struct ItemQuantityEditor: View {
     }
 }
 
-/// アイテム移動 シート
+/// アイテム移動 設定シート
 private struct ItemMoveSheetView: View {
     let packs: [M1Pack]
     @Binding var selectedPackID: String
@@ -795,7 +798,7 @@ private struct ItemMoveSheetView: View {
                 // 移動先
                 Section("item.move.destination") {
                     // 移動先のPack
-                    Picker("item.move.destinationPack", selection: $selectedPackID) {
+                    Picker("", systemImage: "case", selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
                             pack.name.truncTail(20)
                                 .placeholderText("placeholder.pack.new")
@@ -805,7 +808,7 @@ private struct ItemMoveSheetView: View {
                     .pickerStyle(.menu)  // メニュー型
 
                     // 移動先のGroup
-                    Picker("item.move.destinationGroup", selection: $selectedGroupID) {
+                    Picker("", systemImage: "square", selection: $selectedGroupID) {
                         ForEach(availableGroups, id: \.id) { group in
                             group.name.truncTail(20)
                                 .placeholderText("placeholder.group.new")

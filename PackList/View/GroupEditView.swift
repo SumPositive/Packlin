@@ -61,9 +61,9 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
-                            //.imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                            .imageScale(.large)
+                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
 
                         Text("action.duplicate")
                             .font(.caption)
@@ -83,9 +83,9 @@ struct GroupEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
-                            //.imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                            .imageScale(.large)
+                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                         
                         Text("action.delete")
                             .font(.caption)

@@ -13,7 +13,9 @@ struct GroupListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -89,9 +91,11 @@ struct GroupListView: View {
                     Text("group.section.sort")
                 }
                 footer: {
-                    // セクション2・フッター：操作説明、アイコン説明
-                    Section2FooterView()
-                        .listRowSeparator(.hidden) // 下線なし
+                    if footerMessage {
+                        // セクション2・フッター：操作説明、アイコン説明
+                        Section2FooterView()
+                            .listRowSeparator(.hidden) // 下線なし
+                    }
                 }
             }
             .listStyle(.plain)

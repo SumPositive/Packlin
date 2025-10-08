@@ -90,16 +90,17 @@ struct PackRowView: View {
                 }
 
                 HStack(spacing: 0) {
+                    // インデント
                     Rectangle()
-                        .frame(width: 24, height: 1)
+                        .frame(width: 30, height: 1)
                         .foregroundStyle(.clear)
                     
                     if let weightLabelText = weightLabelText {
                         Text(verbatim: weightLabelText)
                             .font(FONT_WEIGHT)
                             .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 3)
                             .background(
                                 Capsule()
                                     .fill(COLOR_ROW_GROUP)

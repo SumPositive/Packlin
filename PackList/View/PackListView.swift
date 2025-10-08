@@ -12,7 +12,9 @@ import UIKit
 
 struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
+
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -54,9 +56,11 @@ struct PackListView: View {
                     .onMove(perform: movePack)
                 }
                 footer: {
-                    // フッター：操作説明、アイコン説明
-                    FooterView()
-                        .listRowSeparator(.hidden) // 下線なし
+                    if footerMessage {
+                        // フッター：操作説明、アイコン説明
+                        FooterView()
+                            .listRowSeparator(.hidden) // 下線なし
+                    }
                 }
             }
             .listStyle(.plain)

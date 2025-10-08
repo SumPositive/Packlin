@@ -47,7 +47,7 @@ struct PackEditView: View {
                             if allItemsChecked {
                                 Image(systemName: "checkmark")
                                     .imageScale(.small)
-                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                    //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                     .padding(.top, 4)
                             }
                         }
@@ -70,9 +70,9 @@ struct PackEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "plus.square.on.square")
-                            //.imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                            .imageScale(.large)
+                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
 
                         Text("action.duplicate")
                             .font(.caption)
@@ -87,9 +87,9 @@ struct PackEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "square.and.arrow.up")
-                            //.imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                            .imageScale(.large)
+                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
 
                         Text("action.json.upload")
                             .font(.caption)
@@ -109,9 +109,9 @@ struct PackEditView: View {
                 } label: {
                     VStack {
                         Image(systemName: "trash")
-                            //.imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                            .imageScale(.large)
+                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
 
                         Text("action.delete")
                             .font(.caption)

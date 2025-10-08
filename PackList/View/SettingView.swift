@@ -244,6 +244,7 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+        @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
         var body: some View {
             VStack(alignment: .leading, spacing: 20) {
@@ -253,19 +254,21 @@ struct SettingView: View {
                         Text("setting.insertion.title")
                             .font(.callout)
                     } icon: {
-                        Image(systemName: "arrow.up.arrow.down")
+                        Image(systemName: "plus.circle")
                             .symbolRenderingMode(.hierarchical)
                     }
 
                     Picker("setting.insertion.title", selection: $insertionPosition) {
                         ForEach(InsertionPosition.allCases) { position in
-                            Text(position.localizedKey)
+                            Image(systemName: position.iconSFname)
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical)
                                 .tag(position)
                         }
                     }
                     .pickerStyle(.segmented)
                 }
-                // 必要重量を表示する
+                // 必要重量を表示
                 Toggle(isOn: $showNeedWeight) {
                     Label {
                         Text("setting.needWeight.title")
@@ -275,7 +278,7 @@ struct SettingView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                // チェックと在庫数を連動する
+                // チェックと在庫を連動
                 Toggle(isOn: $linkCheckWithStock) {
                     Label {
                         Text("setting.linkCheckWithStock.title")
@@ -283,6 +286,18 @@ struct SettingView: View {
                     } icon: {
                         ZStack{
                             Image(systemName: "checkmark.circle")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    }
+                }
+                // フッターの説明文（非表示/表示）
+                Toggle(isOn: $footerMessage) {
+                    Label {
+                        Text("setting.footer.message")
+                            .font(.body)
+                    } icon: {
+                        ZStack{
+                            Image(systemName: "platter.filled.bottom.iphone")
                                 .symbolRenderingMode(.hierarchical)
                         }
                     }
@@ -325,7 +340,7 @@ struct SettingView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.pink)
+                    .tint(.secondary)
                     .sheet(isPresented: $showAd) {
                         AdMobBannerContainerView()
                     }
@@ -347,12 +362,12 @@ struct SettingView: View {
                                         .symbolRenderingMode(.hierarchical)
                                     Text("ad.video.sound")
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(.primary)
                                 }
                             }
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.purple)
+                        .tint(.secondary)
                         .sheet(isPresented: $showAdMovie) {
                             AdMobVideoContainerView()
                         }

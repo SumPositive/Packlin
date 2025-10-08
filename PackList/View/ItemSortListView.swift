@@ -16,15 +16,24 @@ struct ItemSortListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @AppStorage(AppStorageKey.keepItemOrder) private var keepItemOrder: Bool = false
+    @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = false
 
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
+    @State private var cachedItems: [M3Item] = []
 
-    private var sortedItems: [M3Item] {
+    private var baseSortedItems: [M3Item] {
         sortOption.sortedItems(from: pack).filter { $0.parent != nil }
+    }
+
+    private var displayedItems: [M3Item] {
+        autoItemReorder ? baseSortedItems : cachedItems
+    }
+
+    private var baseSortedItemIDs: [M3Item.ID] {
+        baseSortedItems.map(\.id)
     }
 
     private var isShowingPopup: Bool { editingItem != nil }
@@ -32,20 +41,9 @@ struct ItemSortListView: View {
     var body: some View {
         ZStack {
             VStack {
-                // 編集で並べ替えない　"Keep Order While Editing"
-                Toggle(isOn: $keepItemOrder) {
-                    Label {
-                        Spacer()
-                        Text("setting.keepItemOrder")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                    } icon: {
-                    }
-                }
-                .padding(.trailing, 16)
                 // 並べ替え一覧
                 List {
-                    ForEach(sortedItems) { item in
+                    ForEach(displayedItems) { item in
                         if let group = item.parent {
                             NavigationLink(
                                 value: AppDestination.itemEdit(
@@ -71,6 +69,22 @@ struct ItemSortListView: View {
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
+
+                // 編集操作に応じて自動で並び替え
+                Toggle(isOn: $autoItemReorder) {
+                    HStack(spacing: 0) {
+                        Spacer()
+                        Image(systemName: "arrow.up.arrow.down")
+                            .imageScale(.small)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .padding(4)
+
+                        Text("setting.autoItemReorder")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.trailing, 16)
             }
             .navigationTitle(sortOption.title)
             .navigationBarBackButtonHidden(true)
@@ -79,9 +93,16 @@ struct ItemSortListView: View {
             }
             .onAppear {
                 updateUndoRedo()
+                refreshDisplayedItems(forceReset: true)
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()
+            }
+            .onChange(of: !autoItemReorder) { _, _ in
+                refreshDisplayedItems(forceReset: true)
+            }
+            .onChange(of: baseSortedItemIDs) { _, _ in
+                refreshDisplayedItems()
             }
 
             if let item = editingItem {
@@ -159,6 +180,28 @@ struct ItemSortListView: View {
             canUndo = false
             canRedo = false
         }
+    }
+
+    private func refreshDisplayedItems(forceReset: Bool = false) {
+        let items = baseSortedItems
+
+        guard !autoItemReorder else {
+            cachedItems = items
+            return
+        }
+
+        if forceReset || cachedItems.isEmpty {
+            cachedItems = items
+            return
+        }
+
+        let map = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+        var updated = cachedItems.compactMap { map[$0.id] }
+        let existingIDs = Set(updated.map { $0.id })
+        let appended = items.filter { !existingIDs.contains($0.id) }
+        updated.append(contentsOf: appended)
+
+        cachedItems = updated
     }
 }
 

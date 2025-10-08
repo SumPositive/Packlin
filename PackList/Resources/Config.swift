@@ -114,9 +114,12 @@ enum AppStorageKey {
     static let showNeedWeight = "setting.showNeedWeight"
     // チェックと在庫数を連動させる　　　Link check status with stock quantity
     static let linkCheckWithStock = "setting.linkCheckWithStock"
-    // アイテム並べ替え一覧を編集時に並べ替えない
-    static let keepItemOrder = "setting.keepItemOrder"
+    // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
+    static let autoItemReorder = "setting.autoItemReorder"
+    // フッターの説明文（非表示/表示）
+    static let footerMessage = "setting.footerMessage"
 }
+
 /// 新規追加する位置
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
     // 選択肢
@@ -133,6 +136,15 @@ enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
             return "setting.insertion.head"
         case .tail:
             return "setting.insertion.tail"
+        }
+    }
+
+    var iconSFname: String {
+        switch self {
+            case .head:
+                return "text.line.first.and.arrowtriangle.forward"
+            case .tail:
+                return "text.line.last.and.arrowtriangle.forward"
         }
     }
 }
