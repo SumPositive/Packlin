@@ -1098,6 +1098,7 @@
       }
     },
     "setting.import.error.message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1108,7 +1109,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選択したpack.jsonを読み込めませんでした。"
+            "value" : "選択したpack.jsonを取り込めませんでした"
           }
         }
       }
@@ -1124,7 +1125,39 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "読み込みに失敗しました"
+            "value" : "取り込みに失敗しました"
+          }
+        }
+      }
+    },
+    "setting.import.success.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has been imported."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ を取り込みました"
+          }
+        }
+      }
+    },
+    "setting.import.success.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import completed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り込み完了"
           }
         }
       }
