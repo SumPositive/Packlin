@@ -301,7 +301,7 @@ struct PackEditView: View {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted]
             let data = try encoder.encode(dto)
-
+            // ファイル名を使用可能文字に制限する
             let fileName = sanitizedFileName(from: pack.name.isEmpty
                                              ? pack.id : pack.name )
             let fileURL = FileManager.default.temporaryDirectory
