@@ -22,6 +22,7 @@ struct ItemRowView: View {
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
     private var weightUnit: String { String(localized: "unit.gram") }
+    private var hasClipboardItem: Bool { RowClipboard.item != nil }
 
     init(item: M3Item,
          onEdit: @escaping (M3Item, CGPoint) -> Void) {
@@ -156,6 +157,38 @@ struct ItemRowView: View {
                 .padding(.leading, 50)
                 .padding(.trailing, 30)
         }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                copyItemToClipboard()
+            } label: {
+                Label("コピー", systemImage: "doc.on.doc")
+            }
+            .tint(.blue)
+
+            Button {
+                pasteItemAbove()
+            } label: {
+                Label("上にペースト", systemImage: "arrow.up.doc")
+            }
+            .tint(.green)
+            .disabled(!hasClipboardItem || item.parent == nil)
+
+            Button {
+                pasteItemBelow()
+            } label: {
+                Label("下にペースト", systemImage: "arrow.down.doc")
+            }
+            .tint(.green)
+            .disabled(!hasClipboardItem || item.parent == nil)
+
+            Button {
+                cutItemToClipboard()
+            } label: {
+                Label("カット", systemImage: "scissors")
+            }
+            .tint(.orange)
+            .disabled(item.parent == nil)
+        }
     }
 
     private func deleteItem() {
@@ -174,6 +207,55 @@ struct ItemRowView: View {
             }
         }
         modelContext.delete(item)
+    }
+
+    private func copyItemToClipboard() {
+        RowClipboard.clear()
+        RowClipboard.item = cloneItem(item)
+    }
+
+    private func cutItemToClipboard() {
+        copyItemToClipboard()
+        deleteItem()
+    }
+
+    private func pasteItemAbove() {
+        pasteItem(atOffset: 0)
+    }
+
+    private func pasteItemBelow() {
+        pasteItem(atOffset: 1)
+    }
+
+    private func pasteItem(atOffset offset: Int) {
+        guard let clipboardItem = RowClipboard.item,
+              let parent = item.parent else { return }
+
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+
+        let newItem = cloneItem(clipboardItem, parent: parent)
+        modelContext.insert(newItem)
+
+        let insertionIndex: Int
+        if let currentIndex = parent.child.firstIndex(where: { $0.id == item.id }) {
+            insertionIndex = min(max(currentIndex + offset, 0), parent.child.count)
+        } else {
+            insertionIndex = parent.child.count
+        }
+
+        withAnimation {
+            if insertionIndex <= parent.child.count {
+                parent.child.insert(newItem, at: insertionIndex)
+            } else {
+                parent.child.append(newItem)
+            }
+            parent.normalizeItemOrder()
+        }
     }
 
 }
