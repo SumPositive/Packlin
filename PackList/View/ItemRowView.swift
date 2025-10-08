@@ -161,7 +161,7 @@ struct ItemRowView: View {
             Button {
                 cutItemToClipboard()
             } label: {
-                Label("カット", systemImage: "scissors")
+                Label("clipboard.cut", systemImage: "scissors")
             }
             .tint(.orange)
             .disabled(item.parent == nil)
@@ -169,7 +169,7 @@ struct ItemRowView: View {
             Button {
                 pasteItemAbove()
             } label: {
-                Label("ペースト", systemImage: "arrow.up.doc")
+                Label("clipboard.paste", systemImage: "arrow.up.doc")
             }
             .tint(.green)
             .disabled(!hasClipboardItem || item.parent == nil)
@@ -177,7 +177,7 @@ struct ItemRowView: View {
             Button {
                 copyItemToClipboard()
             } label: {
-                Label("コピー", systemImage: "doc.on.doc")
+                Label("clipboard.copy", systemImage: "doc.on.doc")
             }
             .tint(.blue)
         }

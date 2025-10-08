@@ -293,6 +293,54 @@
         }
       }
     },
+    "clipboard.copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "コピー"
+          }
+        }
+      }
+    },
+    "clipboard.cut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cut"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "カット"
+          }
+        }
+      }
+    },
+    "clipboard.paste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ペースト"
+          }
+        }
+      }
+    },
     "edit.actions" : {
       "localizations" : {
         "en" : {
@@ -1368,15 +1416,6 @@
           }
         }
       }
-    },
-    "カット" : {
-
-    },
-    "コピー" : {
-
-    },
-    "ペースト" : {
-
     }
   },
   "version" : "1.0"
