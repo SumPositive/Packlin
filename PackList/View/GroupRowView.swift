@@ -153,6 +153,7 @@ struct GroupRowView: View {
 private extension GroupRowView {
     func formattedWeight(_ weight: Int) -> String {
         if weightDisplayInKg {
+            // g -> Kgへ変換し、NumberFormatter側で小数第一位に丸める
             let kilogram = Double(weight) / 1000.0
             return kilogram.oneDecimalGrouped
         } else {

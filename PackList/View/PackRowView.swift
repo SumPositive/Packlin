@@ -158,6 +158,7 @@ struct PackRowView: View {
 private extension PackRowView {
     func formattedWeight(_ weight: Int) -> String {
         if weightDisplayInKg {
+            // g単位の値をKgへ変換し、Formatterで小数第一位に丸める
             let kilogram = Double(weight) / 1000.0
             return kilogram.oneDecimalGrouped
         } else {

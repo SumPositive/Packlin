@@ -19,6 +19,7 @@ extension Formatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = Locale.current
+        // Kg表示では小数第一位までを四捨五入して表示したいので、桁数と丸めモードを固定する
         formatter.minimumFractionDigits = 1
         formatter.maximumFractionDigits = 1
         formatter.roundingMode = .halfUp
