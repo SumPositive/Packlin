@@ -54,16 +54,15 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
 //
 //        child = sorted
 
-        // 配列の順に.orderに連番を付けるだけ
-        for (index, item) in child.enumerated() {
-            item.order = index
-        }
-        // この結果、DBの.orderが更新されて配列順に同期する
+        normalizeSparseOrders(child)
     }
 
     /// 次の order 値を取得する
     func nextItemOrder() -> Int {
-        (child.map { $0.order }.max() ?? -1) + 1
+        let ordered = child.sorted { $0.order < $1.order }
+        return sparseOrderForInsertion(items: ordered, index: ordered.count) {
+            normalizeSparseOrders(ordered)
+        }
     }
 }
 

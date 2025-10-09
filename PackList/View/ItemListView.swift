@@ -245,26 +245,25 @@ struct ItemListView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-        let newOrder: Int
-        switch insertionPosition {
+        var orderedItems = sortedItems
+        let insertionIndex: Int = {
+            switch insertionPosition {
             case .head:
-                let minOrder = group.child.map { $0.order }.min() ?? 0
-                newOrder = minOrder - 1
+                return 0
             case .tail:
-                let maxOrder = group.child.map { $0.order }.max() ?? -1
-                newOrder = maxOrder + 1
+                return orderedItems.count
+            }
+        }()
+
+        let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertionIndex) {
+            normalizeSparseOrders(orderedItems)
         }
-        
+
         let newItem = M3Item(name: "", order: newOrder, parent: group)
         modelContext.insert(newItem)
         withAnimation {
-            switch insertionPosition {
-                case .head:
-                    group.child.insert(newItem, at: 0)
-                case .tail:
-                    group.child.append(newItem)
-            }
-            group.normalizeItemOrder()
+            orderedItems.insert(newItem, at: insertionIndex)
+            group.child = orderedItems
         }
     }
 
@@ -287,9 +286,23 @@ struct ItemListView: View {
         }
 
         var items = sortedItems
+        let movedIDs = Set(source.map { sortedItems[$0].id })
         items.move(fromOffsets: source, toOffset: destination)
-        for (index, item) in items.enumerated() {
-            item.order = index
+
+        var index = 0
+        while index < items.count {
+            if movedIDs.contains(items[index].id) {
+                var end = index
+                while end + 1 < items.count, movedIDs.contains(items[end + 1].id) {
+                    end += 1
+                }
+                assignSparseOrders(items: items, range: index...end) {
+                    normalizeSparseOrders(items)
+                }
+                index = end + 1
+            } else {
+                index += 1
+            }
         }
         group.child = items
         // この後、sortedItemsが再取得される

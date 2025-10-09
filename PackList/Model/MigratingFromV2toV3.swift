@@ -100,7 +100,7 @@ struct MigratingFromV2toV3 {
                 name: packDTO.name,
                 memo: packDTO.memo,
                 createdAt: Date().addingTimeInterval(TimeInterval(-packIndex)),
-                order: packIndex
+                order: packIndex * ORDER_SPARSE_COUNT
             )
             context.insert(pack)
 
@@ -116,7 +116,7 @@ struct MigratingFromV2toV3 {
                 let group = M2Group(
                     name: groupDTO.name,
                     memo: groupDTO.memo,
-                    order: groupIndex,
+                    order: groupIndex * ORDER_SPARSE_COUNT,
                     parent: pack
                 )
                 context.insert(group)
@@ -145,7 +145,7 @@ struct MigratingFromV2toV3 {
                         stock: max(itemDTO.stock, 0),
                         need: max(itemDTO.need, 0),
                         weight: max(itemDTO.weight, 0),
-                        order: itemIndex,
+                        order: itemIndex * ORDER_SPARSE_COUNT,
                         parent: group
                     )
                     context.insert(item)
