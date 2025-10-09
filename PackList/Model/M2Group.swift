@@ -41,27 +41,24 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
 
     /// 子アイテムの order を連番に整理する
     func normalizeItemOrder() {
-//        let sorted = child.sorted { ll, rr in
-//            if ll.order != rr.order {
-//                return ll.order < rr.order
-//            }
-//            return ll.id < rr.id
-//        }
-//
-//        for (index, item) in sorted.enumerated() {
-//            item.order = index
-//        }
-//
-//        child = sorted
-
-        normalizeSparseOrders(child)
+        // order と id で安定ソートした配列に対してスパース再採番を適用する
+        let sorted = child.sorted { ll, rr in
+            if ll.order != rr.order {
+                return ll.order < rr.order
+            }
+            return ll.id < rr.id
+        }
+        normalizeSparseOrders(sorted)
+        child = sorted
     }
 
     /// 次の order 値を取得する
     func nextItemOrder() -> Int {
         let ordered = child.sorted { $0.order < $1.order }
         return sparseOrderForInsertion(items: ordered, index: ordered.count) {
+            // 正規化時に child の順序も同期させる
             normalizeSparseOrders(ordered)
+            child = ordered
         }
     }
 }
