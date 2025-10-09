@@ -158,6 +158,7 @@ struct ItemRowView: View {
                 .padding(.trailing, 30)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ
+            // Clipboard カット
             Button {
                 cutItemToClipboard()
             } label: {
@@ -165,15 +166,16 @@ struct ItemRowView: View {
             }
             .tint(.orange)
             .disabled(item.parent == nil)
-
+            // Clipboard ペースト
             Button {
+                /// Clipboard 上にペースト
                 pasteItemAbove()
             } label: {
                 Label("clipboard.paste", systemImage: "arrow.up.doc")
             }
             .tint(.green)
             .disabled(!hasClipboardItem || item.parent == nil)
-
+            // Clipboard コピー
             Button {
                 copyItemToClipboard()
             } label: {
@@ -183,6 +185,7 @@ struct ItemRowView: View {
         }
     }
 
+    /// 削除
     private func deleteItem() {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -201,24 +204,25 @@ struct ItemRowView: View {
         modelContext.delete(item)
     }
 
+    /// Clipboard コピー
     private func copyItemToClipboard() {
         RowClipboard.clear()
         RowClipboard.item = cloneItem(item)
     }
-
+    /// Clipboard カット
     private func cutItemToClipboard() {
         copyItemToClipboard()
         deleteItem()
     }
-
+    /// Clipboard 上にペースト
     private func pasteItemAbove() {
         pasteItem(atOffset: 0)
     }
-
+    /// Clipboard 下にペースト
     private func pasteItemBelow() {
         pasteItem(atOffset: 1)
     }
-
+    /// Clipboard ペースト
     private func pasteItem(atOffset offset: Int) {
         guard let clipboardItem = RowClipboard.item,
               let parent = item.parent else { return }
