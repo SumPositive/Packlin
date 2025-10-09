@@ -257,15 +257,13 @@ struct GroupListView: View {
         }()
 
         let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertionIndex) {
+            // order だけを整理して child 配列には手を出さない
             normalizeSparseOrders(orderedGroups)
         }
 
         let newGroup = M2Group(name: "", order: newOrder, parent: pack)
         modelContext.insert(newGroup)
-        withAnimation {
-            orderedGroups.insert(newGroup, at: insertionIndex)
-            pack.child = orderedGroups
-        }
+        // child 配列はそのまま。表示時に order ソートされる
     }
 
     private func moveGroup(from source: IndexSet, to destination: Int) {
@@ -288,6 +286,7 @@ struct GroupListView: View {
                     end += 1
                 }
                 assignSparseOrders(items: groups, range: index...end) {
+                    // order の再配分だけを行い、pack.child は触れない
                     normalizeSparseOrders(groups)
                 }
                 index = end + 1
@@ -295,7 +294,7 @@ struct GroupListView: View {
                 index += 1
             }
         }
-        pack.child = groups
+        // order を更新したので、List では order に基づいて並び替えられる
     }
 }
 

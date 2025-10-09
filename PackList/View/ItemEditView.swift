@@ -541,14 +541,7 @@ struct ItemEditView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        if !copy,
-           let sourceGroup = item.parent {
-            var sourceItems = sourceGroup.child.sorted { $0.order < $1.order }
-            if let index = sourceItems.firstIndex(where: { $0.id == item.id }) {
-                sourceItems.remove(at: index)
-                sourceGroup.child = sourceItems
-            }
-        }
+        // 移動時も order のみを真実とするため、sourceGroup.child には触れない
 
         var destinationItems = destinationGroup.child.sorted { $0.order < $1.order }
         let insertIndex: Int
@@ -561,6 +554,7 @@ struct ItemEditView: View {
         let clampedIndex = max(0, min(insertIndex, destinationItems.count))
 
         let newOrder = sparseOrderForInsertion(items: destinationItems, index: clampedIndex) {
+            // child を再代入せずに order のみ補正する
             normalizeSparseOrders(destinationItems)
         }
 
@@ -573,14 +567,10 @@ struct ItemEditView: View {
                                  order: newOrder,
                                  parent: destinationGroup)
             modelContext.insert(newItem)
-            destinationItems.insert(newItem, at: clampedIndex)
         } else {
             item.parent = destinationGroup
             item.order = newOrder
-            destinationItems.insert(item, at: clampedIndex)
         }
-
-        destinationGroup.child = destinationItems
     }
 
     /// 編集対象のアイテムを選択する（前へ、次へ）

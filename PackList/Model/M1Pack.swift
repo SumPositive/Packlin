@@ -41,6 +41,8 @@ final class M1Pack {
     }
     
     /// 子グループの order を連番に整理する
+    /// - Note: 表示順は List 側で order を基準にソートするため、ここでは child 配列を書き換えない。
+    ///         order だけを唯一の真実源として扱い、配列の順番は放置する。
     func normalizeGroupOrder() {
         // SwiftData の child 配列は順序が保証されないため、order と id で安定ソートしてから並べ替える
         let sorted = child.sorted { ll, rr in
@@ -49,18 +51,16 @@ final class M1Pack {
             }
             return ll.id < rr.id
         }
-        // スパース間隔で再採番しつつ child の順序も更新する
+        // スパース間隔で再採番するが、child の並びはそのまま残す
         normalizeSparseOrders(sorted)
-        child = sorted
     }
 
     /// 次のグループの order 値を取得する
     func nextGroupOrder() -> Int {
         let ordered = child.sorted { $0.order < $1.order }
         return sparseOrderForInsertion(items: ordered, index: ordered.count) {
-            // 正規化後に child を最新順序へ入れ替える
+            // order だけを整えて child 配列には触れない
             normalizeSparseOrders(ordered)
-            child = ordered
         }
     }
 

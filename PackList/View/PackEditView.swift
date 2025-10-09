@@ -244,16 +244,13 @@ struct PackEditView: View {
         }
 
         let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertIndex) {
+            // child 配列は触らず、order のみを整理する
             normalizeSparseOrders(orderedGroups)
         }
 
         let newGroup = M2Group(name: group.name, memo: group.memo,
                                order: newOrder, parent: parent)
         modelContext.insert(newGroup)
-        withAnimation {
-            orderedGroups.insert(newGroup, at: insertIndex)
-            parent.child = orderedGroups
-        }
         for item in group.child {
             copyItem(item, to: newGroup)
         }
@@ -262,6 +259,7 @@ struct PackEditView: View {
         var orderedItems = parent.child.sorted { $0.order < $1.order }
         let insertIndex = orderedItems.count
         let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertIndex) {
+            // order を整えるだけで child には手を加えない
             normalizeSparseOrders(orderedItems)
         }
 
@@ -269,8 +267,6 @@ struct PackEditView: View {
                              stock: item.stock, need: item.need, weight: item.weight,
                              order: newOrder, parent: parent)
         modelContext.insert(newItem)
-        orderedItems.insert(newItem, at: insertIndex)
-        parent.child = orderedItems
     }
     
     /// 現在のPackを削除する

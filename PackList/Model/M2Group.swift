@@ -40,6 +40,7 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     }
 
     /// 子アイテムの order を連番に整理する
+    /// - Note: order を唯一の真実源とする方針のため、child 配列の順序は変更しない。
     func normalizeItemOrder() {
         // order と id で安定ソートした配列に対してスパース再採番を適用する
         let sorted = child.sorted { ll, rr in
@@ -48,17 +49,16 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
             }
             return ll.id < rr.id
         }
+        // 配列に触れず order のみを調整する
         normalizeSparseOrders(sorted)
-        child = sorted
     }
 
     /// 次の order 値を取得する
     func nextItemOrder() -> Int {
         let ordered = child.sorted { $0.order < $1.order }
         return sparseOrderForInsertion(items: ordered, index: ordered.count) {
-            // 正規化時に child の順序も同期させる
+            // 正規化時も order のみ操作する
             normalizeSparseOrders(ordered)
-            child = ordered
         }
     }
 }
