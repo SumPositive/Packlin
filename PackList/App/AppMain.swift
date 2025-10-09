@@ -112,7 +112,7 @@ struct AppMain: App {
             "Pack_BabyTrip_1N2D",
         ]
 
-        var nextOrder = existingPacks.map { $0.order }.max() ?? -ORDER_SPARSE_COUNT
+        var nextOrder = existingPacks.map { $0.order }.max() ?? -ORDER_SPARSE
         for fileName in sampleFileNames {
             do {
                 guard let url = Bundle.main.url(forResource: fileName, withExtension: "json") else { continue }
@@ -125,7 +125,7 @@ struct AppMain: App {
                       dto.version == PACK_JSON_DTO_VERSION else { continue }
 
                 // Pack行
-                nextOrder += ORDER_SPARSE_COUNT
+                nextOrder += ORDER_SPARSE
                 // PackJsonDTO をDBへインポートする
                 PackImporter.insertPack(from: dto, into: context, order: nextOrder)
             } catch {

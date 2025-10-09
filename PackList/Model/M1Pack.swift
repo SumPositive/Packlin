@@ -92,7 +92,7 @@ extension M3Item: SparseOrderable {}
 func normalizeSparseOrders<T: SparseOrderable>(_ items: [T]) {
     for (index, element) in items.enumerated() {
         // index * ORDER_SPARSE_COUNT でベースラインを維持しつつ、挿入余地を確保する
-        element.order = index * ORDER_SPARSE_COUNT
+        element.order = index * ORDER_SPARSE
     }
 }
 
@@ -126,10 +126,10 @@ private func sparseOrderValue(
         return prev + gap / 2
     } else if let prev = previous() {
         // 末尾への追加。スパース間隔を維持するため固定幅を加算
-        return prev + ORDER_SPARSE_COUNT
+        return prev + ORDER_SPARSE
     } else if let nextValue = next() {
         // 先頭への追加。負方向へ間隔を確保
-        return nextValue - ORDER_SPARSE_COUNT
+        return nextValue - ORDER_SPARSE
     } else {
         // 要素が存在しない場合は 0 を基点にする
         return 0
@@ -168,20 +168,20 @@ func assignSparseOrders<T: SparseOrderable>(
     } else if let previous = previousOrder {
         var current = previous
         for index in lower...upper {
-            current += ORDER_SPARSE_COUNT
+            current += ORDER_SPARSE
             items[index].order = current
         }
     } else if let next = nextOrder {
         var current = next
         for index in stride(from: upper, through: lower, by: -1) {
-            current -= ORDER_SPARSE_COUNT
+            current -= ORDER_SPARSE
             items[index].order = current
         }
     } else {
         var current = 0
         for index in lower...upper {
             items[index].order = current
-            current += ORDER_SPARSE_COUNT
+            current += ORDER_SPARSE
         }
     }
 }
