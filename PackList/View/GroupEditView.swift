@@ -188,28 +188,43 @@ struct GroupEditView: View {
             modelContext.undoManager?.groupingEnd()
         }
         guard let parent = group.parent else { return }
+        var orderedGroups = parent.child.sorted { $0.order < $1.order }
+        let insertIndex: Int
+        if let index = orderedGroups.firstIndex(where: { $0.id == group.id }) {
+            insertIndex = index + 1
+        } else {
+            insertIndex = orderedGroups.count
+        }
+
+        let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertIndex) {
+            normalizeSparseOrders(orderedGroups)
+        }
+
         let newGroup = M2Group(name: group.name, memo: group.memo,
-                               order: parent.nextGroupOrder(),
+                               order: newOrder,
                                parent: parent)
         modelContext.insert(newGroup)
         withAnimation {
-            if let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-                // 現在行の下に追加
-                parent.child.insert(newGroup, at: index + 1)
-            }
-            parent.normalizeGroupOrder()
+            orderedGroups.insert(newGroup, at: insertIndex)
+            parent.child = orderedGroups
         }
         for item in group.child {
             copyItem(item, to: newGroup)
         }
     }
     private func copyItem(_ item: M3Item, to parent: M2Group) {
+        var orderedItems = parent.child.sorted { $0.order < $1.order }
+        let insertIndex = orderedItems.count
+        let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertIndex) {
+            normalizeSparseOrders(orderedItems)
+        }
+
         let newItem = M3Item(name: item.name, memo: item.memo,
                              stock: item.stock, need: item.need, weight: item.weight,
-                             order: parent.nextItemOrder(), parent: parent)
+                             order: newOrder, parent: parent)
         modelContext.insert(newItem)
-        parent.child.append(newItem)
-        parent.normalizeItemOrder()
+        orderedItems.insert(newItem, at: insertIndex)
+        parent.child = orderedItems
     }
 
     /// 現在のGroupを削除する

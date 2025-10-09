@@ -237,14 +237,18 @@ struct PackListView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        let newOrder: Int
-        switch insertionPosition {
-        case .head:
-            let minOrder = packs.map { $0.order }.min() ?? 0
-            newOrder = minOrder - 1
-        case .tail:
-            let maxOrder = packs.map { $0.order }.max() ?? -1
-            newOrder = maxOrder + 1
+        let orderedPacks = Array(packs)
+        let insertionIndex: Int = {
+            switch insertionPosition {
+            case .head:
+                return 0
+            case .tail:
+                return orderedPacks.count
+            }
+        }()
+
+        let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
+            normalizeSparseOrders(orderedPacks)
         }
 
         let newPack = M1Pack(name: "", order: newOrder)
@@ -259,10 +263,6 @@ struct PackListView: View {
         modelContext.insert(initialItem)
         initialGroup.child.append(initialItem)
 
-        let descriptor = FetchDescriptor<M1Pack>()
-        if let allPacks = try? modelContext.fetch(descriptor) {
-            M1Pack.normalizePackOrder(allPacks)
-        }
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {
@@ -273,10 +273,24 @@ struct PackListView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        var items = packs
+        var items = Array(packs)
+        let movedIDs = Set(source.map { packs[$0].id })
         items.move(fromOffsets: source, toOffset: destination)
-        for (index, pack) in items.enumerated() {
-            pack.order = index
+
+        var index = 0
+        while index < items.count {
+            if movedIDs.contains(items[index].id) {
+                var end = index
+                while end + 1 < items.count, movedIDs.contains(items[end + 1].id) {
+                    end += 1
+                }
+                assignSparseOrders(items: items, range: index...end) {
+                    normalizeSparseOrders(items)
+                }
+                index = end + 1
+            } else {
+                index += 1
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ struct PackImporter {
             let group = M2Group(
                 name: groupDTO.name,
                 memo: groupDTO.memo,
-                order: groupIndex,
+                order: groupIndex * ORDER_SPARSE,
                 parent: pack
             )
             context.insert(group)
@@ -39,7 +39,7 @@ struct PackImporter {
                     stock: itemDTO.stock,
                     need: itemDTO.need,
                     weight: itemDTO.weight,
-                    order: itemIndex,
+                    order: itemIndex * ORDER_SPARSE,
                     parent: group
                 )
                 context.insert(item)

@@ -547,7 +547,6 @@ struct ItemEditView: View {
             if let index = sourceItems.firstIndex(where: { $0.id == item.id }) {
                 sourceItems.remove(at: index)
                 sourceGroup.child = sourceItems
-                sourceGroup.normalizeItemOrder()
             }
         }
 
@@ -561,23 +560,27 @@ struct ItemEditView: View {
         }
         let clampedIndex = max(0, min(insertIndex, destinationItems.count))
 
+        let newOrder = sparseOrderForInsertion(items: destinationItems, index: clampedIndex) {
+            normalizeSparseOrders(destinationItems)
+        }
+
         if copy {
             let newItem = M3Item(name: item.name,
                                  memo: item.memo,
                                  stock: item.stock,
                                  need: item.need,
                                  weight: item.weight,
-                                 order: clampedIndex,
+                                 order: newOrder,
                                  parent: destinationGroup)
             modelContext.insert(newItem)
             destinationItems.insert(newItem, at: clampedIndex)
         } else {
             item.parent = destinationGroup
+            item.order = newOrder
             destinationItems.insert(item, at: clampedIndex)
         }
 
         destinationGroup.child = destinationItems
-        destinationGroup.normalizeItemOrder()
     }
 
     /// 編集対象のアイテムを選択する（前へ、次へ）

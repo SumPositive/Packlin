@@ -246,26 +246,25 @@ struct GroupListView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-        let newOrder: Int
-        switch insertionPosition {
-        case .head:
-            let minOrder = pack.child.map { $0.order }.min() ?? 0
-            newOrder = minOrder - 1
-        case .tail:
-            let maxOrder = pack.child.map { $0.order }.max() ?? -1
-            newOrder = maxOrder + 1
+        var orderedGroups = sortedGroups
+        let insertionIndex: Int = {
+            switch insertionPosition {
+            case .head:
+                return 0
+            case .tail:
+                return orderedGroups.count
+            }
+        }()
+
+        let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertionIndex) {
+            normalizeSparseOrders(orderedGroups)
         }
 
         let newGroup = M2Group(name: "", order: newOrder, parent: pack)
         modelContext.insert(newGroup)
         withAnimation {
-            switch insertionPosition {
-            case .head:
-                pack.child.insert(newGroup, at: 0)
-            case .tail:
-                pack.child.append(newGroup)
-            }
-            pack.normalizeGroupOrder()
+            orderedGroups.insert(newGroup, at: insertionIndex)
+            pack.child = orderedGroups
         }
     }
 
@@ -278,9 +277,23 @@ struct GroupListView: View {
         }
 
         var groups = sortedGroups
+        let movedIDs = Set(source.map { sortedGroups[$0].id })
         groups.move(fromOffsets: source, toOffset: destination)
-        for (index, group) in groups.enumerated() {
-            group.order = index
+
+        var index = 0
+        while index < groups.count {
+            if movedIDs.contains(groups[index].id) {
+                var end = index
+                while end + 1 < groups.count, movedIDs.contains(groups[end + 1].id) {
+                    end += 1
+                }
+                assignSparseOrders(items: groups, range: index...end) {
+                    normalizeSparseOrders(groups)
+                }
+                index = end + 1
+            } else {
+                index += 1
+            }
         }
         pack.child = groups
     }
