@@ -24,6 +24,7 @@ struct ItemListView: View {
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
 
+    /// DBからソートして取得する（group.child は.order昇順）
     private var sortedItems: [M3Item] {
         group.child.sorted { $0.order < $1.order }
     }
@@ -291,6 +292,7 @@ struct ItemListView: View {
             item.order = index
         }
         group.child = items
+        // この後、sortedItemsが再取得される
     }
 }
 

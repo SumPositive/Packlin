@@ -14,6 +14,8 @@ import SwiftUI
 //-------------------------------------- DEBUG
 let DEBUG_SHOW_ORDER_ID = true
 
+//-------------------------------------- アルゴリズム定数
+let ORDER_SPARSE_COUNT: Int = 1000 //.order スパース（まばらにして更新回数を減らす）
 
 //-------------------------------------- JSON関係
 let PACK_JSON_DTO_COPYRIGHT = "2025_sumpo@azukid.com" // 差異あれば読み込みエラー
