@@ -256,15 +256,13 @@ struct ItemListView: View {
         }()
 
         let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertionIndex) {
+            // order のみを整え、child 配列を並べ替えない
             normalizeSparseOrders(orderedItems)
         }
 
         let newItem = M3Item(name: "", order: newOrder, parent: group)
         modelContext.insert(newItem)
-        withAnimation {
-            orderedItems.insert(newItem, at: insertionIndex)
-            group.child = orderedItems
-        }
+        // child 配列はそのままにしておき、表示側で order ソートする
     }
 
     private func updateUndoRedo() {
@@ -297,6 +295,7 @@ struct ItemListView: View {
                     end += 1
                 }
                 assignSparseOrders(items: items, range: index...end) {
+                    // order の整合性を保つだけで child を並べ替えない
                     normalizeSparseOrders(items)
                 }
                 index = end + 1
@@ -304,8 +303,7 @@ struct ItemListView: View {
                 index += 1
             }
         }
-        group.child = items
-        // この後、sortedItemsが再取得される
+        // order の更新のみで十分。List は order でソートして再描画される。
     }
 }
 

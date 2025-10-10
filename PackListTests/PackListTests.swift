@@ -19,13 +19,15 @@ struct PackListTests {
 
         pack.child = [groupLate, groupTieA, groupEarly]
 
-        // 配列の順に.orderに連番を付けるだけ
+        // 配列の順は触らず、order のみを正規化する
         pack.normalizeGroupOrder()
-        // この結果、DBの.orderが更新されて配列順に同期する
-
+        // child 配列自体は変更されない
         #expect(pack.child.map(\.id) == ["late", "a", "early"])
-        for (index, group) in pack.child.enumerated() {
-            #expect(group.order == index)
+        // order でソートすると order の連番が得られる
+        let sorted = pack.child.sorted { $0.order < $1.order }
+        #expect(sorted.map(\.id) == ["a", "early", "late"])
+        for (index, group) in sorted.enumerated() {
+            #expect(group.order == index * ORDER_SPARSE)
         }
     }
 
@@ -38,13 +40,14 @@ struct PackListTests {
 
         group.child = [heavier, tie, lighter]
 
-        // 配列の順に.orderに連番を付けるだけ
+        // 配列の順は触らず、order のみを正規化する
         group.normalizeItemOrder()
-        // この結果、DBの.orderが更新されて配列順に同期する
-
+        // child 配列自体は変更されない
         #expect(group.child.map(\.id) == ["heavy", "mid", "light"])
-        for (index, item) in group.child.enumerated() {
-            #expect(item.order == index)
+        let sorted = group.child.sorted { $0.order < $1.order }
+        #expect(sorted.map(\.id) == ["mid", "light", "heavy"])
+        for (index, item) in sorted.enumerated() {
+            #expect(item.order == index * ORDER_SPARSE)
         }
     }
 

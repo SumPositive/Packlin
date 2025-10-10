@@ -197,6 +197,7 @@ struct GroupEditView: View {
         }
 
         let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertIndex) {
+            // child を並び替えずに order のみを整える
             normalizeSparseOrders(orderedGroups)
         }
 
@@ -204,10 +205,6 @@ struct GroupEditView: View {
                                order: newOrder,
                                parent: parent)
         modelContext.insert(newGroup)
-        withAnimation {
-            orderedGroups.insert(newGroup, at: insertIndex)
-            parent.child = orderedGroups
-        }
         for item in group.child {
             copyItem(item, to: newGroup)
         }
@@ -216,6 +213,7 @@ struct GroupEditView: View {
         var orderedItems = parent.child.sorted { $0.order < $1.order }
         let insertIndex = orderedItems.count
         let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertIndex) {
+            // order だけに手を入れ child 配列は触らない
             normalizeSparseOrders(orderedItems)
         }
 
@@ -223,8 +221,6 @@ struct GroupEditView: View {
                              stock: item.stock, need: item.need, weight: item.weight,
                              order: newOrder, parent: parent)
         modelContext.insert(newItem)
-        orderedItems.insert(newItem, at: insertIndex)
-        parent.child = orderedItems
     }
 
     /// 現在のGroupを削除する
