@@ -208,7 +208,7 @@ struct SettingView: View {
             let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
             // チェック
-            if let productName = dto.productName, productName != PACK_JSON_DTO_PRODUCT_NAME {
+            if dto.productName != PACK_JSON_DTO_PRODUCT_NAME {
                 throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product name mismatch."])
             }
             if dto.copyright != PACK_JSON_DTO_COPYRIGHT {

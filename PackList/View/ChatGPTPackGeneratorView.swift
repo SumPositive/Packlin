@@ -43,8 +43,8 @@ struct ChatGPTPackGeneratorView: View {
         ## 仕様
         - ルート要素には必ず次のプロパティを含める。
             - `ProductName`: "\(PACK_JSON_DTO_PRODUCT_NAME)"
-        - フィールド `copyright` は必ず "\(PACK_JSON_DTO_COPYRIGHT)"。
-        - フィールド `version` は必ず "\(PACK_JSON_DTO_VERSION)"。
+            - `copyright`:"\(PACK_JSON_DTO_COPYRIGHT)"
+            - `version`:"\(PACK_JSON_DTO_VERSION)"
         - ルート要素はパック1件のみ。構造は以下を厳守。
             - `name`: パック名。
             - `memo`: 補足メモ（空文字可）。
@@ -57,20 +57,20 @@ struct ChatGPTPackGeneratorView: View {
         - 各アイテムには以下のプロパティを持たせる。
             - `name`: アイテム名。
             - `memo`: 補足メモ（空文字可）。
-            - `check`: 初期チェック状態（true または false）。
+            - `check`: 初期チェック状態（false）。
             - `need`: 必要数の整数。
             - `weight`: 重量(g)の整数。
         - `id`、`order`、`stock` といったアプリ内部で採番する値は出力しない。
 
         ## 出力形式
         - 途中経過や思考の説明は不要です。
-        - 完成したJSONのみを `{パック名}.\(PACK_FILE_EXTENSION)` というファイルとして出力してください（ChatGPTアプリのファイル出力機能を使用）。
+        - 完成したJSONのみを `{パック名}.\(PACK_FILE_EXTENSION)` というパックファイルとして出力してください（ChatGPTアプリのファイル出力機能を使用）。
         - テキストの前置きや後置きは不要で、ファイル以外のレスポンスは避けてください。
 
         ## ユーザー要件
         \(requirement)
 
-        以上を満たすJSONを作成してください。
+        以上を満たすパックファイルを作成してください。
         """
     }
 
@@ -278,8 +278,8 @@ struct ChatGPTPackGeneratorView: View {
         let decoder = JSONDecoder()
         let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
-        if let productName = dto.productName, productName != PACK_JSON_DTO_PRODUCT_NAME {
-            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product name mismatch."])
+        if dto.productName != PACK_JSON_DTO_PRODUCT_NAME {
+            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ProductName mismatch."])
         }
         if dto.copyright != PACK_JSON_DTO_COPYRIGHT {
             throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Copyright mismatch."])

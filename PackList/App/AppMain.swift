@@ -121,12 +121,8 @@ struct AppMain: App {
                 let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
                 // チェック & Migration
-                if let productName = dto.productName,
-                   productName != PACK_JSON_DTO_PRODUCT_NAME {
-                    continue
-                }
-
-                guard dto.copyright == PACK_JSON_DTO_COPYRIGHT,
+                guard dto.productName == PACK_JSON_DTO_PRODUCT_NAME,
+                      dto.copyright == PACK_JSON_DTO_COPYRIGHT,
                       dto.version == PACK_JSON_DTO_VERSION else { continue }
 
                 // Pack行

@@ -32,7 +32,7 @@ struct PackJsonDTO: Codable {
     }
 
     /// 生成元アプリを識別するための名称（JSONではProductNameキー）
-    let productName: String?
+    let productName: String
     let copyright: String
     let version: String
     let id: M1Pack.ID?
