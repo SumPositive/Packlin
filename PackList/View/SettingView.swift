@@ -276,7 +276,6 @@ struct SettingView: View {
     /// ChatGPT連携でPackList.jsonを生成して読み込む補助ビュー
     struct AIAssistedImportView: View {
         @Environment(\.modelContext) private var modelContext
-        @Environment(\.openURL) private var openURL
 
         // ユーザーが入力する要件テキスト
         @State private var requirementText: String = ""
@@ -484,19 +483,18 @@ struct SettingView: View {
 
         // ChatGPTアプリ（存在しない場合はWeb）を開く
         private func openChatGPTApp() {
+            // ChatGPTアプリ用のディープリンクURLを生成（失敗したら即終了）
             guard let appURL = URL(string: "chatgpt://") else { return }
-            let result = openURL(appURL)
-            // openURLの戻り値はResult列挙。switchで扱うと型変換エラーを避けられる
-            switch result {
-            case .handled:
+
+            // 端末にアプリがインストールされている場合はそのまま起動
+            if UIApplication.shared.canOpenURL(appURL) {
+                UIApplication.shared.open(appURL)
                 return
-            case .discarded, .systemAction:
-                break
-            @unknown default:
-                break
             }
+
+            // アプリが無い場合はWeb版ChatGPTを開く（URL生成に失敗した場合も静かに諦める）
             guard let webURL = URL(string: "https://chat.openai.com/") else { return }
-            _ = openURL(webURL)
+            UIApplication.shared.open(webURL)
         }
 
         // URLからPackList.jsonを読み込み、DTOチェック後にDBへ保存
