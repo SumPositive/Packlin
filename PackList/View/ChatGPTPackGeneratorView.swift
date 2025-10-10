@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import UniformTypeIdentifiers
 import Foundation
 import UIKit
 
@@ -215,110 +214,58 @@ struct ChatGPTPackGeneratorView: View {
 
     /// プロンプトをChatGPTアプリへ直接連携送信する
     private func sendPromptToChatGPTApp() {
-        // ここで生成したプロンプトを多種のペーストボード形式で書き込み
-        // ChatGPTアプリが独自UTIを参照している可能性にも備える
+        // 深い連携を行うために、まずは生成済みプロンプトを取得
         let prompt = promptText
-        // ChatGPTアプリ・Web双方で貼り付けできるように一般的な文字列として保存
-        UIPasteboard.general.string = prompt
-        // ChatGPTアプリが独自のペーストボードキーを監視している可能性を考慮し、追加キーも設定
-        UIPasteboard.general.setItems([
-            [
-                UTType.utf8PlainText.identifier: prompt,
-                "com.openai.chat.prompt": prompt
-            ]
-        ], options: [
-            .localOnly: false,
-            .expirationDate: Date().addingTimeInterval(60)
-        ])
 
-        // URLエンコードに利用する文字集合を作成
-        var allowed = CharacterSet.urlQueryAllowed
-        allowed.remove(charactersIn: "#&=")
-
-        // URLパラメータ化に失敗した場合はユーザーへ伝えて処理終了
-        guard let encodedPrompt = prompt.addingPercentEncoding(withAllowedCharacters: allowed) else {
-            alertState = .promptEncodingFailed
-            return
-        }
-
-        // ChatGPTアプリ側のディープリンク仕様は変更される可能性があるため
-        // 複数の候補URLを優先度順に試行する
-        let candidateSchemes: [String] = [
-            "chatgpt://chat/share?text=\(encodedPrompt)",
-            "chatgpt://chat?text=\(encodedPrompt)",
-            "chatgpt://compose?input=\(encodedPrompt)",
-            "chatgpt://conversation/new?message=\(encodedPrompt)"
-        ]
-
-        for scheme in candidateSchemes {
-            guard let url = URL(string: scheme) else {
-                continue
-            }
-
-            if UIApplication.shared.canOpenURL(url) {
-                // アプリを開く前に、ペーストボードへ格納済みであることをユーザーへ通知
-                alertState = .promptClipboardPreparedForApp
-
-                // open(_:options:completionHandler:) を利用して
-                // 成功判定と失敗時のフォールバックを細かく制御する
-                UIApplication.shared.open(url, options: [:]) { success in
-                    if success {
-                        return
-                    }
-
-                    // アプリが開けなかった場合はWeb版を開き、クエリ付きURLで直接プロンプトを渡す
-                    openChatGPT(with: prompt)
-                }
-                return
-            }
-        }
-
-        // どのスキームも利用できなかった場合はWeb版へ直接クエリ付きURLで誘導
+        // ディープリンク処理は共通化したメソッドへ委譲し、保守性を高める
         openChatGPT(with: prompt)
     }
 
-    /// ChatGPTアプリ（存在しない場合はWeb版）を開く
-    private func openChatGPTApp(copyPromptForWeb: Bool = false) {
-        guard let appURL = URL(string: "chatgpt://") else {
+    /// ChatGPTアプリ（ユニバーサルリンク）を開く
+    private func openChatGPTApp() {
+        // プロンプト入力前にアプリだけ開きたいユーザー向けに、ベースURLのディープリンクを利用
+        guard let url = URL(string: "https://chat.openai.com/") else {
             return
         }
 
-        if UIApplication.shared.canOpenURL(appURL) {
-            // ChatGPT純正アプリが存在する場合はこちらを最優先で起動
-            UIApplication.shared.open(appURL)
-            return
+        UIApplication.shared.open(url, options: [:]) { success in
+            if success == false {
+                alertState = .promptDeepLinkFailed
+            }
         }
-
-        if copyPromptForWeb {
-            // Web版利用時にすぐ貼り付けられるようクリップボードへコピー
-            UIPasteboard.general.string = promptText
-            alertState = .promptClipboardCopied
-        }
-
-        // アプリが無い場合はWeb版へ誘導（qパラメータを使いプロンプトを直接渡す）
-        openChatGPT(with: promptText)
     }
 
-    /// Web版ChatGPTをプロンプト付きで開く
+    /// Web版ChatGPTをプロンプト付きで開く（ユニバーサルリンクでアプリにも遷移可能）
     /// - Parameter prompt: クエリとして渡したいプロンプト文字列
     private func openChatGPT(with prompt: String) {
-        // 公式ドキュメントが無いのでURLクエリ向けの文字セットを慎重に調整
-        var allowedCharacters = CharacterSet.urlQueryAllowed
-        allowedCharacters.remove(charactersIn: "#&=")
-
-        // パーセントエンコードに失敗した場合はアラートでユーザーへ通知
-        guard let encoded = prompt.addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
+        // URL生成が複数箇所に散らばらないよう、共通処理へ委譲
+        guard let url = chatGPTDeepLinkURL(with: prompt) else {
             alertState = .promptEncodingFailed
             return
         }
 
-        // 提供されたサンプルコードを活用しながら、URL生成時にも詳細なコメントを残す
-        guard let url = URL(string: "https://chat.openai.com/?q=\(encoded)") else {
-            return
+        UIApplication.shared.open(url, options: [:]) { success in
+            if success == false {
+                alertState = .promptDeepLinkFailed
+            }
+        }
+    }
+
+    /// ChatGPTディープリンク用のURLを生成
+    /// - Parameter prompt: クエリへ埋め込みたいテキスト
+    /// - Returns: 生成に成功した場合はURL、失敗した場合はnil
+    private func chatGPTDeepLinkURL(with prompt: String) -> URL? {
+        // 公式仕様が開示されていないため、URLクエリに不向きな文字を個別に除外
+        var allowedCharacters = CharacterSet.urlQueryAllowed
+        allowedCharacters.remove(charactersIn: "#&=")
+
+        // addingPercentEncoding が nil を返すケース（絵文字の組み合わせなど）を考慮
+        guard let encoded = prompt.addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
+            return nil
         }
 
-        // Web版を開く際にも成功・失敗ハンドラーは不要なのでシンプルに呼び出す
-        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        // ChatGPT Web へのアクセスだが、ユニバーサルリンクによりアプリが起動するケースもある
+        return URL(string: "https://chat.openai.com/?q=\(encoded)")
     }
 
     /// URLからPackList.jsonを読み込み、DTOチェック後にDBへ保存
@@ -364,10 +311,8 @@ struct ChatGPTPackGeneratorView: View {
         case importSuccess(packName: String)
         /// インポート失敗
         case importFailure(message: String)
-        /// プロンプトをクリップボードへコピーしたことを通知
-        case promptClipboardCopied
-        /// ChatGPTアプリへ貼り付けできる形でプロンプトを準備済みであることを通知
-        case promptClipboardPreparedForApp
+        /// ディープリンクの起動に失敗した場合
+        case promptDeepLinkFailed
         /// プロンプトのエンコードに失敗した場合
         case promptEncodingFailed
 
@@ -377,10 +322,8 @@ struct ChatGPTPackGeneratorView: View {
                 return "ai-success-\(packName)"
             case .importFailure:
                 return "ai-failure"
-            case .promptClipboardCopied:
-                return "ai-prompt-copied"
-            case .promptClipboardPreparedForApp:
-                return "ai-prompt-app"
+            case .promptDeepLinkFailed:
+                return "ai-prompt-deeplink"
             case .promptEncodingFailed:
                 return "ai-prompt-encoding"
             }
@@ -392,10 +335,8 @@ struct ChatGPTPackGeneratorView: View {
                 return String(localized: "setting.import.success.title")
             case .importFailure:
                 return String(localized: "setting.import.error.title")
-            case .promptClipboardCopied:
-                return "プロンプトをコピーしました"
-            case .promptClipboardPreparedForApp:
-                return "ChatGPTにプロンプトを送信しました"
+            case .promptDeepLinkFailed:
+                return "ChatGPTを開けませんでした"
             case .promptEncodingFailed:
                 return "プロンプトの準備に失敗しました"
             }
@@ -408,10 +349,8 @@ struct ChatGPTPackGeneratorView: View {
                 return String(format: format, packName)
             case .importFailure(let message):
                 return message
-            case .promptClipboardCopied:
-                return "ChatGPT Web を開いたらペーストしてください。"
-            case .promptClipboardPreparedForApp:
-                return "ChatGPTアプリがペーストを求めた場合は、そのまま貼り付けてください。"
+            case .promptDeepLinkFailed:
+                return "ネットワーク接続やChatGPTアプリの状態を確認し、再度お試しください。"
             case .promptEncodingFailed:
                 return "入力内容に特殊な文字が含まれている可能性があります。手動でコピーして送信してください。"
             }

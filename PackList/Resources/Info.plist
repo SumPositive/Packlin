@@ -4,10 +4,6 @@
 <dict>
         <key>GADApplicationIdentifier</key>
         <string>ca-app-pub-7576639777972199~3753311359</string>
-        <key>LSApplicationQueriesSchemes</key>
-        <array>
-                <string>chatgpt</string>
-        </array>
         <key>SKAdNetworkItems</key>
         <array>
 		<dict>
