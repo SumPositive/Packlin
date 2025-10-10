@@ -486,8 +486,14 @@ struct SettingView: View {
         private func openChatGPTApp() {
             guard let appURL = URL(string: "chatgpt://") else { return }
             let result = openURL(appURL)
-            if result == .handled {
+            // openURLの戻り値はResult列挙。switchで扱うと型変換エラーを避けられる
+            switch result {
+            case .handled:
                 return
+            case .discarded, .systemAction:
+                break
+            @unknown default:
+                break
             }
             guard let webURL = URL(string: "https://chat.openai.com/") else { return }
             _ = openURL(webURL)
