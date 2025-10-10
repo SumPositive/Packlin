@@ -130,7 +130,10 @@ struct ChatGPTPackGeneratorView: View {
                 }
                 .disabled(isRequirementEmpty)
 
-                Button(action: openChatGPTApp) {
+                Button(action: {
+                    // デフォルト引数を用いるためクロージャー越しにメソッドを呼び出す
+                    openChatGPTApp()
+                }) {
                     Label {
                         Text("ChatGPTアプリを開く")
                             .font(.callout.weight(.semibold))
