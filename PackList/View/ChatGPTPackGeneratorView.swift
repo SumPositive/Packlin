@@ -215,30 +215,62 @@ struct ChatGPTPackGeneratorView: View {
 
     /// プロンプトをChatGPTアプリへ直接連携送信する
     private func sendPromptToChatGPTApp() {
+        // ここで生成したプロンプトを多種のペーストボード形式で書き込み
+        // ChatGPTアプリが独自UTIを参照している可能性にも備える
+        let prompt = promptText
+        UIPasteboard.general.string = prompt
+        UIPasteboard.general.setItems([
+            [
+                UTType.utf8PlainText.identifier: prompt,
+                "com.openai.chat.prompt": prompt
+            ]
+        ], options: [
+            .localOnly: false,
+            .expirationDate: Date().addingTimeInterval(60)
+        ])
+
         // URLエンコードに利用する文字集合を作成
         var allowed = CharacterSet.urlQueryAllowed
         allowed.remove(charactersIn: "#&=")
 
         // URLパラメータ化に失敗した場合はユーザーへ伝えて処理終了
-        guard let encodedPrompt = promptText.addingPercentEncoding(withAllowedCharacters: allowed) else {
+        guard let encodedPrompt = prompt.addingPercentEncoding(withAllowedCharacters: allowed) else {
             alertState = .promptEncodingFailed
             return
         }
 
-        // 利用可能なディープリンクを順番に試す
-        let candidateSchemes = [
+        // ChatGPTアプリ側のディープリンク仕様は変更される可能性があるため
+        // 複数の候補URLを優先度順に試行する
+        let candidateSchemes: [String] = [
+            "chatgpt://chat/share?text=\(encodedPrompt)",
             "chatgpt://chat?text=\(encodedPrompt)",
-            "chatgpt://compose?input=\(encodedPrompt)"
+            "chatgpt://compose?input=\(encodedPrompt)",
+            "chatgpt://conversation/new?message=\(encodedPrompt)"
         ]
 
         for scheme in candidateSchemes {
-            if let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
+            guard let url = URL(string: scheme) else {
+                continue
+            }
+
+            if UIApplication.shared.canOpenURL(url) {
+                // アプリを開く前に、ペーストボードへ格納済みであることをユーザーへ通知
+                alertState = .promptClipboardPreparedForApp
+
+                // open(_:options:completionHandler:) を利用して
+                // 成功判定と失敗時のフォールバックを細かく制御する
+                UIApplication.shared.open(url, options: [:]) { success in
+                    if success {
+                        return
+                    }
+
+                    openChatGPTApp(copyPromptForWeb: true)
+                }
                 return
             }
         }
 
-        // どのスキームも開けなかった場合はアプリ（またはWeb）を単純に起動する
+        // どのスキームも利用できなかった場合は通常のアプリ（またはWeb）起動へ
         openChatGPTApp(copyPromptForWeb: true)
     }
 
@@ -313,6 +345,8 @@ struct ChatGPTPackGeneratorView: View {
         case importFailure(message: String)
         /// プロンプトをクリップボードへコピーしたことを通知
         case promptClipboardCopied
+        /// ChatGPTアプリへ貼り付けできる形でプロンプトを準備済みであることを通知
+        case promptClipboardPreparedForApp
         /// プロンプトのエンコードに失敗した場合
         case promptEncodingFailed
 
@@ -324,6 +358,8 @@ struct ChatGPTPackGeneratorView: View {
                 return "ai-failure"
             case .promptClipboardCopied:
                 return "ai-prompt-copied"
+            case .promptClipboardPreparedForApp:
+                return "ai-prompt-app"
             case .promptEncodingFailed:
                 return "ai-prompt-encoding"
             }
@@ -337,6 +373,8 @@ struct ChatGPTPackGeneratorView: View {
                 return String(localized: "setting.import.error.title")
             case .promptClipboardCopied:
                 return "プロンプトをコピーしました"
+            case .promptClipboardPreparedForApp:
+                return "ChatGPTにプロンプトを送信しました"
             case .promptEncodingFailed:
                 return "プロンプトの準備に失敗しました"
             }
@@ -351,6 +389,8 @@ struct ChatGPTPackGeneratorView: View {
                 return message
             case .promptClipboardCopied:
                 return "ChatGPT Web を開いたらペーストしてください。"
+            case .promptClipboardPreparedForApp:
+                return "ChatGPTアプリがペーストを求めた場合は、そのまま貼り付けてください。"
             case .promptEncodingFailed:
                 return "入力内容に特殊な文字が含まれている可能性があります。手動でコピーして送信してください。"
             }
