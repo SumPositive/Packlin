@@ -1,21 +1,18 @@
 {
-  "name": "登山（デイハイク）",
-  "order": 2,
+  "ProductName": "PackList_モチメモ",
   "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "登山（デイハイク）",
   "memo": "日帰り登山装備。水2L、行動食、雨具必携。",
+  "createdAt": 1758720438.3879426,
   "groups": [
     {
-      "order": 0,
       "name": "💳 必須品",
       "memo": "",
-      "id": "ANwQ9bpQLLZOacmu",
       "items": [
         {
           "check": false,
           "weight": 150,
-          "stock": 0,
-          "order": 0,
-          "id": "VXG8yLysfIwvmQiJ",
           "need": 1,
           "name": "財布・身分証",
           "memo": ""
@@ -23,9 +20,6 @@
         {
           "check": false,
           "weight": 30,
-          "stock": 0,
-          "order": 1,
-          "id": "464xPyeuhj2-opXy",
           "need": 1,
           "name": "地図",
           "memo": ""
@@ -33,9 +27,6 @@
         {
           "check": false,
           "weight": 40,
-          "stock": 0,
-          "order": 2,
-          "id": "zWGTNVxkCNS_TLa9",
           "need": 1,
           "name": "コンパス",
           "memo": ""
@@ -43,17 +34,12 @@
       ]
     },
     {
-      "order": 1,
       "name": "🥾 登山装備",
       "memo": "",
-      "id": "NGW0s4xZAwUIkkvY",
       "items": [
         {
           "check": false,
           "weight": 800,
-          "stock": 0,
-          "order": 0,
-          "id": "G7mLVrcZUgEQsDDi",
           "need": 1,
           "name": "デイパック",
           "memo": ""
@@ -61,9 +47,6 @@
         {
           "check": false,
           "weight": 500,
-          "stock": 0,
-          "order": 1,
-          "id": "PvOy8BBQbXEnIkFB",
           "need": 2,
           "name": "トレッキングポール",
           "memo": ""
@@ -71,9 +54,6 @@
         {
           "check": false,
           "weight": 600,
-          "stock": 0,
-          "order": 2,
-          "id": "4D0cKTPwwk4dtgNt",
           "need": 1,
           "name": "雨具(上下)",
           "memo": ""
@@ -81,17 +61,12 @@
       ]
     },
     {
-      "order": 2,
       "name": "💧 食料・水",
       "memo": "",
-      "id": "GtT7fXFmFEcLTPRX",
       "items": [
         {
           "check": false,
           "weight": 1000,
-          "stock": 0,
-          "order": 0,
-          "id": "zD92se-1jtc4TUhp",
           "need": 2,
           "name": "水ボトル1L",
           "memo": ""
@@ -99,9 +74,6 @@
         {
           "check": false,
           "weight": 300,
-          "stock": 0,
-          "order": 1,
-          "id": "fF2nfwlOo04FHok_",
           "need": 2,
           "name": "行動食(ナッツ/バー)",
           "memo": ""
@@ -109,17 +81,12 @@
       ]
     },
     {
-      "order": 3,
       "name": "⛑️ 救急・安全",
       "memo": "",
-      "id": "c5npJhvwzSPsTfhB",
       "items": [
         {
           "check": false,
           "weight": 120,
-          "stock": 0,
-          "order": 0,
-          "id": "zBA298zHMCHdzmHD",
           "need": 1,
           "name": "ファーストエイド",
           "memo": ""
@@ -127,17 +94,11 @@
         {
           "check": false,
           "weight": 100,
-          "stock": 0,
-          "order": 1,
-          "id": "5OqNMUxMhV70awOv",
           "need": 1,
           "name": "ヘッドライト",
           "memo": ""
         }
       ]
     }
-  ],
-  "version": "3.0",
-  "id": "Vna-Sfyqx6mKz6AD",
-  "createdAt": 1758720438.3879426
+  ]
 }

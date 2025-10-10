@@ -151,12 +151,12 @@ struct SettingView: View {
         @State private var importAlert: ImportAlert?
         
         var body: some View {
-            // 共有 Pack_*.json を読み込む
+            // 共有 Pack_*.pack を読み込む
             Button(action: {
                 isPresentingImporter = true
             }) {
                 Label {
-                    Text("action.json.download")
+                    Text("action.pack.download")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
@@ -168,7 +168,7 @@ struct SettingView: View {
             .buttonStyle(.plain)
             .fileImporter( // ファイル読み込み
                 isPresented: $isPresentingImporter,
-                allowedContentTypes: [.json],
+                allowedContentTypes: [PACK_FILE_UTTYPE],
                 allowsMultipleSelection: false
             ) { result in
                 switch result {
@@ -194,7 +194,7 @@ struct SettingView: View {
                 )
             }
         }
-        /// URLよりJSONファイルをPackExportDTO形式で読み取る
+        /// URLより.packファイルをPackExportDTO形式で読み取る
         private func importPack(from url: URL) throws -> M1Pack {
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
             defer {
@@ -206,8 +206,11 @@ struct SettingView: View {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let dto = try decoder.decode(PackJsonDTO.self, from: data)
-            
+
             // チェック
+            if let productName = dto.productName, productName != PACK_JSON_DTO_PRODUCT_NAME {
+                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product name mismatch."])
+            }
             if dto.copyright != PACK_JSON_DTO_COPYRIGHT {
                 throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Copyright mismatch."])
             }

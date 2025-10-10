@@ -62,7 +62,7 @@ struct PackListView: View {
                             FooterView()
                         }
 
-                        // ChatGPT連携によるPackList.json作成支援
+                        // ChatGPT連携による .pack 作成支援
                         ChatGPTPackGeneratorView()
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
