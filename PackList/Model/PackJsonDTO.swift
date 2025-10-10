@@ -62,8 +62,8 @@ extension M1Pack {
             productName: PACK_JSON_DTO_PRODUCT_NAME, // 共有時にアプリ名を残す
             copyright: PACK_JSON_DTO_COPYRIGHT, // Load時に差異チェック
             version: PACK_JSON_DTO_VERSION, // Load時に差異チェックしてマイグレション
-            id: nil, // ChatGPT向け仕様では未使用のため出力しない
-            order: nil, // 並び順は取り込み時に決定
+            id: nil, // 読み込み側で生成
+            order: nil, // 読み込み側で決定
             name: name,
             memo: memo,
             createdAt: createdAt,
@@ -91,12 +91,12 @@ extension M2Group {
 extension M3Item {
     func exportRepresentation() -> PackJsonDTO.Group.Item {
         PackJsonDTO.Group.Item(
-            id: nil, // アイテムIDもアプリで生成
+            id: nil, // 読み込み側で生成
             order: nil,
             name: name,
             memo: memo,
             check: check,
-            stock: nil, // 在庫数は読み込み時に初期化
+            stock: stock,
             need: need,
             weight: weight
         )
