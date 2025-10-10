@@ -234,7 +234,26 @@ struct ItemRowView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
+        // 貼り付け先の order（表示順）を正しく推定するため、いったん order 順に並べ替える
+        let orderedItems = parent.child.sorted { lhs, rhs in
+            if lhs.order != rhs.order {
+                return lhs.order < rhs.order
+            }
+            return lhs.id < rhs.id
+        }
+        // 現在の行が表示順のどこにいるかを控えておく。見つからない場合は安全のため末尾挿入に切り替える
+        let orderedIndex = orderedItems.firstIndex { $0.id == item.id } ?? orderedItems.count
+        // offset を考慮した挿入位置を計算（上に貼る = 同じ位置、下に貼る = +1）
+        let targetOrderedIndex = min(max(orderedIndex + offset, 0), orderedItems.count)
+
+        // sparseOrderForInsertion を使って order の空き番号を算出する
+        let newOrder = sparseOrderForInsertion(items: orderedItems, index: targetOrderedIndex) {
+            // 空きがない場合は正規化してから再計算する
+            parent.normalizeItemOrder()
+        }
+
         let newItem = cloneItem(clipboardItem, parent: parent)
+        newItem.order = newOrder
         modelContext.insert(newItem)
 
         let insertionIndex: Int
