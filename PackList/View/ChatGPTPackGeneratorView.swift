@@ -218,7 +218,9 @@ struct ChatGPTPackGeneratorView: View {
         // ここで生成したプロンプトを多種のペーストボード形式で書き込み
         // ChatGPTアプリが独自UTIを参照している可能性にも備える
         let prompt = promptText
+        // ChatGPTアプリ・Web双方で貼り付けできるように一般的な文字列として保存
         UIPasteboard.general.string = prompt
+        // ChatGPTアプリが独自のペーストボードキーを監視している可能性を考慮し、追加キーも設定
         UIPasteboard.general.setItems([
             [
                 UTType.utf8PlainText.identifier: prompt,
@@ -264,14 +266,15 @@ struct ChatGPTPackGeneratorView: View {
                         return
                     }
 
-                    openChatGPTApp(copyPromptForWeb: true)
+                    // アプリが開けなかった場合はWeb版を開き、クエリ付きURLで直接プロンプトを渡す
+                    openChatGPT(with: prompt)
                 }
                 return
             }
         }
 
-        // どのスキームも利用できなかった場合は通常のアプリ（またはWeb）起動へ
-        openChatGPTApp(copyPromptForWeb: true)
+        // どのスキームも利用できなかった場合はWeb版へ直接クエリ付きURLで誘導
+        openChatGPT(with: prompt)
     }
 
     /// ChatGPTアプリ（存在しない場合はWeb版）を開く
@@ -286,18 +289,36 @@ struct ChatGPTPackGeneratorView: View {
             return
         }
 
-        guard let webURL = URL(string: "https://chat.openai.com/") else {
-            return
-        }
-
         if copyPromptForWeb {
             // Web版利用時にすぐ貼り付けられるようクリップボードへコピー
             UIPasteboard.general.string = promptText
             alertState = .promptClipboardCopied
         }
 
-        // アプリが無い場合はWeb版へ誘導
-        UIApplication.shared.open(webURL)
+        // アプリが無い場合はWeb版へ誘導（qパラメータを使いプロンプトを直接渡す）
+        openChatGPT(with: promptText)
+    }
+
+    /// Web版ChatGPTをプロンプト付きで開く
+    /// - Parameter prompt: クエリとして渡したいプロンプト文字列
+    private func openChatGPT(with prompt: String) {
+        // 公式ドキュメントが無いのでURLクエリ向けの文字セットを慎重に調整
+        var allowedCharacters = CharacterSet.urlQueryAllowed
+        allowedCharacters.remove(charactersIn: "#&=")
+
+        // パーセントエンコードに失敗した場合はアラートでユーザーへ通知
+        guard let encoded = prompt.addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
+            alertState = .promptEncodingFailed
+            return
+        }
+
+        // 提供されたサンプルコードを活用しながら、URL生成時にも詳細なコメントを残す
+        guard let url = URL(string: "https://chat.openai.com/?q=\(encoded)") else {
+            return
+        }
+
+        // Web版を開く際にも成功・失敗ハンドラーは不要なのでシンプルに呼び出す
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 
     /// URLからPackList.jsonを読み込み、DTOチェック後にDBへ保存
