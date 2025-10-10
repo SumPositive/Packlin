@@ -102,7 +102,7 @@ struct AppMain: App {
             // M1Packが空でない
             return
         }
-        // Bundle サンプル.json ファイル
+        // Bundle サンプル.pack ファイル
         let sampleFileNames = [
             "Pack_Trip_1N",
             "Pack_Trip_2N",
@@ -115,13 +115,14 @@ struct AppMain: App {
         var nextOrder = existingPacks.map { $0.order }.max() ?? -ORDER_SPARSE
         for fileName in sampleFileNames {
             do {
-                guard let url = Bundle.main.url(forResource: fileName, withExtension: "json") else { continue }
+                guard let url = Bundle.main.url(forResource: fileName, withExtension: PACK_FILE_EXTENSION) else { continue }
                 let data = try Data(contentsOf: url)
                 let decoder = JSONDecoder()
                 let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
                 // チェック & Migration
-                guard dto.copyright == PACK_JSON_DTO_COPYRIGHT,
+                guard dto.productName == PACK_JSON_DTO_PRODUCT_NAME,
+                      dto.copyright == PACK_JSON_DTO_COPYRIGHT,
                       dto.version == PACK_JSON_DTO_VERSION else { continue }
 
                 // Pack行

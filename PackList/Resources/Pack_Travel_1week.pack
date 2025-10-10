@@ -1,21 +1,18 @@
 {
-  "name": "海外旅行（観光・1週間）",
-  "order": 1,
+  "ProductName": "PackList_モチメモ",
   "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "海外旅行（観光・1週間）",
   "memo": "観光用。衣類7日分＋電子機器＋貴重品。",
+  "createdAt": 1758720438.387666,
   "groups": [
     {
-      "order": 0,
       "name": "✈️ 貴重品",
       "memo": "",
-      "id": "-AtfRpCd1J6Cqmfu",
       "items": [
         {
           "check": false,
           "weight": 40,
-          "stock": 0,
-          "order": 0,
-          "id": "dr9dcWVGRYlxfIgX",
           "need": 1,
           "name": "パスポート",
           "memo": ""
@@ -23,9 +20,6 @@
         {
           "check": false,
           "weight": 20,
-          "stock": 0,
-          "order": 1,
-          "id": "y57dcrU_iveAKNxO",
           "need": 1,
           "name": "航空券/チケット",
           "memo": ""
@@ -33,9 +27,6 @@
         {
           "check": false,
           "weight": 10,
-          "stock": 0,
-          "order": 2,
-          "id": "Ixsh2Sh_RHBBBk_v",
           "need": 2,
           "name": "クレジットカード",
           "memo": ""
@@ -43,9 +34,6 @@
         {
           "check": false,
           "weight": 50,
-          "stock": 0,
-          "order": 3,
-          "id": "IquIdIJBWxiVDcTF",
           "need": 1,
           "name": "現金(現地通貨)",
           "memo": ""
@@ -53,17 +41,12 @@
       ]
     },
     {
-      "order": 1,
       "name": "👕 衣類",
       "memo": "",
-      "id": "ehHsKDLc-KHDVKz2",
       "items": [
         {
           "check": false,
           "weight": 500,
-          "stock": 0,
-          "order": 0,
-          "id": "cmdiEz4E_WYcfjOC",
           "need": 7,
           "name": "シャツ/トップス",
           "memo": ""
@@ -71,9 +54,6 @@
         {
           "check": false,
           "weight": 700,
-          "stock": 0,
-          "order": 1,
-          "id": "dlXV6TwxUQu-1Hhi",
           "need": 3,
           "name": "ズボン/スカート",
           "memo": ""
@@ -81,9 +61,6 @@
         {
           "check": false,
           "weight": 150,
-          "stock": 0,
-          "order": 2,
-          "id": "016iPFLx73E8Ql_3",
           "need": 7,
           "name": "下着",
           "memo": ""
@@ -91,9 +68,6 @@
         {
           "check": false,
           "weight": 100,
-          "stock": 0,
-          "order": 3,
-          "id": "cJKybRmym_FPSSVD",
           "need": 7,
           "name": "靴下",
           "memo": ""
@@ -101,17 +75,12 @@
       ]
     },
     {
-      "order": 2,
       "name": "📱 電子機器",
       "memo": "",
-      "id": "UCE6-yWLz7YrEkVz",
       "items": [
         {
           "check": false,
           "weight": 200,
-          "stock": 0,
-          "order": 0,
-          "id": "fNtk2TX0Vn6bLYSp",
           "need": 1,
           "name": "スマホ",
           "memo": ""
@@ -119,9 +88,6 @@
         {
           "check": false,
           "weight": 100,
-          "stock": 0,
-          "order": 1,
-          "id": "K4PYZN1bj8tzhGFp",
           "need": 1,
           "name": "充電器",
           "memo": ""
@@ -129,9 +95,6 @@
         {
           "check": false,
           "weight": 80,
-          "stock": 0,
-          "order": 2,
-          "id": "0qpEJSMElJVjM4xa",
           "need": 1,
           "name": "変換プラグ",
           "memo": ""
@@ -139,9 +102,6 @@
         {
           "check": false,
           "weight": 150,
-          "stock": 0,
-          "order": 3,
-          "id": "ICNmR5DQqYE_BKWQ",
           "need": 1,
           "name": "モバイルWi-Fi",
           "memo": ""
@@ -149,17 +109,12 @@
       ]
     },
     {
-      "order": 3,
       "name": "🧴 サニタリー",
       "memo": "",
-      "id": "MoIdbQJax37YPGEX",
       "items": [
         {
           "check": false,
           "weight": 20,
-          "stock": 0,
-          "order": 0,
-          "id": "UJGZrsMWd0ymb0Q3",
           "need": 1,
           "name": "歯ブラシ",
           "memo": ""
@@ -167,9 +122,6 @@
         {
           "check": false,
           "weight": 50,
-          "stock": 0,
-          "order": 1,
-          "id": "QTQYq_jrwxu9M3QS",
           "need": 1,
           "name": "常備薬",
           "memo": ""
@@ -177,9 +129,6 @@
         {
           "check": false,
           "weight": 100,
-          "stock": 0,
-          "order": 2,
-          "id": "UMGjne1V4GytCi9t",
           "need": 1,
           "name": "日焼け止め",
           "memo": ""
@@ -187,17 +136,12 @@
       ]
     },
     {
-      "order": 4,
       "name": "🧳 バッグ類",
       "memo": "",
-      "id": "NqMuHfwE6fjB6h-a",
       "items": [
         {
           "check": false,
           "weight": 3500,
-          "stock": 0,
-          "order": 0,
-          "id": "7nxnCGz7_W6H6XzY",
           "need": 1,
           "name": "スーツケース",
           "memo": ""
@@ -205,17 +149,11 @@
         {
           "check": false,
           "weight": 800,
-          "stock": 0,
-          "order": 1,
-          "id": "MdkaTMobilaZ0EW5",
           "need": 1,
           "name": "デイバッグ",
           "memo": ""
         }
       ]
     }
-  ],
-  "version": "3.0",
-  "id": "buxyxMTra5T0LPrF",
-  "createdAt": 1758720438.387666
+  ]
 }

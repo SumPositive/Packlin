@@ -1,21 +1,18 @@
 {
-  "name": "赤ちゃん連れ旅行（1泊2日）",
-  "order": 3,
+  "ProductName": "PackList_モチメモ",
   "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "赤ちゃん連れ旅行（1泊2日）",
   "memo": "赤ちゃん連れを想定。オムツ10枚、哺乳瓶2本など。",
+  "createdAt": 1758720438.3882663,
   "groups": [
     {
-      "order": 0,
       "name": "💳 必須品",
       "memo": "",
-      "id": "Gm32q1mMqp2sfCkn",
       "items": [
         {
           "check": false,
           "weight": 150,
-          "stock": 0,
-          "order": 0,
-          "id": "cdfYP7fg2foTV-Ah",
           "need": 1,
           "name": "財布・身分証",
           "memo": ""
@@ -23,9 +20,6 @@
         {
           "check": false,
           "weight": 50,
-          "stock": 0,
-          "order": 1,
-          "id": "IT6MviOY_uzPQQML",
           "need": 1,
           "name": "母子手帳",
           "memo": ""
@@ -33,17 +27,12 @@
       ]
     },
     {
-      "order": 1,
       "name": "👶 ベビー用品",
       "memo": "",
-      "id": "qskP1__AtPuxrbfo",
       "items": [
         {
           "check": false,
           "weight": 60,
-          "stock": 0,
-          "order": 0,
-          "id": "Zcj4lJpLs9PzW5rN",
           "need": 10,
           "name": "オムツ",
           "memo": ""
@@ -51,9 +40,6 @@
         {
           "check": false,
           "weight": 300,
-          "stock": 0,
-          "order": 1,
-          "id": "r8oByHWAtohpuS-A",
           "need": 1,
           "name": "おしりふき",
           "memo": ""
@@ -61,9 +47,6 @@
         {
           "check": false,
           "weight": 150,
-          "stock": 0,
-          "order": 2,
-          "id": "gWonrTb2inVXd9_C",
           "need": 2,
           "name": "哺乳瓶",
           "memo": ""
@@ -71,9 +54,6 @@
         {
           "check": false,
           "weight": 400,
-          "stock": 0,
-          "order": 3,
-          "id": "KebJ185X-LTTT7Xr",
           "need": 1,
           "name": "粉ミルク缶",
           "memo": ""
@@ -81,9 +61,6 @@
         {
           "check": false,
           "weight": 200,
-          "stock": 0,
-          "order": 4,
-          "id": "DF4QtewYnrJ8KFjb",
           "need": 2,
           "name": "着替え(ベビー)",
           "memo": ""
@@ -91,9 +68,6 @@
         {
           "check": false,
           "weight": 500,
-          "stock": 0,
-          "order": 5,
-          "id": "qvMxhbsvo143dWh2",
           "need": 1,
           "name": "ベビー毛布",
           "memo": ""
@@ -101,17 +75,12 @@
       ]
     },
     {
-      "order": 2,
       "name": "🚼 移動用品",
       "memo": "",
-      "id": "O_3ZeMnvkmS-F-Ub",
       "items": [
         {
           "check": false,
           "weight": 6000,
-          "stock": 0,
-          "order": 0,
-          "id": "2yH_YlRxtJAhM0Ku",
           "need": 1,
           "name": "ベビーカー",
           "memo": ""
@@ -119,9 +88,6 @@
         {
           "check": false,
           "weight": 800,
-          "stock": 0,
-          "order": 1,
-          "id": "jxJZTPgj-PQMKVyT",
           "need": 1,
           "name": "抱っこ紐",
           "memo": ""
@@ -129,25 +95,17 @@
       ]
     },
     {
-      "order": 3,
       "name": "🧴 サニタリー",
       "memo": "",
-      "id": "rjBM_ac9F_qEmr4B",
       "items": [
         {
           "check": false,
           "weight": 100,
-          "stock": 0,
-          "order": 0,
-          "id": "vhpf60px61oxUC5V",
           "need": 2,
           "name": "タオル",
           "memo": ""
         }
       ]
     }
-  ],
-  "version": "3.0",
-  "id": "4x5fYVz9kycmbFqB",
-  "createdAt": 1758720438.3882663
+  ]
 }

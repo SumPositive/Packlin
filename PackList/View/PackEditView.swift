@@ -91,7 +91,7 @@ struct PackEditView: View {
                             //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
 
-                        Text("action.json.upload")
+                        Text("action.pack.upload")
                             .font(.caption)
                     }
                 }
@@ -305,7 +305,7 @@ struct PackEditView: View {
         modelContext.delete(group)
     }
 
-    /// PackをJSONファイルにして共有(Export)する
+    /// Packを.packファイルにして共有(Export)する
     private func exportPack() {
         do {
             cleanupShareResource()
@@ -319,7 +319,7 @@ struct PackEditView: View {
                                              ? pack.id : pack.name )
             let fileURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(fileName)
-                .appendingPathExtension("json")
+                .appendingPathExtension(PACK_FILE_EXTENSION)
 
             try data.write(to: fileURL, options: [.atomic])
 

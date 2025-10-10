@@ -56,11 +56,17 @@ struct PackListView: View {
                     .onMove(perform: movePack)
                 }
                 footer: {
-                    if footerMessage {
-                        // フッター：操作説明、アイコン説明
-                        FooterView()
-                            .listRowSeparator(.hidden) // 下線なし
+                    VStack(spacing: 20) {
+                        if footerMessage {
+                            // フッター：操作説明、アイコン説明
+                            FooterView()
+                        }
+
+                        // ChatGPT連携による .pack 作成支援
+                        ChatGPTPackGeneratorView()
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, footerMessage ? 8 : 0)
                 }
             }
             .listStyle(.plain)
