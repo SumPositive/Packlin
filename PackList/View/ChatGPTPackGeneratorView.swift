@@ -22,8 +22,8 @@ struct ChatGPTPackGeneratorView: View {
     @State private var requirementText: String = ""
     /// ファイルアプリなどから生成済みJSONを選択する際のフラグ
     @State private var isPresentingImporter = false
-    /// インポート処理の成否をユーザーへ伝えるためのアラート
-    @State private var importAlert: ImportAlert?
+    /// インポート処理やプロンプト転送の状態を伝えるためのアラート
+    @State private var alertState: AlertState?
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -165,14 +165,16 @@ struct ChatGPTPackGeneratorView: View {
                     guard let url = urls.first else { return }
                     do {
                         let importedPack = try importPack(from: url)
-                        importAlert = .success(packName: importedPack.name)
+                        // 取り込みに成功した場合は結果をアラートで共有
+                        alertState = .importSuccess(packName: importedPack.name)
                     } catch {
                         debugPrint("Failed to import AI generated pack: \(error)")
-                        importAlert = .failure(message: error.localizedDescription)
+                        // 失敗内容をそのまま表示して再試行してもらう
+                        alertState = .importFailure(message: error.localizedDescription)
                     }
                 case .failure(let error):
                     debugPrint("Failed to import AI generated pack: \(error)")
-                    importAlert = .failure(message: error.localizedDescription)
+                    alertState = .importFailure(message: error.localizedDescription)
                 }
             }
 
@@ -190,7 +192,7 @@ struct ChatGPTPackGeneratorView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.2), lineWidth: 0.5)
         )
-        .alert(item: $importAlert) { alert in
+        .alert(item: $alertState) { alert in
             Alert(
                 title: Text(alert.title),
                 message: Text(alert.message),
@@ -214,7 +216,9 @@ struct ChatGPTPackGeneratorView: View {
         var allowed = CharacterSet.urlQueryAllowed
         allowed.remove(charactersIn: "#&=")
 
+        // URLパラメータ化に失敗した場合はユーザーへ伝えて処理終了
         guard let encodedPrompt = promptText.addingPercentEncoding(withAllowedCharacters: allowed) else {
+            alertState = .promptEncodingFailed
             return
         }
 
@@ -232,16 +236,17 @@ struct ChatGPTPackGeneratorView: View {
         }
 
         // どのスキームも開けなかった場合はアプリ（またはWeb）を単純に起動する
-        openChatGPTApp()
+        openChatGPTApp(copyPromptForWeb: true)
     }
 
     /// ChatGPTアプリ（存在しない場合はWeb版）を開く
-    private func openChatGPTApp() {
+    private func openChatGPTApp(copyPromptForWeb: Bool = false) {
         guard let appURL = URL(string: "chatgpt://") else {
             return
         }
 
         if UIApplication.shared.canOpenURL(appURL) {
+            // ChatGPT純正アプリが存在する場合はこちらを最優先で起動
             UIApplication.shared.open(appURL)
             return
         }
@@ -250,6 +255,13 @@ struct ChatGPTPackGeneratorView: View {
             return
         }
 
+        if copyPromptForWeb {
+            // Web版利用時にすぐ貼り付けられるようクリップボードへコピー
+            UIPasteboard.general.string = promptText
+            alertState = .promptClipboardCopied
+        }
+
+        // アプリが無い場合はWeb版へ誘導
         UIApplication.shared.open(webURL)
     }
 
@@ -290,36 +302,54 @@ struct ChatGPTPackGeneratorView: View {
         return PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
     }
 
-    /// インポート結果を表示するアラート定義
-    private enum ImportAlert: Identifiable {
-        case success(packName: String)
-        case failure(message: String)
+    /// アラート表示用の状態定義
+    private enum AlertState: Identifiable {
+        /// インポート成功
+        case importSuccess(packName: String)
+        /// インポート失敗
+        case importFailure(message: String)
+        /// プロンプトをクリップボードへコピーしたことを通知
+        case promptClipboardCopied
+        /// プロンプトのエンコードに失敗した場合
+        case promptEncodingFailed
 
         var id: String {
             switch self {
-            case .success(let packName):
+            case .importSuccess(let packName):
                 return "ai-success-\(packName)"
-            case .failure:
+            case .importFailure:
                 return "ai-failure"
+            case .promptClipboardCopied:
+                return "ai-prompt-copied"
+            case .promptEncodingFailed:
+                return "ai-prompt-encoding"
             }
         }
 
         var title: String {
             switch self {
-            case .success:
+            case .importSuccess:
                 return String(localized: "setting.import.success.title")
-            case .failure:
+            case .importFailure:
                 return String(localized: "setting.import.error.title")
+            case .promptClipboardCopied:
+                return "プロンプトをコピーしました"
+            case .promptEncodingFailed:
+                return "プロンプトの準備に失敗しました"
             }
         }
 
         var message: String {
             switch self {
-            case .success(let packName):
+            case .importSuccess(let packName):
                 let format = String(localized: "setting.import.success.message")
                 return String(format: format, packName)
-            case .failure(let message):
+            case .importFailure(let message):
                 return message
+            case .promptClipboardCopied:
+                return "ChatGPT Web を開いたらペーストしてください。"
+            case .promptEncodingFailed:
+                return "入力内容に特殊な文字が含まれている可能性があります。手動でコピーして送信してください。"
             }
         }
     }
