@@ -23,8 +23,11 @@ struct ItemEditView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    // 不揮発保存：itemEdit.move用
     @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
+    @AppStorage("itemEdit.move.lastInsertPosition") private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
+    @AppStorage("itemEdit.move.lastKeepOriginal") private var lastMoveKeepOriginal: Bool = false
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -33,12 +36,6 @@ struct ItemEditView: View {
     @State private var selectedGroupID: String
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
-
-    @AppStorage("itemEdit.move.lastInsertPosition")
-    private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
-
-    @AppStorage("itemEdit.move.lastKeepOriginal")
-    private var lastMoveKeepOriginal: Bool = false
 
     private let sectionCornerRadius: CGFloat = 12
 
@@ -452,11 +449,11 @@ struct ItemEditView: View {
             canRedo = false
         }
     }
-
+    /// order順のPackリストを返す
     private var sortedPacks: [M1Pack] {
         packs.sorted { $0.order < $1.order }
     }
-
+    /// selectedPackIDのPackを返す
     private var selectedPack: M1Pack? {
         sortedPacks.first(where: { $0.id == selectedPackID })
     }
@@ -543,7 +540,7 @@ struct ItemEditView: View {
 
         // 移動時も order のみを真実とするため、sourceGroup.child には触れない
 
-        var destinationItems = destinationGroup.child.sorted { $0.order < $1.order }
+        let destinationItems = destinationGroup.child.sorted { $0.order < $1.order }
         let insertIndex: Int
         switch moveInsertPosition {
         case .start:
