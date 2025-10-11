@@ -8,44 +8,58 @@
 import SwiftUI
 import SwiftData
 import Foundation
-import UIKit
 import UniformTypeIdentifiers
 
-/// ChatGPTと連携して .pack ファイルを生成・インポートするためのビュー
-/// 設定画面からメイン画面のフッター下へ移動した要求に基づき、
-/// 入力から送信、ファイルの取り込みまでをワンストップで提供する。
+/// ChatGPT(OpenAI API)と連携して .pack ファイル相当のデータを生成・即時取り込みするビュー
+/// - 旧来のディープリンク手順を廃し、アプリ内で完結する体験へ刷新する。
 struct ChatGPTPackGeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
 
     /// ユーザーがChatGPTへ伝えたい要件テキスト
     @State private var requirementText: String = ""
-    /// ファイルアプリなどから生成済みJSONを選択する際のフラグ
+    /// ファイルアプリなどから生成済みJSONを選択する際のフラグ（手動インポート用）
     @State private var isPresentingImporter = false
-    /// インポート処理やプロンプト転送の状態を伝えるためのアラート
+    /// インポート処理やAPI連携の結果を表示するアラート
     @State private var alertState: AlertState?
+    /// OpenAI APIへリクエスト中かどうかのフラグ
+    @State private var isGenerating = false
+    /// 直近に生成できたパック名を記録して、ユーザーへフィードバックする
+    @State private var lastGeneratedPackName: String?
+
+    /// OpenAI APIキーはUserDefaults(AppStorage)へ保存し、次回以降の入力を省く
+    @AppStorage(AppStorageKey.openAIAPIKey) private var openAIAPIKey: String = ""
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// ChatGPTへ渡すプロンプトを生成
-    /// - 途中経過を表示せず、{name}.pack ファイル出力を明示的に依頼する指示を含める
-    private var promptText: String {
-        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let requirement = trimmedRequirement.isEmpty ? "（ここにPackListへ追加したい荷物の要件を記入してください）" : trimmedRequirement
+    /// トリム済みのAPIキーを取得（前後スペースの混入を排除）
+    private var trimmedAPIKey: String {
+        openAIAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// 生成ボタンを活性化できる条件
+    private var canRequestGeneration: Bool {
+        isRequirementEmpty == false && trimmedAPIKey.isEmpty == false && isGenerating == false
+    }
+
+    /// プロンプトを生成
+    private func promptText(for requirement: String) -> String {
+        let requirementBlock = requirement.isEmpty
+            ? "（ここにPackListへ追加したい荷物の要件を記入してください）"
+            : requirement
 
         return """
         # パックファイル生成依頼
-        あなたはiOSアプリ「PackList」向けに荷物リストJSONを作成するアシスタントです。以下の制約と要件に従って単一JSONをUTF-8で出力してください。
+        あなたはiOSアプリ「PackList」向けに荷物リストJSONを作成するアシスタントです。以下の制約と要件に従って単一JSONオブジェクトをUTF-8で出力してください。
 
         ## 仕様
         - ルート要素には必ず次のプロパティを含める。
             - `ProductName`: "\(PACK_JSON_DTO_PRODUCT_NAME)"
-            - `copyright`:"\(PACK_JSON_DTO_COPYRIGHT)"
-            - `version`:"\(PACK_JSON_DTO_VERSION)"
-        - ルート要素はパック1件のみ。構造は以下を厳守。
+            - `copyright`: "\(PACK_JSON_DTO_COPYRIGHT)"
+            - `version`: "\(PACK_JSON_DTO_VERSION)"
             - `name`: パック名。
             - `memo`: 補足メモ（空文字可）。
             - `createdAt`: ISO8601形式の日時文字列（例: 2024-05-01T10:00:00Z）。
@@ -64,13 +78,12 @@ struct ChatGPTPackGeneratorView: View {
 
         ## 出力形式
         - 途中経過や思考の説明は不要です。
-        - 完成したJSONのみを `{パック名}.\(PACK_FILE_EXTENSION)` というパックファイルとして出力してください（ChatGPTアプリのファイル出力機能を使用）。
-        - テキストの前置きや後置きは不要で、ファイル以外のレスポンスは避けてください。
+        - JSON以外のテキストを含めず、追加のコメントも避けてください。
 
         ## ユーザー要件
-        \(requirement)
+        \(requirementBlock)
 
-        以上を満たすパックファイルを作成してください。
+        以上を満たす単一のJSONオブジェクトを生成してください。
         """
     }
 
@@ -108,44 +121,66 @@ struct ChatGPTPackGeneratorView: View {
                     .accessibilityLabel(Text("PackListの要件入力"))
             }
 
-            // 操作説明
-            Text("入力した要件をChatGPTへ連携送信し、生成完了後に `{パック名}.pack` ファイルを保存してください。保存したファイルは下のボタンから取り込めます。")
+            // OpenAI APIの説明
+            Text("入力内容をOpenAI APIへ送信して荷物リストを自動生成し、そのままPackListへ取り込みます。")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
-            // ChatGPT連携用ボタン群
             VStack(alignment: .leading, spacing: 12) {
-                Button(action: sendPromptToChatGPTApp) {
+                // APIキー入力欄
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("OpenAI APIキー")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    SecureField("sk-...", text: $openAIAPIKey)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .textContentType(.password)
+                        .padding(8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(uiColor: .secondarySystemBackground))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                }
+
+                Text("APIキーは端末内の設定(AppStorage)に暗号化せず保存されます。セキュリティポリシーに応じて適切に管理してください。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Button(action: requestGeneration) {
                     Label {
-                        Text("ChatGPTに連携送信")
+                        Text(isGenerating ? "生成中..." : "OpenAI APIでパックを生成")
                             .font(.callout.weight(.semibold))
                     } icon: {
-                        Image(systemName: "paperplane")
+                        Image(systemName: isGenerating ? "hourglass" : "wand.and.stars")
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                .disabled(isRequirementEmpty)
+                .disabled(canRequestGeneration == false)
 
-                Button(action: {
-                    // デフォルト引数を用いるためクロージャー越しにメソッドを呼び出す
-                    openChatGPTApp()
-                }) {
-                    Label {
-                        Text("ChatGPTアプリを開く")
-                            .font(.callout.weight(.semibold))
-                    } icon: {
-                        Image(systemName: "app.badge")
-                            .symbolRenderingMode(.hierarchical)
-                    }
+                if isGenerating {
+                    ProgressView("OpenAI APIに問い合わせ中...")
+                        .progressViewStyle(.circular)
+                }
+
+                if let lastGeneratedPackName {
+                    Text("直近に追加したパック: \(lastGeneratedPackName)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
 
             Divider()
 
-            // JSON取り込みボタン
+            // JSON取り込みボタン（従来方式のフォールバック）
             Button(action: { isPresentingImporter = true }) {
                 Label {
-                    Text("生成した.packファイルを読み込む")
+                    Text("生成済み.packファイルを読み込む")
                         .font(.callout.weight(.semibold))
                 } icon: {
                     Image(systemName: "tray.and.arrow.down")
@@ -164,11 +199,9 @@ struct ChatGPTPackGeneratorView: View {
                     guard let url = urls.first else { return }
                     do {
                         let importedPack = try importPack(from: url)
-                        // 取り込みに成功した場合は結果をアラートで共有
                         alertState = .importSuccess(packName: importedPack.name)
                     } catch {
                         debugPrint("Failed to import AI generated pack: \(error)")
-                        // 失敗内容をそのまま表示して再試行してもらう
                         alertState = .importFailure(message: error.localizedDescription)
                     }
                 case .failure(let error):
@@ -177,7 +210,7 @@ struct ChatGPTPackGeneratorView: View {
                 }
             }
 
-            Text("ChatGPTで生成された`.pack`ファイルをファイルアプリ等に保存し、このボタンから取り込むとパックとして追加されます。")
+            Text("OpenAI APIが利用できない場合は、手動で生成した`.pack`ファイルをここから取り込めます。")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -209,60 +242,50 @@ struct ChatGPTPackGeneratorView: View {
         return Color(uiColor: .systemGray6)
     }
 
-    /// プロンプトをChatGPTアプリへ直接連携送信する
-    private func sendPromptToChatGPTApp() {
-        // 深い連携を行うために、まずは生成済みプロンプトを取得
-        let prompt = promptText
-
-        // ディープリンク処理は共通化したメソッドへ委譲し、保守性を高める
-        openChatGPT(with: prompt)
-    }
-
-    /// ChatGPTアプリ（ユニバーサルリンク）を開く
-    private func openChatGPTApp() {
-        // プロンプト入力前にアプリだけ開きたいユーザー向けに、ベースURLのディープリンクを利用
-        guard let url = URL(string: "https://chat.openai.com/") else {
+    /// OpenAI APIへパック生成を依頼
+    private func requestGeneration() {
+        if isGenerating {
             return
         }
 
-        UIApplication.shared.open(url, options: [:]) { success in
-            if success == false {
-                alertState = .promptDeepLinkFailed
-            }
-        }
-    }
-
-    /// Web版ChatGPTをプロンプト付きで開く（ユニバーサルリンクでアプリにも遷移可能）
-    /// - Parameter prompt: クエリとして渡したいプロンプト文字列
-    private func openChatGPT(with prompt: String) {
-        // URL生成が複数箇所に散らばらないよう、共通処理へ委譲
-        guard let url = chatGPTDeepLinkURL(with: prompt) else {
-            alertState = .promptEncodingFailed
+        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedRequirement.isEmpty {
+            alertState = .missingRequirement
             return
         }
 
-        UIApplication.shared.open(url, options: [:]) { success in
-            if success == false {
-                alertState = .promptDeepLinkFailed
-            }
+        if trimmedAPIKey.isEmpty {
+            alertState = .missingAPIKey
+            return
+        }
+
+        isGenerating = true
+        Task {
+            await generatePack(with: trimmedRequirement)
         }
     }
 
-    /// ChatGPTディープリンク用のURLを生成
-    /// - Parameter prompt: クエリへ埋め込みたいテキスト
-    /// - Returns: 生成に成功した場合はURL、失敗した場合はnil
-    private func chatGPTDeepLinkURL(with prompt: String) -> URL? {
-        // 公式仕様が開示されていないため、URLクエリに不向きな文字を個別に除外
-        var allowedCharacters = CharacterSet.urlQueryAllowed
-        allowedCharacters.remove(charactersIn: "#&=")
-
-        // addingPercentEncoding が nil を返すケース（絵文字の組み合わせなど）を考慮
-        guard let encoded = prompt.addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
-            return nil
+    /// 実際にOpenAI APIへアクセスしてPackを生成・取り込みする
+    @MainActor
+    private func generatePack(with requirement: String) async {
+        defer {
+            isGenerating = false
         }
 
-        // ChatGPT Web へのアクセスだが、ユニバーサルリンクによりアプリが起動するケースもある
-        return URL(string: "https://chat.openai.com/?q=\(encoded)")
+        let prompt = promptText(for: requirement)
+        let generator = OpenAIPackGenerator(apiKey: trimmedAPIKey)
+
+        do {
+            let dto = try await generator.generatePack(using: prompt)
+            let importedPack = try createPack(from: dto)
+            lastGeneratedPackName = importedPack.name
+            alertState = .apiSuccess(packName: importedPack.name)
+            requirementText = ""
+        } catch let error as OpenAIPackGenerator.GeneratorError {
+            alertState = .apiFailure(message: error.localizedDescription)
+        } catch {
+            alertState = .apiFailure(message: error.localizedDescription)
+        }
     }
 
     /// URLから .pack ファイルを読み込み、DTOチェック後にDBへ保存
@@ -275,7 +298,7 @@ struct ChatGPTPackGeneratorView: View {
         }
 
         let data = try Data(contentsOf: url)
-        let decoder = JSONDecoder()
+        let decoder = PackJSONDecoderFactory.decoder()
         let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
         if dto.productName != PACK_JSON_DTO_PRODUCT_NAME {
@@ -307,52 +330,60 @@ struct ChatGPTPackGeneratorView: View {
 
     /// アラート表示用の状態定義
     private enum AlertState: Identifiable {
-        /// インポート成功
+        /// インポート成功（手動）
         case importSuccess(packName: String)
-        /// インポート失敗
+        /// インポート失敗（手動）
         case importFailure(message: String)
-        /// ディープリンクの起動に失敗した場合
-        case promptDeepLinkFailed
-        /// プロンプトのエンコードに失敗した場合
-        case promptEncodingFailed
+        /// APIでの生成が成功した場合
+        case apiSuccess(packName: String)
+        /// APIで失敗した場合
+        case apiFailure(message: String)
+        /// APIキー未入力
+        case missingAPIKey
+        /// 要件未入力
+        case missingRequirement
 
         var id: String {
             switch self {
             case .importSuccess(let packName):
-                return "ai-success-\(packName)"
+                return "ai-import-success-\(packName)"
             case .importFailure:
-                return "ai-failure"
-            case .promptDeepLinkFailed:
-                return "ai-prompt-deeplink"
-            case .promptEncodingFailed:
-                return "ai-prompt-encoding"
+                return "ai-import-failure"
+            case .apiSuccess(let packName):
+                return "ai-api-success-\(packName)"
+            case .apiFailure:
+                return "ai-api-failure"
+            case .missingAPIKey:
+                return "ai-missing-key"
+            case .missingRequirement:
+                return "ai-missing-requirement"
             }
         }
 
         var title: String {
             switch self {
-            case .importSuccess:
+            case .importSuccess, .apiSuccess:
                 return String(localized: "setting.import.success.title")
-            case .importFailure:
+            case .importFailure, .apiFailure:
                 return String(localized: "setting.import.error.title")
-            case .promptDeepLinkFailed:
-                return "ChatGPTを開けませんでした"
-            case .promptEncodingFailed:
-                return "プロンプトの準備に失敗しました"
+            case .missingAPIKey:
+                return "OpenAI APIキーが未入力です"
+            case .missingRequirement:
+                return "要件が入力されていません"
             }
         }
 
         var message: String {
             switch self {
-            case .importSuccess(let packName):
+            case .importSuccess(let packName), .apiSuccess(let packName):
                 let format = String(localized: "setting.import.success.message")
                 return String(format: format, packName)
-            case .importFailure(let message):
+            case .importFailure(let message), .apiFailure(let message):
                 return message
-            case .promptDeepLinkFailed:
-                return "ネットワーク接続やChatGPTアプリの状態を確認し、再度お試しください。"
-            case .promptEncodingFailed:
-                return "入力内容に特殊な文字が含まれている可能性があります。手動でコピーして送信してください。"
+            case .missingAPIKey:
+                return "OpenAIの管理画面から取得したAPIキーを入力してください。"
+            case .missingRequirement:
+                return "生成したい荷物リストの条件を入力してから再度お試しください。"
             }
         }
     }

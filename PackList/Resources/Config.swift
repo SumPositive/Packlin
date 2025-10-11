@@ -126,6 +126,8 @@ enum AppStorageKey {
     static let footerMessage = "setting.footerMessage"
     // 重量計をKgで表示
     static let weightDisplayInKg = "setting.weightDisplayInKg"
+    // OpenAI APIキーを保存する
+    static let openAIAPIKey = "setting.openai.apiKey"
 }
 
 /// 新規追加する位置

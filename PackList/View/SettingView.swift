@@ -204,7 +204,7 @@ struct SettingView: View {
             }
 
             let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
+            let decoder = PackJSONDecoderFactory.decoder()
             let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
             // チェック

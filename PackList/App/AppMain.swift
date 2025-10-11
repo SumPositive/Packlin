@@ -117,7 +117,7 @@ struct AppMain: App {
             do {
                 guard let url = Bundle.main.url(forResource: fileName, withExtension: PACK_FILE_EXTENSION) else { continue }
                 let data = try Data(contentsOf: url)
-                let decoder = JSONDecoder()
+                let decoder = PackJSONDecoderFactory.decoder()
                 let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
                 // チェック & Migration
