@@ -78,7 +78,7 @@ struct ChatGPTPackGeneratorView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("ChatGPTでパックを作成")
+                Text("ChatGPTにパックを作ってもらおう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -87,13 +87,6 @@ struct ChatGPTPackGeneratorView: View {
 
             // 入力欄とプレースホルダー
             ZStack(alignment: .topLeading) {
-                if isRequirementEmpty {
-                    Text("例）夏の3泊4日キャンプ。家族4人（大人2人、子ども2人）用の持ち物を準備。食材は現地調達。雨天も想定。")
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 10)
-                }
-
                 TextEditor(text: $requirementText)
                     .frame(minHeight: 140, maxHeight: 200)
                     .padding(8)
@@ -106,6 +99,13 @@ struct ChatGPTPackGeneratorView: View {
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
                     .accessibilityLabel(Text("PackListの要件入力"))
+
+                if isRequirementEmpty {
+                    Text("例）夏の3泊4日キャンプ。家族4人（大人2人、子ども2人）用の持ち物を準備。食材は現地調達。雨天も想定。")
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 16)
+                }
             }
 
             // 操作説明
@@ -114,33 +114,31 @@ struct ChatGPTPackGeneratorView: View {
                 .foregroundStyle(.secondary)
 
             // ChatGPT連携用ボタン群
-            VStack(alignment: .leading, spacing: 12) {
-                Button(action: sendPromptToChatGPTApp) {
-                    Label {
-                        Text("ChatGPTに連携送信")
-                            .font(.callout.weight(.semibold))
-                    } icon: {
-                        Image(systemName: "paperplane")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-                .disabled(isRequirementEmpty)
-
-                Button(action: {
-                    // デフォルト引数を用いるためクロージャー越しにメソッドを呼び出す
-                    openChatGPTApp()
-                }) {
-                    Label {
-                        Text("ChatGPTアプリを開く")
-                            .font(.callout.weight(.semibold))
-                    } icon: {
-                        Image(systemName: "app.badge")
-                            .symbolRenderingMode(.hierarchical)
-                    }
+            Button(action: sendPromptToChatGPTApp) {
+                Label {
+                    Text("ChatGPTに連携送信")
+                        .font(.callout.weight(.semibold))
+                } icon: {
+                    Image(systemName: "paperplane")
+                        .symbolRenderingMode(.hierarchical)
                 }
             }
-
+            .disabled(isRequirementEmpty)
+            
             Divider()
+            
+            Button(action: {
+                // デフォルト引数を用いるためクロージャー越しにメソッドを呼び出す
+                openChatGPTApp()
+            }) {
+                Label {
+                    Text("ChatGPTアプリを開く")
+                        .font(.callout.weight(.semibold))
+                } icon: {
+                    Image(systemName: "app.badge")
+                        .symbolRenderingMode(.hierarchical)
+                }
+            }
 
             // JSON取り込みボタン
             Button(action: { isPresentingImporter = true }) {
