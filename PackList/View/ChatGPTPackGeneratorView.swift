@@ -29,6 +29,8 @@ struct ChatGPTPackGeneratorView: View {
 
     /// OpenAI APIキーはUserDefaults(AppStorage)へ保存し、次回以降の入力を省く
     @AppStorage(AppStorageKey.openAIAPIKey) private var openAIAPIKey: String = ""
+    /// Info.plistのバンドル値を一度だけ読み込んだかを記録するフラグ
+    @State private var didApplyBundledAPIKey = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -173,6 +175,11 @@ struct ChatGPTPackGeneratorView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+
+                Text("Info.plistにOpenAI APIキーを記載するとアプリ解析で第三者に露見する恐れがあります。公開ビルドでは必ずKeychainや自社サーバー経由の配布に切り替えてください。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 4)
             }
 
             Divider()
@@ -231,6 +238,9 @@ struct ChatGPTPackGeneratorView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+        .onAppear {
+            applyBundledAPIKeyIfNeeded()
+        }
     }
 
     /// 背景カラーをダーク／ライトに応じて出し分ける
@@ -240,6 +250,26 @@ struct ChatGPTPackGeneratorView: View {
         }
 
         return Color(uiColor: .systemGray6)
+    }
+
+    /// Info.plistへバンドルされたAPIキーを一度だけUserDefaultsへコピーする
+    private func applyBundledAPIKeyIfNeeded() {
+        // 多重呼び出しを避けて不要な再代入を防ぐ
+        if didApplyBundledAPIKey {
+            return
+        }
+
+        didApplyBundledAPIKey = true
+
+        // すでにユーザー入力済みならバンドル値で上書きしない
+        if openAIAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+            return
+        }
+
+        // Info.plistの値が存在すればコピーする（開発・デモ用途のみ想定）
+        if let bundledKey = InfoPlistSecrets.shared.bundledOpenAIAPIKey {
+            openAIAPIKey = bundledKey
+        }
     }
 
     /// OpenAI APIへパック生成を依頼
