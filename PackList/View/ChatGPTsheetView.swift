@@ -42,6 +42,8 @@ struct ChatGPTsheetView: View {
 struct ChatGPTgeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    /// azuki-api との通信を行うクライアント
+    private let apiClient = AzukiAPIClient.shared
 
     /// ユーザーがChatGPTへ伝えたい要件テキスト
     @State private var requirementText: String = ""
@@ -49,6 +51,8 @@ struct ChatGPTgeneratorView: View {
     @State private var isPresentingImporter = false
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
+    /// サーバー経由で生成を依頼している最中かどうか
+    @State private var isGeneratingWithAPI = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -162,6 +166,29 @@ struct ChatGPTgeneratorView: View {
             Text("入力した要件をChatGPTへ連携送信し、生成完了後に `{パック名}.pack` ファイルを保存してください。保存したファイルは下のボタンから取り込めます。")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+
+            // サーバー経由での自動生成オプション
+            VStack(alignment: .leading, spacing: 8) {
+                Text("アプリ内から直接リクエストする場合はこちらを利用できます。クレジットを1消費してサーバー側で.packファイルを生成し、自動で取り込みます。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Button(action: generatePackViaAzukiAPI) {
+                    Label {
+                        Text(isGeneratingWithAPI ? "生成中…" : "サーバー経由で自動生成")
+                            .font(.callout.weight(.semibold))
+                    } icon: {
+                        Image(systemName: "tray.and.arrow.up.fill")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+                .disabled(isRequirementEmpty || isGeneratingWithAPI)
+
+                if isGeneratingWithAPI {
+                    ProgressView("サーバーで生成しています…")
+                        .progressViewStyle(.circular)
+                }
+            }
 
             // ChatGPT連携用ボタン群
             Button(action: sendPromptToChatGPTApp) {
@@ -296,6 +323,57 @@ struct ChatGPTgeneratorView: View {
         }
     }
 
+    /// azuki-api を用いてサーバー側でパック生成を依頼する
+    private func generatePackViaAzukiAPI() {
+        let trimmed = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            alertState = .apiGenerationFailure(message: "要件が入力されていません。")
+            return
+        }
+
+        isGeneratingWithAPI = true
+        let requirement = trimmed
+
+        Task {
+            // 非同期でAPIへPOSTし、結果をResultにまとめる
+            let result: Result<PackJsonDTO, Error>
+            do {
+                // azuki-api へ要件を渡し、PackJsonDTO を生成してもらう
+                let dto = try await apiClient.requestPack(requirement: requirement)
+                result = .success(dto)
+            } catch {
+                // ネットワークエラーやAPIエラーをまとめて後段に伝える
+                result = .failure(error)
+            }
+
+            await MainActor.run {
+                // UI更新やSwiftData操作はメインスレッドで行う
+                switch result {
+                case .success(let dto):
+                    do {
+                        // 受け取ったJSONをSwiftDataへ反映し、パックを生成
+                        let pack = try createPack(from: dto)
+                        alertState = .apiGenerationSuccess(packName: pack.name)
+                    } catch {
+                        // JSON構造の想定違いなどでインポートできなかった場合
+                        alertState = .apiGenerationFailure(message: error.localizedDescription)
+                    }
+                case .failure(let error):
+                    if let apiError = error as? AzukiAPIClient.APIError {
+                        if case .insufficientCredits = apiError {
+                            alertState = .apiInsufficientCredits
+                        } else {
+                            alertState = .apiGenerationFailure(message: apiError.localizedDescription)
+                        }
+                    } else {
+                        alertState = .apiGenerationFailure(message: error.localizedDescription)
+                    }
+                }
+                isGeneratingWithAPI = false
+            }
+        }
+    }
+
     /// ChatGPTディープリンク用のURLを生成
     /// - Parameter prompt: クエリへ埋め込みたいテキスト
     /// - Returns: 生成に成功した場合はURL、失敗した場合はnil
@@ -359,6 +437,12 @@ struct ChatGPTgeneratorView: View {
         case importSuccess(packName: String)
         /// インポート失敗
         case importFailure(message: String)
+        /// API 経由の生成が成功した場合
+        case apiGenerationSuccess(packName: String)
+        /// API 経由の生成が失敗した場合
+        case apiGenerationFailure(message: String)
+        /// API 経由の生成でクレジット不足となった場合
+        case apiInsufficientCredits
         /// ディープリンクの起動に失敗した場合
         case promptDeepLinkFailed
         /// プロンプトのエンコードに失敗した場合
@@ -370,6 +454,12 @@ struct ChatGPTgeneratorView: View {
                 return "ai-success-\(packName)"
             case .importFailure:
                 return "ai-failure"
+            case .apiGenerationSuccess(let packName):
+                return "ai-api-success-\(packName)"
+            case .apiGenerationFailure:
+                return "ai-api-failure"
+            case .apiInsufficientCredits:
+                return "ai-api-credits"
             case .promptDeepLinkFailed:
                 return "ai-prompt-deeplink"
             case .promptEncodingFailed:
@@ -383,6 +473,12 @@ struct ChatGPTgeneratorView: View {
                 return String(localized: "setting.import.success.title")
             case .importFailure:
                 return String(localized: "setting.import.error.title")
+            case .apiGenerationSuccess:
+                return "パックを追加しました"
+            case .apiGenerationFailure:
+                return "生成に失敗しました"
+            case .apiInsufficientCredits:
+                return "クレジットが不足しています"
             case .promptDeepLinkFailed:
                 return "ChatGPTを開けませんでした"
             case .promptEncodingFailed:
@@ -397,6 +493,12 @@ struct ChatGPTgeneratorView: View {
                 return String(format: format, packName)
             case .importFailure(let message):
                 return message
+            case .apiGenerationSuccess(let packName):
+                return "サーバーで生成したパック「\(packName)」を取り込みました。"
+            case .apiGenerationFailure(let message):
+                return message
+            case .apiInsufficientCredits:
+                return "クレジット残高が不足しています。アカウントをチャージした後で再実行してください。"
             case .promptDeepLinkFailed:
                 return "ネットワーク接続やChatGPTアプリの状態を確認し、再度お試しください。"
             case .promptEncodingFailed:
