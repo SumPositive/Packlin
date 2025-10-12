@@ -277,6 +277,28 @@
         }
       }
     },
+    "AIに作ってもらう" : {
+
+    },
+    "AIへ依頼中です。もう少しお待ちください" : {
+
+    },
+    "AI利用券%lld枚：¥%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "AI利用券%1$lld枚：¥%2$lld"
+          }
+        }
+      }
+    },
+    "AI利用券残り: %lld" : {
+
+    },
+    "AI利用券購入" : {
+
+    },
     "app.title" : {
       "localizations" : {
         "en" : {
@@ -298,25 +320,16 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Let’s create a pack with ChatGPT!"
+            "value" : "Let’s create a pack with AI !"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "パックをChatGPTに作ってもらおう"
+            "value" : "パックをAIに作ってもらおう"
           }
         }
       }
-    },
-    "ChatGPTアプリを開く" : {
-
-    },
-    "ChatGPTで生成された`.pack`ファイルをファイルアプリ等に保存し、このボタンから取り込むとパックとして追加されます。" : {
-
-    },
-    "ChatGPTに連携送信" : {
-
     },
     "clipboard.copy" : {
       "localizations" : {
@@ -1461,13 +1474,13 @@
         }
       }
     },
+    "お作りしています..." : {
+
+    },
+    "ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います" : {
+
+    },
     "例）夏の3泊4日キャンプ。家族4人（大人2人、子ども2人）用の持ち物を準備。食材は現地調達。雨天も想定。" : {
-
-    },
-    "入力した要件をChatGPTへ連携送信し、生成完了後に `{パック名}.pack` ファイルを保存してください。保存したファイルは下のボタンから取り込めます。" : {
-
-    },
-    "生成した.packファイルを読み込む" : {
 
     }
   },

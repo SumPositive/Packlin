@@ -91,20 +91,20 @@ struct ChatGPTgeneratorView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("要件を入力して「ChatGPTで生成して取り込む」を押すと、クレジットを消費して自動的にパックを追加します。")
+            Text("ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
             Divider()
 
             // アプリ内で直接OpenAIへ問い合わせる操作
-            VStack(alignment: .leading, spacing: 4) {
-                Text("アプリ内で生成（クレジット消費）")
-                    .font(.subheadline.weight(.semibold))
-                Text("利用可能クレジット: \(creditStore.credits) / 消費: \(CHATGPT_GENERATION_CREDIT_COST)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+//            VStack(alignment: .leading, spacing: 4) {
+//                Text("アプリ内で生成（回数券1枚消費）")
+//                    .font(.subheadline.weight(.semibold))
+//                Text("回数券残り: \(creditStore.credits) / 消費: \(CHATGPT_GENERATION_CREDIT_COST)")
+//                    .font(.caption)
+//                    .foregroundStyle(.secondary)
+//            }
 
             Button(action: generatePackWithOpenAI) {
                 HStack {
@@ -112,7 +112,7 @@ struct ChatGPTgeneratorView: View {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "生成中..." : "ChatGPTで生成して取り込む")
+                    Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
                         .font(.callout.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity)
@@ -120,13 +120,14 @@ struct ChatGPTgeneratorView: View {
             .disabled(isRequirementEmpty || isGenerating)
 
             if isGenerating {
-                Text("OpenAIへリクエスト中です。少しだけお待ちください。")
+                Text("AIへ依頼中です。もう少しお待ちください")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
             Divider()
 
+            // 回数券購入
             creditPurchaseMenu
         }
         .padding(16)
@@ -161,7 +162,7 @@ struct ChatGPTgeneratorView: View {
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            alertState = .generationFailure(message: "要件を入力してください。")
+            alertState = .generationFailure(message: "ご要望を入れてください。")
             return
         }
         if creditStore.credits < CHATGPT_GENERATION_CREDIT_COST {
@@ -199,7 +200,7 @@ struct ChatGPTgeneratorView: View {
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
                         message = description
                     } else {
-                        message = "OpenAI連携でエラーが発生しました。時間をおいて再度お試しください。"
+                        message = "AIが忙しいようです。時間をおいて再度お試しください"
                     }
                     alertState = .generationFailure(message: message)
                 }
@@ -210,7 +211,7 @@ struct ChatGPTgeneratorView: View {
         }
     }
 
-    /// 設定画面と同様のクレジット購入機能をシート内でも提供する
+    /// クレジット購入
     /// - Parameter option: Configで定義したオプションタプル
     private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
         processingProductId = option.productId
@@ -227,7 +228,7 @@ struct ChatGPTgeneratorView: View {
                     if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
                         message = description
                     } else {
-                        message = "購入処理で不明なエラーが発生しました。時間を空けて再度お試しください。"
+                        message = "AI利用券の購入ができません。時間を空けて再度お試しください"
                     }
                     alertState = .purchaseFailure(message: message)
                 }
@@ -242,14 +243,14 @@ struct ChatGPTgeneratorView: View {
     private var creditPurchaseMenu: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                Text("クレジット購入")
+                Text("AI利用券購入")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "cart")
                     .symbolRenderingMode(.hierarchical)
             }
 
-            Text("利用可能クレジット: \(creditStore.credits)")
+            Text("AI利用券残り: \(creditStore.credits)")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
@@ -264,7 +265,7 @@ struct ChatGPTgeneratorView: View {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                             }
-                            Text("¥\(option.priceYen)で+\(option.credits)クレジット")
+                            Text("AI利用券\(option.credits)枚：¥\(option.priceYen)")
                                 .font(.callout.weight(.semibold))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -326,7 +327,7 @@ struct ChatGPTgeneratorView: View {
             case .generationFailure:
                 return "生成に失敗しました"
             case .creditShortage:
-                return "クレジット不足"
+                return "AI利用券不足"
             case .purchaseSuccess:
                 return "購入完了"
             case .purchaseFailure:
@@ -341,9 +342,9 @@ struct ChatGPTgeneratorView: View {
             case .generationFailure(let message):
                 return message
             case .creditShortage:
-                return "クレジットが不足しています。下の購入メニューから追加してください。"
+                return "AI利用券が不足しています。下の購入メニューから購入してください"
             case .purchaseSuccess(let added, let priceYen):
-                return "¥\(priceYen)の購入でクレジットを\(added)追加しました。"
+                return "¥\(priceYen)の購入でAI利用券を\(added)追加しました。"
             case .purchaseFailure(let message):
                 return message
             }

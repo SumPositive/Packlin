@@ -27,9 +27,9 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
-let AZUKI_API_BASE_URL = URL(string: "https://api.azukid.com/packlist")!
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.git@art.jp.workers.dev")!
 /// 消費型クレジットの商品ID群（azuki-api側の定義と一致させる）
-let AZUKI_API_CREDIT_PRODUCT_SMALL = "azuki.packlist.credit1"   // ¥50 / +1クレジット
+let AZUKI_API_CREDIT_PRODUCT_SMALL = "azuki.packlist.credit_1"   // ¥50 / +1クレジット
 let AZUKI_API_CREDIT_PRODUCT_STANDARD = "azuki.packlist.credit3" // ¥100 / +3クレジット
 let AZUKI_API_CREDIT_PRODUCT_BULK = "azuki.packlist.credit20"    // ¥500 / +20クレジット
 /// UIで使い回すための購入オプション定義（タプルで十分なためstructは用意しない）
