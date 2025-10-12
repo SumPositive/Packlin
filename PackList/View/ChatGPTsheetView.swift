@@ -1,5 +1,5 @@
 //
-//  ChatGPTPackGeneratorView.swift
+//  ChatGPTsheetView.swift
 //  PackList
 //
 //  Created by OpenAI Assistant on 2025/??/??.
@@ -11,10 +11,35 @@ import Foundation
 import UIKit
 import UniformTypeIdentifiers
 
+
+/// パックをChatGPTで生成　シート
+struct ChatGPTsheetView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                ChatGPTgeneratorView()
+            }
+            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .navigationTitle(Text("app.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "setting.adClose")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 /// ChatGPTと連携して .pack ファイルを生成・インポートするためのビュー
 /// 設定画面からメイン画面のフッター下へ移動した要求に基づき、
 /// 入力から送信、ファイルの取り込みまでをワンストップで提供する。
-struct ChatGPTPackGeneratorView: View {
+struct ChatGPTgeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
 
@@ -40,6 +65,31 @@ struct ChatGPTPackGeneratorView: View {
         # パックファイル生成依頼
         あなたはiOSアプリ「PackList」向けに荷物リストJSONを作成するアシスタントです。以下の制約と要件に従って単一JSONをUTF-8で出力してください。
 
+        ## サンプル
+        {
+            "ProductName": "PackList_モチメモ",
+            "copyright": "2025_sumpo@azukid.com",
+            "version": "3.0",
+            "name": "登山（デイハイク）",
+            "memo": "日帰り登山装備。水2L、行動食、雨具必携",
+            "createdAt": "2025-10-10T10:00:00Z",
+            "groups": [
+                {
+                    "name": "💳 必須品",
+                    "memo": "",
+                    "items": [
+                        {
+                          "check": false,
+                          "weight": 150,
+                          "need": 1,
+                          "name": "財布・身分証",
+                          "memo": ""
+                        }
+                    ]
+                }
+            ]
+        }
+
         ## 仕様
         - ルート要素には必ず次のプロパティを含める。
             - `ProductName`: "\(PACK_JSON_DTO_PRODUCT_NAME)"
@@ -64,13 +114,13 @@ struct ChatGPTPackGeneratorView: View {
 
         ## 出力形式
         - 途中経過や思考の説明は不要です。
-        - 完成したJSONのみを `{パック名}.\(PACK_FILE_EXTENSION)` というパックファイルとして出力してください（ChatGPTアプリのファイル出力機能を使用）。
+        - 完成したJSONのみを `{パック名}.\(PACK_FILE_EXTENSION)` というパック・ファイルとして出力してください（ChatGPTアプリのファイル出力機能を使用）。
         - テキストの前置きや後置きは不要で、ファイル以外のレスポンスは避けてください。
 
         ## ユーザー要件
         \(requirement)
 
-        以上を満たすパックファイルを作成してください。
+        以上を満たすパックを作成してください。
         """
     }
 
@@ -78,7 +128,7 @@ struct ChatGPTPackGeneratorView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("ChatGPTにパックを作ってもらおう")
+                Text("chatgpt.title") //"ChatGPTに作ってもらおう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")

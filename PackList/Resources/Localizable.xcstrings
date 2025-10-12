@@ -169,13 +169,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Download Pack_*.pack"
+            "value" : "Load Pack"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "共有Pack_*.packを取り込む"
+            "state" : "needs_review",
+            "value" : "パックを読み込む"
           }
         }
       }
@@ -185,13 +185,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Share as .pack"
+            "value" : "Save Pack"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : ".packファイルを共有"
+            "value" : "パック保存"
           }
         }
       }
@@ -293,13 +293,26 @@
         }
       }
     },
+    "chatgpt.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let’s create a pack with ChatGPT!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "パックをChatGPTに作ってもらおう"
+          }
+        }
+      }
+    },
     "ChatGPTアプリを開く" : {
 
     },
     "ChatGPTで生成された`.pack`ファイルをファイルアプリ等に保存し、このボタンから取り込むとパックとして追加されます。" : {
-
-    },
-    "ChatGPTにパックを作ってもらおう" : {
 
     },
     "ChatGPTに連携送信" : {
@@ -1172,6 +1185,22 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "タップして広告をご覧ください"
+          }
+        }
+      }
+    },
+    "setting.chatgpt.generate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generate Pack with ChatGPT"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パックをChatGPTで生成"
           }
         }
       }
