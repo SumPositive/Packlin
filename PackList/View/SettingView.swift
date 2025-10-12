@@ -31,7 +31,12 @@ struct SettingView: View {
                     // 保存パックを読み込む
                     ShareView()
                 }
-                
+
+//                SettingSection {
+//                    // クレジット購入
+//                    CreditPurchaseView()
+//                }
+
                 SettingSection {
                     // カスタム設定
                     CustomSetView()
@@ -49,6 +54,87 @@ struct SettingView: View {
         .scrollIndicators(.never)
         .frame(width: 340, height: 540)
     }
+
+//    /// azuki-apiを利用したクレジット購入UI
+//    struct CreditPurchaseView: View {
+//        @EnvironmentObject private var creditStore: CreditStore
+//        @State private var processingProductId: String? // 現在購入処理中の商品ID（nilなら待機中）
+//        @State private var alertInfo: AlertInfo?
+//
+//        var body: some View {
+//            VStack(alignment: .leading, spacing: 12) {
+//                Label {
+//                    Text("ChatGPT連携クレジット")
+//                        .font(.body.weight(.bold))
+//                        .foregroundColor(.accentColor)
+//                } icon: {
+//                    Image(systemName: "creditcard")
+//                        .symbolRenderingMode(.hierarchical)
+//                }
+//
+//                Text("現在の残高: \(creditStore.credits) クレジット")
+//                    .font(.callout)
+//                    .foregroundStyle(.secondary)
+//
+//                // 金額別の購入ボタン群。配列はConfig側で一元管理し、ここでは描画のみ担当する。
+//                VStack(alignment: .leading, spacing: 8) {
+//                    ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productId) { option in
+//                        Button {
+//                            purchaseCredits(option: option)
+//                        } label: {
+//                            HStack(spacing: 12) {
+//                                if processingProductId == option.productId {
+//                                    ProgressView()
+//                                        .progressViewStyle(.circular)
+//                                }
+//                                Text("¥\(option.priceYen)で+\(option.credits)クレジット")
+//                                    .font(.callout.weight(.semibold))
+//                            }
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                        }
+//                        .buttonStyle(.borderedProminent)
+//                        .tint(.accentColor.opacity(0.85))
+//                        .disabled(processingProductId != nil)
+//                    }
+//                }
+//            }
+//            .frame(maxWidth: .infinity, alignment: .leading)
+//            .alert(item: $alertInfo) { info in
+//                Alert(title: Text(info.title), message: Text(info.message), dismissButton: .default(Text("OK")))
+//            }
+//        }
+
+//        /// 個別のオプションに応じたクレジット購入処理
+//        /// - Parameter option: AZUKI_CREDIT_PURCHASE_OPTIONSから渡されるタプル
+//        private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
+//            processingProductId = option.productId
+//            Task {
+//                do {
+//                    let added = try await AzukiAPIClient.shared.purchaseCredits(productId: option.productId)
+//                    creditStore.add(credits: added)
+//                    alertInfo = AlertInfo(
+//                        title: "購入完了",
+//                        message: "¥\(option.priceYen)の購入でクレジットを\(added)追加しました。"
+//                    )
+//                } catch {
+//                    let message: String
+//                    if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
+//                        message = description
+//                    } else {
+//                        message = "購入処理で不明なエラーが発生しました。時間を空けて再度お試しください。"
+//                    }
+//                    alertInfo = AlertInfo(title: "購入失敗", message: message)
+//                }
+//                processingProductId = nil
+//            }
+//        }
+//
+//        private struct AlertInfo: Identifiable {
+//            let title: String
+//            let message: String
+//            var id: String { title + message }
+//        }
+//    }
 
     private var header: some View {
         HStack(spacing: 12) {

@@ -25,6 +25,24 @@ let PACK_JSON_DTO_VERSION   = "3.0" // マイグレーション用
 let PACK_FILE_EXTENSION = "pack" // 共有するファイルの拡張子
 let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data // ファイルピッカーで使用
 
+//-------------------------------------- azuki-api / OpenAI 関連
+/// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.git@art.jp.workers.dev")!
+/// 消費型クレジットの商品ID群（azuki-api側の定義と一致させる）
+let AZUKI_API_CREDIT_PRODUCT_SMALL = "azuki.packlist.credit_1"   // ¥50 / +1クレジット
+let AZUKI_API_CREDIT_PRODUCT_STANDARD = "azuki.packlist.credit3" // ¥100 / +3クレジット
+let AZUKI_API_CREDIT_PRODUCT_BULK = "azuki.packlist.credit20"    // ¥500 / +20クレジット
+/// UIで使い回すための購入オプション定義（タプルで十分なためstructは用意しない）
+let AZUKI_CREDIT_PURCHASE_OPTIONS: [(productId: String, priceYen: Int, credits: Int)] = [
+    (productId: AZUKI_API_CREDIT_PRODUCT_SMALL, priceYen: 50, credits: 1),
+    (productId: AZUKI_API_CREDIT_PRODUCT_STANDARD, priceYen: 100, credits: 3),
+    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 20),
+]
+/// OpenAIへ転送するモデル名。サーバーが代理実行するためクライアント側で明示しておく
+let OPENAI_CHAT_COMPLETION_MODEL = "gpt-4o-mini"
+/// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
+let CHATGPT_GENERATION_CREDIT_COST = 1
+
 //-------------------------------------- Layout関係
 // CalcRollView 幅
 let APP_WIDTH_MIN : CGFloat = 320      // 最小（SEの幅、全機能が見切れず使用できる状態）

@@ -8,8 +8,6 @@
 import SwiftUI
 import SwiftData
 import Foundation
-import UIKit
-import UniformTypeIdentifiers
 
 
 /// パックをChatGPTで生成　シート
@@ -36,92 +34,26 @@ struct ChatGPTsheetView: View {
 }
 
 
-/// ChatGPTと連携して .pack ファイルを生成・インポートするためのビュー
+/// ChatGPTと連携して .pack ファイルを生成するためのビュー
 /// 設定画面からメイン画面のフッター下へ移動した要求に基づき、
-/// 入力から送信、ファイルの取り込みまでをワンストップで提供する。
+/// アプリ内生成とクレジット購入をまとめて提供する。
 struct ChatGPTgeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var creditStore: CreditStore
 
     /// ユーザーがChatGPTへ伝えたい要件テキスト
     @State private var requirementText: String = ""
-    /// ファイルアプリなどから生成済みJSONを選択する際のフラグ
-    @State private var isPresentingImporter = false
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
+    /// azuki-api経由の生成リクエスト中であることを示すフラグ
+    @State private var isGenerating = false
+    /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
+    @State private var processingProductId: String?
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    /// ChatGPTへ渡すプロンプトを生成
-    /// - 途中経過を表示せず、{name}.pack ファイル出力を明示的に依頼する指示を含める
-    private var promptText: String {
-        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let requirement = trimmedRequirement.isEmpty ? "（ここにPackListへ追加したい荷物の要件を記入してください）" : trimmedRequirement
-
-        return """
-        # パックファイル生成依頼
-        あなたはiOSアプリ「PackList」向けに荷物リストJSONを作成するアシスタントです。以下の制約と要件に従って単一JSONをUTF-8で出力してください。
-
-        ## サンプル
-        {
-            "ProductName": "PackList_モチメモ",
-            "copyright": "2025_sumpo@azukid.com",
-            "version": "3.0",
-            "name": "登山（デイハイク）",
-            "memo": "日帰り登山装備。水2L、行動食、雨具必携",
-            "createdAt": "2025-10-10T10:00:00Z",
-            "groups": [
-                {
-                    "name": "💳 必須品",
-                    "memo": "",
-                    "items": [
-                        {
-                          "check": false,
-                          "weight": 150,
-                          "need": 1,
-                          "name": "財布・身分証",
-                          "memo": ""
-                        }
-                    ]
-                }
-            ]
-        }
-
-        ## 仕様
-        - ルート要素には必ず次のプロパティを含める。
-            - `ProductName`: "\(PACK_JSON_DTO_PRODUCT_NAME)"
-            - `copyright`:"\(PACK_JSON_DTO_COPYRIGHT)"
-            - `version`:"\(PACK_JSON_DTO_VERSION)"
-        - ルート要素はパック1件のみ。構造は以下を厳守。
-            - `name`: パック名。
-            - `memo`: 補足メモ（空文字可）。
-            - `createdAt`: ISO8601形式の日時文字列（例: 2024-05-01T10:00:00Z）。
-            - `groups`: グループ配列。
-        - 各グループには以下のプロパティを持たせる。
-            - `name`: グループ名。
-            - `memo`: グループの説明（空文字可）。
-            - `items`: アイテム配列。
-        - 各アイテムには以下のプロパティを持たせる。
-            - `name`: アイテム名。
-            - `memo`: 補足メモ（空文字可）。
-            - `check`: 初期チェック状態（false）。
-            - `need`: 必要数の整数。
-            - `weight`: 重量(g)の整数。
-        - `id`、`order`、`stock` といったアプリ内部で採番する値は出力しない。
-
-        ## 出力形式
-        - 途中経過や思考の説明は不要です。
-        - 完成したJSONのみを `{パック名}.\(PACK_FILE_EXTENSION)` というパック・ファイルとして出力してください（ChatGPTアプリのファイル出力機能を使用）。
-        - テキストの前置きや後置きは不要で、ファイル以外のレスポンスは避けてください。
-
-        ## ユーザー要件
-        \(requirement)
-
-        以上を満たすパックを作成してください。
-        """
     }
 
     var body: some View {
@@ -158,76 +90,45 @@ struct ChatGPTgeneratorView: View {
                 }
             }
 
-            // 操作説明
-            Text("入力した要件をChatGPTへ連携送信し、生成完了後に `{パック名}.pack` ファイルを保存してください。保存したファイルは下のボタンから取り込めます。")
+            // 操作説明（アプリ内生成の流れを簡潔に案内）
+            Text("ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
-            // ChatGPT連携用ボタン群
-            Button(action: sendPromptToChatGPTApp) {
-                Label {
-                    Text("ChatGPTに連携送信")
-                        .font(.callout.weight(.semibold))
-                } icon: {
-                    Image(systemName: "paperplane")
-                        .symbolRenderingMode(.hierarchical)
-                }
-            }
-            .disabled(isRequirementEmpty)
-            
             Divider()
-            
-            Button(action: {
-                // デフォルト引数を用いるためクロージャー越しにメソッドを呼び出す
-                openChatGPTApp()
-            }) {
-                Label {
-                    Text("ChatGPTアプリを開く")
-                        .font(.callout.weight(.semibold))
-                } icon: {
-                    Image(systemName: "app.badge")
-                        .symbolRenderingMode(.hierarchical)
-                }
-            }
 
-            // JSON取り込みボタン
-            Button(action: { isPresentingImporter = true }) {
-                Label {
-                    Text("生成した.packファイルを読み込む")
-                        .font(.callout.weight(.semibold))
-                } icon: {
-                    Image(systemName: "tray.and.arrow.down")
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            .fileImporter(
-                isPresented: $isPresentingImporter,
-                allowedContentTypes: [PACK_FILE_UTTYPE],
-                allowsMultipleSelection: false
-            ) { result in
-                switch result {
-                case .success(let urls):
-                    guard let url = urls.first else { return }
-                    do {
-                        let importedPack = try importPack(from: url)
-                        // 取り込みに成功した場合は結果をアラートで共有
-                        alertState = .importSuccess(packName: importedPack.name)
-                    } catch {
-                        debugPrint("Failed to import AI generated pack: \(error)")
-                        // 失敗内容をそのまま表示して再試行してもらう
-                        alertState = .importFailure(message: error.localizedDescription)
+            // アプリ内で直接OpenAIへ問い合わせる操作
+//            VStack(alignment: .leading, spacing: 4) {
+//                Text("アプリ内で生成（回数券1枚消費）")
+//                    .font(.subheadline.weight(.semibold))
+//                Text("回数券残り: \(creditStore.credits) / 消費: \(CHATGPT_GENERATION_CREDIT_COST)")
+//                    .font(.caption)
+//                    .foregroundStyle(.secondary)
+//            }
+
+            Button(action: generatePackWithOpenAI) {
+                HStack {
+                    if isGenerating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
                     }
-                case .failure(let error):
-                    debugPrint("Failed to import AI generated pack: \(error)")
-                    alertState = .importFailure(message: error.localizedDescription)
+                    Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
+                        .font(.callout.weight(.semibold))
                 }
+                .frame(maxWidth: .infinity)
+            }
+            .disabled(isRequirementEmpty || isGenerating)
+
+            if isGenerating {
+                Text("AIへ依頼中です。もう少しお待ちください")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
-            Text("ChatGPTで生成された`.pack`ファイルをファイルアプリ等に保存し、このボタンから取り込むとパックとして追加されます。")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            Divider()
+
+            // 回数券購入
+            creditPurchaseMenu
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -257,86 +158,124 @@ struct ChatGPTgeneratorView: View {
         return Color(uiColor: .systemGray6)
     }
 
-    /// プロンプトをChatGPTアプリへ直接連携送信する
-    private func sendPromptToChatGPTApp() {
-        // 深い連携を行うために、まずは生成済みプロンプトを取得
-        let prompt = promptText
-
-        // ディープリンク処理は共通化したメソッドへ委譲し、保守性を高める
-        openChatGPT(with: prompt)
-    }
-
-    /// ChatGPTアプリ（ユニバーサルリンク）を開く
-    private func openChatGPTApp() {
-        // プロンプト入力前にアプリだけ開きたいユーザー向けに、ベースURLのディープリンクを利用
-        guard let url = URL(string: "https://chat.openai.com/") else {
+    /// azuki-api経由でOpenAIにパック生成を依頼する
+    private func generatePackWithOpenAI() {
+        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedRequirement.isEmpty {
+            alertState = .generationFailure(message: "ご要望を入れてください。")
+            return
+        }
+        if creditStore.credits < CHATGPT_GENERATION_CREDIT_COST {
+            alertState = .creditShortage
             return
         }
 
-        UIApplication.shared.open(url, options: [:]) { success in
-            if success == false {
-                alertState = .promptDeepLinkFailed
+        isGenerating = true
+        Task {
+            do {
+                let dto = try await AzukiAPIClient.shared.generatePack(requirement: trimmedRequirement)
+                try await MainActor.run {
+                    do {
+                        let importedPack = try createPack(from: dto)
+                        do {
+                            try creditStore.consume(credits: CHATGPT_GENERATION_CREDIT_COST)
+                        } catch {
+                            alertState = .creditShortage
+                            return
+                        }
+                        alertState = .generationSuccess(packName: importedPack.name)
+                    } catch {
+                        let message: String
+                        if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                            message = description
+                        } else {
+                            message = error.localizedDescription
+                        }
+                        alertState = .generationFailure(message: message)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    let message: String
+                    if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                        message = description
+                    } else {
+                        message = "AIが忙しいようです。時間をおいて再度お試しください"
+                    }
+                    alertState = .generationFailure(message: message)
+                }
+            }
+            await MainActor.run {
+                isGenerating = false
             }
         }
     }
 
-    /// Web版ChatGPTをプロンプト付きで開く（ユニバーサルリンクでアプリにも遷移可能）
-    /// - Parameter prompt: クエリとして渡したいプロンプト文字列
-    private func openChatGPT(with prompt: String) {
-        // URL生成が複数箇所に散らばらないよう、共通処理へ委譲
-        guard let url = chatGPTDeepLinkURL(with: prompt) else {
-            alertState = .promptEncodingFailed
-            return
-        }
-
-        UIApplication.shared.open(url, options: [:]) { success in
-            if success == false {
-                alertState = .promptDeepLinkFailed
+    /// クレジット購入
+    /// - Parameter option: Configで定義したオプションタプル
+    private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
+        processingProductId = option.productId
+        Task {
+            do {
+                let added = try await AzukiAPIClient.shared.purchaseCredits(productId: option.productId)
+                await MainActor.run {
+                    creditStore.add(credits: added)
+                    alertState = .purchaseSuccess(added: added, priceYen: option.priceYen)
+                }
+            } catch {
+                await MainActor.run {
+                    let message: String
+                    if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
+                        message = description
+                    } else {
+                        message = "AI利用券の購入ができません。時間を空けて再度お試しください"
+                    }
+                    alertState = .purchaseFailure(message: message)
+                }
+            }
+            await MainActor.run {
+                processingProductId = nil
             }
         }
     }
 
-    /// ChatGPTディープリンク用のURLを生成
-    /// - Parameter prompt: クエリへ埋め込みたいテキスト
-    /// - Returns: 生成に成功した場合はURL、失敗した場合はnil
-    private func chatGPTDeepLinkURL(with prompt: String) -> URL? {
-        // 公式仕様が開示されていないため、URLクエリに不向きな文字を個別に除外
-        var allowedCharacters = CharacterSet.urlQueryAllowed
-        allowedCharacters.remove(charactersIn: "#&=")
+    /// クレジット購入UIのまとまり
+    private var creditPurchaseMenu: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                Text("AI利用券購入")
+                    .font(.body.weight(.bold))
+            } icon: {
+                Image(systemName: "cart")
+                    .symbolRenderingMode(.hierarchical)
+            }
 
-        // addingPercentEncoding が nil を返すケース（絵文字の組み合わせなど）を考慮
-        guard let encoded = prompt.addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
-            return nil
-        }
+            Text("AI利用券残り: \(creditStore.credits)")
+                .font(.callout)
+                .foregroundStyle(.secondary)
 
-        // ChatGPT Web へのアクセスだが、ユニバーサルリンクによりアプリが起動するケースもある
-        return URL(string: "https://chat.openai.com/?q=\(encoded)")
-    }
-
-    /// URLから .pack ファイルを読み込み、DTOチェック後にDBへ保存
-    private func importPack(from url: URL) throws -> M1Pack {
-        let shouldStopAccessing = url.startAccessingSecurityScopedResource()
-        defer {
-            if shouldStopAccessing {
-                url.stopAccessingSecurityScopedResource()
+            // Config側で定義した金額・クレジットの対応表をそのまま描画する
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productId) { option in
+                    Button {
+                        purchaseCredits(option: option)
+                    } label: {
+                        HStack(spacing: 12) {
+                            if processingProductId == option.productId {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                            }
+                            Text("AI利用券\(option.credits)枚：¥\(option.priceYen)")
+                                .font(.callout.weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.accentColor.opacity(0.8))
+                    .disabled(processingProductId != nil)
+                }
             }
         }
-
-        let data = try Data(contentsOf: url)
-        let decoder = JSONDecoder()
-        let dto = try decoder.decode(PackJsonDTO.self, from: data)
-
-        if dto.productName != PACK_JSON_DTO_PRODUCT_NAME {
-            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "ProductName mismatch."])
-        }
-        if dto.copyright != PACK_JSON_DTO_COPYRIGHT {
-            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Copyright mismatch."])
-        }
-        if dto.version != PACK_JSON_DTO_VERSION {
-            throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Version mismatch."])
-        }
-
-        return try createPack(from: dto)
     }
 
     /// DTOからPackを作成してSwiftDataへ保存
@@ -355,52 +294,59 @@ struct ChatGPTgeneratorView: View {
 
     /// アラート表示用の状態定義
     private enum AlertState: Identifiable {
-        /// インポート成功
-        case importSuccess(packName: String)
-        /// インポート失敗
-        case importFailure(message: String)
-        /// ディープリンクの起動に失敗した場合
-        case promptDeepLinkFailed
-        /// プロンプトのエンコードに失敗した場合
-        case promptEncodingFailed
+        /// azuki-api経由での生成が成功した場合
+        case generationSuccess(packName: String)
+        /// azuki-api経由での生成が失敗した場合
+        case generationFailure(message: String)
+        /// クレジットが不足している場合
+        case creditShortage
+        /// クレジット購入が成功した場合
+        case purchaseSuccess(added: Int, priceYen: Int)
+        /// クレジット購入が失敗した場合
+        case purchaseFailure(message: String)
 
         var id: String {
             switch self {
-            case .importSuccess(let packName):
-                return "ai-success-\(packName)"
-            case .importFailure:
-                return "ai-failure"
-            case .promptDeepLinkFailed:
-                return "ai-prompt-deeplink"
-            case .promptEncodingFailed:
-                return "ai-prompt-encoding"
+            case .generationSuccess(let packName):
+                return "ai-generation-success-\(packName)"
+            case .generationFailure(let message):
+                return "ai-generation-failure-\(message)"
+            case .creditShortage:
+                return "ai-credit-shortage"
+            case .purchaseSuccess(let added, let priceYen):
+                return "ai-purchase-success-\(added)-\(priceYen)"
+            case .purchaseFailure(let message):
+                return "ai-purchase-failure-\(message)"
             }
         }
 
         var title: String {
             switch self {
-            case .importSuccess:
-                return String(localized: "setting.import.success.title")
-            case .importFailure:
-                return String(localized: "setting.import.error.title")
-            case .promptDeepLinkFailed:
-                return "ChatGPTを開けませんでした"
-            case .promptEncodingFailed:
-                return "プロンプトの準備に失敗しました"
+            case .generationSuccess:
+                return "生成完了"
+            case .generationFailure:
+                return "生成に失敗しました"
+            case .creditShortage:
+                return "AI利用券不足"
+            case .purchaseSuccess:
+                return "購入完了"
+            case .purchaseFailure:
+                return "購入失敗"
             }
         }
 
         var message: String {
             switch self {
-            case .importSuccess(let packName):
-                let format = String(localized: "setting.import.success.message")
-                return String(format: format, packName)
-            case .importFailure(let message):
+            case .generationSuccess(let packName):
+                return "パック『\(packName)』を追加しました。"
+            case .generationFailure(let message):
                 return message
-            case .promptDeepLinkFailed:
-                return "ネットワーク接続やChatGPTアプリの状態を確認し、再度お試しください。"
-            case .promptEncodingFailed:
-                return "入力内容に特殊な文字が含まれている可能性があります。手動でコピーして送信してください。"
+            case .creditShortage:
+                return "AI利用券が不足しています。下の購入メニューから購入してください"
+            case .purchaseSuccess(let added, let priceYen):
+                return "¥\(priceYen)の購入でAI利用券を\(added)追加しました。"
+            case .purchaseFailure(let message):
+                return message
             }
         }
     }

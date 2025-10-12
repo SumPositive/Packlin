@@ -16,6 +16,8 @@ import GoogleMobileAds
 struct AppMain: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var navigationPath = NavigationPath()
+    /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
+    @StateObject private var creditStore = CreditStore()
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             M1Pack.self,
@@ -72,6 +74,7 @@ struct AppMain: App {
             }
         }
         .modelContainer(sharedModelContainer)
+        .environmentObject(creditStore)
         .onChange(of: scenePhase) { oldPhase, newPhase in
             guard oldPhase == .inactive, newPhase == .background else { return }
             // バックになる前
