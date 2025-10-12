@@ -132,6 +132,9 @@ struct ChatGPTgeneratorView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .task {
+            await refreshCreditBalance()
+        }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(backgroundColor)
@@ -158,6 +161,21 @@ struct ChatGPTgeneratorView: View {
         return Color(uiColor: .systemGray6)
     }
 
+    /// サーバーからクレジット残高を取得してローカルに反映する
+    private func refreshCreditBalance() async {
+        let userId = await MainActor.run { creditStore.userId }
+        do {
+            let remoteBalance = try await AzukiAPIClient.shared.fetchCreditBalance(userId: userId)
+            await MainActor.run {
+                creditStore.overwrite(credits: remoteBalance)
+            }
+        } catch {
+            #if DEBUG
+            print("credit refresh failed: \(error)")
+            #endif
+        }
+    }
+
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -165,26 +183,36 @@ struct ChatGPTgeneratorView: View {
             alertState = .generationFailure(message: "ご要望を入れてください。")
             return
         }
-        if creditStore.credits < CHATGPT_GENERATION_CREDIT_COST {
-            alertState = .creditShortage
-            return
-        }
 
+        let userId = creditStore.userId
         isGenerating = true
         Task {
+            await refreshCreditBalance()
+            let hasEnoughCredits = await MainActor.run {
+                creditStore.credits < CHATGPT_GENERATION_CREDIT_COST ? false : true
+            }
+            if hasEnoughCredits == false {
+                await MainActor.run {
+                    alertState = .creditShortage
+                    isGenerating = false
+                }
+                return
+            }
+
             do {
-                let dto = try await AzukiAPIClient.shared.generatePack(requirement: trimmedRequirement)
-                try await MainActor.run {
-                    do {
+                let dto = try await AzukiAPIClient.shared.generatePack(userId: userId, requirement: trimmedRequirement)
+                do {
+                    let packName = try await MainActor.run { () -> String in
                         let importedPack = try createPack(from: dto)
-                        do {
-                            try creditStore.consume(credits: CHATGPT_GENERATION_CREDIT_COST)
-                        } catch {
-                            alertState = .creditShortage
-                            return
-                        }
-                        alertState = .generationSuccess(packName: importedPack.name)
-                    } catch {
+                        return importedPack.name
+                    }
+                    await refreshCreditBalance()
+                    await MainActor.run {
+                        alertState = .generationSuccess(packName: packName)
+                    }
+                } catch {
+                    await refreshCreditBalance()
+                    await MainActor.run {
                         let message: String
                         if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
                             message = description
@@ -195,16 +223,22 @@ struct ChatGPTgeneratorView: View {
                     }
                 }
             } catch {
+                await refreshCreditBalance()
                 await MainActor.run {
-                    let message: String
-                    if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
-                        message = description
+                    if let apiError = error as? AzukiAPIError, case .insufficientCredits = apiError {
+                        alertState = .creditShortage
                     } else {
-                        message = "AIが忙しいようです。時間をおいて再度お試しください"
+                        let message: String
+                        if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                            message = description
+                        } else {
+                            message = "AIが忙しいようです。時間をおいて再度お試しください"
+                        }
+                        alertState = .generationFailure(message: message)
                     }
-                    alertState = .generationFailure(message: message)
                 }
             }
+
             await MainActor.run {
                 isGenerating = false
             }
@@ -215,12 +249,13 @@ struct ChatGPTgeneratorView: View {
     /// - Parameter option: Configで定義したオプションタプル
     private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
         processingProductId = option.productId
+        let userId = creditStore.userId
         Task {
             do {
-                let added = try await AzukiAPIClient.shared.purchaseCredits(productId: option.productId)
+                let result = try await AzukiAPIClient.shared.purchaseCredits(option: option, userId: userId)
                 await MainActor.run {
-                    creditStore.add(credits: added)
-                    alertState = .purchaseSuccess(added: added, priceYen: option.priceYen)
+                    creditStore.overwrite(credits: result.balance)
+                    alertState = .purchaseSuccess(added: result.grantedCredits, priceYen: option.priceYen)
                 }
             } catch {
                 await MainActor.run {

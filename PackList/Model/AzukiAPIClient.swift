@@ -38,6 +38,14 @@ enum AzukiAPIError: LocalizedError {
 /// azuki-api との通信を担うクライアント
 /// - Note: iOS側では決済処理そのものはStoreKit任せとし、azuki-apiはレシート検証とOpenAI代理実行を提供する想定
 final class AzukiAPIClient {
+    /// クレジット購入APIの結果をまとめる構造体
+    struct CreditPurchaseResult {
+        /// 今回付与されたクレジット数（StoreKit導入後は実際の課金結果と一致させる）
+        let grantedCredits: Int
+        /// サーバーが計算した最新残高
+        let balance: Int
+    }
+
     static let shared = AzukiAPIClient()
 
     private let session: URLSession
@@ -56,77 +64,145 @@ final class AzukiAPIClient {
         self.decoder = decoder
     }
 
-    /// 指定した商品IDのクレジット課金を実行する
-    /// - Parameter productId: azuki-api側で定義された消費型商品のID
-    /// - Returns: 追加されたクレジット数
-    func purchaseCredits(productId: String) async throws -> Int {
-        struct PurchaseRequest: Encodable {
-            let productId: String
-        }
-        struct PurchaseResponse: Decodable {
-            let creditsAdded: Int
+    /// サーバーのクレジット残高を問い合わせる
+    /// - Parameter userId: CreditStoreで払い出したユーザー識別子
+    /// - Returns: 現在の残高
+    func fetchCreditBalance(userId: String) async throws -> Int {
+        struct BalanceResponse: Decodable {
+            let userId: String
+            let balance: Int
         }
 
-        guard let url = URL(string: "iap/purchase", relativeTo: AZUKI_API_BASE_URL) else {
+        guard let url = makeURL(path: "/api/credit/check", queryItems: [URLQueryItem(name: "userId", value: userId)]) else {
             throw AzukiAPIError.invalidURL
         }
 
-        let requestBody = PurchaseRequest(productId: productId)
+        let data = try await sendRequest(url: url, method: "GET")
+        do {
+            let response = try decoder.decode(BalanceResponse.self, from: data)
+            return response.balance
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// 指定した商品を購入したことをサーバーへ通知し、残高を更新する
+    /// - Parameters:
+    ///   - option: Config.swiftで定義した商品情報タプル
+    ///   - userId: azuki-apiが利用するユーザー識別子
+    ///   - transactionId: StoreKitのトランザクションID（未実装のためデフォルト値は一時的なUUID）
+    ///   - receiptData: App StoreレシートのBase64文字列（未実装のためデフォルト値はダミー文字列）
+    /// - Returns: サーバーから返る最新残高と今回付与したクレジット数
+    func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int), userId: String, transactionId: String? = nil, receiptData: String? = nil) async throws -> CreditPurchaseResult {
+        struct PurchaseRequest: Encodable {
+            let userId: String
+            let productId: String
+            let transactionId: String
+            let receipt: String
+            let grantCredits: Int
+        }
+        struct PurchaseResponse: Decodable {
+            let ok: Bool
+            let balance: Int
+        }
+
+        guard let url = makeURL(path: "/api/iap/verify") else {
+            throw AzukiAPIError.invalidURL
+        }
+
+        let resolvedTransactionId = transactionId ?? UUID().uuidString
+        let resolvedReceipt = receiptData ?? "local-\(resolvedTransactionId)"
+        let requestBody = PurchaseRequest(
+            userId: userId,
+            productId: option.productId,
+            transactionId: resolvedTransactionId,
+            receipt: resolvedReceipt,
+            grantCredits: option.credits
+        )
+
         let data = try await sendRequest(url: url, body: requestBody)
         do {
             let response = try decoder.decode(PurchaseResponse.self, from: data)
-            return response.creditsAdded
+            return CreditPurchaseResult(grantedCredits: option.credits, balance: response.balance)
         } catch {
             throw AzukiAPIError.decoding
         }
     }
 
     /// OpenAI(azuki-api経由)にパック生成を依頼する
-    /// - Parameter requirement: ユーザーが入力した要件
+    /// - Parameters:
+    ///   - userId: クレジット消費対象となるユーザーID
+    ///   - requirement: ユーザーが入力した要件
     /// - Returns: PackListへそのまま取り込めるDTO
-    func generatePack(requirement: String) async throws -> PackJsonDTO {
+    func generatePack(userId: String, requirement: String) async throws -> PackJsonDTO {
         struct GenerateRequest: Encodable {
+            let userId: String
             let requirement: String
-            let model: String
-        }
-        struct GenerateResponse: Decodable {
-            let pack: PackJsonDTO
         }
 
-        guard let url = URL(string: "openai/generate-pack", relativeTo: AZUKI_API_BASE_URL) else {
+        guard let url = makeURL(path: "/api/openai") else {
             throw AzukiAPIError.invalidURL
         }
 
-        let requestBody = GenerateRequest(requirement: requirement, model: OPENAI_CHAT_COMPLETION_MODEL)
+        let requestBody = GenerateRequest(userId: userId, requirement: requirement)
         let data = try await sendRequest(url: url, body: requestBody)
         do {
-            let response = try decoder.decode(GenerateResponse.self, from: data)
-            return response.pack
+            return try decoder.decode(PackJsonDTO.self, from: data)
         } catch {
             throw AzukiAPIError.decoding
         }
     }
 
+    /// 相対パスからURLを構築し、必要であればクエリを付与する
+    private func makeURL(path: String, queryItems: [URLQueryItem]? = nil) -> URL? {
+        guard let baseURL = URL(string: path, relativeTo: AZUKI_API_BASE_URL) else {
+            return nil
+        }
+        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true) else {
+            return nil
+        }
+        if let queryItems = queryItems, queryItems.isEmpty == false {
+            components.queryItems = queryItems
+        }
+        return components.url
+    }
+
     /// 共通のPOST送信をまとめる。StoreKitレシートなど追加データが必要になってもここでまとめて処理可能
     private func sendRequest<T: Encodable>(url: URL, body: T) async throws -> Data {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do {
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try encoder.encode(body)
+        } catch {
+            throw AzukiAPIError.encoding
+        }
+        return try await send(request: request)
+    }
 
+    /// GETなどボディ無しのリクエストを送る
+    private func sendRequest(url: URL, method: String) async throws -> Data {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        return try await send(request: request)
+    }
+
+    /// 実際の通信と共通エラーハンドリングを一箇所へ集約
+    private func send(request: URLRequest) async throws -> Data {
+        do {
             let (data, response) = try await session.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw AzukiAPIError.invalidResponse
             }
-            if httpResponse.statusCode < 200 || 299 < httpResponse.statusCode {
+            if httpResponse.statusCode == 402 {
+                throw AzukiAPIError.insufficientCredits
+            }
+            if httpResponse.statusCode <= 199 || 300 <= httpResponse.statusCode {
                 throw AzukiAPIError.server(statusCode: httpResponse.statusCode)
             }
             return data
         } catch let error as AzukiAPIError {
             throw error
-        } catch is EncodingError {
-            throw AzukiAPIError.encoding
         } catch {
             throw error
         }
