@@ -58,7 +58,7 @@ struct SettingView: View {
     /// azuki-apiを利用したクレジット購入UI
     struct CreditPurchaseView: View {
         @EnvironmentObject private var creditStore: CreditStore
-        @State private var isProcessing = false
+        @State private var processingProductId: String? // 現在購入処理中の商品ID（nilなら待機中）
         @State private var alertInfo: AlertInfo?
 
         var body: some View {
@@ -76,17 +76,27 @@ struct SettingView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
 
-                Button(action: purchaseCredits) {
-                    HStack {
-                        if isProcessing {
-                            ProgressView()
-                                .progressViewStyle(.circular)
+                // 金額別の購入ボタン群。配列はConfig側で一元管理し、ここでは描画のみ担当する。
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productId) { option in
+                        Button {
+                            purchaseCredits(option: option)
+                        } label: {
+                            HStack(spacing: 12) {
+                                if processingProductId == option.productId {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                }
+                                Text("¥\(option.priceYen)で+\(option.credits)クレジット")
+                                    .font(.callout.weight(.semibold))
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        Text("3クレジットを追加する")
-                            .font(.callout.weight(.semibold))
+                        .buttonStyle(.borderedProminent)
+                        .tint(.accentColor.opacity(0.85))
+                        .disabled(processingProductId != nil)
                     }
                 }
-                .disabled(isProcessing)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .alert(item: $alertInfo) { info in
@@ -94,13 +104,18 @@ struct SettingView: View {
             }
         }
 
-        private func purchaseCredits() {
-            isProcessing = true
+        /// 個別のオプションに応じたクレジット購入処理
+        /// - Parameter option: AZUKI_CREDIT_PURCHASE_OPTIONSから渡されるタプル
+        private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
+            processingProductId = option.productId
             Task {
                 do {
-                    let added = try await AzukiAPIClient.shared.purchaseMinimumCredits()
+                    let added = try await AzukiAPIClient.shared.purchaseCredits(productId: option.productId)
                     creditStore.add(credits: added)
-                    alertInfo = AlertInfo(title: "購入完了", message: "クレジットを\(added)追加しました。")
+                    alertInfo = AlertInfo(
+                        title: "購入完了",
+                        message: "¥\(option.priceYen)の購入でクレジットを\(added)追加しました。"
+                    )
                 } catch {
                     let message: String
                     if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
@@ -110,7 +125,7 @@ struct SettingView: View {
                     }
                     alertInfo = AlertInfo(title: "購入失敗", message: message)
                 }
-                isProcessing = false
+                processingProductId = nil
             }
         }
 

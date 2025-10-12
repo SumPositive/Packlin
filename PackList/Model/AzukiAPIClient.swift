@@ -56,9 +56,10 @@ final class AzukiAPIClient {
         self.decoder = decoder
     }
 
-    /// 最小課金（3クレジット追加）を実行する
+    /// 指定した商品IDのクレジット課金を実行する
+    /// - Parameter productId: azuki-api側で定義された消費型商品のID
     /// - Returns: 追加されたクレジット数
-    func purchaseMinimumCredits() async throws -> Int {
+    func purchaseCredits(productId: String) async throws -> Int {
         struct PurchaseRequest: Encodable {
             let productId: String
         }
@@ -70,7 +71,7 @@ final class AzukiAPIClient {
             throw AzukiAPIError.invalidURL
         }
 
-        let requestBody = PurchaseRequest(productId: AZUKI_API_MIN_CONSUMABLE_PRODUCT_ID)
+        let requestBody = PurchaseRequest(productId: productId)
         let data = try await sendRequest(url: url, body: requestBody)
         do {
             let response = try decoder.decode(PurchaseResponse.self, from: data)
