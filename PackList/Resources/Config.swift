@@ -25,6 +25,16 @@ let PACK_JSON_DTO_VERSION   = "3.0" // マイグレーション用
 let PACK_FILE_EXTENSION = "pack" // 共有するファイルの拡張子
 let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data // ファイルピッカーで使用
 
+//-------------------------------------- azuki-api / OpenAI 関連
+/// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
+let AZUKI_API_BASE_URL = URL(string: "https://api.azukid.com/packlist")!
+/// 最小課金で利用する消費型プロダクトID（3クレジット追加）
+let AZUKI_API_MIN_CONSUMABLE_PRODUCT_ID = "azuki.packlist.credit3"
+/// OpenAIへ転送するモデル名。サーバーが代理実行するためクライアント側で明示しておく
+let OPENAI_CHAT_COMPLETION_MODEL = "gpt-4o-mini"
+/// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
+let CHATGPT_GENERATION_CREDIT_COST = 1
+
 //-------------------------------------- Layout関係
 // CalcRollView 幅
 let APP_WIDTH_MIN : CGFloat = 320      // 最小（SEの幅、全機能が見切れず使用できる状態）

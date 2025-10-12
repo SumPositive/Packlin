@@ -42,6 +42,7 @@ struct ChatGPTsheetView: View {
 struct ChatGPTgeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var creditStore: CreditStore
 
     /// ユーザーがChatGPTへ伝えたい要件テキスト
     @State private var requirementText: String = ""
@@ -49,6 +50,8 @@ struct ChatGPTgeneratorView: View {
     @State private var isPresentingImporter = false
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
+    /// azuki-api経由の生成リクエスト中であることを示すフラグ
+    @State private var isGenerating = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -174,9 +177,39 @@ struct ChatGPTgeneratorView: View {
                 }
             }
             .disabled(isRequirementEmpty)
-            
+
             Divider()
-            
+
+            // アプリ内で直接OpenAIへ問い合わせる操作
+            VStack(alignment: .leading, spacing: 4) {
+                Text("アプリ内で生成（クレジット消費）")
+                    .font(.subheadline.weight(.semibold))
+                Text("利用可能クレジット: \(creditStore.credits) / 消費: \(CHATGPT_GENERATION_CREDIT_COST)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Button(action: generatePackWithOpenAI) {
+                HStack {
+                    if isGenerating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                    }
+                    Text(isGenerating ? "生成中..." : "ChatGPTで生成して取り込む")
+                        .font(.callout.weight(.semibold))
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .disabled(isRequirementEmpty || isGenerating)
+
+            if isGenerating {
+                Text("OpenAIへリクエスト中です。少しだけお待ちください。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+
             Button(action: {
                 // デフォルト引数を用いるためクロージャー越しにメソッドを呼び出す
                 openChatGPTApp()
@@ -296,6 +329,59 @@ struct ChatGPTgeneratorView: View {
         }
     }
 
+    /// azuki-api経由でOpenAIにパック生成を依頼する
+    private func generatePackWithOpenAI() {
+        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedRequirement.isEmpty {
+            alertState = .generationFailure(message: "要件を入力してください。")
+            return
+        }
+        if creditStore.credits < CHATGPT_GENERATION_CREDIT_COST {
+            alertState = .creditShortage
+            return
+        }
+
+        isGenerating = true
+        Task {
+            do {
+                let dto = try await AzukiAPIClient.shared.generatePack(requirement: trimmedRequirement)
+                try await MainActor.run {
+                    do {
+                        let importedPack = try createPack(from: dto)
+                        do {
+                            try creditStore.consume(credits: CHATGPT_GENERATION_CREDIT_COST)
+                        } catch {
+                            alertState = .creditShortage
+                            return
+                        }
+                        alertState = .generationSuccess(packName: importedPack.name)
+                    } catch {
+                        let message: String
+                        if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                            message = description
+                        } else {
+                            message = error.localizedDescription
+                        }
+                        alertState = .generationFailure(message: message)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    let message: String
+                    if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                        message = description
+                    } else {
+                        message = "OpenAI連携でエラーが発生しました。時間をおいて再度お試しください。"
+                    }
+                    alertState = .generationFailure(message: message)
+                }
+            }
+            await MainActor.run {
+                isGenerating = false
+            }
+        }
+    }
+
     /// ChatGPTディープリンク用のURLを生成
     /// - Parameter prompt: クエリへ埋め込みたいテキスト
     /// - Returns: 生成に成功した場合はURL、失敗した場合はnil
@@ -363,6 +449,12 @@ struct ChatGPTgeneratorView: View {
         case promptDeepLinkFailed
         /// プロンプトのエンコードに失敗した場合
         case promptEncodingFailed
+        /// azuki-api経由での生成が成功した場合
+        case generationSuccess(packName: String)
+        /// azuki-api経由での生成が失敗した場合
+        case generationFailure(message: String)
+        /// クレジットが不足している場合
+        case creditShortage
 
         var id: String {
             switch self {
@@ -374,6 +466,12 @@ struct ChatGPTgeneratorView: View {
                 return "ai-prompt-deeplink"
             case .promptEncodingFailed:
                 return "ai-prompt-encoding"
+            case .generationSuccess(let packName):
+                return "ai-generation-success-\(packName)"
+            case .generationFailure(let message):
+                return "ai-generation-failure-\(message)"
+            case .creditShortage:
+                return "ai-credit-shortage"
             }
         }
 
@@ -387,6 +485,12 @@ struct ChatGPTgeneratorView: View {
                 return "ChatGPTを開けませんでした"
             case .promptEncodingFailed:
                 return "プロンプトの準備に失敗しました"
+            case .generationSuccess:
+                return "生成完了"
+            case .generationFailure:
+                return "生成に失敗しました"
+            case .creditShortage:
+                return "クレジット不足"
             }
         }
 
@@ -401,6 +505,12 @@ struct ChatGPTgeneratorView: View {
                 return "ネットワーク接続やChatGPTアプリの状態を確認し、再度お試しください。"
             case .promptEncodingFailed:
                 return "入力内容に特殊な文字が含まれている可能性があります。手動でコピーして送信してください。"
+            case .generationSuccess(let packName):
+                return "パック『\(packName)』を追加しました。"
+            case .generationFailure(let message):
+                return message
+            case .creditShortage:
+                return "クレジットが不足しています。設定画面から購入してください。"
             }
         }
     }

@@ -31,7 +31,12 @@ struct SettingView: View {
                     // 保存パックを読み込む
                     ShareView()
                 }
-                
+
+                SettingSection {
+                    // クレジット購入
+                    CreditPurchaseView()
+                }
+
                 SettingSection {
                     // カスタム設定
                     CustomSetView()
@@ -48,6 +53,72 @@ struct SettingView: View {
         }
         .scrollIndicators(.never)
         .frame(width: 340, height: 540)
+    }
+
+    /// azuki-apiを利用したクレジット購入UI
+    struct CreditPurchaseView: View {
+        @EnvironmentObject private var creditStore: CreditStore
+        @State private var isProcessing = false
+        @State private var alertInfo: AlertInfo?
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                Label {
+                    Text("ChatGPT連携クレジット")
+                        .font(.body.weight(.bold))
+                        .foregroundColor(.accentColor)
+                } icon: {
+                    Image(systemName: "creditcard")
+                        .symbolRenderingMode(.hierarchical)
+                }
+
+                Text("現在の残高: \(creditStore.credits) クレジット")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+
+                Button(action: purchaseCredits) {
+                    HStack {
+                        if isProcessing {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        }
+                        Text("3クレジットを追加する")
+                            .font(.callout.weight(.semibold))
+                    }
+                }
+                .disabled(isProcessing)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .alert(item: $alertInfo) { info in
+                Alert(title: Text(info.title), message: Text(info.message), dismissButton: .default(Text("OK")))
+            }
+        }
+
+        private func purchaseCredits() {
+            isProcessing = true
+            Task {
+                do {
+                    let added = try await AzukiAPIClient.shared.purchaseMinimumCredits()
+                    creditStore.add(credits: added)
+                    alertInfo = AlertInfo(title: "購入完了", message: "クレジットを\(added)追加しました。")
+                } catch {
+                    let message: String
+                    if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
+                        message = description
+                    } else {
+                        message = "購入処理で不明なエラーが発生しました。時間を空けて再度お試しください。"
+                    }
+                    alertInfo = AlertInfo(title: "購入失敗", message: message)
+                }
+                isProcessing = false
+            }
+        }
+
+        private struct AlertInfo: Identifiable {
+            let title: String
+            let message: String
+            var id: String { title + message }
+        }
     }
 
     private var header: some View {
