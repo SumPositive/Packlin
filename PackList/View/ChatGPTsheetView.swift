@@ -427,7 +427,7 @@ struct ChatGPTgeneratorView: View {
     }
 
     /// StoreKit 2 の検証結果から信頼できる `Transaction` を取り出す
-    private func resolveVerifiedTransaction(from result: VerificationResult<Transaction>) async throws -> Transaction {
+    private func resolveVerifiedTransaction(from result: VerificationResult<StoreKit.Transaction>) async throws -> StoreKit.Transaction {
         switch result {
         case .verified(let transaction):
             return transaction
@@ -445,7 +445,7 @@ struct ChatGPTgeneratorView: View {
     }
 
     /// サーバーへレシート情報を転送し、残高を更新する
-    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction) async throws -> AzukiAPIClient.CreditPurchaseResult {
+    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async throws -> AzukiAPIClient.CreditPurchaseResult {
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
         let receipt = transaction.jwsRepresentation
@@ -458,7 +458,7 @@ struct ChatGPTgeneratorView: View {
     }
 
     /// トランザクションの完了とUI更新をまとめて処理する
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction, serverResult: AzukiAPIClient.CreditPurchaseResult) async throws {
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, serverResult: AzukiAPIClient.CreditPurchaseResult) async throws {
         do {
             try await transaction.finish()
         } catch {
