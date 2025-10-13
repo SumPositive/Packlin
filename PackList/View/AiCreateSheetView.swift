@@ -457,16 +457,21 @@ struct AiCreateView: View {
     private func fetchAppStoreReceipt() async throws -> String {
         // iOS 18 以降では AppTransaction.shared の署名付きデータをレシートの代替として使用する
         if #available(iOS 18.0, *) {
-            // AppTransaction.shared はアプリ全体で共有されるので、nil の場合は取得に失敗したと判断する
-            guard let appTransaction = try await AppTransaction.shared else {
-                throw PurchaseFlowError.receiptMissing
-            }
+            // AppTransaction.shared は常に VerificationResult を返すため、
+            // まずは検証済みのトランザクションだけを安全に取り出す
+            let verificationResult = try await AppTransaction.shared
+            let appTransaction = try await resolveVerifiedAppTransaction(from: verificationResult)
             let signedData = appTransaction.signedData
             if signedData.isEmpty {
+                // 署名付きデータが空の場合は購入情報が欠落しているとみなす
                 throw PurchaseFlowError.receiptMissing
             }
-            // サーバー側では既存ロジックを流用するため、署名付きデータをそのまま返す
-            return signedData
+            // サーバー側で従来どおり Base64 文字列を扱えるように変換したものを返す
+            let base64String = signedData.base64EncodedString()
+            if base64String.isEmpty {
+                throw PurchaseFlowError.receiptMissing
+            }
+            return base64String
         } else {
             // App Storeレシートの保存場所を特定。存在しない場合は課金処理を中断する
             guard let receiptURL = Bundle.main.appStoreReceiptURL else {
@@ -479,6 +484,20 @@ struct AiCreateView: View {
             }
             // サーバー側で検証しやすいようにBase64へ変換した文字列を返す
             return receiptData.base64EncodedString()
+        }
+    }
+
+    /// AppTransaction の検証結果から利用可能なレシート情報を取り出す
+    /// - Parameter result: App Store が返した検証結果
+    /// - Returns: 正常に検証を通過した AppTransaction
+    private func resolveVerifiedAppTransaction(from result: VerificationResult<AppTransaction>) async throws -> AppTransaction {
+        switch result {
+        case .verified(let transaction):
+            // 署名付きデータを使用するため、検証済みの情報のみを返す
+            return transaction
+        case .unverified(_, let verificationError):
+            let baseMessage = verificationError.localizedDescription
+            throw PurchaseFlowError.transactionUnverified(message: baseMessage)
         }
     }
 
