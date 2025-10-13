@@ -256,7 +256,7 @@ struct SettingView: View {
             .buttonStyle(.plain)
             .sheet(isPresented: $showChatGPTsheet) {
                 // パックをChatGPTで生成　シート
-                ChatGPTsheetView()
+                AiCreateSheetView()
             }
 
         }
