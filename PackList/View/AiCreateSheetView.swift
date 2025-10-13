@@ -455,17 +455,21 @@ struct AiCreateView: View {
     /// バンドル内に保存されたApp StoreレシートをBase64文字列として取得
     /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
     private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
-        // iOS 18 以降では StoreKit.Transaction の署名情報を優先的に転送する
-        // signedDataRepresentation は StoreKit 2 が提供する公式の署名済みバイト列
-        // （App Store サーバー検証に使える JWS 形式）なので、従来のレシート互換として扱う
-        let signedData = transaction.signedDataRepresentation
-        if signedData.isEmpty {
-            // 署名付きデータが空の場合はレシート欠落と同等に扱う
+        // ターゲットが iOS 18 以上で統一されたため、下位互換のレシート取得処理は廃止する
+        // StoreKit.Transaction が保持する jwsRepresentation は署名済みトランザクションのJWS文字列
+        // これをBase64へ変換することで、サーバー側の既存レシート受け渡し仕様と互換にしている
+        let jwsText = transaction.jwsRepresentation
+        if jwsText.isEmpty {
+            // 空文字が返る場合は異常系と捉え、レシート欠落エラーにフォールバックする
             throw PurchaseFlowError.receiptMissing
         }
-        // Base64 化することで、サーバー実装を変更せずに互換性を確保する
-        let base64String = signedData.base64EncodedString()
+        guard let utf8Data = jwsText.data(using: .utf8) else {
+            // UTF-8 化できないケースは理論上起こりにくいが、確実にエラーへ倒して調査しやすくする
+            throw PurchaseFlowError.receiptMissing
+        }
+        let base64String = utf8Data.base64EncodedString()
         if base64String.isEmpty {
+            // Base64 へ変換した結果が空の場合も不整合なので、同様にエラー通知する
             throw PurchaseFlowError.receiptMissing
         }
         return base64String
