@@ -409,7 +409,7 @@ struct AiCreateView: View {
         }
 
         // StoreKit 2 の `Product.products` は例外を投げないため、`try` を使わずシンプルに取得する
-        let fetched = await Product.products(for: [productId])
+        let fetched = try await Product.products(for: [productId])
         // 商品がまったく返ってこなければカタログの不整合と判断してエラーにする
         if fetched.isEmpty {
             throw PurchaseFlowError.productNotFound
@@ -431,7 +431,7 @@ struct AiCreateView: View {
         case .verified(let transaction):
             return transaction
         case .unverified(let transaction, let verificationError):
-            let baseMessage = verificationError?.localizedDescription ?? "購入情報の検証に失敗しました。"
+                let baseMessage = verificationError.localizedDescription
             do {
                 try await transaction.finish()
             } catch {
