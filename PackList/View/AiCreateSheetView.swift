@@ -443,7 +443,7 @@ struct AiCreateView: View {
     private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async throws -> AzukiApi.CreditPurchaseResult {
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
-        let receipt = try await fetchAppStoreReceipt()
+        let receipt = try await fetchAppStoreReceipt(from: transaction)
         return try await AzukiApi.shared.purchaseCredits(
             option: option,
             userId: userId,
@@ -454,19 +454,16 @@ struct AiCreateView: View {
 
     /// バンドル内に保存されたApp StoreレシートをBase64文字列として取得
     /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
-    private func fetchAppStoreReceipt() async throws -> String {
-        // iOS 18 以降では AppTransaction.shared の署名付きデータをレシートの代替として使用する
+    private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
+        // iOS 18 以降では StoreKit.Transaction の署名情報を優先的に転送する
         if #available(iOS 18.0, *) {
-            // AppTransaction.shared は常に VerificationResult を返すため、
-            // まずは検証済みのトランザクションだけを安全に取り出す
-            let verificationResult = try await AppTransaction.shared
-            let appTransaction = try await resolveVerifiedAppTransaction(from: verificationResult)
-            let signedData = appTransaction.signedData
+            // signedData は StoreKit 2 の公式な署名済み情報なので、従来のレシート互換として扱う
+            let signedData = transaction.signedData
             if signedData.isEmpty {
-                // 署名付きデータが空の場合は購入情報が欠落しているとみなす
+                // 署名付きデータが空の場合はレシート欠落と同等に扱う
                 throw PurchaseFlowError.receiptMissing
             }
-            // サーバー側で従来どおり Base64 文字列を扱えるように変換したものを返す
+            // Base64 化することで、サーバー実装を変更せずに互換性を確保する
             let base64String = signedData.base64EncodedString()
             if base64String.isEmpty {
                 throw PurchaseFlowError.receiptMissing
@@ -484,20 +481,6 @@ struct AiCreateView: View {
             }
             // サーバー側で検証しやすいようにBase64へ変換した文字列を返す
             return receiptData.base64EncodedString()
-        }
-    }
-
-    /// AppTransaction の検証結果から利用可能なレシート情報を取り出す
-    /// - Parameter result: App Store が返した検証結果
-    /// - Returns: 正常に検証を通過した AppTransaction
-    private func resolveVerifiedAppTransaction(from result: VerificationResult<AppTransaction>) async throws -> AppTransaction {
-        switch result {
-        case .verified(let transaction):
-            // 署名付きデータを使用するため、検証済みの情報のみを返す
-            return transaction
-        case .unverified(_, let verificationError):
-            let baseMessage = verificationError.localizedDescription
-            throw PurchaseFlowError.transactionUnverified(message: baseMessage)
         }
     }
 
