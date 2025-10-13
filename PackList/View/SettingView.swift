@@ -229,7 +229,7 @@ struct SettingView: View {
         }
     }
 
-    /// パックをChatGPTに作ってもらう
+    /// AIにパックを作ってもらおう
     struct ChatGPTgenerateView: View {
         @State private var showChatGPTsheet = false
         
@@ -239,7 +239,7 @@ struct SettingView: View {
                 showChatGPTsheet = true
             }) {
                 Label {
-                    Text("setting.chatgpt.generate")
+                    Text("ai.create.title")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {

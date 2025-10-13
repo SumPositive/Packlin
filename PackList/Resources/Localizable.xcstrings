@@ -281,13 +281,30 @@
 
     },
     "ai.create.instructions" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作って欲しいパックの要望や条件などを入れてから「AIに作ってもらう」を押してください"
+          }
+        }
+      }
     },
     "ai.create.title" : {
-
-    },
-    "AIに作ってもらう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let’s create a pack with AI!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AIにパックを作ってもらおう"
+          }
+        }
+      }
     },
     "AIへ依頼中です。もう少しお待ちください" : {
 
@@ -320,23 +337,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "モチメモ"
-          }
-        }
-      }
-    },
-    "chatgpt.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Let’s create a pack with AI !"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "パックをAIに作ってもらおう"
           }
         }
       }
@@ -1210,6 +1210,7 @@
       }
     },
     "setting.chatgpt.generate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1220,7 +1221,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "パックをChatGPTで生成"
+            "value" : "パックAIにをChatGPTで生成"
           }
         }
       }
@@ -1485,6 +1486,12 @@
 
     },
     "例）夏の3泊4日キャンプ。\n家族4人（大人2人、子ども2人）用の持ち物を準備。\n食材は現地調達。\n雨天も想定。" : {
+
+    },
+    "動画広告を見て、AIに作ってもらう（無料）" : {
+
+    },
+    "投げ銭して、AIに作ってもらう（¥50）" : {
 
     }
   },

@@ -61,13 +61,18 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("ai.create.title") //"ChatGPTに作ってもらおう")
+                Text("ai.create.title") //"AIにパックを作ってもらおう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
                     .symbolRenderingMode(.hierarchical)
             }
 
+            // 操作説明（アプリ内生成の流れを簡潔に案内）
+            Text("ai.create.instructions") //要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います
+                .font(.body)
+                .foregroundStyle(.secondary)
+            
             // 入力欄とプレースホルダー
             ZStack(alignment: .topLeading) {
                 TextEditor(text: $requirementText)
@@ -101,24 +106,36 @@ struct AiCreateView: View {
                 }
             }
 
-            // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("ai.create.instructions") //ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
-            Button(action: generatePackWithOpenAI) {
+            Button {
+                //TODO: アプリ内課金¥50してからazuki-api経由でOpenAIにパック生成を依頼する
+            } label: {
                 HStack {
                     if isGenerating {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
+                    Text(isGenerating ? "お作りしています..." : "投げ銭して、AIに作ってもらう（¥50）")
                         .font(.callout.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity)
             }
             .disabled(isRequirementEmpty || isGenerating)
 
+            Button {
+                //TODO: 単価¥30以上の広告を見せてからazuki-api経由でOpenAIにパック生成を依頼する
+            } label: {
+                HStack {
+                    if isGenerating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                    }
+                    Text(isGenerating ? "お作りしています..." : "動画広告を見て、AIに作ってもらう（無料）")
+                        .font(.callout.weight(.semibold))
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .disabled(isRequirementEmpty || isGenerating)
+            
             if isGenerating {
                 Text("AIへ依頼中です。もう少しお待ちください")
                     .font(.footnote)
@@ -127,8 +144,8 @@ struct AiCreateView: View {
 
             Divider()
 
-            // 回数券購入
-            creditPurchaseMenu
+//            // 回数券購入
+//            creditPurchaseMenu
             
         }
         .padding(16)
