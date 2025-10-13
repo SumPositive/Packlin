@@ -457,8 +457,9 @@ struct AiCreateView: View {
     private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
         // iOS 18 以降では StoreKit.Transaction の署名情報を優先的に転送する
         if #available(iOS 18.0, *) {
-            // signedData は StoreKit 2 の公式な署名済み情報なので、従来のレシート互換として扱う
-            let signedData = transaction.signedData
+            // signedDataRepresentation は StoreKit 2 が提供する公式の署名済みバイト列
+            // （App Store サーバー検証に使える JWS 形式）なので、従来のレシート互換として扱う
+            let signedData = transaction.signedDataRepresentation
             if signedData.isEmpty {
                 // 署名付きデータが空の場合はレシート欠落と同等に扱う
                 throw PurchaseFlowError.receiptMissing
