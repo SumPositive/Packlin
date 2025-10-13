@@ -455,21 +455,34 @@ struct AiCreateView: View {
     /// バンドル内に保存されたApp StoreレシートをBase64文字列として取得
     /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
     private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
-        // ターゲットが iOS 18 以上で統一されたため、下位互換のレシート取得処理は廃止する
-        // StoreKit.Transaction が保持する jwsRepresentation は署名済みトランザクションのJWS文字列
-        // これをBase64へ変換することで、サーバー側の既存レシート受け渡し仕様と互換にしている
-        let jwsText = transaction.jwsRepresentation
-        if jwsText.isEmpty {
-            // 空文字が返る場合は異常系と捉え、レシート欠落エラーにフォールバックする
+        // iOS 18 以上をターゲットにしているが、StoreKit.Transaction 側の署名APIは
+        // 利用環境のSDKに依存してビルドエラーとなるため、従来どおりバンドル内の
+        // レシートファイルを読み出してBase64化する手順に戻す。
+        // 今後 SDK 更新で `signedDataRepresentation` や類似APIが安定利用できたら、
+        // そのタイミングでサーバーへの受け渡し形式を再検討する想定。
+
+        // App Store レシートはバンドル内の決められた場所に配置されるため、
+        // guard で存在確認しつつ、存在しない場合は課金情報を送信できないのでエラー扱いにする。
+        // 引数の transaction は将来的に署名APIへ切り替える際に再活用するため、
+        // 現段階では未使用であることを明示しておく。
+        _ = transaction
+
+        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
             throw PurchaseFlowError.receiptMissing
         }
-        guard let utf8Data = jwsText.data(using: .utf8) else {
-            // UTF-8 化できないケースは理論上起こりにくいが、確実にエラーへ倒して調査しやすくする
+
+        // ファイル読み込み時に I/O エラーが発生する可能性があるため、
+        // do-catch ではなく throws 付きの Data イニシャライザで自然にエラーを伝播させる。
+        // 空データが返ったときもレシート欠落と同義なのでエラーに倒す。
+        let receiptData = try Data(contentsOf: receiptURL)
+        if receiptData.isEmpty {
             throw PurchaseFlowError.receiptMissing
         }
-        let base64String = utf8Data.base64EncodedString()
+
+        // サーバー側は既存処理として Base64 の文字列表現を受け取るので、
+        // Data -> Base64 -> String の順で変換し、空文字でないことを再チェックする。
+        let base64String = receiptData.base64EncodedString()
         if base64String.isEmpty {
-            // Base64 へ変換した結果が空の場合も不整合なので、同様にエラー通知する
             throw PurchaseFlowError.receiptMissing
         }
         return base64String
