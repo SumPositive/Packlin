@@ -495,7 +495,8 @@ struct AiCreateView: View {
         private func loadRewardedAd() async throws -> RewardedAd {
             try await withCheckedThrowingContinuation { continuation in
                 let request = Request()
-                RewardedAd.load(withAdUnitID: ADMOB_VIDEO_UnitID, request: request) { ad, error in
+                // Swiftの命名規則に合わせたload APIを利用し、広告ユニットIDとリクエストを渡す
+                RewardedAd.load(with: ADMOB_VIDEO_UnitID, request: request) { ad, error in
                     if let error {
                         continuation.resume(throwing: error)
                         return
@@ -523,8 +524,9 @@ struct AiCreateView: View {
                             return
                         }
                         ad.fullScreenContentDelegate = self
-                        ad.present(from: root) { [weak self] reward in
-                            self?.earnedReward = reward
+                        // presentのコールバックは報酬型広告が完了した際に呼ばれるので、戻り値ではなくad.adRewardから取得する
+                        ad.present(from: root) { [weak self] in
+                            self?.earnedReward = ad.adReward
                         }
                     }
                 }
