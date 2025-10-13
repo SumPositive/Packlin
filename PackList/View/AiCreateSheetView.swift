@@ -42,7 +42,8 @@ struct AiCreateView: View {
     @EnvironmentObject private var creditStore: CreditStore
 
     /// ユーザーからAIへの要望・要件テキスト
-   @State private var requirementText: String = ""
+    /// AppStorageを利用してシートを閉じても入力内容を保持する
+    @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ

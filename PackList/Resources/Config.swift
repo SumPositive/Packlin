@@ -144,6 +144,8 @@ enum AppStorageKey {
     static let footerMessage = "setting.footerMessage"
     // 重量計をKgで表示
     static let weightDisplayInKg = "setting.weightDisplayInKg"
+    // AI生成画面での要望テキスト（AppStorageで復元するためのキー）
+    static let aiRequirementText = "aiCreate.requirementText"
 }
 
 /// 新規追加する位置
