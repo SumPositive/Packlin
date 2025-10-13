@@ -299,7 +299,7 @@ struct AiCreateView: View {
                     // 3. トランザクション署名を検証し、サーバーへレシートを送信
                     let transaction = try await resolveVerifiedTransaction(from: verificationResult)
                     let serverResult = try await registerPurchaseOnServer(option: option, transaction: transaction)
-                    try await finalizePurchase(option: option, transaction: transaction, serverResult: serverResult)
+                    await finalizePurchase(option: option, transaction: transaction, serverResult: serverResult)
 
                 case .pending:
                     // ファミリー共有などで承認待ちになる場合
@@ -432,13 +432,9 @@ struct AiCreateView: View {
             return transaction
         case .unverified(let transaction, let verificationError):
                 let baseMessage = verificationError.localizedDescription
-            do {
-                try await transaction.finish()
-            } catch {
-                #if DEBUG
-                print("failed to finish unverified transaction: \(error)")
-                #endif
-            }
+            // StoreKit 2 の `finish()` は iOS 18 から投げなくなったので、
+            // ここでは失敗しても致命的ではないことを前提にベストエフォートで完了させる
+            await transaction.finish()
             throw PurchaseFlowError.transactionUnverified(message: baseMessage)
         }
     }
@@ -457,12 +453,10 @@ struct AiCreateView: View {
     }
 
     /// トランザクションの完了とUI更新をまとめて処理する
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, serverResult: AzukiApi.CreditPurchaseResult) async throws {
-        do {
-            try await transaction.finish()
-        } catch {
-            throw PurchaseFlowError.finishFailed
-        }
+    /// - Note: `finish()` は iOS 18 以降で `async` のみとなったため、例外ハンドリングは不要になった
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, serverResult: AzukiApi.CreditPurchaseResult) async {
+        // 念のため完了処理を待ってからUIを更新することで、重複反映のリスクを避ける
+        await transaction.finish()
 
         await MainActor.run {
             creditStore.overwrite(credits: serverResult.balance)
@@ -478,9 +472,6 @@ struct AiCreateView: View {
         case productLoadFailed
         /// トランザクションが検証に失敗した（改ざんや未承認）
         case transactionUnverified(message: String)
-        /// `transaction.finish()` の完了に失敗した
-        case finishFailed
-
         var errorDescription: String? {
             switch self {
             case .productNotFound:
@@ -489,8 +480,6 @@ struct AiCreateView: View {
                 return "商品情報を取得できませんでした。ネットワーク環境をご確認のうえ再度お試しください。"
             case .transactionUnverified(let message):
                 return message
-            case .finishFailed:
-                return "購入完了処理に失敗しました。再起動後も改善しない場合はサポートへお問い合わせください。"
             }
         }
     }
