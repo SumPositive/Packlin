@@ -48,7 +48,10 @@ struct AiCreateView: View {
     @EnvironmentObject private var creditStore: CreditStore
 
     /// ユーザーからAIへの要望・要件テキスト
-   @State private var requirementText: String = ""
+    /// テキストエディタの入力内容
+    @State private var requirementText: String = ""
+    /// TextEditorへのフォーカス状態を追跡して、タップ全域で反応させる
+    @FocusState private var isRequirementFocused: Bool
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -93,6 +96,7 @@ struct AiCreateView: View {
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
                     .accessibilityLabel(Text("ai.create.accessibility")) //"PackListの要件入力"
+                    .focused($isRequirementFocused)
 
                 if isRequirementEmpty {
                     // 入力例
@@ -109,7 +113,13 @@ struct AiCreateView: View {
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 16)
                         .padding(.horizontal, 16)
+                        .allowsHitTesting(false) // プレースホルダーがタップを奪わないようにする
                 }
+            }
+            .contentShape(Rectangle()) // ビュー全域をタップ判定に含める
+            .onTapGesture {
+                // 全面タップでTextEditorへフォーカスを移し、入力開始をスムーズにする
+                isRequirementFocused = true
             }
 
             Button {
