@@ -443,7 +443,7 @@ struct AiCreateView: View {
     private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async throws -> AzukiApi.CreditPurchaseResult {
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
-        let receipt = try fetchAppStoreReceipt()
+        let receipt = try await fetchAppStoreReceipt()
         return try await AzukiApi.shared.purchaseCredits(
             option: option,
             userId: userId,
@@ -454,18 +454,32 @@ struct AiCreateView: View {
 
     /// バンドル内に保存されたApp StoreレシートをBase64文字列として取得
     /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
-    private func fetchAppStoreReceipt() throws -> String {
-        // App Storeレシートの保存場所を特定。存在しない場合は課金処理を中断する
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
-            throw PurchaseFlowError.receiptMissing
+    private func fetchAppStoreReceipt() async throws -> String {
+        // iOS 18 以降では AppTransaction.shared の署名付きデータをレシートの代替として使用する
+        if #available(iOS 18.0, *) {
+            // AppTransaction.shared はアプリ全体で共有されるので、nil の場合は取得に失敗したと判断する
+            guard let appTransaction = try await AppTransaction.shared else {
+                throw PurchaseFlowError.receiptMissing
+            }
+            let signedData = appTransaction.signedData
+            if signedData.isEmpty {
+                throw PurchaseFlowError.receiptMissing
+            }
+            // サーバー側では既存ロジックを流用するため、署名付きデータをそのまま返す
+            return signedData
+        } else {
+            // App Storeレシートの保存場所を特定。存在しない場合は課金処理を中断する
+            guard let receiptURL = Bundle.main.appStoreReceiptURL else {
+                throw PurchaseFlowError.receiptMissing
+            }
+            // レシートファイルをDataとして読み込む。空ファイルであれば不正とみなしてエラーを返す
+            let receiptData = try Data(contentsOf: receiptURL)
+            if receiptData.isEmpty {
+                throw PurchaseFlowError.receiptMissing
+            }
+            // サーバー側で検証しやすいようにBase64へ変換した文字列を返す
+            return receiptData.base64EncodedString()
         }
-        // レシートファイルをDataとして読み込む。空ファイルであれば不正とみなしてエラーを返す
-        let receiptData = try Data(contentsOf: receiptURL)
-        if receiptData.isEmpty {
-            throw PurchaseFlowError.receiptMissing
-        }
-        // サーバー側で検証しやすいようにBase64へ変換した文字列を返す
-        return receiptData.base64EncodedString()
     }
 
     /// トランザクションの完了とUI更新をまとめて処理する
@@ -488,6 +502,8 @@ struct AiCreateView: View {
         case productLoadFailed
         /// トランザクションが検証に失敗した（改ざんや未承認）
         case transactionUnverified(message: String)
+        /// レシート情報が欠落または無効だった
+        case receiptMissing
         var errorDescription: String? {
             switch self {
             case .productNotFound:
@@ -496,6 +512,8 @@ struct AiCreateView: View {
                 return "商品情報を取得できませんでした。ネットワーク環境をご確認のうえ再度お試しください。"
             case .transactionUnverified(let message):
                 return message
+            case .receiptMissing:
+                return "購入情報の検証に必要なレシートが取得できませんでした。時間を置いて再試行してください。"
             }
         }
     }
