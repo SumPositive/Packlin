@@ -13,7 +13,7 @@ import StoreKit
 import UIKit
 #endif
 #if canImport(GoogleMobileAds)
-import GoogleMobileAds
+@preconcurrency import GoogleMobileAds
 #endif
 
 
@@ -474,6 +474,7 @@ struct AiCreateView: View {
 
 #if canImport(GoogleMobileAds)
     /// GoogleMobileAdsを利用して報酬型広告を表示するためのヘルパークラス
+    @MainActor
     private final class RewardedAdFlow: NSObject, FullScreenContentDelegate {
         private let minimumRewardYen: Int
         private var rewardedAd: RewardedAd?
@@ -516,19 +517,16 @@ struct AiCreateView: View {
                 dismissalContinuation = continuation
                 earnedReward = nil
 
-                Task {
-                    await MainActor.run {
-                        guard let root = UIApplication.topMostViewController() else {
-                            dismissalContinuation = nil
-                            continuation.resume(throwing: AdRewardFlowError.noPresenter)
-                            return
-                        }
-                        ad.fullScreenContentDelegate = self
-                        // presentのコールバックは報酬型広告が完了した際に呼ばれるので、戻り値ではなくad.adRewardから取得する
-                        ad.present(from: root) { [weak self] in
-                            self?.earnedReward = ad.adReward
-                        }
-                    }
+                // Taskを挟まず、MainActorで逐次実行することでSendable警告を避けつつUI操作を安全に行う
+                guard let root = UIApplication.topMostViewController() else {
+                    dismissalContinuation = nil
+                    continuation.resume(throwing: AdRewardFlowError.noPresenter)
+                    return
+                }
+                ad.fullScreenContentDelegate = self
+                // 報酬情報はRewardedAdインスタンスが保持しているため、クロージャではインスタンスを再参照する
+                ad.present(from: root) { [weak self] in
+                    self?.earnedReward = self?.rewardedAd?.adReward
                 }
             }
         }
