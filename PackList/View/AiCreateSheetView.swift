@@ -107,35 +107,20 @@ struct AiCreateView: View {
             }
 
             Button {
-                //TODO: アプリ内課金¥50してからazuki-api経由でOpenAIにパック生成を依頼する
+                generatePackWithOpenAI()
             } label: {
                 HStack {
                     if isGenerating {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "投げ銭して、AIに作ってもらう（¥50）")
+                    Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
                         .font(.callout.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity)
             }
             .disabled(isRequirementEmpty || isGenerating)
 
-            Button {
-                //TODO: 単価¥30以上の広告を見せてからazuki-api経由でOpenAIにパック生成を依頼する
-            } label: {
-                HStack {
-                    if isGenerating {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                    }
-                    Text(isGenerating ? "お作りしています..." : "動画広告を見て、AIに作ってもらう（無料）")
-                        .font(.callout.weight(.semibold))
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .disabled(isRequirementEmpty || isGenerating)
-            
             if isGenerating {
                 Text("AIへ依頼中です。もう少しお待ちください")
                     .font(.footnote)
@@ -144,8 +129,8 @@ struct AiCreateView: View {
 
             Divider()
 
-//            // 回数券購入
-//            creditPurchaseMenu
+            // 回数券購入
+            creditPurchaseMenu
             
         }
         .padding(16)
