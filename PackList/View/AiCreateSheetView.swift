@@ -402,26 +402,27 @@ struct AiCreateView: View {
 
     /// キャッシュ済みまたは都度取得した `Product` を返す
     private func fetchProduct(matching productId: String) async throws -> Product {
+        // すでに取得済みの `Product` があればそのまま返して無駄なネットワークアクセスを避ける
         let cachedProduct = await MainActor.run { storeProducts.first(where: { $0.id == productId }) }
         if let cached = cachedProduct {
             return cached
         }
 
-        do {
-            let fetched = try await Product.products(for: [productId])
-            if fetched.isEmpty {
-                throw PurchaseFlowError.productNotFound
-            }
-            guard let product = fetched.first(where: { $0.id == productId }) else {
-                throw PurchaseFlowError.productNotFound
-            }
-            await MainActor.run {
-                storeProducts.append(product)
-            }
-            return product
-        } catch {
-            throw PurchaseFlowError.productLoadFailed
+        // StoreKit 2 の `Product.products` は例外を投げないため、`try` を使わずシンプルに取得する
+        let fetched = await Product.products(for: [productId])
+        // 商品がまったく返ってこなければカタログの不整合と判断してエラーにする
+        if fetched.isEmpty {
+            throw PurchaseFlowError.productNotFound
         }
+        // 目的のIDが見つからなければ同じく失敗として処理する
+        guard let product = fetched.first(where: { $0.id == productId }) else {
+            throw PurchaseFlowError.productNotFound
+        }
+        // 新しく取得した商品はキャッシュに積んで、次回以降は即座に返せるようにする
+        await MainActor.run {
+            storeProducts.append(product)
+        }
+        return product
     }
 
     /// StoreKit 2 の検証結果から信頼できる `Transaction` を取り出す
@@ -443,7 +444,7 @@ struct AiCreateView: View {
     }
 
     /// サーバーへレシート情報を転送し、残高を更新する
-    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction) async throws -> AzukiApi.CreditPurchaseResult {
+    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async throws -> AzukiApi.CreditPurchaseResult {
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
         let receipt = transaction.jwsRepresentation
@@ -456,7 +457,7 @@ struct AiCreateView: View {
     }
 
     /// トランザクションの完了とUI更新をまとめて処理する
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction, serverResult: AzukiApi.CreditPurchaseResult) async throws {
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, serverResult: AzukiApi.CreditPurchaseResult) async throws {
         do {
             try await transaction.finish()
         } catch {
