@@ -138,14 +138,9 @@ struct SettingView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            if #available(iOS 18.0, *) {
-                Image(systemName: "gearshape")
-                    .symbolRenderingMode(.hierarchical)
-                    .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
-            } else {
-                Image(systemName: "gearshape")
-                    .symbolRenderingMode(.hierarchical)
-            }
+            Image(systemName: "gearshape")
+                .symbolRenderingMode(.hierarchical)
+                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
 
             Text("setting.title")
                 .font(.title3.weight(.regular))
@@ -480,14 +475,9 @@ struct SettingView: View {
                     Text("ad.empowering.developers")
                         .font(.body.weight(.medium))
                 } icon: {
-                    if #available(iOS 18.0, *) {
-                        Image(systemName: "heart.fill")
-                            .symbolRenderingMode(.hierarchical)
-                            .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
-                    } else {
-                        Image(systemName: "heart.fill")
-                            .symbolRenderingMode(.hierarchical)
-                    }
+                    Image(systemName: "heart.fill")
+                        .symbolRenderingMode(.hierarchical)
+                        .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
                 }
 
                 VStack(alignment: .leading, spacing: 16) {

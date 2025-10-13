@@ -456,33 +456,19 @@ struct AiCreateView: View {
     /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
     private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
         // iOS 18 以降では StoreKit.Transaction の署名情報を優先的に転送する
-        if #available(iOS 18.0, *) {
-            // signedDataRepresentation は StoreKit 2 が提供する公式の署名済みバイト列
-            // （App Store サーバー検証に使える JWS 形式）なので、従来のレシート互換として扱う
-            let signedData = transaction.signedDataRepresentation
-            if signedData.isEmpty {
-                // 署名付きデータが空の場合はレシート欠落と同等に扱う
-                throw PurchaseFlowError.receiptMissing
-            }
-            // Base64 化することで、サーバー実装を変更せずに互換性を確保する
-            let base64String = signedData.base64EncodedString()
-            if base64String.isEmpty {
-                throw PurchaseFlowError.receiptMissing
-            }
-            return base64String
-        } else {
-            // App Storeレシートの保存場所を特定。存在しない場合は課金処理を中断する
-            guard let receiptURL = Bundle.main.appStoreReceiptURL else {
-                throw PurchaseFlowError.receiptMissing
-            }
-            // レシートファイルをDataとして読み込む。空ファイルであれば不正とみなしてエラーを返す
-            let receiptData = try Data(contentsOf: receiptURL)
-            if receiptData.isEmpty {
-                throw PurchaseFlowError.receiptMissing
-            }
-            // サーバー側で検証しやすいようにBase64へ変換した文字列を返す
-            return receiptData.base64EncodedString()
+        // signedDataRepresentation は StoreKit 2 が提供する公式の署名済みバイト列
+        // （App Store サーバー検証に使える JWS 形式）なので、従来のレシート互換として扱う
+        let signedData = transaction.signedDataRepresentation
+        if signedData.isEmpty {
+            // 署名付きデータが空の場合はレシート欠落と同等に扱う
+            throw PurchaseFlowError.receiptMissing
         }
+        // Base64 化することで、サーバー実装を変更せずに互換性を確保する
+        let base64String = signedData.base64EncodedString()
+        if base64String.isEmpty {
+            throw PurchaseFlowError.receiptMissing
+        }
+        return base64String
     }
 
     /// トランザクションの完了とUI更新をまとめて処理する
