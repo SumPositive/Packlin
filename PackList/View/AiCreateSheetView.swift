@@ -50,8 +50,6 @@ struct AiCreateView: View {
     /// ユーザーからAIへの要望・要件テキスト
     /// テキストエディタの入力内容
     @State private var requirementText: String = ""
-    /// TextEditorへのフォーカス状態を追跡して、タップ全域で反応させる
-    @FocusState private var isRequirementFocused: Bool
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -96,7 +94,6 @@ struct AiCreateView: View {
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
                     .accessibilityLabel(Text("ai.create.accessibility")) //"PackListの要件入力"
-                    .focused($isRequirementFocused)
 
                 if isRequirementEmpty {
                     // 入力例
@@ -117,10 +114,6 @@ struct AiCreateView: View {
                 }
             }
             .contentShape(Rectangle()) // ビュー全域をタップ判定に含める
-            .onTapGesture {
-                // 全面タップでTextEditorへフォーカスを移し、入力開始をスムーズにする
-                isRequirementFocused = true
-            }
 
             Button {
                 // 先にアプリ内課金を完了させ、その後でAI生成フローへ進める
@@ -133,8 +126,9 @@ struct AiCreateView: View {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "投げ銭して、AIに作ってもらう（¥50）")
+                    Text("投げ銭して、AIに作ってもらう（¥50）")
                         .font(.callout.weight(.semibold))
+                        .disabled(isGenerating)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -151,8 +145,9 @@ struct AiCreateView: View {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "動画広告を見て、AIに作ってもらう（無料）")
+                    Text("動画広告を見て、AIに作ってもらう（無料）")
                         .font(.callout.weight(.semibold))
+                        .disabled(isGenerating)
                 }
                 .frame(maxWidth: .infinity)
             }
