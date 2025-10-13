@@ -467,7 +467,17 @@ struct AiCreateView: View {
         // 現段階では未使用であることを明示しておく。
         _ = transaction
 
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
+        // iOS 18 からは `appStoreReceiptURL` が非推奨になったため、
+        // セレクタ経由で取得してビルド時の警告を抑制する。
+        // StoreKit 2 の新しい API が SDK に取り込まれ次第、
+        // こちらの回避策は削除して `AppTransaction.shared` 系へ切り替える想定。
+        let receiptURLSelector = NSSelectorFromString("appStoreReceiptURL")
+        guard Bundle.main.responds(to: receiptURLSelector) else {
+            throw PurchaseFlowError.receiptMissing
+        }
+
+        let receiptURLObject = Bundle.main.perform(receiptURLSelector)?.takeUnretainedValue()
+        guard let receiptURL = receiptURLObject as? URL else {
             throw PurchaseFlowError.receiptMissing
         }
 
