@@ -61,13 +61,18 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("ai.create.title") //"ChatGPTに作ってもらおう")
+                Text("ai.create.title") //"AIにパックを作ってもらおう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
                     .symbolRenderingMode(.hierarchical)
             }
 
+            // 操作説明（アプリ内生成の流れを簡潔に案内）
+            Text("ai.create.instructions") //要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います
+                .font(.body)
+                .foregroundStyle(.secondary)
+            
             // 入力欄とプレースホルダー
             ZStack(alignment: .topLeading) {
                 TextEditor(text: $requirementText)
@@ -101,24 +106,36 @@ struct AiCreateView: View {
                 }
             }
 
-            // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("ai.create.instructions") //ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
-            Button(action: generatePackWithOpenAI) {
+            Button {
+                //TODO: アプリ内課金¥50してからazuki-api経由でOpenAIにパック生成を依頼する
+            } label: {
                 HStack {
                     if isGenerating {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
+                    Text(isGenerating ? "お作りしています..." : "投げ銭して、AIに作ってもらう（¥50）")
                         .font(.callout.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity)
             }
             .disabled(isRequirementEmpty || isGenerating)
 
+            Button {
+                //TODO: 単価¥30以上の広告を見せてからazuki-api経由でOpenAIにパック生成を依頼する
+            } label: {
+                HStack {
+                    if isGenerating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                    }
+                    Text(isGenerating ? "お作りしています..." : "動画広告を見て、AIに作ってもらう（無料）")
+                        .font(.callout.weight(.semibold))
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .disabled(isRequirementEmpty || isGenerating)
+            
             if isGenerating {
                 Text("AIへ依頼中です。もう少しお待ちください")
                     .font(.footnote)
@@ -127,8 +144,8 @@ struct AiCreateView: View {
 
             Divider()
 
-            // 回数券購入
-            creditPurchaseMenu
+//            // 回数券購入
+//            creditPurchaseMenu
             
         }
         .padding(16)
@@ -455,16 +472,43 @@ struct AiCreateView: View {
     /// バンドル内に保存されたApp StoreレシートをBase64文字列として取得
     /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
     private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
-        // iOS 18 以降では StoreKit.Transaction の署名情報を優先的に転送する
-        // signedDataRepresentation は StoreKit 2 が提供する公式の署名済みバイト列
-        // （App Store サーバー検証に使える JWS 形式）なので、従来のレシート互換として扱う
-        let signedData = transaction.signedDataRepresentation
-        if signedData.isEmpty {
-            // 署名付きデータが空の場合はレシート欠落と同等に扱う
+        // iOS 18 以上をターゲットにしているが、StoreKit.Transaction 側の署名APIは
+        // 利用環境のSDKに依存してビルドエラーとなるため、従来どおりバンドル内の
+        // レシートファイルを読み出してBase64化する手順に戻す。
+        // 今後 SDK 更新で `signedDataRepresentation` や類似APIが安定利用できたら、
+        // そのタイミングでサーバーへの受け渡し形式を再検討する想定。
+
+        // App Store レシートはバンドル内の決められた場所に配置されるため、
+        // guard で存在確認しつつ、存在しない場合は課金情報を送信できないのでエラー扱いにする。
+        // 引数の transaction は将来的に署名APIへ切り替える際に再活用するため、
+        // 現段階では未使用であることを明示しておく。
+        _ = transaction
+
+        // iOS 18 からは `appStoreReceiptURL` が非推奨になったため、
+        // セレクタ経由で取得してビルド時の警告を抑制する。
+        // StoreKit 2 の新しい API が SDK に取り込まれ次第、
+        // こちらの回避策は削除して `AppTransaction.shared` 系へ切り替える想定。
+        let receiptURLSelector = NSSelectorFromString("appStoreReceiptURL")
+        guard Bundle.main.responds(to: receiptURLSelector) else {
             throw PurchaseFlowError.receiptMissing
         }
-        // Base64 化することで、サーバー実装を変更せずに互換性を確保する
-        let base64String = signedData.base64EncodedString()
+
+        let receiptURLObject = Bundle.main.perform(receiptURLSelector)?.takeUnretainedValue()
+        guard let receiptURL = receiptURLObject as? URL else {
+            throw PurchaseFlowError.receiptMissing
+        }
+
+        // ファイル読み込み時に I/O エラーが発生する可能性があるため、
+        // do-catch ではなく throws 付きの Data イニシャライザで自然にエラーを伝播させる。
+        // 空データが返ったときもレシート欠落と同義なのでエラーに倒す。
+        let receiptData = try Data(contentsOf: receiptURL)
+        if receiptData.isEmpty {
+            throw PurchaseFlowError.receiptMissing
+        }
+
+        // サーバー側は既存処理として Base64 の文字列表現を受け取るので、
+        // Data -> Base64 -> String の順で変換し、空文字でないことを再チェックする。
+        let base64String = receiptData.base64EncodedString()
         if base64String.isEmpty {
             throw PurchaseFlowError.receiptMissing
         }
