@@ -90,10 +90,15 @@ final class AzukiAPIClient {
     /// - Parameters:
     ///   - option: Config.swiftで定義した商品情報タプル
     ///   - userId: azuki-apiが利用するユーザー識別子
-    ///   - transactionId: StoreKitのトランザクションID（未実装のためデフォルト値は一時的なUUID）
-    ///   - receiptData: App StoreレシートのBase64文字列（未実装のためデフォルト値はダミー文字列）
+    ///   - transactionId: StoreKit 2 の `Transaction.id` を文字列化したもの
+    ///   - receiptData: StoreKit 2 の `Transaction.jwsRepresentation` などサーバー検証に利用するJWS文字列
     /// - Returns: サーバーから返る最新残高と今回付与したクレジット数
-    func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int), userId: String, transactionId: String? = nil, receiptData: String? = nil) async throws -> CreditPurchaseResult {
+    func purchaseCredits(
+        option: (productId: String, priceYen: Int, credits: Int),
+        userId: String,
+        transactionId: String,
+        receiptData: String
+    ) async throws -> CreditPurchaseResult {
         struct PurchaseRequest: Encodable {
             let userId: String
             let productId: String
@@ -110,13 +115,11 @@ final class AzukiAPIClient {
             throw AzukiAPIError.invalidURL
         }
 
-        let resolvedTransactionId = transactionId ?? UUID().uuidString
-        let resolvedReceipt = receiptData ?? "local-\(resolvedTransactionId)"
         let requestBody = PurchaseRequest(
             userId: userId,
             productId: option.productId,
-            transactionId: resolvedTransactionId,
-            receipt: resolvedReceipt,
+            transactionId: transactionId,
+            receipt: receiptData,
             grantCredits: option.credits
         )
 

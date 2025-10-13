@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import Foundation
+import StoreKit
 
 
 /// パックをChatGPTで生成　シート
@@ -50,6 +51,8 @@ struct ChatGPTgeneratorView: View {
     @State private var isGenerating = false
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
     @State private var processingProductId: String?
+    /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
+    @State private var storeProducts: [Product] = []
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -134,6 +137,7 @@ struct ChatGPTgeneratorView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
             await refreshCreditBalance()
+            await loadProductsIfNeeded()
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -248,26 +252,60 @@ struct ChatGPTgeneratorView: View {
     /// クレジット購入
     /// - Parameter option: Configで定義したオプションタプル
     private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
-        processingProductId = option.productId
-        let userId = creditStore.userId
         Task {
+            await MainActor.run {
+                // 複数ボタンが並ぶため、購入中の選択肢のみローディング表示へ切り替える
+                processingProductId = option.productId
+            }
+
             do {
-                let result = try await AzukiAPIClient.shared.purchaseCredits(option: option, userId: userId)
+                // 1. StoreKit 2 から商品情報を取得（初回のみネットワーク越し）
+                await loadProductsIfNeeded()
+                let product = try await fetchProduct(matching: option.productId)
+
+                // 2. ユーザーに課金ダイアログを提示
+                let outcome = try await product.purchase()
+
+                switch outcome {
+                case .success(let verificationResult):
+                    // 3. トランザクション署名を検証し、サーバーへレシートを送信
+                    let transaction = try await resolveVerifiedTransaction(from: verificationResult)
+                    let serverResult = try await registerPurchaseOnServer(option: option, transaction: transaction)
+                    try await finalizePurchase(option: option, transaction: transaction, serverResult: serverResult)
+
+                case .pending:
+                    // ファミリー共有などで承認待ちになる場合
+                    await MainActor.run {
+                        alertState = .purchaseFailure(message: "購入が承認待ちです。承認が完了すると自動で反映されます。")
+                    }
+
+                case .userCancelled:
+                    // ユーザーがキャンセルした場合は状況を伝えるメッセージを表示
+                    await MainActor.run {
+                        alertState = .purchaseFailure(message: "購入をキャンセルしました。必要であれば再度お試しください。")
+                    }
+
+                @unknown default:
+                    await MainActor.run {
+                        alertState = .purchaseFailure(message: "想定外の購入結果が返りました。時間をおいて再度お試しください。")
+                    }
+                }
+            } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
-                    creditStore.overwrite(credits: result.balance)
-                    alertState = .purchaseSuccess(added: result.grantedCredits, priceYen: option.priceYen)
+                    let message = flowError.errorDescription ?? "AI利用券の購入に失敗しました。"
+                    alertState = .purchaseFailure(message: message)
+                }
+            } catch let localized as LocalizedError {
+                await MainActor.run {
+                    let message = localized.errorDescription ?? localized.localizedDescription
+                    alertState = .purchaseFailure(message: message)
                 }
             } catch {
                 await MainActor.run {
-                    let message: String
-                    if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
-                        message = description
-                    } else {
-                        message = "AI利用券の購入ができません。時間を空けて再度お試しください"
-                    }
-                    alertState = .purchaseFailure(message: message)
+                    alertState = .purchaseFailure(message: "AI利用券の購入中にエラーが発生しました。通信環境をご確認ください。")
                 }
             }
+
             await MainActor.run {
                 processingProductId = nil
             }
@@ -309,6 +347,121 @@ struct ChatGPTgeneratorView: View {
                     .tint(.accentColor.opacity(0.8))
                     .disabled(processingProductId != nil)
                 }
+            }
+        }
+    }
+
+    /// StoreKit 2 から商品情報を取得し、`storeProducts` へキャッシュする
+    /// - Note: 初期表示時にまとめて取得し、以降はキャッシュを利用することでレスポンスを向上させる
+    private func loadProductsIfNeeded() async {
+        let alreadyLoaded = await MainActor.run { storeProducts.isEmpty == false }
+        if alreadyLoaded {
+            return
+        }
+
+        let identifiers = Set(AZUKI_CREDIT_PURCHASE_OPTIONS.map { $0.productId })
+        do {
+            let products = try await Product.products(for: identifiers)
+            await MainActor.run {
+                storeProducts = products
+            }
+        } catch {
+            #if DEBUG
+            print("failed to load products: \(error)")
+            #endif
+        }
+    }
+
+    /// キャッシュ済みまたは都度取得した `Product` を返す
+    private func fetchProduct(matching productId: String) async throws -> Product {
+        let cachedProduct = await MainActor.run { storeProducts.first(where: { $0.id == productId }) }
+        if let cached = cachedProduct {
+            return cached
+        }
+
+        do {
+            let fetched = try await Product.products(for: [productId])
+            if fetched.isEmpty {
+                throw PurchaseFlowError.productNotFound
+            }
+            guard let product = fetched.first(where: { $0.id == productId }) else {
+                throw PurchaseFlowError.productNotFound
+            }
+            await MainActor.run {
+                storeProducts.append(product)
+            }
+            return product
+        } catch {
+            throw PurchaseFlowError.productLoadFailed
+        }
+    }
+
+    /// StoreKit 2 の検証結果から信頼できる `Transaction` を取り出す
+    private func resolveVerifiedTransaction(from result: VerificationResult<Transaction>) async throws -> Transaction {
+        switch result {
+        case .verified(let transaction):
+            return transaction
+        case .unverified(let transaction, let verificationError):
+            let baseMessage = verificationError?.localizedDescription ?? "購入情報の検証に失敗しました。"
+            do {
+                try await transaction.finish()
+            } catch {
+                #if DEBUG
+                print("failed to finish unverified transaction: \(error)")
+                #endif
+            }
+            throw PurchaseFlowError.transactionUnverified(message: baseMessage)
+        }
+    }
+
+    /// サーバーへレシート情報を転送し、残高を更新する
+    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction) async throws -> AzukiAPIClient.CreditPurchaseResult {
+        let userId = await MainActor.run { creditStore.userId }
+        let transactionId = String(transaction.id)
+        let receipt = transaction.jwsRepresentation
+        return try await AzukiAPIClient.shared.purchaseCredits(
+            option: option,
+            userId: userId,
+            transactionId: transactionId,
+            receiptData: receipt
+        )
+    }
+
+    /// トランザクションの完了とUI更新をまとめて処理する
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction, serverResult: AzukiAPIClient.CreditPurchaseResult) async throws {
+        do {
+            try await transaction.finish()
+        } catch {
+            throw PurchaseFlowError.finishFailed
+        }
+
+        await MainActor.run {
+            creditStore.overwrite(credits: serverResult.balance)
+            alertState = .purchaseSuccess(added: serverResult.grantedCredits, priceYen: option.priceYen)
+        }
+    }
+
+    /// StoreKit 2 の購入フローで想定されるエラー種別
+    private enum PurchaseFlowError: LocalizedError {
+        /// StoreKit 2 から商品情報が取得できなかった
+        case productNotFound
+        /// ネットワークやApp Store接続の問題で商品一覧が取得できなかった
+        case productLoadFailed
+        /// トランザクションが検証に失敗した（改ざんや未承認）
+        case transactionUnverified(message: String)
+        /// `transaction.finish()` の完了に失敗した
+        case finishFailed
+
+        var errorDescription: String? {
+            switch self {
+            case .productNotFound:
+                return "対象の商品情報が見つかりませんでした。設定からリストを更新してください。"
+            case .productLoadFailed:
+                return "商品情報を取得できませんでした。ネットワーク環境をご確認のうえ再度お試しください。"
+            case .transactionUnverified(let message):
+                return message
+            case .finishFailed:
+                return "購入完了処理に失敗しました。再起動後も改善しない場合はサポートへお問い合わせください。"
             }
         }
     }
