@@ -246,7 +246,7 @@ struct GroupListView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-        var orderedGroups = sortedGroups
+        let orderedGroups = sortedGroups
         let insertionIndex: Int = {
             switch insertionPosition {
             case .head:

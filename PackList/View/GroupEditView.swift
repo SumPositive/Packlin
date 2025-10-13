@@ -188,7 +188,7 @@ struct GroupEditView: View {
             modelContext.undoManager?.groupingEnd()
         }
         guard let parent = group.parent else { return }
-        var orderedGroups = parent.child.sorted { $0.order < $1.order }
+        let orderedGroups = parent.child.sorted { $0.order < $1.order }
         let insertIndex: Int
         if let index = orderedGroups.firstIndex(where: { $0.id == group.id }) {
             insertIndex = index + 1
@@ -210,7 +210,7 @@ struct GroupEditView: View {
         }
     }
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        var orderedItems = parent.child.sorted { $0.order < $1.order }
+        let orderedItems = parent.child.sorted { $0.order < $1.order }
         let insertIndex = orderedItems.count
         let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertIndex) {
             // order だけに手を入れ child 配列は触らない

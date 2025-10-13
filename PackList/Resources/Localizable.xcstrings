@@ -277,6 +277,15 @@
         }
       }
     },
+    "ai.create.accessibility" : {
+
+    },
+    "ai.create.instructions" : {
+
+    },
+    "ai.create.title" : {
+
+    },
     "AIに作ってもらう" : {
 
     },
@@ -316,6 +325,7 @@
       }
     },
     "chatgpt.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1007,9 +1017,6 @@
         }
       }
     },
-    "PackListの要件入力" : {
-
-    },
     "placeholder.group.new" : {
       "localizations" : {
         "en" : {
@@ -1477,10 +1484,7 @@
     "お作りしています..." : {
 
     },
-    "ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います" : {
-
-    },
-    "例）夏の3泊4日キャンプ。家族4人（大人2人、子ども2人）用の持ち物を準備。食材は現地調達。雨天も想定。" : {
+    "例）夏の3泊4日キャンプ。\n家族4人（大人2人、子ども2人）用の持ち物を準備。\n食材は現地調達。\n雨天も想定。" : {
 
     }
   },

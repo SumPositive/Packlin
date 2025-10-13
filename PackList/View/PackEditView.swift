@@ -235,7 +235,7 @@ struct PackEditView: View {
         }
     }
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
-        var orderedGroups = parent.child.sorted { $0.order < $1.order }
+        let orderedGroups = parent.child.sorted { $0.order < $1.order }
         let insertIndex: Int
         if let index = orderedGroups.firstIndex(where: { $0.id == group.id }) {
             insertIndex = index + 1
@@ -256,7 +256,7 @@ struct PackEditView: View {
         }
     }
     private func copyItem(_ item: M3Item, to parent: M2Group) {
-        var orderedItems = parent.child.sorted { $0.order < $1.order }
+        let orderedItems = parent.child.sorted { $0.order < $1.order }
         let insertIndex = orderedItems.count
         let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertIndex) {
             // order を整えるだけで child には手を加えない
