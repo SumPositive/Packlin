@@ -9,6 +9,12 @@ import SwiftUI
 import SwiftData
 import Foundation
 import StoreKit
+#if canImport(UIKit)
+import UIKit
+#endif
+#if canImport(GoogleMobileAds)
+import GoogleMobileAds
+#endif
 
 
 /// パックをAIで生成　シート
@@ -107,7 +113,10 @@ struct AiCreateView: View {
             }
 
             Button {
-                //TODO: アプリ内課金¥50してからazuki-api経由でOpenAIにパック生成を依頼する
+                // 先にアプリ内課金を完了させ、その後でAI生成フローへ進める
+                Task {
+                    await purchaseTicketThenGenerate()
+                }
             } label: {
                 HStack {
                     if isGenerating {
@@ -122,7 +131,10 @@ struct AiCreateView: View {
             .disabled(isRequirementEmpty || isGenerating)
 
             Button {
-                //TODO: 単価¥30以上の広告を見せてからazuki-api経由でOpenAIにパック生成を依頼する
+                // 指定単価以上の広告視聴をトリガーにしてAI生成フローを開始する
+                Task {
+                    await watchAdThenGenerate()
+                }
             } label: {
                 HStack {
                     if isGenerating {
@@ -196,103 +208,358 @@ struct AiCreateView: View {
         }
     }
 
-    /// azuki-api経由でOpenAIにパック生成を依頼する
-    private func generatePackWithOpenAI() {
-        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+    /// アプリ内のクレジットを消費しつつazuki-api経由でOpenAIにパック生成を依頼する
+    /// - Parameter requirement: すでにトリム済みのユーザー要望テキスト
+    private func generatePackWithOpenAI(requirement: String) async {
+        let trimmedRequirement = requirement.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            alertState = .generationFailure(message: "ご要望を入れてください。")
+            // 要件が空文字なら購入・広告後でも処理を止める
+            await MainActor.run {
+                alertState = .generationFailure(message: "ご要望を入れてください。")
+            }
             return
         }
 
-        let userId = creditStore.userId
-        isGenerating = true
-        Task {
-            // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
-            let cost = CHATGPT_GENERATION_CREDIT_COST
-            var shouldRestoreCredits = false
-            defer {
+        let userId = await MainActor.run { creditStore.userId }
+        await MainActor.run {
+            isGenerating = true
+        }
+
+        // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
+        let cost = CHATGPT_GENERATION_CREDIT_COST
+        var shouldRestoreCredits = false
+        defer {
+            Task {
+                await MainActor.run {
+                    if shouldRestoreCredits {
+                        // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
+                        creditStore.add(credits: cost)
+                    }
+                    isGenerating = false
+                }
+            }
+        }
+
+        // ローカル残高が不足している場合のみサーバーに問い合わせ、無駄な通信を避ける
+        let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
+        if hasEnoughCredits == false {
+            await MainActor.run {
+                alertState = .creditShortage
+            }
+            return
+        }
+
+        do {
+            try await MainActor.run {
+                try creditStore.consume(credits: cost)
+                shouldRestoreCredits = true
+            }
+        } catch {
+            await MainActor.run {
+                alertState = .creditShortage
+            }
+            return
+        }
+
+        do {
+            let dto = try await AzukiApi.shared.generatePack(userId: userId, requirement: trimmedRequirement)
+            // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
+            shouldRestoreCredits = false
+            do {
+                let packName = try await MainActor.run { () -> String in
+                    let importedPack = try createPack(from: dto)
+                    return importedPack.name
+                }
+                await MainActor.run {
+                    alertState = .generationSuccess(packName: packName)
+                }
+            } catch {
+                let message: String
+                if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                    message = description
+                } else {
+                    message = error.localizedDescription
+                }
+                await MainActor.run {
+                    alertState = .generationFailure(message: message)
+                }
+            }
+        } catch let apiError as AzukiAPIError {
+            // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
+            if case .insufficientCredits = apiError {
+                // サーバー側でも不足判定となったのでローカルを戻さず、最新残高を取得して同期する
+                shouldRestoreCredits = false
+                await refreshCreditBalance()
+                await MainActor.run {
+                    alertState = .creditShortage
+                }
+            } else {
+                let message = apiError.errorDescription ?? "AIが忙しいようです。時間をおいて再度お試しください"
+                await MainActor.run {
+                    alertState = .generationFailure(message: message)
+                }
+            }
+        } catch let localized as LocalizedError {
+            let message = localized.errorDescription ?? localized.localizedDescription
+            await MainActor.run {
+                alertState = .generationFailure(message: message)
+            }
+        } catch {
+            await MainActor.run {
+                alertState = .generationFailure(message: "AIが忙しいようです。時間をおいて再度お試しください")
+            }
+        }
+    }
+
+    /// ¥50の投げ銭を完了してからAI生成フローを呼び出す
+    private func purchaseTicketThenGenerate() async {
+        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedRequirement.isEmpty {
+            await MainActor.run {
+                alertState = .generationFailure(message: "ご要望を入れてください。")
+            }
+            return
+        }
+
+        await MainActor.run {
+            isGenerating = true
+        }
+        var didCompletePurchase = false
+        let option = (productId: AZUKI_API_CREDIT_PRODUCT_SMALL, priceYen: 50, credits: 1)
+
+        defer {
+            if didCompletePurchase == false {
                 Task {
                     await MainActor.run {
-                        if shouldRestoreCredits {
-                            // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
-                            creditStore.add(credits: cost)
-                        }
                         isGenerating = false
                     }
                 }
             }
+        }
 
-            // ローカル残高が不足している場合のみサーバーに問い合わせ、無駄な通信を避ける
-            let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
-            if hasEnoughCredits == false {
+        do {
+            // 既存の購入ロジックを再利用しつつ、生成用の最小単位を直接購入する
+            await loadProductsIfNeeded()
+            let product = try await fetchProduct(matching: option.productId)
+            let outcome = try await product.purchase()
+
+            switch outcome {
+            case .success(let verificationResult):
+                let transaction = try await resolveVerifiedTransaction(from: verificationResult)
+                let serverResult = try await registerPurchaseOnServer(option: option, transaction: transaction)
+                await transaction.finish()
                 await MainActor.run {
-                    alertState = .creditShortage
+                    creditStore.overwrite(credits: serverResult.balance)
+                }
+                didCompletePurchase = true
+
+            case .pending:
+                await MainActor.run {
+                    alertState = .purchaseFailure(message: "購入が承認待ちです。承認完了後に再度お試しください。")
+                }
+                return
+
+            case .userCancelled:
+                await MainActor.run {
+                    alertState = .purchaseFailure(message: "購入をキャンセルしました。必要であれば再度お試しください。")
+                }
+                return
+
+            @unknown default:
+                await MainActor.run {
+                    alertState = .purchaseFailure(message: "想定外の購入結果が返りました。時間をおいて再度お試しください。")
                 }
                 return
             }
-
-            do {
-                try await MainActor.run {
-                    try creditStore.consume(credits: cost)
-                    shouldRestoreCredits = true
-                }
-            } catch {
-                await MainActor.run {
-                    alertState = .creditShortage
-                }
-                return
+        } catch let flowError as PurchaseFlowError {
+            await MainActor.run {
+                let message = flowError.errorDescription ?? "AI利用券の購入に失敗しました。"
+                alertState = .purchaseFailure(message: message)
             }
-
-            do {
-                let dto = try await AzukiApi.shared.generatePack(userId: userId, requirement: trimmedRequirement)
-                // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
-                shouldRestoreCredits = false
-                do {
-                    let packName = try await MainActor.run { () -> String in
-                        let importedPack = try createPack(from: dto)
-                        return importedPack.name
-                    }
-                    await MainActor.run {
-                        alertState = .generationSuccess(packName: packName)
-                    }
-                } catch {
-                    let message: String
-                    if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
-                        message = description
-                    } else {
-                        message = error.localizedDescription
-                    }
-                    await MainActor.run {
-                        alertState = .generationFailure(message: message)
-                    }
-                }
-            } catch let apiError as AzukiAPIError {
-                // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
-                if case .insufficientCredits = apiError {
-                    // サーバー側でも不足判定となったのでローカルを戻さず、最新残高を取得して同期する
-                    shouldRestoreCredits = false
-                    await refreshCreditBalance()
-                    await MainActor.run {
-                        alertState = .creditShortage
-                    }
-                } else {
-                    let message = apiError.errorDescription ?? "AIが忙しいようです。時間をおいて再度お試しください"
-                    await MainActor.run {
-                        alertState = .generationFailure(message: message)
-                    }
-                }
-            } catch let localized as LocalizedError {
+            return
+        } catch let localized as LocalizedError {
+            await MainActor.run {
                 let message = localized.errorDescription ?? localized.localizedDescription
-                await MainActor.run {
-                    alertState = .generationFailure(message: message)
-                }
-            } catch {
-                await MainActor.run {
-                    alertState = .generationFailure(message: "AIが忙しいようです。時間をおいて再度お試しください")
-                }
+                alertState = .purchaseFailure(message: message)
+            }
+            return
+        } catch {
+            await MainActor.run {
+                alertState = .purchaseFailure(message: "AI利用券の購中にエラーが発生しました。通信環境をご確認ください。")
+            }
+            return
+        }
+
+        // 課金が完了した時点でローディングは生成処理側へ引き継ぐ
+        await generatePackWithOpenAI(requirement: trimmedRequirement)
+        didCompletePurchase = true
+    }
+
+    /// 単価¥30以上の広告視聴で報酬を得てからAI生成フローを呼び出す
+    private func watchAdThenGenerate() async {
+        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedRequirement.isEmpty {
+            await MainActor.run {
+                alertState = .generationFailure(message: "ご要望を入れてください。")
+            }
+            return
+        }
+
+        await MainActor.run {
+            isGenerating = true
+        }
+
+        do {
+            // 広告視聴完了まで待機し、報酬単価が条件を満たしたときのみ先へ進む
+            try await presentRewardedAd(minimumRewardYen: 30)
+        } catch let adError as AdRewardFlowError {
+            await MainActor.run {
+                alertState = .adRewardFailure(message: adError.errorDescription ?? "広告の視聴に失敗しました。")
+                isGenerating = false
+            }
+            return
+        } catch let localized as LocalizedError {
+            await MainActor.run {
+                let message = localized.errorDescription ?? localized.localizedDescription
+                alertState = .adRewardFailure(message: message)
+                isGenerating = false
+            }
+            return
+        } catch {
+            await MainActor.run {
+                alertState = .adRewardFailure(message: "広告の視聴に失敗しました。時間をおいて再度お試しください。")
+                isGenerating = false
+            }
+            return
+        }
+
+        await generatePackWithOpenAI(requirement: trimmedRequirement)
+    }
+
+    /// 指定された条件を満たす報酬型広告を提示し、視聴完了まで待機する
+    private func presentRewardedAd(minimumRewardYen: Int) async throws {
+#if canImport(GoogleMobileAds)
+        let flow = RewardedAdFlow(minimumRewardYen: minimumRewardYen)
+        try await flow.start()
+#else
+        // GoogleMobileAdsが使えない環境では疑似的に待機してから固定報酬を返す
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+        let simulatedRewardYen = 50
+        if simulatedRewardYen < minimumRewardYen {
+            throw AdRewardFlowError.rewardTooSmall(actual: simulatedRewardYen, required: minimumRewardYen)
+        }
+#endif
+    }
+
+    /// 広告視聴フローで発生し得るエラーを列挙
+    private enum AdRewardFlowError: LocalizedError {
+        case noAdAvailable
+        case noPresenter
+        case rewardNotEarned
+        case rewardTooSmall(actual: Int, required: Int)
+
+        var errorDescription: String? {
+            switch self {
+            case .noAdAvailable:
+                return "広告を読み込めませんでした。時間をおいて再度お試しください。"
+            case .noPresenter:
+                return "広告を表示する画面を取得できませんでした。アプリを再起動してください。"
+            case .rewardNotEarned:
+                return "広告視聴が最後まで完了しなかったため、報酬を付与できませんでした。"
+            case .rewardTooSmall(let actual, let required):
+                return "広告報酬が¥\(required)未満（¥\(actual)）だったため、生成を続行できません。"
             }
         }
     }
+
+#if canImport(GoogleMobileAds)
+    /// GoogleMobileAdsを利用して報酬型広告を表示するためのヘルパークラス
+    private final class RewardedAdFlow: NSObject, FullScreenContentDelegate {
+        private let minimumRewardYen: Int
+        private var rewardedAd: RewardedAd?
+        private var earnedReward: AdReward?
+        private var dismissalContinuation: CheckedContinuation<Void, Error>?
+
+        init(minimumRewardYen: Int) {
+            self.minimumRewardYen = minimumRewardYen
+        }
+
+        /// ロードから表示、視聴完了判定までを直列で実行する
+        func start() async throws {
+            let ad = try await loadRewardedAd()
+            rewardedAd = ad
+            try await presentRewardedAd(ad)
+        }
+
+        /// AdMobに広告リクエストを送り、成功時のみRewardedAdを返す
+        private func loadRewardedAd() async throws -> RewardedAd {
+            try await withCheckedThrowingContinuation { continuation in
+                let request = Request()
+                RewardedAd.load(withAdUnitID: ADMOB_VIDEO_UnitID, request: request) { ad, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+                    guard let ad else {
+                        continuation.resume(throwing: AdRewardFlowError.noAdAvailable)
+                        return
+                    }
+                    continuation.resume(returning: ad)
+                }
+            }
+        }
+
+        /// 取得済みの広告を表示し、閉じられるまで待機する
+        private func presentRewardedAd(_ ad: RewardedAd) async throws {
+            try await withCheckedThrowingContinuation { continuation in
+                dismissalContinuation = continuation
+                earnedReward = nil
+
+                Task {
+                    await MainActor.run {
+                        guard let root = UIApplication.topMostViewController() else {
+                            dismissalContinuation = nil
+                            continuation.resume(throwing: AdRewardFlowError.noPresenter)
+                            return
+                        }
+                        ad.fullScreenContentDelegate = self
+                        ad.present(from: root) { [weak self] reward in
+                            self?.earnedReward = reward
+                        }
+                    }
+                }
+            }
+        }
+
+        func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+            guard let continuation = dismissalContinuation else {
+                return
+            }
+            dismissalContinuation = nil
+
+            guard let reward = earnedReward else {
+                continuation.resume(throwing: AdRewardFlowError.rewardNotEarned)
+                return
+            }
+
+            let amount = Int(truncating: reward.amount)
+            if amount < minimumRewardYen {
+                continuation.resume(throwing: AdRewardFlowError.rewardTooSmall(actual: amount, required: minimumRewardYen))
+                return
+            }
+
+            continuation.resume(returning: ())
+        }
+
+        func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+            guard let continuation = dismissalContinuation else {
+                return
+            }
+            dismissalContinuation = nil
+            continuation.resume(throwing: error)
+        }
+    }
+#endif
 
     /// クレジット購入
     /// - Parameter option: Configで定義したオプションタプル
@@ -577,6 +844,8 @@ struct AiCreateView: View {
         case purchaseSuccess(added: Int, priceYen: Int)
         /// クレジット購入が失敗した場合
         case purchaseFailure(message: String)
+        /// 広告視聴で報酬が得られなかった場合
+        case adRewardFailure(message: String)
 
         var id: String {
             switch self {
@@ -590,6 +859,8 @@ struct AiCreateView: View {
                 return "ai-purchase-success-\(added)-\(priceYen)"
             case .purchaseFailure(let message):
                 return "ai-purchase-failure-\(message)"
+            case .adRewardFailure(let message):
+                return "ai-ad-reward-failure-\(message)"
             }
         }
 
@@ -605,6 +876,8 @@ struct AiCreateView: View {
                 return "購入完了"
             case .purchaseFailure:
                 return "購入失敗"
+            case .adRewardFailure:
+                return "広告の視聴が完了しませんでした"
             }
         }
 
@@ -619,6 +892,8 @@ struct AiCreateView: View {
             case .purchaseSuccess(let added, let priceYen):
                 return "¥\(priceYen)の購入でAI利用券を\(added)追加しました。"
             case .purchaseFailure(let message):
+                return message
+            case .adRewardFailure(let message):
                 return message
             }
         }
