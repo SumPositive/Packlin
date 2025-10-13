@@ -2,7 +2,7 @@
 //  CreditStore.swift
 //  PackList
 //
-//  Created by OpenAI Assistant on 2025/??/??.
+//  Created by sumpo on 2025/10/12.
 //
 
 import Foundation

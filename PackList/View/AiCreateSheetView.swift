@@ -1,8 +1,8 @@
 //
-//  ChatGPTsheetView.swift
+//  AiCreateSheetView.swift
 //  PackList
 //
-//  Created by OpenAI Assistant on 2025/??/??.
+//  Created by sumpo on 2025/10/12.
 //
 
 import SwiftUI
@@ -11,14 +11,14 @@ import Foundation
 import StoreKit
 
 
-/// パックをChatGPTで生成　シート
-struct ChatGPTsheetView: View {
+/// パックをAIで生成　シート
+struct AiCreateSheetView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
             ScrollView {
-                ChatGPTgeneratorView()
+                AiCreateView()
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(Text("app.title"))
@@ -35,19 +35,17 @@ struct ChatGPTsheetView: View {
 }
 
 
-/// ChatGPTと連携して .pack ファイルを生成するためのビュー
-/// 設定画面からメイン画面のフッター下へ移動した要求に基づき、
-/// アプリ内生成とクレジット購入をまとめて提供する。
-struct ChatGPTgeneratorView: View {
+/// AIで新しいパックを生成するためのビュー
+struct AiCreateView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var creditStore: CreditStore
 
-    /// ユーザーがChatGPTへ伝えたい要件テキスト
-    @State private var requirementText: String = ""
+    /// ユーザーからAIへの要望・要件テキスト
+   @State private var requirementText: String = ""
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート
     @State private var alertState: AlertState?
-    /// azuki-api経由の生成リクエスト中であることを示すフラグ
+    /// azuki-apiリクエスト中であることを示すフラグ
     @State private var isGenerating = false
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
     @State private var processingProductId: String?
@@ -63,7 +61,7 @@ struct ChatGPTgeneratorView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("chatgpt.title") //"ChatGPTに作ってもらおう")
+                Text("ai.create.title") //"ChatGPTに作ってもらおう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -83,10 +81,20 @@ struct ChatGPTgeneratorView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
-                    .accessibilityLabel(Text("PackListの要件入力"))
+                    .accessibilityLabel(Text("ai.create.accessibility")) //"PackListの要件入力"
 
                 if isRequirementEmpty {
-                    Text("例）夏の3泊4日キャンプ。家族4人（大人2人、子ども2人）用の持ち物を準備。食材は現地調達。雨天も想定。")
+                    // 入力例
+                    //　　　例）夏の3泊4日キャンプ
+                    //　　　家族4人（大人2人、子ども2人）用の持ち物を準備
+                    //　　　食材は現地調達
+                    //　　　雨天も想定
+                    Text("""
+                        例）夏の3泊4日キャンプ。
+                        家族4人（大人2人、子ども2人）用の持ち物を準備。
+                        食材は現地調達。
+                        雨天も想定。
+                        """)
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 16)
                         .padding(.horizontal, 16)
@@ -94,20 +102,9 @@ struct ChatGPTgeneratorView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います")
+            Text("ai.create.instructions") //ご要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-
-            Divider()
-
-            // アプリ内で直接OpenAIへ問い合わせる操作
-//            VStack(alignment: .leading, spacing: 4) {
-//                Text("アプリ内で生成（回数券1枚消費）")
-//                    .font(.subheadline.weight(.semibold))
-//                Text("回数券残り: \(creditStore.credits) / 消費: \(CHATGPT_GENERATION_CREDIT_COST)")
-//                    .font(.caption)
-//                    .foregroundStyle(.secondary)
-//            }
 
             Button(action: generatePackWithOpenAI) {
                 HStack {
@@ -132,6 +129,7 @@ struct ChatGPTgeneratorView: View {
 
             // 回数券購入
             creditPurchaseMenu
+            
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,7 +168,7 @@ struct ChatGPTgeneratorView: View {
         // 必要なときだけサーバーへ問い合わせるための共通関数
         let userId = await MainActor.run { creditStore.userId }
         do {
-            let remoteBalance = try await AzukiAPIClient.shared.fetchCreditBalance(userId: userId)
+            let remoteBalance = try await AzukiApi.shared.fetchCreditBalance(userId: userId)
             await MainActor.run {
                 creditStore.overwrite(credits: remoteBalance)
             }
@@ -229,7 +227,7 @@ struct ChatGPTgeneratorView: View {
             }
 
             do {
-                let dto = try await AzukiAPIClient.shared.generatePack(userId: userId, requirement: trimmedRequirement)
+                let dto = try await AzukiApi.shared.generatePack(userId: userId, requirement: trimmedRequirement)
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
                 do {
@@ -289,7 +287,7 @@ struct ChatGPTgeneratorView: View {
             }
 
             do {
-                // 1. StoreKit 2 から商品情報を取得（初回のみネットワーク越し）
+                // 1. StoreKit2 から商品情報を取得（初回のみネットワーク越し）
                 await loadProductsIfNeeded()
                 let product = try await fetchProduct(matching: option.productId)
 
@@ -445,11 +443,11 @@ struct ChatGPTgeneratorView: View {
     }
 
     /// サーバーへレシート情報を転送し、残高を更新する
-    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async throws -> AzukiAPIClient.CreditPurchaseResult {
+    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction) async throws -> AzukiApi.CreditPurchaseResult {
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
         let receipt = transaction.jwsRepresentation
-        return try await AzukiAPIClient.shared.purchaseCredits(
+        return try await AzukiApi.shared.purchaseCredits(
             option: option,
             userId: userId,
             transactionId: transactionId,
@@ -458,7 +456,7 @@ struct ChatGPTgeneratorView: View {
     }
 
     /// トランザクションの完了とUI更新をまとめて処理する
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, serverResult: AzukiAPIClient.CreditPurchaseResult) async throws {
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: Transaction, serverResult: AzukiApi.CreditPurchaseResult) async throws {
         do {
             try await transaction.finish()
         } catch {
@@ -570,7 +568,7 @@ struct ChatGPTgeneratorView: View {
     }
 }
 
-extension ChatGPTgeneratorView {
+extension AiCreateView {
     /// 生成処理に必要なクレジットが十分にあるかを判定し、足りない場合のみサーバーへ問い合わせて再確認する
     /// - Parameter cost: 必要クレジット数
     /// - Returns: 利用可能ならtrue

@@ -2,7 +2,7 @@
 //  AzukiAPIClient.swift
 //  PackList
 //
-//  Created by OpenAI Assistant on 2025/??/??.
+//  Created by sumpo on 2025/10/12.
 //
 
 import Foundation
@@ -37,7 +37,7 @@ enum AzukiAPIError: LocalizedError {
 
 /// azuki-api との通信を担うクライアント
 /// - Note: iOS側では決済処理そのものはStoreKit任せとし、azuki-apiはレシート検証とOpenAI代理実行を提供する想定
-final class AzukiAPIClient {
+final class AzukiApi {
     /// クレジット購入APIの結果をまとめる構造体
     struct CreditPurchaseResult {
         /// 今回付与されたクレジット数（StoreKit導入後は実際の課金結果と一致させる）
@@ -46,7 +46,7 @@ final class AzukiAPIClient {
         let balance: Int
     }
 
-    static let shared = AzukiAPIClient()
+    static let shared = AzukiApi()
 
     private let session: URLSession
     private let encoder: JSONEncoder
