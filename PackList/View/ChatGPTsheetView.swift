@@ -167,6 +167,7 @@ struct ChatGPTgeneratorView: View {
 
     /// サーバーからクレジット残高を取得してローカルに反映する
     private func refreshCreditBalance() async {
+        // 必要なときだけサーバーへ問い合わせるための共通関数
         let userId = await MainActor.run { creditStore.userId }
         do {
             let remoteBalance = try await AzukiAPIClient.shared.fetchCreditBalance(userId: userId)
@@ -191,60 +192,89 @@ struct ChatGPTgeneratorView: View {
         let userId = creditStore.userId
         isGenerating = true
         Task {
-            await refreshCreditBalance()
-            let hasEnoughCredits = await MainActor.run {
-                creditStore.credits < CHATGPT_GENERATION_CREDIT_COST ? false : true
+            // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
+            let cost = CHATGPT_GENERATION_CREDIT_COST
+            var shouldRestoreCredits = false
+            defer {
+                Task {
+                    await MainActor.run {
+                        if shouldRestoreCredits {
+                            // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
+                            creditStore.add(credits: cost)
+                        }
+                        isGenerating = false
+                    }
+                }
             }
+
+            // ローカル残高が不足している場合のみサーバーに問い合わせ、無駄な通信を避ける
+            let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
             if hasEnoughCredits == false {
                 await MainActor.run {
                     alertState = .creditShortage
-                    isGenerating = false
+                }
+                return
+            }
+
+            do {
+                try await MainActor.run {
+                    try creditStore.consume(credits: cost)
+                    shouldRestoreCredits = true
+                }
+            } catch {
+                await MainActor.run {
+                    alertState = .creditShortage
                 }
                 return
             }
 
             do {
                 let dto = try await AzukiAPIClient.shared.generatePack(userId: userId, requirement: trimmedRequirement)
+                // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
+                shouldRestoreCredits = false
                 do {
                     let packName = try await MainActor.run { () -> String in
                         let importedPack = try createPack(from: dto)
                         return importedPack.name
                     }
-                    await refreshCreditBalance()
                     await MainActor.run {
                         alertState = .generationSuccess(packName: packName)
                     }
                 } catch {
+                    let message: String
+                    if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
+                        message = description
+                    } else {
+                        message = error.localizedDescription
+                    }
+                    await MainActor.run {
+                        alertState = .generationFailure(message: message)
+                    }
+                }
+            } catch let apiError as AzukiAPIError {
+                // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
+                if case .insufficientCredits = apiError {
+                    // サーバー側でも不足判定となったのでローカルを戻さず、最新残高を取得して同期する
+                    shouldRestoreCredits = false
                     await refreshCreditBalance()
                     await MainActor.run {
-                        let message: String
-                        if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
-                            message = description
-                        } else {
-                            message = error.localizedDescription
-                        }
+                        alertState = .creditShortage
+                    }
+                } else {
+                    let message = apiError.errorDescription ?? "AIが忙しいようです。時間をおいて再度お試しください"
+                    await MainActor.run {
                         alertState = .generationFailure(message: message)
                     }
+                }
+            } catch let localized as LocalizedError {
+                let message = localized.errorDescription ?? localized.localizedDescription
+                await MainActor.run {
+                    alertState = .generationFailure(message: message)
                 }
             } catch {
-                await refreshCreditBalance()
                 await MainActor.run {
-                    if let apiError = error as? AzukiAPIError, case .insufficientCredits = apiError {
-                        alertState = .creditShortage
-                    } else {
-                        let message: String
-                        if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
-                            message = description
-                        } else {
-                            message = "AIが忙しいようです。時間をおいて再度お試しください"
-                        }
-                        alertState = .generationFailure(message: message)
-                    }
+                    alertState = .generationFailure(message: "AIが忙しいようです。時間をおいて再度お試しください")
                 }
-            }
-
-            await MainActor.run {
-                isGenerating = false
             }
         }
     }
@@ -537,5 +567,20 @@ struct ChatGPTgeneratorView: View {
                 return message
             }
         }
+    }
+}
+
+extension ChatGPTgeneratorView {
+    /// 生成処理に必要なクレジットが十分にあるかを判定し、足りない場合のみサーバーへ問い合わせて再確認する
+    /// - Parameter cost: 必要クレジット数
+    /// - Returns: 利用可能ならtrue
+    private func ensureSufficientCreditsForGeneration(cost: Int) async -> Bool {
+        let hasEnoughLocally = await MainActor.run { cost <= creditStore.credits }
+        if hasEnoughLocally {
+            return true
+        }
+        await refreshCreditBalance()
+        let refreshedCredits = await MainActor.run { creditStore.credits }
+        return cost <= refreshedCredits
     }
 }
