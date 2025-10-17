@@ -277,6 +277,10 @@ struct AiCreateView: View {
             }
 
             do {
+                // シミュレータでのテスト実行時には、StoreKitTestSession を立ち上げて
+                // App Store を介さずに購入フローを再現できるようにする
+                await StoreKitTestController.shared.prepareForPurchaseIfNeeded()
+
                 // 1. StoreKit2 から商品情報を取得（初回のみネットワーク越し）
                 await loadProductsIfNeeded()
                 let product = try await fetchProduct(matching: option.productId)
