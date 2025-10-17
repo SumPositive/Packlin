@@ -63,11 +63,11 @@ struct AdMobBannerContainerView: View {
                 .padding()
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("setting.bannerAdTitle"))
+            .navigationTitle(Text("タップして広告をご覧ください"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "setting.adClose")) {
+                    Button(String(localized: "閉じる")) {
                         dismiss()
                     }
                 }
@@ -126,13 +126,13 @@ struct AdMobRewardedScreen: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 24) {
-                Text("setting.adDescription")
+                Text("動画を最後まで視聴すると開発者をサポートできます")
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
 
                 if loader.isLoading {
-                    ProgressView(String(localized: "setting.adLoading"))
+                    ProgressView(String(localized: "広告を読み込み中..."))
                         .padding()
                 }
 
@@ -142,14 +142,14 @@ struct AdMobRewardedScreen: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
-                        Button(String(localized: "setting.adRetry")) {
+                        Button(String(localized: "再読み込み")) {
                             loader.loadAd()
                         }
                         .buttonStyle(.borderedProminent)
                     }
                 }
 
-                Button(String(localized: "setting.adPlay")) {
+                Button(String(localized: "広告を再生")) {
                     presentAd()
                 }
                 .buttonStyle(.borderedProminent)
@@ -166,11 +166,11 @@ struct AdMobRewardedScreen: View {
             }
             .padding(.top, 24)
             .background(Color(uiColor: .systemBackground))
-            .navigationTitle(Text("setting.adVideoTitle"))
+            .navigationTitle(Text("動画広告"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "setting.adClose")) {
+                    Button(String(localized: "閉じる")) {
                         dismiss()
                     }
                 }
@@ -181,7 +181,7 @@ struct AdMobRewardedScreen: View {
                 dismiss()
             }
             loader.onRewardEarned = { _ in
-                rewardDescription = String(localized: "setting.adRewardThanks")
+                rewardDescription = String(localized: "広告をご視聴いただきありがとうございます！")
             }
         }
     }
@@ -389,7 +389,7 @@ struct LegacyVideoAdView: View {
                         player.pause()
                     }
 
-                Text("setting.adDescription")
+                Text("動画を最後まで視聴すると開発者をサポートできます")
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
@@ -398,11 +398,11 @@ struct LegacyVideoAdView: View {
             }
             .padding(.top, 24)
             .background(Color(uiColor: .systemBackground))
-            .navigationTitle(Text("setting.adVideoTitle"))
+            .navigationTitle(Text("動画広告"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "setting.adClose")) {
+                    Button(String(localized: "閉じる")) {
                         player.pause()
                         dismiss()
                     }
@@ -424,7 +424,7 @@ struct LegacyVideoAdContainerView: View {
             Text("setting.adUnavailable")
                 .multilineTextAlignment(.center)
                 .font(.headline)
-            Button(String(localized: "setting.adClose")) {
+            Button(String(localized: "閉じる")) {
                 dismiss()
             }
             .buttonStyle(.borderedProminent)

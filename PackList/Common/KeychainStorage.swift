@@ -19,7 +19,7 @@ struct KeychainStorage {
             self.service = identifier
         } else {
             // Previewや単体テストでも安定したキーになるように固定値を採用
-            self.service = "com.packlist.app"
+            self.service = "com.azukid.sumpo.packlist"
         }
     }
 

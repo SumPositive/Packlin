@@ -25,7 +25,7 @@ struct AiCreateSheetView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "setting.adClose")) {
+                    Button(String(localized: "閉じる")) {
                         dismiss()
                     }
                 }
@@ -62,7 +62,7 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("ai.create.title") //"AIにパックを作ってもらおう")
+                Text("チャッピー(AI)にパックを作ってもらおう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -70,7 +70,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("ai.create.instructions") //要望を入力して「AIに作ってもらう」を押してください。AI利用回数が1つ減ります
+            Text("要望を入力して「チャッピーに作ってもらう」を押してください。新しいパックの作成に成功するとAI利用回数が1つ減ります")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -87,7 +87,7 @@ struct AiCreateView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
-                    .accessibilityLabel(Text("ai.create.accessibility")) //"PackListの要件入力"
+                    .accessibilityLabel(Text("PackListの要件入力"))
 
                 if isRequirementEmpty {
                     // 入力例
@@ -115,7 +115,7 @@ struct AiCreateView: View {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
+                    Text(isGenerating ? "お作りしています..." : "チャッピーに作ってもらう")
                         .font(.callout.weight(.semibold))
                         .padding(.horizontal, 16)
                 }
@@ -124,14 +124,14 @@ struct AiCreateView: View {
             .disabled(isRequirementEmpty || isGenerating)
 
             if isGenerating {
-                Text("AIへ依頼中です。もう少しお待ちください")
+                Text("チャッピーに依頼中です。もう少しお待ちください")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
             Divider() // 区切り線
             
-            Text("残り \(creditStore.credits) 回")
+            Text("AI利用回数残り \(creditStore.credits) 回")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 32)
@@ -193,7 +193,7 @@ struct AiCreateView: View {
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            alertState = .generationFailure(message: "ご要望を入れてください。")
+            alertState = .generationFailure(message: String(localized: "ご要望を入れてください。"))
             return
         }
 
@@ -269,7 +269,8 @@ struct AiCreateView: View {
                         alertState = .creditShortage
                     }
                 } else {
-                    let message = apiError.errorDescription ?? "AIが忙しいようです。時間をおいて再度お試しください"
+                    let message = apiError.errorDescription
+                    ?? String(localized: "チャッピーが忙しいようです。時間をおいて再度お試しください")
                     await MainActor.run {
                         alertState = .generationFailure(message: message)
                     }
@@ -281,7 +282,8 @@ struct AiCreateView: View {
                 }
             } catch {
                 await MainActor.run {
-                    alertState = .generationFailure(message: "AIが忙しいようです。時間をおいて再度お試しください")
+                    alertState = .generationFailure(message:
+                                                        String(localized: "チャッピーが忙しいようです。時間をおいて再度お試しください"))
                 }
             }
         }
@@ -314,23 +316,24 @@ struct AiCreateView: View {
                 case .pending:
                     // ファミリー共有などで承認待ちになる場合
                     await MainActor.run {
-                        alertState = .purchaseFailure(message: "購入が承認待ちです。承認が完了すると自動で反映されます。")
+                        alertState = .purchaseFailure(message: String(localized: "購入が承認待ちです。承認が完了すると自動で反映されます。"))
                     }
 
                 case .userCancelled:
                     // ユーザーがキャンセルした場合は状況を伝えるメッセージを表示
                     await MainActor.run {
-                        alertState = .purchaseFailure(message: "購入をキャンセルしました。必要であれば再度お試しください。")
+                        alertState = .purchaseFailure(message: String(localized: "購入をキャンセルしました。必要であれば再度お試しください。"))
                     }
 
                 @unknown default:
                     await MainActor.run {
-                        alertState = .purchaseFailure(message: "想定外の購入結果が返りました。時間をおいて再度お試しください。")
+                        alertState = .purchaseFailure(message: String(localized: "想定外の購入結果が返りました。時間をおいて再度お試しください。"))
                     }
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
-                    let message = flowError.errorDescription ?? "AI利用回数券の購入に失敗しました。"
+                    let message = flowError.errorDescription
+                        ?? String(localized: "AI利用回数券の購入に失敗しました。")
                     alertState = .purchaseFailure(message: message)
                 }
             } catch let localized as LocalizedError {
@@ -340,7 +343,7 @@ struct AiCreateView: View {
                 }
             } catch {
                 await MainActor.run {
-                    alertState = .purchaseFailure(message: "AI利用回数券の購入中にエラーが発生しました。通信環境をご確認ください。")
+                    alertState = .purchaseFailure(message: String(localized: "AI利用回数券の購入中にエラーが発生しました。通信環境をご確認ください。"))
                 }
             }
 
@@ -385,8 +388,8 @@ struct AiCreateView: View {
             .padding(.horizontal, 32)
             
             Label {
-                Text("回数券はスマホ内に安全に保管されますが、アプリを削除すると消えて復元できないことをご承知の上、ご利用ください")
-                    .font(.body)
+                Text("回数券はスマホ内に安全に保管されますが、スマホが壊れたりアプリを削除すると消えて復元できないことを承諾してご利用ください")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             } icon: {
                 Image(systemName: "exclamationmark.triangle")
@@ -540,13 +543,13 @@ struct AiCreateView: View {
         var errorDescription: String? {
             switch self {
             case .productNotFound:
-                return "対象の商品情報が見つかりませんでした。設定からリストを更新してください。"
+                return String(localized: "対象の商品情報が見つかりませんでした。設定からリストを更新してください。")
             case .productLoadFailed:
-                return "商品情報を取得できませんでした。ネットワーク環境をご確認のうえ再度お試しください。"
+                return String(localized: "商品情報を取得できませんでした。ネットワーク環境をご確認のうえ再度お試しください。")
             case .transactionUnverified(let message):
                 return message
             case .receiptMissing:
-                return "購入情報の検証に必要なレシートが取得できませんでした。時間を置いて再試行してください。"
+                return String(localized: "購入情報の検証に必要なレシートが取得できませんでした。時間を置いて再試行してください。")
             }
         }
     }
@@ -596,28 +599,28 @@ struct AiCreateView: View {
         var title: String {
             switch self {
             case .generationSuccess:
-                return "生成完了"
+                return String(localized: "生成完了")
             case .generationFailure:
-                return "生成に失敗しました"
+                return String(localized: "生成に失敗しました")
             case .creditShortage:
-                return "AI利用券不足"
+                return String(localized: "AI利用券不足")
             case .purchaseSuccess:
-                return "購入完了"
+                return String(localized: "購入完了")
             case .purchaseFailure:
-                return "購入失敗"
+                return String(localized: "購入失敗")
             }
         }
 
         var message: String {
             switch self {
             case .generationSuccess(let packName):
-                return "パック『\(packName)』を追加しました。"
+                return String(localized: "パック『\(packName)』を追加しました。")
             case .generationFailure(let message):
                 return message
             case .creditShortage:
-                return "AI利用券が不足しています。下の購入メニューから購入してください"
+                return String(localized: "AI利用券が不足しています。下の購入メニューから購入してください")
             case .purchaseSuccess(let added, let priceYen):
-                return "¥\(priceYen)の購入でAI利用券を\(added)追加しました。"
+                return String(localized: "¥\(priceYen)の購入でAI利用券を\(added)追加しました。")
             case .purchaseFailure(let message):
                 return message
             }

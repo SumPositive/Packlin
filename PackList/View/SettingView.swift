@@ -32,11 +32,6 @@ struct SettingView: View {
                     ShareView()
                 }
 
-//                SettingSection {
-//                    // クレジット購入
-//                    CreditPurchaseView()
-//                }
-
                 SettingSection {
                     // カスタム設定
                     CustomSetView()
@@ -55,94 +50,13 @@ struct SettingView: View {
         .frame(width: 340, height: 540)
     }
 
-//    /// azuki-apiを利用したクレジット購入UI
-//    struct CreditPurchaseView: View {
-//        @EnvironmentObject private var creditStore: CreditStore
-//        @State private var processingProductId: String? // 現在購入処理中の商品ID（nilなら待機中）
-//        @State private var alertInfo: AlertInfo?
-//
-//        var body: some View {
-//            VStack(alignment: .leading, spacing: 12) {
-//                Label {
-//                    Text("ChatGPT連携クレジット")
-//                        .font(.body.weight(.bold))
-//                        .foregroundColor(.accentColor)
-//                } icon: {
-//                    Image(systemName: "creditcard")
-//                        .symbolRenderingMode(.hierarchical)
-//                }
-//
-//                Text("現在の残高: \(creditStore.credits) クレジット")
-//                    .font(.callout)
-//                    .foregroundStyle(.secondary)
-//
-//                // 金額別の購入ボタン群。配列はConfig側で一元管理し、ここでは描画のみ担当する。
-//                VStack(alignment: .leading, spacing: 8) {
-//                    ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productId) { option in
-//                        Button {
-//                            purchaseCredits(option: option)
-//                        } label: {
-//                            HStack(spacing: 12) {
-//                                if processingProductId == option.productId {
-//                                    ProgressView()
-//                                        .progressViewStyle(.circular)
-//                                }
-//                                Text("¥\(option.priceYen)で+\(option.credits)クレジット")
-//                                    .font(.callout.weight(.semibold))
-//                            }
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                        }
-//                        .buttonStyle(.borderedProminent)
-//                        .tint(.accentColor.opacity(0.85))
-//                        .disabled(processingProductId != nil)
-//                    }
-//                }
-//            }
-//            .frame(maxWidth: .infinity, alignment: .leading)
-//            .alert(item: $alertInfo) { info in
-//                Alert(title: Text(info.title), message: Text(info.message), dismissButton: .default(Text("OK")))
-//            }
-//        }
-
-//        /// 個別のオプションに応じたクレジット購入処理
-//        /// - Parameter option: AZUKI_CREDIT_PURCHASE_OPTIONSから渡されるタプル
-//        private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
-//            processingProductId = option.productId
-//            Task {
-//                do {
-//                    let added = try await AzukiAPIClient.shared.purchaseCredits(productId: option.productId)
-//                    creditStore.add(credits: added)
-//                    alertInfo = AlertInfo(
-//                        title: "購入完了",
-//                        message: "¥\(option.priceYen)の購入でクレジットを\(added)追加しました。"
-//                    )
-//                } catch {
-//                    let message: String
-//                    if let apiError = error as? LocalizedError, let description = apiError.errorDescription {
-//                        message = description
-//                    } else {
-//                        message = "購入処理で不明なエラーが発生しました。時間を空けて再度お試しください。"
-//                    }
-//                    alertInfo = AlertInfo(title: "購入失敗", message: message)
-//                }
-//                processingProductId = nil
-//            }
-//        }
-//
-//        private struct AlertInfo: Identifiable {
-//            let title: String
-//            let message: String
-//            var id: String { title + message }
-//        }
-//    }
-
     private var header: some View {
         HStack(spacing: 12) {
             Image(systemName: "gearshape")
                 .symbolRenderingMode(.hierarchical)
                 .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
 
-            Text("setting.title")
+            Text("設定")
                 .font(.title3.weight(.regular))
                 .foregroundStyle(.primary)
 
@@ -208,7 +122,7 @@ struct SettingView: View {
                 showSafari = true
             }) {
                 Label {
-                    Text("setting.info")
+                    Text("アプリの紹介・取扱説明")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
@@ -223,7 +137,7 @@ struct SettingView: View {
                 if let url = URL(string: urlString) {
                     SafariView(url: url)
                 } else {
-                    Text("setting.infoUnavailable")
+                    Text("情報を表示できません")
                 }
             }
         }
@@ -239,7 +153,7 @@ struct SettingView: View {
                 showChatGPTsheet = true
             }) {
                 Label {
-                    Text("ai.create.title")
+                    Text("チャッピー(AI)に作ってもらおう")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
@@ -269,7 +183,7 @@ struct SettingView: View {
                 isPresentingImporter = true
             }) {
                 Label {
-                    Text("action.pack.download")
+                    Text("パックを読み込む")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
@@ -365,16 +279,16 @@ struct SettingView: View {
             var title: String {
                 switch self {
                 case .success:
-                    return String(localized: "setting.import.success.title")
+                    return String(localized: "取り込み完了")
                 case .failure:
-                    return String(localized: "setting.import.error.title")
+                    return String(localized: "取り込みに失敗しました")
                 }
             }
 
             var message: String {
                 switch self {
                 case .success(let packName):
-                    let format = String(localized: "setting.import.success.message")
+                    let format = String(localized: "%@ を取り込みました")
                     return String(format: format, packName)
                 case .failure(let message):
                     return message
@@ -398,14 +312,14 @@ struct SettingView: View {
                 // 新規追加の位置
                 HStack(spacing: 8) {
                     Label {
-                        Text("setting.insertion.title")
+                        Text("新規追加位置")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "plus.circle")
                             .symbolRenderingMode(.hierarchical)
                     }
 
-                    Picker("setting.insertion.title", selection: $insertionPosition) {
+                    Picker("新規追加位置", selection: $insertionPosition) {
                         ForEach(InsertionPosition.allCases) { position in
                             Image(systemName: position.iconSFname)
                                 .imageScale(.small)
@@ -418,7 +332,7 @@ struct SettingView: View {
                 // 必要重量を表示
                 Toggle(isOn: $showNeedWeight) {
                     Label {
-                        Text("setting.needWeight.title")
+                        Text("必要重量を表示")
                             .font(.body)
                     } icon: {
                         Image(systemName: "scalemass")
@@ -428,7 +342,7 @@ struct SettingView: View {
                 // 重量計をKgで表示
                 Toggle(isOn: $weightDisplayInKg) {
                     Label {
-                        Text("setting.weightDisplayInKg.title")
+                        Text("重量計をKgで表示")
                             .font(.body)
                     } icon: {
                         Image(systemName: "scalemass.fill")
@@ -438,7 +352,7 @@ struct SettingView: View {
                 // チェックと在庫を連動
                 Toggle(isOn: $linkCheckWithStock) {
                     Label {
-                        Text("setting.linkCheckWithStock.title")
+                        Text("チェックと在庫を連動")
                             .font(.body)
                     } icon: {
                         ZStack{
@@ -450,7 +364,7 @@ struct SettingView: View {
                 // フッターの説明文（非表示/表示）
                 Toggle(isOn: $footerMessage) {
                     Label {
-                        Text("setting.footer.message")
+                        Text("フッターの説明文")
                             .font(.body)
                     } icon: {
                         ZStack{
@@ -472,7 +386,7 @@ struct SettingView: View {
         var body: some View {
             VStack(alignment: .leading, spacing: 20) {
                 Label {
-                    Text("ad.empowering.developers")
+                    Text("開発者を応援する")
                         .font(.body.weight(.medium))
                 } icon: {
                     Image(systemName: "heart.fill")
@@ -488,7 +402,7 @@ struct SettingView: View {
                             showAd = true
                         }
                     }) {
-                        Text("ad.donate.banner")
+                        Text("広告を見て寄付")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -505,14 +419,14 @@ struct SettingView: View {
                             }
                         }) {
                             VStack(spacing: 2) {
-                                Text("ad.donate.video")
+                                Text("動画広告を見て寄付")
                                     .frame(maxWidth: .infinity)
 
                                 HStack(spacing: 4) {
                                     Image(systemName: "exclamationmark.triangle")
                                         .imageScale(.small)
                                         .symbolRenderingMode(.hierarchical)
-                                    Text("ad.video.sound")
+                                    Text("音が出る場合があります")
                                         .font(.caption)
                                         .foregroundStyle(.primary)
                                 }
