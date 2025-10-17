@@ -9,22 +9,37 @@ import Foundation
 import Combine
 
 /// ChatGPT生成で使用するクレジットの残高を管理するObservableObject
-/// UserDefaultsに保存してアプリ再起動後も継続利用できるようにする
+/// Keychainへ保存することでアプリ削除後の再インストールでも残高を復元できるようにする
 @MainActor
 final class CreditStore: ObservableObject {
     @Published private(set) var credits: Int
-    /// azuki-api側でユーザーを識別するためのID。アプリ初回起動時に作成して以後はUserDefaultsで保持する。
+    /// azuki-api側でユーザーを識別するためのID。初回作成後はKeychainで保持する。
     let userId: String
 
     private let userDefaults: UserDefaults
+    private let keychain: KeychainStorage
     private let storageKey = "azuki.credit.balance"
+    private let keychainBalanceKey = "azuki.credit.balance"
 
-    init(userDefaults: UserDefaults = .standard) {
+    init(userDefaults: UserDefaults = .standard, keychain: KeychainStorage = KeychainStorage()) {
         self.userDefaults = userDefaults
-        self.userId = AzukiUserIdentifier.loadOrCreate(userDefaults: userDefaults)
-        let storedValue = userDefaults.integer(forKey: storageKey)
-        // UserDefaults.integerは未設定時に0を返すため、そのまま利用
-        self.credits = storedValue
+        self.keychain = keychain
+        // 既存ユーザーであればKeychainから、旧バージョン利用者であればUserDefaultsからIDを復元する
+        self.userId = AzukiUserIdentifier.loadOrCreate(userDefaults: userDefaults, keychain: keychain)
+
+        if let storedInKeychain = keychain.loadInt(forKey: keychainBalanceKey) {
+            // Keychainに保存済みならそのまま採用する
+            self.credits = storedInKeychain
+        } else {
+            // 旧バージョンのデータ移行：UserDefaultsに値があれば読み出してKeychainへ移す
+            let storedValue = userDefaults.integer(forKey: storageKey)
+            if userDefaults.object(forKey: storageKey) != nil {
+                self.credits = storedValue
+                keychain.saveInt(storedValue, forKey: keychainBalanceKey)
+            } else {
+                self.credits = 0
+            }
+        }
     }
 
     /// クレジットを追加する
@@ -67,6 +82,8 @@ final class CreditStore: ObservableObject {
     }
 
     private func persist() {
+        // KeychainとUserDefaultsの両方に書き込み、旧バージョンからの移行後も整合性を保つ
+        keychain.saveInt(credits, forKey: keychainBalanceKey)
         userDefaults.set(credits, forKey: storageKey)
     }
 }
@@ -75,15 +92,22 @@ final class CreditStore: ObservableObject {
 private enum AzukiUserIdentifier {
     private static let storageKey = "azuki.api.userId"
 
-    /// UserDefaultsに保存済みであればそれを返し、無ければ新たにUUIDを生成して保存する
-    /// - Parameter userDefaults: 保存先となるUserDefaults
+    /// KeychainまたはUserDefaultsに保存済みであればそれを返し、無ければ新たにUUIDを生成して保存する
+    /// - Parameters:
+    ///   - userDefaults: 旧バージョン互換のための保存先
+    ///   - keychain: アプリ再インストール後も維持したい本来の保存先
     /// - Returns: APIへ渡すuserId文字列
-    static func loadOrCreate(userDefaults: UserDefaults) -> String {
-        if let stored = userDefaults.string(forKey: storageKey), stored.isEmpty == false {
-            return stored
+    static func loadOrCreate(userDefaults: UserDefaults, keychain: KeychainStorage) -> String {
+        if let storedInKeychain = keychain.loadString(forKey: storageKey), storedInKeychain.isEmpty == false {
+            return storedInKeychain
+        }
+        if let storedInDefaults = userDefaults.string(forKey: storageKey), storedInDefaults.isEmpty == false {
+            keychain.saveString(storedInDefaults, forKey: storageKey)
+            return storedInDefaults
         }
         let newId = UUID().uuidString.lowercased()
         userDefaults.set(newId, forKey: storageKey)
+        keychain.saveString(newId, forKey: storageKey)
         return newId
     }
 }
