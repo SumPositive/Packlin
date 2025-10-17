@@ -39,14 +39,6 @@ enum AzukiAPIError: LocalizedError {
 /// azuki-api との通信を担うクライアント
 /// - Note: iOS側では決済処理そのものはStoreKit任せとし、azuki-apiはレシート検証とOpenAI代理実行を提供する想定
 final class AzukiApi {
-    /// クレジット購入APIの結果をまとめる構造体
-    struct CreditPurchaseResult {
-        /// 今回付与されたクレジット数（StoreKit導入後は実際の課金結果と一致させる）
-        let grantedCredits: Int
-        /// サーバーが計算した最新残高
-        let balance: Int
-    }
-
     static let shared = AzukiApi()
 
     private let session: URLSession
@@ -63,74 +55,6 @@ final class AzukiApi {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .iso8601
         self.decoder = decoder
-    }
-
-    /// サーバーのクレジット残高を問い合わせる
-    /// - Parameter userId: CreditStoreで払い出したユーザー識別子
-    /// - Returns: 現在の残高
-    func fetchCreditBalance(userId: String) async throws -> Int {
-        struct BalanceResponse: Decodable {
-            let userId: String
-            let balance: Int
-        }
-
-        guard let url = makeURL(path: "/api/credit/check", queryItems: [URLQueryItem(name: "userId", value: userId)]) else {
-            throw AzukiAPIError.invalidURL
-        }
-
-        let data = try await sendRequest(url: url, method: "GET")
-        do {
-            let response = try decoder.decode(BalanceResponse.self, from: data)
-            return response.balance
-        } catch {
-            throw AzukiAPIError.decoding
-        }
-    }
-
-    /// 指定した商品を購入したことをサーバーへ通知し、残高を更新する
-    /// - Parameters:
-    ///   - option: Config.swiftで定義した商品情報タプル
-    ///   - userId: azuki-apiが利用するユーザー識別子
-    ///   - transactionId: StoreKit 2 の `Transaction.id` を文字列化したもの
-    ///   - receiptData: StoreKit 2 の `Transaction.jwsRepresentation` などサーバー検証に利用するJWS文字列
-    /// - Returns: サーバーから返る最新残高と今回付与したクレジット数
-    func purchaseCredits(
-        option: (productId: String, priceYen: Int, credits: Int),
-        userId: String,
-        transactionId: String,
-        receiptData: String
-    ) async throws -> CreditPurchaseResult {
-        struct PurchaseRequest: Encodable {
-            let userId: String
-            let productId: String
-            let transactionId: String
-            let receipt: String
-            let grantCredits: Int
-        }
-        struct PurchaseResponse: Decodable {
-            let ok: Bool
-            let balance: Int
-        }
-
-        guard let url = makeURL(path: "/api/iap/verify") else {
-            throw AzukiAPIError.invalidURL
-        }
-
-        let requestBody = PurchaseRequest(
-            userId: userId,
-            productId: option.productId,
-            transactionId: transactionId,
-            receipt: receiptData,
-            grantCredits: option.credits
-        )
-
-        let data = try await sendRequest(url: url, body: requestBody)
-        do {
-            let response = try decoder.decode(PurchaseResponse.self, from: data)
-            return CreditPurchaseResult(grantedCredits: option.credits, balance: response.balance)
-        } catch {
-            throw AzukiAPIError.decoding
-        }
     }
 
     /// OpenAI(azuki-api経由)にパック生成を依頼する
@@ -181,13 +105,6 @@ final class AzukiApi {
         } catch {
             throw AzukiAPIError.encoding
         }
-        return try await send(request: request)
-    }
-
-    /// GETなどボディ無しのリクエストを送る
-    private func sendRequest(url: URL, method: String) async throws -> Data {
-        var request = URLRequest(url: url)
-        request.httpMethod = method
         return try await send(request: request)
     }
 

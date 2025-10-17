@@ -144,7 +144,6 @@ struct AiCreateView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
-            await refreshCreditBalance()
             await loadProductsIfNeeded()
         }
         .background(
@@ -173,22 +172,6 @@ struct AiCreateView: View {
         return Color(uiColor: .systemGray6)
     }
 
-    /// サーバーからクレジット残高を取得してローカルに反映する
-    private func refreshCreditBalance() async {
-        // 必要なときだけサーバーへ問い合わせるための共通関数
-        let userId = await MainActor.run { creditStore.userId }
-        do {
-            let remoteBalance = try await AzukiApi.shared.fetchCreditBalance(userId: userId)
-            await MainActor.run {
-                creditStore.overwrite(credits: remoteBalance)
-            }
-        } catch {
-            #if DEBUG
-            print("credit refresh failed: \(error)")
-            #endif
-        }
-    }
-
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -215,7 +198,7 @@ struct AiCreateView: View {
                 }
             }
 
-            // ローカル残高が不足している場合のみサーバーに問い合わせ、無駄な通信を避ける
+            // ローカル残高が不足している場合に限り不足アラートを出す（Keychain保存なので通信不要）
             let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
             if hasEnoughCredits == false {
                 await MainActor.run {
@@ -262,9 +245,8 @@ struct AiCreateView: View {
             } catch let apiError as AzukiAPIError {
                 // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
                 if case .insufficientCredits = apiError {
-                    // サーバー側でも不足判定となったのでローカルを戻さず、最新残高を取得して同期する
+                    // サーバー側で不足判定となったのでローカルを戻さず、Keychain残高を最新状態で使い続ける
                     shouldRestoreCredits = false
-                    await refreshCreditBalance()
                     await MainActor.run {
                         alertState = .creditShortage
                     }
@@ -308,10 +290,9 @@ struct AiCreateView: View {
 
                 switch outcome {
                 case .success(let verificationResult):
-                    // 3. トランザクション署名を検証し、サーバーへレシートを送信
+                    // 3. トランザクション署名を検証し、正規購入であればKeychain残高を加算する
                     let transaction = try await resolveVerifiedTransaction(from: verificationResult)
-                    let serverResult = try await registerPurchaseOnServer(option: option, transaction: transaction)
-                    await finalizePurchase(option: option, transaction: transaction, serverResult: serverResult)
+                    await finalizePurchase(option: option, transaction: transaction)
 
                 case .pending:
                     // ファミリー共有などで承認待ちになる場合
@@ -459,74 +440,16 @@ struct AiCreateView: View {
         }
     }
 
-    /// サーバーへレシート情報を転送し、残高を更新する
-    private func registerPurchaseOnServer(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async throws -> AzukiApi.CreditPurchaseResult {
-        let userId = await MainActor.run { creditStore.userId }
-        let transactionId = String(transaction.id)
-        let receipt = try await fetchAppStoreReceipt(from: transaction)
-        return try await AzukiApi.shared.purchaseCredits(
-            option: option,
-            userId: userId,
-            transactionId: transactionId,
-            receiptData: receipt
-        )
-    }
-
-    /// バンドル内に保存されたApp StoreレシートをBase64文字列として取得
-    /// - Throws: レシートが存在しない、もしくは読み込みに失敗した場合は `PurchaseFlowError.receiptMissing`
-    private func fetchAppStoreReceipt(from transaction: StoreKit.Transaction) async throws -> String {
-        // iOS 18 以上をターゲットにしているが、StoreKit.Transaction 側の署名APIは
-        // 利用環境のSDKに依存してビルドエラーとなるため、従来どおりバンドル内の
-        // レシートファイルを読み出してBase64化する手順に戻す。
-        // 今後 SDK 更新で `signedDataRepresentation` や類似APIが安定利用できたら、
-        // そのタイミングでサーバーへの受け渡し形式を再検討する想定。
-
-        // App Store レシートはバンドル内の決められた場所に配置されるため、
-        // guard で存在確認しつつ、存在しない場合は課金情報を送信できないのでエラー扱いにする。
-        // 引数の transaction は将来的に署名APIへ切り替える際に再活用するため、
-        // 現段階では未使用であることを明示しておく。
-        _ = transaction
-
-        // iOS 18 からは `appStoreReceiptURL` が非推奨になったため、
-        // セレクタ経由で取得してビルド時の警告を抑制する。
-        // StoreKit 2 の新しい API が SDK に取り込まれ次第、
-        // こちらの回避策は削除して `AppTransaction.shared` 系へ切り替える想定。
-        let receiptURLSelector = NSSelectorFromString("appStoreReceiptURL")
-        guard Bundle.main.responds(to: receiptURLSelector) else {
-            throw PurchaseFlowError.receiptMissing
-        }
-
-        let receiptURLObject = Bundle.main.perform(receiptURLSelector)?.takeUnretainedValue()
-        guard let receiptURL = receiptURLObject as? URL else {
-            throw PurchaseFlowError.receiptMissing
-        }
-
-        // ファイル読み込み時に I/O エラーが発生する可能性があるため、
-        // do-catch ではなく throws 付きの Data イニシャライザで自然にエラーを伝播させる。
-        // 空データが返ったときもレシート欠落と同義なのでエラーに倒す。
-        let receiptData = try Data(contentsOf: receiptURL)
-        if receiptData.isEmpty {
-            throw PurchaseFlowError.receiptMissing
-        }
-
-        // サーバー側は既存処理として Base64 の文字列表現を受け取るので、
-        // Data -> Base64 -> String の順で変換し、空文字でないことを再チェックする。
-        let base64String = receiptData.base64EncodedString()
-        if base64String.isEmpty {
-            throw PurchaseFlowError.receiptMissing
-        }
-        return base64String
-    }
-
-    /// トランザクションの完了とUI更新をまとめて処理する
+    /// トランザクションの完了とKeychain残高の更新をまとめて処理する
     /// - Note: `finish()` は iOS 18 以降で `async` のみとなったため、例外ハンドリングは不要になった
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, serverResult: AzukiApi.CreditPurchaseResult) async {
-        // 念のため完了処理を待ってからUIを更新することで、重複反映のリスクを避ける
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async {
+        // StoreKitへ購入完了を通知したうえでローカル残高を増やす。二重付与防止のため完了を待つ。
         await transaction.finish()
 
         await MainActor.run {
-            creditStore.overwrite(credits: serverResult.balance)
-            alertState = .purchaseSuccess(added: serverResult.grantedCredits, priceYen: option.priceYen)
+            // Keychain保存のCreditStoreへ即座に反映する
+            creditStore.add(credits: option.credits)
+            alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
         }
     }
 
@@ -534,22 +457,14 @@ struct AiCreateView: View {
     private enum PurchaseFlowError: LocalizedError {
         /// StoreKit 2 から商品情報が取得できなかった
         case productNotFound
-        /// ネットワークやApp Store接続の問題で商品一覧が取得できなかった
-        case productLoadFailed
         /// トランザクションが検証に失敗した（改ざんや未承認）
         case transactionUnverified(message: String)
-        /// レシート情報が欠落または無効だった
-        case receiptMissing
         var errorDescription: String? {
             switch self {
             case .productNotFound:
                 return String(localized: "対象の商品情報が見つかりませんでした。設定からリストを更新してください。")
-            case .productLoadFailed:
-                return String(localized: "商品情報を取得できませんでした。ネットワーク環境をご確認のうえ再度お試しください。")
             case .transactionUnverified(let message):
                 return message
-            case .receiptMissing:
-                return String(localized: "購入情報の検証に必要なレシートが取得できませんでした。時間を置いて再試行してください。")
             }
         }
     }
@@ -629,16 +544,12 @@ struct AiCreateView: View {
 }
 
 extension AiCreateView {
-    /// 生成処理に必要なクレジットが十分にあるかを判定し、足りない場合のみサーバーへ問い合わせて再確認する
+    /// 生成処理に必要なクレジットが十分にあるかを判定し、Keychain保存の残高だけで安全に判断する
     /// - Parameter cost: 必要クレジット数
     /// - Returns: 利用可能ならtrue
     private func ensureSufficientCreditsForGeneration(cost: Int) async -> Bool {
-        let hasEnoughLocally = await MainActor.run { cost <= creditStore.credits }
-        if hasEnoughLocally {
-            return true
-        }
-        await refreshCreditBalance()
-        let refreshedCredits = await MainActor.run { creditStore.credits }
-        return cost <= refreshedCredits
+        // MainActor上のCreditStoreから現在の残高を安全に読み取り、必要数と比較する
+        let currentCredits = await MainActor.run { creditStore.credits }
+        return cost <= currentCredits
     }
 }
