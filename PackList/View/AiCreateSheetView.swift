@@ -70,7 +70,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("ai.create.instructions") //要望を入力して「AIに作ってもらう」を押してください。AI利用券を1枚使います
+            Text("ai.create.instructions") //要望を入力して「AIに作ってもらう」を押してください。AI利用回数が1つ減ります
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -117,6 +117,7 @@ struct AiCreateView: View {
                     }
                     Text(isGenerating ? "お作りしています..." : "AIに作ってもらう")
                         .font(.callout.weight(.semibold))
+                        .padding(.horizontal, 16)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -128,9 +129,15 @@ struct AiCreateView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Divider()
+            Divider() // 区切り線
+            
+            Text("残り \(creditStore.credits) 回")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 32)
+            
 
-            // 回数券購入
+            // AI利用回数券購入
             creditPurchaseMenu
             
         }
@@ -280,7 +287,7 @@ struct AiCreateView: View {
         }
     }
 
-    /// クレジット購入
+    /// AI利用回数券購入
     /// - Parameter option: Configで定義したオプションタプル
     private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
         Task {
@@ -323,7 +330,7 @@ struct AiCreateView: View {
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
-                    let message = flowError.errorDescription ?? "AI利用券の購入に失敗しました。"
+                    let message = flowError.errorDescription ?? "AI利用回数券の購入に失敗しました。"
                     alertState = .purchaseFailure(message: message)
                 }
             } catch let localized as LocalizedError {
@@ -333,7 +340,7 @@ struct AiCreateView: View {
                 }
             } catch {
                 await MainActor.run {
-                    alertState = .purchaseFailure(message: "AI利用券の購入中にエラーが発生しました。通信環境をご確認ください。")
+                    alertState = .purchaseFailure(message: "AI利用回数券の購入中にエラーが発生しました。通信環境をご確認ください。")
                 }
             }
 
@@ -343,20 +350,16 @@ struct AiCreateView: View {
         }
     }
 
-    /// クレジット購入UIのまとまり
+    /// AI利用回数券購入メニュー
     private var creditPurchaseMenu: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                Text("AI利用券購入")
+                Text("AI利用回数券購入")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "cart")
                     .symbolRenderingMode(.hierarchical)
             }
-
-            Text("AI利用券残り: \(creditStore.credits)")
-                .font(.callout)
-                .foregroundStyle(.secondary)
 
             // Config側で定義した金額・クレジットの対応表をそのまま描画する
             VStack(alignment: .leading, spacing: 8) {
@@ -369,7 +372,7 @@ struct AiCreateView: View {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                             }
-                            Text("AI利用券\(option.credits)枚：¥\(option.priceYen)")
+                            Text("\(option.credits)回券：¥\(option.priceYen)")
                                 .font(.callout.weight(.semibold))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -378,6 +381,17 @@ struct AiCreateView: View {
                     .tint(.accentColor.opacity(0.8))
                     .disabled(processingProductId != nil)
                 }
+            }
+            .padding(.horizontal, 32)
+            
+            Label {
+                Text("回数券はスマホ内に安全に保管されますが、アプリを削除すると消えて復元ができないことをご承知の上、ご利用ください")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            } icon: {
+                Image(systemName: "exclamationmark.triangle")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical)
             }
         }
     }
