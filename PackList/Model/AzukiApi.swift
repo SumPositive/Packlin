@@ -20,17 +20,18 @@ enum AzukiAPIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "サーバーのURLを組み立てられませんでした。時間をおいて再度お試しください。"
+            return String(localized: "サーバーのURLを組み立てられませんでした。時間をおいて再度お試しください。")
         case .invalidResponse:
-            return "サーバーの応答が不正でした。通信状況をご確認ください。"
+            return String(localized: "サーバーの応答が不正でした。通信状況をご確認ください。")
         case .server(let statusCode):
-            return "サーバーエラー(\(statusCode))が発生しました。サポートへお問い合わせください。"
+            return String(localized: "サーバーエラー") + "(\(statusCode))"
+                + String(localized: "が発生しました。サポートへお問い合わせください。")
         case .decoding:
-            return "サーバーから受信したデータを解析できませんでした。"
+            return String(localized: "サーバーから受信したデータを解析できませんでした。")
         case .encoding:
-            return "送信データの準備に失敗しました。入力内容をご確認ください。"
+            return String(localized: "送信データの準備に失敗しました。入力内容をご確認ください。")
         case .insufficientCredits:
-            return "クレジットが不足しています。購入後に再度お試しください。"
+            return String(localized: "クレジットが不足しています。購入後に再度お試しください。")
         }
     }
 }
