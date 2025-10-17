@@ -27,16 +27,16 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
-let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.git@art.jp.workers.dev")!
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
 /// 消費型クレジットの商品ID群（azuki-api側の定義と一致させる）
-let AZUKI_API_CREDIT_PRODUCT_SMALL = "azuki.packlist.credit005"   // ¥50 / +5クレジット
-let AZUKI_API_CREDIT_PRODUCT_STANDARD = "azuki.packlist.credit011" // ¥100 / +11クレジット
-let AZUKI_API_CREDIT_PRODUCT_BULK = "azuki.packlist.credit060"    // ¥500 / +60クレジット
+let AZUKI_API_CREDIT_PRODUCT_SMALL = "AiCredit_JPY50"   // ¥50 / +5クレジット
+let AZUKI_API_CREDIT_PRODUCT_STANDARD = "AiCredit_JPY100" // ¥100 / +11クレジット
+//let AZUKI_API_CREDIT_PRODUCT_BULK = "AiCredit_JPY500"    // ¥500 / +60クレジット
 /// UIで使い回すための購入オプション定義（タプルで十分なためstructは用意しない）
 let AZUKI_CREDIT_PURCHASE_OPTIONS: [(productId: String, priceYen: Int, credits: Int)] = [
     (productId: AZUKI_API_CREDIT_PRODUCT_SMALL, priceYen: 50, credits: 5),
     (productId: AZUKI_API_CREDIT_PRODUCT_STANDARD, priceYen: 100, credits: 11),
-    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 60),
+//    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 60),
 ]
 /// OpenAIへ転送するモデル名。サーバーが代理実行するためクライアント側で明示しておく
 let OPENAI_CHAT_COMPLETION_MODEL = "gpt-4o-mini"
