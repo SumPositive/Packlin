@@ -1209,23 +1209,6 @@
         }
       }
     },
-    "setting.chatgpt.generate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generate Pack with ChatGPT"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "パックAIにをChatGPTで生成"
-          }
-        }
-      }
-    },
     "setting.footer.message" : {
       "localizations" : {
         "en" : {

@@ -385,7 +385,7 @@ struct AiCreateView: View {
             .padding(.horizontal, 32)
             
             Label {
-                Text("回数券はスマホ内に安全に保管されますが、アプリを削除すると消えて復元ができないことをご承知の上、ご利用ください")
+                Text("回数券はスマホ内に安全に保管されますが、アプリを削除すると消えて復元できないことをご承知の上、ご利用ください")
                     .font(.body)
                     .foregroundStyle(.secondary)
             } icon: {
