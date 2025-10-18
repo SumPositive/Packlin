@@ -12,6 +12,10 @@ import StoreKit
 #endif
 
 #if canImport(StoreKitTest)
+// MARK: - StoreKitTest モジュールのインポートについて
+// DEBUG ビルドでは Xcode プロジェクトに StoreKitTest.framework を弱リンクとして追加しているため、
+// canImport(StoreKitTest) が true になり以下の import が成立する。実機ビルド時はフレームワークが
+// 取り除かれるので、この条件付き import 自体がビルドから外れ StoreKit 本番経路のみが利用される。
 import StoreKitTest
 #endif
 
