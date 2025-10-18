@@ -55,15 +55,23 @@ actor StoreKitTestController {
                 #endif
                 return
             }
-            // StoreKit の SKTestSession を介してシミュレータ用のテストセッションを生成する
-            // - Note: 生成時点でセッションが開始されるため、StoreKitTestSession のような start() 呼び出しは不要
-            let newSession = try SKTestSession(configurationFileURL: configurationURL)
-            // 課金ダイアログを自動承認し、ユーザー操作なしでフローを通過できるようにする
-            newSession.disableDialogs = true
-            // 既存のテストトランザクションをリセットし、常にクリーンな状態から検証できるようにする
-            try newSession.clearTransactions()
-            // AnyObject へ代入してライフタイムを保持する
-            sessionBox = newSession
+            // iOS16 以降では StoreKitTestSession を用い、それ以前では SKTestSession を利用する
+            if #available(iOS 16.0, *) {
+                // StoreKitTestSession は async API を持つので await 付きで初期化・後処理を行う
+                let newSession = try StoreKitTestSession(configurationFileURL: configurationURL)
+                // 課金ダイアログを自動承認し、ユーザー操作なしでフローを通過できるようにする
+                newSession.disableDialogs = true
+                // 非同期APIなので await を付け、未消化トランザクションを必ず初期化前に掃除する
+                try await newSession.clearTransactions()
+                // AnyObject へ代入してライフタイムを保持する
+                sessionBox = newSession
+            } else {
+                // 旧 OS では SKTestSession を利用して同様の初期化を行う
+                let legacySession = try SKTestSession(configurationFileURL: configurationURL)
+                legacySession.disableDialogs = true
+                try legacySession.clearTransactions()
+                sessionBox = legacySession
+            }
         } catch {
             // 設定ファイルの欠如や読み込み失敗が起きた場合はログだけに留め、本番フローにフォールバックする
             #if DEBUG
