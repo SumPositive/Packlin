@@ -388,6 +388,9 @@ struct AiCreateView: View {
             return
         }
 
+        // シミュレータではここでStoreKit Test Sessionを起動しておかないと、商品取得リクエストがApp Store本番を見に行ってしまう
+        await StoreKitTestController.shared.prepareForPurchaseIfNeeded()
+
         let identifiers = Set(AZUKI_CREDIT_PURCHASE_OPTIONS.map { $0.productId })
         do {
             let products = try await Product.products(for: identifiers)
@@ -408,6 +411,9 @@ struct AiCreateView: View {
         if let cached = cachedProduct {
             return cached
         }
+
+        // キャッシュがなく都度取得になる場合も、StoreKit Test Sessionを事前に起動してテスト用商品を確実に見つけられるようにする
+        await StoreKitTestController.shared.prepareForPurchaseIfNeeded()
 
         // StoreKit 2 の `Product.products` は例外を投げないため、`try` を使わずシンプルに取得する
         let fetched = try await Product.products(for: [productId])

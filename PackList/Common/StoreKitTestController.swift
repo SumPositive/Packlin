@@ -39,8 +39,16 @@ actor StoreKitTestController {
         }
         isPreparing = true
         do {
+            // StoreKit Configuration ファイルのURLをバンドルから手動で探し、見つからなければその時点でフォールバックする
+            guard let configurationURL = Bundle.main.url(forResource: "PackListStoreKit", withExtension: "storekit") else {
+                #if DEBUG
+                print("[StoreKitTest] バンドル内に PackListStoreKit.storekit が見つからなかったため、本番StoreKitを利用します")
+                #endif
+                isPreparing = false
+                return
+            }
             // Xcode の StoreKit Configuration (.storekit) を読み込み、テスト用セッションを生成
-            let newSession = try StoreKitTestSession(configurationFileNamed: "PackListStoreKit")
+            let newSession = try StoreKitTestSession(configurationFileURL: configurationURL)
             // 課金ダイアログを自動承認し、シミュレータでのテスト効率を高める
             newSession.disableDialogs = true
             newSession.clearTransactions()
