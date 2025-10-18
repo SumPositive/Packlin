@@ -55,23 +55,23 @@ actor StoreKitTestController {
                 #endif
                 return
             }
-            // iOS16 以降では StoreKitTestSession を用い、それ以前では SKTestSession を利用する
-            if #available(iOS 16.0, *) {
-                // StoreKitTestSession は async API を持つので await 付きで初期化・後処理を行う
-                let newSession = try StoreKitTestSession(configurationFileURL: configurationURL)
-                // 課金ダイアログを自動承認し、ユーザー操作なしでフローを通過できるようにする
-                newSession.disableDialogs = true
-                // 非同期APIなので await を付け、未消化トランザクションを必ず初期化前に掃除する
-                try await newSession.clearTransactions()
-                // AnyObject へ代入してライフタイムを保持する
-                sessionBox = newSession
-            } else {
-                // 旧 OS では SKTestSession を利用して同様の初期化を行う
-                let legacySession = try SKTestSession(configurationFileURL: configurationURL)
-                legacySession.disableDialogs = true
-                try legacySession.clearTransactions()
-                sessionBox = legacySession
+            // Xcode や iOS のバージョンによっては StoreKitTestSession クラスが存在せずコンパイルが失敗するため
+            // ここでは互換性の高い SKTestSession のみを利用する。iOS 16 以降では clearTransactions が非同期化
+            // されているが、Objective-C ランタイム経由で同期 API も残されているため、従来通りの呼び出しで両対応する。
+            let session = try SKTestSession(configurationFileURL: configurationURL)
+            session.disableDialogs = true
+
+            // clearTransactions() は iOS16 以降で async throws に拡張されたが、同期版の API も互換のため
+            // 依然として利用できる。ビルド環境ごとに挙動が異なっても例外を握りつぶしてフォールバックできるようにする。
+            do {
+                try session.clearTransactions()
+            } catch {
+                // 万が一失敗しても購入テスト自体は進められるよう、DEBUG ビルドでログ出力のみ行う
+                #if DEBUG
+                print("[StoreKitTest] clearTransactions でエラーが発生しました: \(error)")
+                #endif
             }
+            sessionBox = session
         } catch {
             // 設定ファイルの欠如や読み込み失敗が起きた場合はログだけに留め、本番フローにフォールバックする
             #if DEBUG
