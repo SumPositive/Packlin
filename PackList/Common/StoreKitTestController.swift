@@ -86,7 +86,7 @@ extension StoreKitTestController {
     private func createLegacySession(configurationURL: URL) throws -> SKTestSession {
         var nsError: NSError?
         // CreateSKTestSessionSafely は Objective-C 実装で NSException を握りつぶしたうえで NSError を返してくれる
-        guard let rawSession = CreateSKTestSessionSafely(configurationURL as NSURL, &nsError) else {
+        guard let rawSession = CreateSKTestSessionSafely(configurationURL, &nsError) else {
             if let bridgeError = nsError {
                 throw bridgeError
             }
