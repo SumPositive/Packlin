@@ -3,8 +3,6 @@
 
 ## StoreKit テスト環境について
 
-- シミュレータでの動作確認は `PackList/Resources/PackListStoreKit.storekit` を利用した StoreKit Test Session で自動化されます。
-- `DEBUG` ビルドかつシミュレータ実行時には、課金ボタンを押すと自動で StoreKit Test Session が開始され、ダイアログを表示せずに承認されます。
-- 利用しているテストセッションは `SKTestSession` で統一されており、iOS 14 以降のシミュレータであれば Xcode のバージョンに依存せず動作します。
-- 実機で Sandbox テストを行う場合は、これまで通り Sandbox Apple ID でサインインした状態で同じ購入ボタンを実行してください。
-- Xcode プロジェクト側では `StoreKitTest.framework` を弱リンク（Optional）として追加しているため、DEBUG + シミュレータ環境であれば追加設定なしに `StoreKitTest` モジュールが解決されます。実機ビルドでは弱リンクにより取り除かれるため、配布バイナリへ影響はありません。
+- シミュレータ向けの StoreKit Test Session 自動化は廃止しました。課金フローの検証は実機 + Sandbox Apple ID で行ってください。
+- 実機テストでは、端末の App Store に Sandbox Apple ID でサインインした状態でアプリを起動し、AI利用回数券の購入ボタンを操作します。
+- StoreKit 関連の追加フレームワークやテスト用 `.storekit` ファイルは不要になったため、Xcode プロジェクトにも特別な設定はありません。

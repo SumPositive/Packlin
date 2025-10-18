@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
                 C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
-                C3F5B0032EA210060022D8A9 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3F5B0022EA210060022D8A9 /* StoreKitTest.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,7 +31,6 @@
 		C3D2BB6C2E6A7967002B900A /* PackList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PackList.app; sourceTree = BUILT_PRODUCTS_DIR; };
                 C3D2BB7B2E6A7969002B900A /* PackListTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PackListTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
                 C3D2BB852E6A7969002B900A /* PackListUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PackListUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-                C3F5B0022EA210060022D8A9 /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = Library/Frameworks/StoreKitTest.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -71,7 +69,6 @@
                         isa = PBXFrameworksBuildPhase;
                         buildActionMask = 2147483647;
                         files = (
-                                C3F5B0032EA210060022D8A9 /* StoreKitTest.framework in Frameworks */,
                                 C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
                         );
                         runOnlyForDeploymentPostprocessing = 0;
@@ -96,7 +93,6 @@
                 C36757AB2E80330F0098BB22 /* Frameworks */ = {
                         isa = PBXGroup;
                         children = (
-                                C3F5B0022EA210060022D8A9 /* StoreKitTest.framework */,
                         );
                         name = Frameworks;
                         sourceTree = "<group>";
@@ -463,7 +459,6 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
                                 SWIFT_EMIT_LOC_STRINGS = YES;
-                                SWIFT_OBJC_BRIDGING_HEADER = "PackList/PackList-Bridging-Header.h";
                                 SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -505,7 +500,6 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
                                 SWIFT_EMIT_LOC_STRINGS = YES;
-                                SWIFT_OBJC_BRIDGING_HEADER = "PackList/PackList-Bridging-Header.h";
                                 SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
