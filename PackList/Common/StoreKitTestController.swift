@@ -62,7 +62,8 @@ actor StoreKitTestController {
             // Xcode や iOS のバージョンによっては StoreKitTestSession クラスが存在せずコンパイルが失敗するため
             // ここでは互換性の高い SKTestSession のみを利用する。iOS 16 以降では clearTransactions が非同期化
             // されているが、Objective-C ランタイム経由で同期 API も残されているため、従来通りの呼び出しで両対応する。
-            let session = try SKTestSession(configurationFileURL: configurationURL)
+            // SKTestSession の初期化子は contentsOf: をラベルに取るため、URL を直接渡してセッションを生成する
+            let session = try SKTestSession(contentsOf: configurationURL)
             session.disableDialogs = true
 
             // clearTransactions() は iOS16 以降で async throws に拡張されたが、同期版の API も互換のため
