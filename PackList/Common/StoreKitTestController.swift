@@ -66,16 +66,11 @@ actor StoreKitTestController {
             let session = try SKTestSession(contentsOf: configurationURL)
             session.disableDialogs = true
 
-            // clearTransactions() は iOS16 以降で async throws に拡張されたが、同期版の API も互換のため
-            // 依然として利用できる。ビルド環境ごとに挙動が異なっても例外を握りつぶしてフォールバックできるようにする。
-            do {
-                try session.clearTransactions()
-            } catch {
-                // 万が一失敗しても購入テスト自体は進められるよう、DEBUG ビルドでログ出力のみ行う
-                #if DEBUG
-                print("[StoreKitTest] clearTransactions でエラーが発生しました: \(error)")
-                #endif
-            }
+            // clearTransactions() は現状 throw しない同期メソッドとして提供されているため、
+            // 例外処理を挟まずに直接呼び出してテスト用トランザクションを全て消去する。
+            // もし将来 async/throws 化された場合でもコンパイル時に検知できるよう、
+            // ここで明示的にコメントを残しておく。
+            session.clearTransactions()
             sessionBox = session
         } catch {
             // 設定ファイルの欠如や読み込み失敗が起きた場合はログだけに留め、本番フローにフォールバックする
