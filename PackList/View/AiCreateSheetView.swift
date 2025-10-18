@@ -277,7 +277,7 @@ struct AiCreateView: View {
             }
 
             do {
-                // シミュレータでのテスト実行時には、StoreKitTestSession を立ち上げて
+                // シミュレータでのテスト実行時には、StoreKit の SKTestSession を立ち上げて
                 // App Store を介さずに購入フローを再現できるようにする
                 await StoreKitTestController.shared.prepareForPurchaseIfNeeded()
 
