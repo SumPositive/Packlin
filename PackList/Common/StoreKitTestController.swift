@@ -11,6 +11,10 @@ import Foundation
 import StoreKit
 #endif
 
+#if canImport(StoreKitTest)
+import StoreKitTest
+#endif
+
 /// StoreKit のテストセッション（SKTestSession）を構築・保持するユーティリティ
 /// - Note: シミュレータ専用の挙動は `DEBUG` かつ `targetEnvironment(simulator)` のときだけ有効化する
 actor StoreKitTestController {
