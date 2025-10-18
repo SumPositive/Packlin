@@ -20,7 +20,7 @@ import StoreKitTest
 actor StoreKitTestController {
     static let shared = StoreKitTestController()
 
-    #if DEBUG && targetEnvironment(simulator)
+    #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
     /// SKTestSession を強参照で保持し、テスト用セッションが途中で解放されないようにする
     /// - Note: AnyObject として保持することで、対象 OS のバージョン条件に左右されずビルドエラーを避ける
     private var sessionBox: AnyObject?
@@ -30,7 +30,7 @@ actor StoreKitTestController {
 
     /// 購入処理の直前に呼び出し、必要なら StoreKit のテストセッションを起動する
     func prepareForPurchaseIfNeeded() async {
-        #if DEBUG && targetEnvironment(simulator)
+        #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
         // iOS 14 以上でのみ StoreKit のテストセッション API が利用可能なので、ランタイム条件を満たさない場合は早期リターンする
         guard #available(iOS 14.0, *) else {
             return
@@ -71,7 +71,7 @@ actor StoreKitTestController {
             #endif
         }
         #else
-        // 実機やリリースビルドではそのまま実ストアに接続するため、何もする必要がない
+        // 実機や StoreKitTest を利用できないビルド構成ではそのまま実ストアに接続する
         return
         #endif
     }
