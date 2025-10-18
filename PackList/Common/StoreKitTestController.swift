@@ -62,7 +62,8 @@ actor StoreKitTestController {
 
             // StoreKitTestSession は iOS 16 SDK に含まれる新 API で、古い Xcode（iOS 15 以前の SDK）では型自体が存在しない。
             // そのため互換性を重視し、常に SKTestSession を利用してテストセッションを構築するよう一本化する。
-            let legacySession = try SKTestSession(contentsOf: configurationURL)
+            // Objective-C ブリッジを経由してセッションを生成し、NSException によるクラッシュを防ぐ
+            let legacySession = try createLegacySession(configurationURL: configurationURL)
             configureLegacySession(legacySession)
             sessionBox = legacySession
         } catch {
@@ -79,6 +80,24 @@ actor StoreKitTestController {
 }
 #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
 extension StoreKitTestController {
+    /// Objective-C ヘルパーを利用して SKTestSession を生成する
+    /// - Parameter configurationURL: バンドル内の StoreKit Configuration ファイル URL
+    /// - Throws: StoreKitTestBridge 由来の NSError もしくはキャスト失敗エラー
+    private func createLegacySession(configurationURL: URL) throws -> SKTestSession {
+        var nsError: NSError?
+        // CreateSKTestSessionSafely は Objective-C 実装で NSException を握りつぶしたうえで NSError を返してくれる
+        guard let rawSession = CreateSKTestSessionSafely(configurationURL as NSURL, &nsError) else {
+            if let bridgeError = nsError {
+                throw bridgeError
+            }
+            throw NSError(domain: "StoreKitTestBridge", code: -3, userInfo: [NSLocalizedDescriptionKey: "StoreKitTest セッションを生成できませんでした。"])
+        }
+        guard let session = rawSession as? SKTestSession else {
+            throw NSError(domain: "StoreKitTestBridge", code: -4, userInfo: [NSLocalizedDescriptionKey: "StoreKitTest セッションの型変換に失敗しました。"])
+        }
+        return session
+    }
+
     /// SKTestSession を初期化する補助関数
     /// - Parameter session: StoreKit Test 専用セッション
     private func configureLegacySession(_ session: SKTestSession) {
