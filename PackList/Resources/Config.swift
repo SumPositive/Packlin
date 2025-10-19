@@ -27,7 +27,13 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
+#if DEBUG
+// Local server
+let AZUKI_API_BASE_URL = URL(string: "http://localhost:8787")!
+#else
+// 本番 Deploy server
 let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
+#endif
 /// 消費型クレジットの商品ID群（azuki-api側の定義と一致させる）
 let AZUKI_API_CREDIT_PRODUCT_SMALL = "AiCredit_JPY50"   // ¥50 / +5クレジット
 let AZUKI_API_CREDIT_PRODUCT_STANDARD = "AiCredit_JPY100" // ¥100 / +11クレジット
@@ -39,7 +45,7 @@ let AZUKI_CREDIT_PURCHASE_OPTIONS: [(productId: String, priceYen: Int, credits: 
 //    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 60),
 ]
 /// OpenAIへ転送するモデル名。サーバーが代理実行するためクライアント側で明示しておく
-let OPENAI_CHAT_COMPLETION_MODEL = "gpt-4o-mini"
+let OPENAI_CHAT_COMPLETION_MODEL = "gpt-5" //"gpt-4o-mini"
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
 let CHATGPT_GENERATION_CREDIT_COST = 1
 
