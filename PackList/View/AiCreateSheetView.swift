@@ -142,7 +142,10 @@ struct AiCreateView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
+            // 初回表示時に商品情報を取得しつつ、サーバー残高との同期も直ちに行う
             await loadProductsIfNeeded()
+            // サーバー残高との同期は一度だけ実行し、Keychainの値と揃えておく
+            await syncCreditBalanceIfNeeded()
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -512,7 +515,9 @@ struct AiCreateView: View {
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
-        let receipt = transaction.jwsRepresentation
+        // StoreKitのトランザクションはJWSではなくJSON Dataとして取得し、Base64で安全に送信する
+        let receiptData = transaction.jsonRepresentation
+        let receipt = receiptData.base64EncodedString()
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
@@ -647,9 +652,6 @@ struct AiCreateView: View {
             case .purchaseFailure(let message):
                 return message
             }
-        }
-        .task {
-            await syncCreditBalanceIfNeeded()
         }
     }
 }
