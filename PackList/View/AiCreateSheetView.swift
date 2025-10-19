@@ -277,6 +277,8 @@ struct AiCreateView: View {
             }
 
             do {
+                // 実機（Sandbox Apple ID）での挙動確認を前提とし、StoreKit 本番フローをそのまま利用する
+                // シミュレータ用のテストセッションはあえて起動せず、実運用と同じ購入体験を得る
                 // 1. StoreKit2 から商品情報を取得（初回のみネットワーク越し）
                 await loadProductsIfNeeded()
                 let product = try await fetchProduct(matching: option.productId)
@@ -384,6 +386,7 @@ struct AiCreateView: View {
             return
         }
 
+        // StoreKit の商品取得も実機 Sandbox を前提にしているため、シミュレータ固有の処理は挟まない
         let identifiers = Set(AZUKI_CREDIT_PURCHASE_OPTIONS.map { $0.productId })
         do {
             let products = try await Product.products(for: identifiers)
@@ -405,6 +408,7 @@ struct AiCreateView: View {
             return cached
         }
 
+        // 実運用と同じく App Store 経由で取得するので、追加のテストセッション初期化などは行わない
         // StoreKit 2 の `Product.products` は例外を投げないため、`try` を使わずシンプルに取得する
         let fetched = try await Product.products(for: [productId])
         // 商品がまったく返ってこなければカタログの不整合と判断してエラーにする
