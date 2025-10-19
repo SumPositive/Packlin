@@ -22,6 +22,8 @@ enum AzukiAPIError: LocalizedError {
     case duplicateTransaction
     case unknownProduct
     case purchaseMismatch
+    case tokenExpired
+    case receiptBelongsToOtherUser
 
     var errorDescription: String? {
         switch self {
@@ -39,7 +41,7 @@ enum AzukiAPIError: LocalizedError {
         case .insufficientCredits:
             return String(localized: "クレジットが不足しています。購入後に再度お試しください。")
         case .missingAuthToken:
-            return String(localized: "認証情報が設定されていません。アプリを再インストールするかサポートへお問い合わせください。")
+            return String(localized: "アクセストークンが見つかりません。購入履歴を復元してから再度お試しください。")
         case .unauthorized:
             return String(localized: "認証に失敗しました。通信状況を確認しても解決しない場合はサポートへご連絡ください。")
         case .forbiddenUser:
@@ -50,6 +52,10 @@ enum AzukiAPIError: LocalizedError {
             return String(localized: "サーバー側の商品の登録と一致しません。アプリを最新に更新してからお試しください。")
         case .purchaseMismatch:
             return String(localized: "購入情報の整合性を確認できませんでした。時間をおいて再度お試しください。")
+        case .tokenExpired:
+            return String(localized: "アクセストークンの有効期限が切れました。購入履歴の復元を行ってください。")
+        case .receiptBelongsToOtherUser:
+            return String(localized: "この購入情報は別のユーザーに紐づいています。サポートへお問い合わせください。")
         }
     }
 }
@@ -62,10 +68,20 @@ final class AzukiApi {
     private let session: URLSession
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
-    /// JWTでの認証に使用するトークン（Info.plistや環境変数から読み込む想定）
-    private let authToken: String
+    /// サーバー発行のアクセストークンをKeychain経由で管理するストア
+    private let accessTokenStore: AzukiAccessTokenStore
 
-    private init(session: URLSession = .shared, authToken: String = AZUKI_API_AUTH_JWT) {
+    /// リクエストごとの認証要件
+    private enum AuthorizationRequirement {
+        /// アクセストークン不要
+        case none
+        /// あれば送るが、無ければそのまま送信
+        case optional
+        /// 必ずアクセストークンが必要
+        case required
+    }
+
+    private init(session: URLSession = .shared, accessTokenStore: AzukiAccessTokenStore = AzukiAccessTokenStore()) {
         self.session = session
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -75,7 +91,7 @@ final class AzukiApi {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .iso8601
         self.decoder = decoder
-        self.authToken = authToken
+        self.accessTokenStore = accessTokenStore
     }
 
     /// OpenAI(azuki-api経由)にパック生成を依頼する
@@ -94,7 +110,7 @@ final class AzukiApi {
         }
 
         let requestBody = GenerateRequest(userId: userId, requirement: requirement)
-        let data = try await sendJSONRequest(url: url, body: requestBody)
+        let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
             return try decoder.decode(PackJsonDTO.self, from: data)
         } catch {
@@ -115,7 +131,7 @@ final class AzukiApi {
             throw AzukiAPIError.invalidURL
         }
 
-        let request = try makeAuthorizedRequest(url: url, method: "GET")
+        let request = try makeRequest(url: url, method: "GET", body: nil, authorization: .required)
         let data = try await send(request: request)
         do {
             let response = try decoder.decode(CreditCheckResponse.self, from: data)
@@ -133,7 +149,14 @@ final class AzukiApi {
     ///   - receipt: StoreKitトランザクションのJWS等、サーバーでハッシュ化する生データ
     ///   - grantCredits: 付与予定のクレジット数（サーバー側の定義と一致する必要がある）
     /// - Returns: サーバーが更新した最新残高
-    func verifyPurchase(userId: String, productId: String, transactionId: String, receipt: String, grantCredits: Int) async throws -> Int {
+    struct VerifyPurchaseResult {
+        /// サーバーが返した最新残高
+        let balance: Int
+        /// サーバー側ですでに処理済みだったかどうか
+        let duplicate: Bool
+    }
+
+    func verifyPurchase(userId: String, productId: String, transactionId: String, receipt: String, grantCredits: Int) async throws -> VerifyPurchaseResult {
         struct VerifyRequest: Encodable {
             let userId: String
             let productId: String
@@ -144,6 +167,9 @@ final class AzukiApi {
 
         struct VerifyResponse: Decodable {
             let balance: Int
+            let duplicate: Bool?
+            let accessToken: String?
+            let accessTokenExpiresAt: Double?
         }
 
         guard let url = makeURL(path: "/api/iap/verify") else {
@@ -151,10 +177,14 @@ final class AzukiApi {
         }
 
         let body = VerifyRequest(userId: userId, productId: productId, transactionId: transactionId, receipt: receipt, grantCredits: grantCredits)
-        let data = try await sendJSONRequest(url: url, body: body)
+        let data = try await sendJSONRequest(url: url, body: body, authorization: .optional)
         do {
             let response = try decoder.decode(VerifyResponse.self, from: data)
-            return response.balance
+            if let token = response.accessToken, let expiresAt = response.accessTokenExpiresAt {
+                // サーバーが短命アクセストークンを新規発行してくれた場合はKeychainへ反映する
+                accessTokenStore.save(token: token, expiresAtMilliseconds: expiresAt)
+            }
+            return VerifyPurchaseResult(balance: response.balance, duplicate: response.duplicate ?? false)
         } catch {
             throw AzukiAPIError.decoding
         }
@@ -175,7 +205,7 @@ final class AzukiApi {
     }
 
     /// 共通のJSON POST送信をまとめ、認証ヘッダの付与やエンコードを一括で行う
-    private func sendJSONRequest<T: Encodable>(url: URL, body: T) async throws -> Data {
+    private func sendJSONRequest<T: Encodable>(url: URL, body: T, authorization: AuthorizationRequirement) async throws -> Data {
         let payload: Data
         do {
             payload = try encoder.encode(body)
@@ -183,26 +213,36 @@ final class AzukiApi {
             throw AzukiAPIError.encoding
         }
 
-        let request = try makeAuthorizedRequest(url: url, method: "POST", body: payload)
+        let request = try makeRequest(url: url, method: "POST", body: payload, authorization: authorization)
         return try await send(request: request)
     }
 
     /// 認証ヘッダやAcceptヘッダを共通設定する
-    private func makeAuthorizedRequest(url: URL, method: String, body: Data? = nil) throws -> URLRequest {
-        // Info.plistや環境変数から取得したJWTを都度クレンジングして利用する
-        let trimmedToken = authToken.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedToken.isEmpty {
-            throw AzukiAPIError.missingAuthToken
-        }
-
+    private func makeRequest(url: URL, method: String, body: Data?, authorization: AuthorizationRequirement) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.setValue("Bearer \(trimmedToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let body = body {
             request.httpBody = body
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
+
+        switch authorization {
+        case .none:
+            break
+        case .optional:
+            // 端末に保存済みのトークンがあれば付与し、初回購入前など未取得ならそのまま送信する
+            if let token = accessTokenStore.currentTokenIfValid() {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+        case .required:
+            // 認証必須のエンドポイントではKeychainから取得できなければ即座にエラーにする
+            guard let token = accessTokenStore.currentTokenIfValid() else {
+                throw AzukiAPIError.missingAuthToken
+            }
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
         return request
     }
 
@@ -219,9 +259,19 @@ final class AzukiApi {
                 throw AzukiAPIError.insufficientCredits
             }
             if status == 401 {
+                // サーバー側でアクセストークンが拒否されたため、Keychainに残っている値も破棄する
+                accessTokenStore.clear()
+                let serverErrorCode = decodeServerErrorCode(from: data)
+                if serverErrorCode == "token_expired" {
+                    throw AzukiAPIError.tokenExpired
+                }
                 throw AzukiAPIError.unauthorized
             }
             if status == 403 {
+                let serverErrorCode = decodeServerErrorCode(from: data)
+                if serverErrorCode == "receipt_belongs_to_other_user" {
+                    throw AzukiAPIError.receiptBelongsToOtherUser
+                }
                 throw AzukiAPIError.forbiddenUser
             }
             // Hono（Cloudflare Workers）からの2xxレスポンスのみ成功扱いとし、それ以外は個別にハンドリングする

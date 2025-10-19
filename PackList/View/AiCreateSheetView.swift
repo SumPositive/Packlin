@@ -251,7 +251,7 @@ struct AiCreateView: View {
                     await MainActor.run {
                         alertState = .creditShortage
                     }
-                case .unauthorized, .forbiddenUser, .missingAuthToken:
+                case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
                     let message = apiError.errorDescription
                     ?? String(localized: "認証に失敗しました。アプリを再起動しても解決しない場合はサポートへお問い合わせください。")
                     await MainActor.run {
@@ -516,7 +516,7 @@ struct AiCreateView: View {
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
-            let latestBalance = try await AzukiApi.shared.verifyPurchase(
+            let verification = try await AzukiApi.shared.verifyPurchase(
                 userId: userId,
                 productId: option.productId,
                 transactionId: transactionId,
@@ -525,13 +525,21 @@ struct AiCreateView: View {
             )
             await MainActor.run {
                 // 4. サーバーが返した残高でKeychainを上書きし、UIへ成功メッセージを表示
-                creditStore.overwrite(credits: latestBalance)
-                alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+                creditStore.overwrite(credits: verification.balance)
+                if verification.duplicate {
+                    alertState = .purchaseAlreadyProcessed
+                } else {
+                    alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+                }
             }
         } catch let apiError as AzukiAPIError {
             // サーバー側ですでに処理済みであれば最新残高を取得し直す
             if case .duplicateTransaction = apiError {
                 await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+                await MainActor.run {
+                    alertState = .purchaseAlreadyProcessed
+                }
+                return
             }
             let message = apiError.errorDescription
             ?? String(localized: "購入情報の確認に失敗しました。時間をおいて再度お試しください。")
@@ -585,6 +593,8 @@ struct AiCreateView: View {
         case creditShortage
         /// クレジット購入が成功した場合
         case purchaseSuccess(added: Int, priceYen: Int)
+        /// サーバー側ですでに反映済みの購入だった場合
+        case purchaseAlreadyProcessed
         /// クレジット購入が失敗した場合
         case purchaseFailure(message: String)
 
@@ -598,6 +608,8 @@ struct AiCreateView: View {
                 return "ai-credit-shortage"
             case .purchaseSuccess(let added, let priceYen):
                 return "ai-purchase-success-\(added)-\(priceYen)"
+            case .purchaseAlreadyProcessed:
+                return "ai-purchase-duplicate"
             case .purchaseFailure(let message):
                 return "ai-purchase-failure-\(message)"
             }
@@ -613,6 +625,8 @@ struct AiCreateView: View {
                 return String(localized: "AI利用券不足")
             case .purchaseSuccess:
                 return String(localized: "購入完了")
+            case .purchaseAlreadyProcessed:
+                return String(localized: "購入履歴を確認しました")
             case .purchaseFailure:
                 return String(localized: "購入失敗")
             }
@@ -628,6 +642,8 @@ struct AiCreateView: View {
                 return String(localized: "AI利用券が不足しています。下の購入メニューから購入してください")
             case .purchaseSuccess(let added, let priceYen):
                 return String(localized: "¥\(priceYen)の購入でAI利用券を\(added)追加しました。")
+            case .purchaseAlreadyProcessed:
+                return String(localized: "この購入はすでにサーバーへ登録済みでした。最新残高を読み込み済みです。")
             case .purchaseFailure(let message):
                 return message
             }
