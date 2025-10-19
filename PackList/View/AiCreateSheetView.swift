@@ -52,6 +52,8 @@ struct AiCreateView: View {
     @State private var processingProductId: String?
     /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
     @State private var storeProducts: [Product] = []
+    /// 初回表示時にサーバー残高とKeychain残高を同期したかどうかのフラグ
+    @State private var didRequestInitialBalance = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -240,13 +242,22 @@ struct AiCreateView: View {
                 }
             } catch let apiError as AzukiAPIError {
                 // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
-                if case .insufficientCredits = apiError {
+                switch apiError {
+                case .insufficientCredits:
                     // サーバー側で不足判定となったのでローカルを戻さず、Keychain残高を最新状態で使い続ける
                     shouldRestoreCredits = false
+                    // サーバーの残高を参照してKeychainを最新化し、複数端末での消費にも追随させる
+                    await refreshCreditBalanceFromServer(showAlertOnFailure: false)
                     await MainActor.run {
                         alertState = .creditShortage
                     }
-                } else {
+                case .unauthorized, .forbiddenUser, .missingAuthToken:
+                    let message = apiError.errorDescription
+                    ?? String(localized: "認証に失敗しました。アプリを再起動しても解決しない場合はサポートへお問い合わせください。")
+                    await MainActor.run {
+                        alertState = .generationFailure(message: message)
+                    }
+                default:
                     let message = apiError.errorDescription
                     ?? String(localized: "チャッピーが忙しいようです。時間をおいて再度お試しください")
                     await MainActor.run {
@@ -264,6 +275,55 @@ struct AiCreateView: View {
                                                         String(localized: "チャッピーが忙しいようです。時間をおいて再度お試しください"))
                 }
             }
+        }
+    }
+
+    /// Keychainに保持している残高とサーバーの残高を初回表示時に同期する
+    private func syncCreditBalanceIfNeeded() async {
+        let shouldFetch = await MainActor.run { () -> Bool in
+            if didRequestInitialBalance {
+                // すでに同期済みであれば追加のサーバーアクセスは避ける
+                return false
+            }
+            didRequestInitialBalance = true
+            return true
+        }
+        if shouldFetch == false {
+            return
+        }
+        await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+    }
+
+    /// サーバーに保存されている残高を取得してKeychainへ反映する
+    /// - Parameter showAlertOnFailure: 失敗時にユーザーへアラート表示するかどうか
+    private func refreshCreditBalanceFromServer(showAlertOnFailure: Bool) async {
+        let userId = await MainActor.run { creditStore.userId }
+        do {
+            // azuki-apiへ問い合わせて最新残高を受け取り、Keychainに保持している値と揃える
+            let remoteBalance = try await AzukiApi.shared.fetchCreditBalance(userId: userId)
+            await MainActor.run {
+                creditStore.overwrite(credits: remoteBalance)
+            }
+        } catch let apiError as AzukiAPIError {
+            if showAlertOnFailure {
+                let message = apiError.errorDescription
+                ?? String(localized: "サーバーの残高確認に失敗しました。時間をおいて再度お試しください。")
+                await MainActor.run {
+                    alertState = .generationFailure(message: message)
+                }
+            }
+            #if DEBUG
+            print("[AzukiApi] failed to refresh balance: \(apiError)")
+            #endif
+        } catch {
+            if showAlertOnFailure {
+                await MainActor.run {
+                    alertState = .generationFailure(message: String(localized: "サーバーの残高確認に失敗しました。通信環境をご確認ください。"))
+                }
+            }
+            #if DEBUG
+            print("[AzukiApi] unexpected error while refreshing balance: \(error)")
+            #endif
         }
     }
 
@@ -288,7 +348,7 @@ struct AiCreateView: View {
 
                 switch outcome {
                 case .success(let verificationResult):
-                    // 3. トランザクション署名を検証し、正規購入であればKeychain残高を加算する
+                    // 3. トランザクション署名を検証し、正規購入であればサーバーへ伝えて残高を加算する
                     let transaction = try await resolveVerifiedTransaction(from: verificationResult)
                     await finalizePurchase(option: option, transaction: transaction)
 
@@ -367,7 +427,7 @@ struct AiCreateView: View {
             .padding(.horizontal, 32)
             
             Label {
-                Text("回数券はスマホ内に安全に保管されますが、スマホが壊れたりアプリを削除すると消えて復元できないことを承諾してご利用ください")
+                Text("回数券は端末のKeychainとサーバーの両方に安全に保管されます。同じユーザーであれば再インストール後も自動で復元されます。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } icon: {
@@ -440,16 +500,48 @@ struct AiCreateView: View {
         }
     }
 
-    /// トランザクションの完了とKeychain残高の更新をまとめて処理する
-    /// - Note: `finish()` は iOS 18 以降で `async` のみとなったため、例外ハンドリングは不要になった
+    /// トランザクションの完了とKeychain残高・サーバー残高の更新をまとめて処理する
     private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async {
-        // StoreKitへ購入完了を通知したうえでローカル残高を増やす。二重付与防止のため完了を待つ。
-        await transaction.finish()
+        // 1. StoreKitのトランザクション完了はdeferでまとめて実行し、途中で失敗してもダブルカウントを避ける
+        defer {
+            Task {
+                await transaction.finish()
+            }
+        }
 
-        await MainActor.run {
-            // Keychain保存のCreditStoreへ即座に反映する
-            creditStore.add(credits: option.credits)
-            alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+        // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
+        let userId = await MainActor.run { creditStore.userId }
+        let transactionId = String(transaction.id)
+        let receipt = transaction.jwsRepresentation
+
+        do {
+            // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
+            let latestBalance = try await AzukiApi.shared.verifyPurchase(
+                userId: userId,
+                productId: option.productId,
+                transactionId: transactionId,
+                receipt: receipt,
+                grantCredits: option.credits
+            )
+            await MainActor.run {
+                // 4. サーバーが返した残高でKeychainを上書きし、UIへ成功メッセージを表示
+                creditStore.overwrite(credits: latestBalance)
+                alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+            }
+        } catch let apiError as AzukiAPIError {
+            // サーバー側ですでに処理済みであれば最新残高を取得し直す
+            if case .duplicateTransaction = apiError {
+                await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+            }
+            let message = apiError.errorDescription
+            ?? String(localized: "購入情報の確認に失敗しました。時間をおいて再度お試しください。")
+            await MainActor.run {
+                alertState = .purchaseFailure(message: message)
+            }
+        } catch {
+            await MainActor.run {
+                alertState = .purchaseFailure(message: String(localized: "AI利用回数券の購入結果をサーバーへ反映できませんでした。通信環境をご確認ください。"))
+            }
         }
     }
 
@@ -539,6 +631,9 @@ struct AiCreateView: View {
             case .purchaseFailure(let message):
                 return message
             }
+        }
+        .task {
+            await syncCreditBalanceIfNeeded()
         }
     }
 }

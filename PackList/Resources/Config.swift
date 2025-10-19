@@ -28,6 +28,16 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
 let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
+/// azuki-api へ安全にアクセスするためのJWT。Info.plistまたは環境変数から読み込み、ソースには平文で含めないようにする
+let AZUKI_API_AUTH_JWT: String = {
+    if let token = Bundle.main.object(forInfoDictionaryKey: "AzukiApiAuthJWT") as? String, token.isEmpty == false {
+        return token
+    }
+    if let envToken = ProcessInfo.processInfo.environment["AZUKI_API_AUTH_JWT"], envToken.isEmpty == false {
+        return envToken
+    }
+    return ""
+}()
 /// 消費型クレジットの商品ID群（azuki-api側の定義と一致させる）
 let AZUKI_API_CREDIT_PRODUCT_SMALL = "AiCredit_JPY50"   // ¥50 / +5クレジット
 let AZUKI_API_CREDIT_PRODUCT_STANDARD = "AiCredit_JPY100" // ¥100 / +11クレジット

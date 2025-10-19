@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 /// ChatGPT生成で使用するクレジットの残高を管理するObservableObject
-/// Keychainへ保存することでアプリ削除後の再インストールでも残高を復元できるようにする
+/// Keychainへ保存した値を即座に参照しつつ、サーバー側の残高と定期的に同期できるようにする
 @MainActor
 final class CreditStore: ObservableObject {
     @Published private(set) var credits: Int
