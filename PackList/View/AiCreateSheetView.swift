@@ -54,6 +54,8 @@ struct AiCreateView: View {
     @State private var storeProducts: [Product] = []
     /// 初回表示時にサーバー残高とKeychain残高を同期したかどうかのフラグ
     @State private var didRequestInitialBalance = false
+    /// StoreKitのトランザクション更新ストリームを監視するためのタスク
+    @State private var transactionObservationTask: Task<Void, Never>?
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -146,6 +148,17 @@ struct AiCreateView: View {
             await loadProductsIfNeeded()
             // サーバー残高との同期は一度だけ実行し、Keychainの値と揃えておく
             await syncCreditBalanceIfNeeded()
+            // 購入完了後にViewがフォアグラウンドでなくても反映できるよう、トランザクション更新を監視する
+            if transactionObservationTask == nil {
+                transactionObservationTask = Task {
+                    await observeTransactionUpdates()
+                }
+            }
+        }
+        .onDisappear {
+            // ビューを離れる際には監視タスクを終了し、重複起動を避ける
+            transactionObservationTask?.cancel()
+            transactionObservationTask = nil
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -555,6 +568,39 @@ struct AiCreateView: View {
             await MainActor.run {
                 alertState = .purchaseFailure(message: String(localized: "AI利用回数券の購入結果をサーバーへ反映できませんでした。通信環境をご確認ください。"))
             }
+        }
+    }
+
+    /// StoreKitのトランザクション更新ストリームを処理し、取りこぼしなくサーバー連携する
+    private func observeTransactionUpdates() async {
+        // Viewが表示されている間は常に監視を続け、キャンセルされたらループを抜ける
+        for await update in Transaction.updates {
+            if Task.isCancelled {
+                break
+            }
+
+            await handleTransactionUpdate(update)
+        }
+    }
+
+    /// トランザクション更新の1件を検証・反映する
+    /// - Parameter update: StoreKitから届く検証結果付きトランザクション
+    private func handleTransactionUpdate(_ update: VerificationResult<StoreKit.Transaction>) async {
+        do {
+            // StoreKitの検証結果を通過したトランザクションのみを対象にする
+            let transaction = try await resolveVerifiedTransaction(from: update)
+            // Configに存在しないProduct IDの場合は終了処理だけ行い、以降の処理を避ける
+            guard let option = AZUKI_CREDIT_PURCHASE_OPTIONS.first(where: { $0.productId == transaction.productID }) else {
+                await transaction.finish()
+                return
+            }
+
+            await finalizePurchase(option: option, transaction: transaction)
+        } catch {
+            // 検証に失敗した場合やAPI通信の例外は、デバッグ出力のみ行いユーザーへ重複通知しない
+            #if DEBUG
+            print("[Transaction] failed to handle update: \(error)")
+            #endif
         }
     }
 
