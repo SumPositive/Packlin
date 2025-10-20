@@ -2,7 +2,7 @@
 //  AzukiAccessTokenStore.swift
 //  PackList
 //
-//  Created by OpenAI on 2025/03/09.
+//  Created by OpenAI on 2025/10/19.
 //
 
 import Foundation
@@ -11,9 +11,9 @@ import Foundation
 /// - Note: 有効期限が過ぎたトークンは即座に破棄し、サーバーから再取得させる
 final class AzukiAccessTokenStore {
     /// トークン本体をKeychainへ保存する際のキー
-    private let tokenKey = "azuki.api.accessToken"
+    private let tokenKey = "com.azukid.azuki-api.accessToken"
     /// 有効期限(ミリ秒)をKeychainへ保存する際のキー
-    private let expiryKey = "azuki.api.accessTokenExpiry"
+    private let expiryKey = "azuki-api.accessTokenExpiry"
     /// 期限切れを判定する際の猶予秒数（ネットワーク遅延を考慮して少し短く扱う）
     private let leewaySeconds: TimeInterval = 30
     /// Keychainへアクセスするためのユーティリティ

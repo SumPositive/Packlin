@@ -28,8 +28,10 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
 #if DEBUG
-// Local server
-let AZUKI_API_BASE_URL = URL(string: "http://localhost:8787")!
+// Local server　同一セグメント内のMac開発ローカルサーバに接続する
+// ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
+// 疎通確認："http://192.168.1.210:8787/health"
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
 #else
 // 本番 Deploy server
 let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
