@@ -31,12 +31,12 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 // Local server　同一セグメント内のMac開発ローカルサーバに接続する
 // ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
 // 疎通確認："http://192.168.1.210:8787/health"
-let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.workers.dev")!
 #else
 // 本番 Deploy server
-let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azuki-api.workers.dev")!
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.workers.dev")!
 #endif
-/// 消費型クレジットの商品ID群（azuki-api側の定義と一致させる）
+/// 消費型クレジットの商品ID群（azuki-api側の環境変数：IAP_PRODUCT_CREDIT_MAP と一致させる）
 let AZUKI_API_CREDIT_PRODUCT_SMALL = "AiCredit_JPY50"   // ¥50 / +5クレジット
 let AZUKI_API_CREDIT_PRODUCT_STANDARD = "AiCredit_JPY100" // ¥100 / +11クレジット
 //let AZUKI_API_CREDIT_PRODUCT_BULK = "AiCredit_JPY500"    // ¥500 / +60クレジット
