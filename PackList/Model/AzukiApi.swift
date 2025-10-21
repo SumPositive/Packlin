@@ -88,7 +88,13 @@ final class AzukiApi {
     private init(session: URLSession = .shared, accessTokenStore: AzukiAccessTokenStore = AzukiAccessTokenStore()) {
         self.session = session
         let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
+        
+        //encoder.keyEncodingStrategy = .convertToSnakeCase
+        // サーバー側のエンドポイントはキャメルケースのキー名を必須としているため、
+        // ここでスネークケースへ自動変換してしまうと「Required」エラーが発生する。
+        // そのため、エンコード時はキー名を変換せず、定義したプロパティ名をそのまま送信する。
+        encoder.keyEncodingStrategy = .useDefaultKeys
+
         self.encoder = encoder
 
         let decoder = JSONDecoder()
