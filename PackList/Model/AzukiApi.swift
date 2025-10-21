@@ -13,6 +13,7 @@ enum AzukiAPIError: LocalizedError {
     case invalidURL
     case invalidResponse
     case server(statusCode: Int)
+    case serverError(message: String)
     case decoding
     case encoding
     case insufficientCredits
@@ -33,6 +34,9 @@ enum AzukiAPIError: LocalizedError {
             return String(localized: "サーバーの応答が不正でした。通信状況をご確認ください。")
         case .server(let statusCode):
             return String(localized: "サーバーエラー") + "(\(statusCode))"
+                + String(localized: "が発生しました。サポートへお問い合わせください。")
+        case .serverError(let message):
+                return String(localized: "サーバーエラー") + "「\(message)」"
                 + String(localized: "が発生しました。サポートへお問い合わせください。")
         case .decoding:
             return String(localized: "サーバーから受信したデータを解析できませんでした。")
@@ -287,8 +291,11 @@ final class AzukiApi {
                 if serverErrorCode == "unknown_product" {
                     throw AzukiAPIError.unknownProduct
                 }
-                if serverErrorCode == "mismatched_grant" {
+                else if serverErrorCode == "mismatched_grant" {
                     throw AzukiAPIError.purchaseMismatch
+                }
+                else if let msg = serverErrorCode {
+                    throw AzukiAPIError.serverError(message: msg)
                 }
             }
             throw AzukiAPIError.server(statusCode: status)
