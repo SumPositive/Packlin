@@ -74,8 +74,12 @@ final class AzukiApi {
     private let decoder: JSONDecoder
     /// サーバー発行のアクセストークンをKeychain経由で管理するストア
     private let accessTokenStore: AzukiAccessTokenStore
+    /// サーバー発行のリフレッシュトークンをKeychain経由で管理するストア
+    private let refreshTokenStore: AzukiRefreshTokenStore
     /// ビュー層などから注入されるトークン復旧ハンドラをスレッドセーフに保持するためのボックス
     private let tokenRecoveryHandlerBox = TokenRecoveryHandlerBox()
+    /// リフレッシュ API への同時アクセスを直列化する調整役
+    private let refreshCoordinator = RefreshCoordinator()
 
     /// リクエストごとの認証要件
     private enum AuthorizationRequirement {
@@ -87,7 +91,11 @@ final class AzukiApi {
         case required
     }
 
-    private init(session: URLSession = .shared, accessTokenStore: AzukiAccessTokenStore = AzukiAccessTokenStore()) {
+    private init(
+        session: URLSession = .shared,
+        accessTokenStore: AzukiAccessTokenStore = AzukiAccessTokenStore(),
+        refreshTokenStore: AzukiRefreshTokenStore = AzukiRefreshTokenStore()
+    ) {
         self.session = session
         let encoder = JSONEncoder()
         
@@ -104,6 +112,7 @@ final class AzukiApi {
         decoder.dateDecodingStrategy = .iso8601
         self.decoder = decoder
         self.accessTokenStore = accessTokenStore
+        self.refreshTokenStore = refreshTokenStore
     }
 
     /// OpenAI(azuki-api経由)にパック生成を依頼する
@@ -182,6 +191,8 @@ final class AzukiApi {
             let duplicate: Bool?
             let accessToken: String?
             let accessTokenExpiresAt: Double?
+            let refreshToken: String?
+            let refreshTokenExpiresAt: Double?
         }
 
         guard let url = makeURL(path: "/api/iap/verify") else {
@@ -192,10 +203,13 @@ final class AzukiApi {
         let data = try await sendJSONRequest(url: url, body: body, authorization: .optional)
         do {
             let response = try decoder.decode(VerifyResponse.self, from: data)
-            if let token = response.accessToken, let expiresAt = response.accessTokenExpiresAt {
-                // サーバーが短命アクセストークンを新規発行してくれた場合はKeychainへ反映する
-                accessTokenStore.save(token: token, expiresAtMilliseconds: expiresAt)
-            }
+            // サーバーが返却するトークン群をまとめて保存し、後続の API リクエストに備える
+            storeTokensIfProvided(
+                accessToken: response.accessToken,
+                accessTokenExpiresAt: response.accessTokenExpiresAt,
+                refreshToken: response.refreshToken,
+                refreshTokenExpiresAt: response.refreshTokenExpiresAt
+            )
             return VerifyPurchaseResult(balance: response.balance, duplicate: response.duplicate ?? false)
         } catch {
             throw AzukiAPIError.decoding
@@ -256,12 +270,37 @@ final class AzukiApi {
         return request
     }
 
+    /// サーバーから受け取ったトークン情報をまとめて保存し、再利用できるようにする
+    /// - Parameters:
+    ///   - accessToken: 新しいアクセストークン（nil の場合はスキップ）
+    ///   - accessTokenExpiresAt: アクセストークンの有効期限（ミリ秒）
+    ///   - refreshToken: 新しいリフレッシュトークン（nil の場合はスキップ）
+    ///   - refreshTokenExpiresAt: リフレッシュトークンの有効期限（ミリ秒）
+    private func storeTokensIfProvided(
+        accessToken: String?,
+        accessTokenExpiresAt: Double?,
+        refreshToken: String?,
+        refreshTokenExpiresAt: Double?
+    ) {
+        if let token = accessToken, let expiresAt = accessTokenExpiresAt {
+            accessTokenStore.save(token: token, expiresAtMilliseconds: expiresAt)
+        }
+        if let refresh = refreshToken, let refreshExpiresAt = refreshTokenExpiresAt {
+            refreshTokenStore.save(token: refresh, expiresAtMilliseconds: refreshExpiresAt)
+        }
+    }
+
     /// 認証必須リクエスト向けに有効なアクセストークンを確保する
     /// - Returns: Authorizationヘッダへ設定すべきトークン文字列
     private func obtainValidAccessTokenForRequiredRequest() async throws -> String {
         // まずはKeychainに既に有効なトークンがあるかを確認する
         if let token = accessTokenStore.currentTokenIfValid() {
             return token
+        }
+
+        // アクセストークンが切れていてもリフレッシュトークンが残っていれば自動で更新を試みる
+        if let refreshed = try await refreshAccessTokenIfPossible() {
+            return refreshed
         }
 
         // ビュー層が登録した復旧ハンドラがあれば一度だけ呼び出してみる
@@ -283,6 +322,91 @@ final class AzukiApi {
         throw AzukiAPIError.missingAuthToken
     }
 
+    /// 保存済みのリフレッシュトークンを利用してアクセストークンを再発行する
+    /// - Returns: 新しいアクセストークン（更新に失敗した場合は nil）
+    private func refreshAccessTokenIfPossible() async throws -> String? {
+        try await refreshCoordinator.refresh {
+            if let existing = accessTokenStore.currentTokenIfValid() {
+                return existing
+            }
+            guard let refreshToken = refreshTokenStore.currentTokenIfValid() else {
+                return nil
+            }
+            guard let url = makeURL(path: "/api/auth/refresh") else {
+                throw AzukiAPIError.invalidURL
+            }
+
+            struct RefreshRequest: Encodable {
+                let refreshToken: String
+            }
+
+            let payload: Data
+            do {
+                payload = try encoder.encode(RefreshRequest(refreshToken: refreshToken))
+            } catch {
+                throw AzukiAPIError.encoding
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.httpBody = payload
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+            let data: Data
+            let response: URLResponse
+            do {
+                (data, response) = try await session.data(for: request)
+            } catch {
+                throw error
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AzukiAPIError.invalidResponse
+            }
+            let status = httpResponse.statusCode
+
+            if 199 < status && status < 300 {
+                struct RefreshResponse: Decodable {
+                    let userId: String
+                    let accessToken: String
+                    let accessTokenExpiresAt: Double
+                    let refreshToken: String
+                    let refreshTokenExpiresAt: Double
+                }
+
+                let decoded: RefreshResponse
+                do {
+                    decoded = try decoder.decode(RefreshResponse.self, from: data)
+                } catch {
+                    throw AzukiAPIError.decoding
+                }
+
+                storeTokensIfProvided(
+                    accessToken: decoded.accessToken,
+                    accessTokenExpiresAt: decoded.accessTokenExpiresAt,
+                    refreshToken: decoded.refreshToken,
+                    refreshTokenExpiresAt: decoded.refreshTokenExpiresAt
+                )
+                return decoded.accessToken
+            }
+
+            let serverErrorCode = decodeServerErrorCode(from: data)
+            if status == 401 || status == 400 {
+                if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
+                    refreshTokenStore.clear()
+                    accessTokenStore.clear()
+                    return nil
+                }
+            }
+            if status == 401 {
+                return nil
+            }
+
+            throw AzukiAPIError.server(statusCode: status)
+        }
+    }
+
     /// トークン復旧ハンドラを登録する
     /// - Parameter handler: Keychainへ新しいトークンを書き込むことを期待する非同期処理
     func registerTokenRecoveryHandler(_ handler: @escaping () async -> Bool) async {
@@ -295,7 +419,7 @@ final class AzukiApi {
     }
 
     /// 実際の通信と共通エラーハンドリングを一箇所へ集約
-    private func send(request: URLRequest) async throws -> Data {
+    private func send(request: URLRequest, allowRetryAfterRefresh: Bool = true) async throws -> Data {
         do {
             // URLSession.data(for:) は内部でTask.cancelledを投げることがあるため、do-catchでまとめて扱う
             let (data, response) = try await session.data(for: request)
@@ -307,9 +431,22 @@ final class AzukiApi {
                 throw AzukiAPIError.insufficientCredits
             }
             if status == 401 {
+                let serverErrorCode = decodeServerErrorCode(from: data)
+                let authorization = request.value(forHTTPHeaderField: "Authorization") ?? ""
+                let isRefreshEndpoint = request.url?.path == "/api/auth/refresh"
+                if allowRetryAfterRefresh,
+                   authorization.isEmpty == false,
+                   isRefreshEndpoint == false,
+                   let refreshed = try await refreshAccessTokenIfPossible() {
+                    var retriedRequest = request
+                    retriedRequest.setValue("Bearer \(refreshed)", forHTTPHeaderField: "Authorization")
+                    return try await send(request: retriedRequest, allowRetryAfterRefresh: false)
+                }
                 // サーバー側でアクセストークンが拒否されたため、Keychainに残っている値も破棄する
                 accessTokenStore.clear()
-                let serverErrorCode = decodeServerErrorCode(from: data)
+                if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
+                    refreshTokenStore.clear()
+                }
                 if serverErrorCode == "token_expired" {
                     throw AzukiAPIError.tokenExpired
                 }
@@ -382,5 +519,28 @@ private actor TokenRecoveryHandlerBox {
     /// - Parameter handler: 代入したいハンドラ。nilを渡すと破棄。
     func update(handler: (() async -> Bool)?) {
         self.handler = handler
+    }
+}
+
+/// リフレッシュ API の多重実行を防ぎ、最新トークンを一貫して配布するためのアクタ
+private actor RefreshCoordinator {
+    /// 進行中のリフレッシュ処理を共有するための Task
+    private var currentTask: Task<String?, Error>?
+
+    /// 与えられたリフレッシュ処理を直列化して実行する
+    /// - Parameter operation: リフレッシュ API を呼び出す非同期処理
+    /// - Returns: 処理が返したアクセストークン（または nil）
+    func refresh(using operation: @escaping () async throws -> String?) async throws -> String? {
+        if let task = currentTask {
+            return try await task.value
+        }
+        let task = Task {
+            try await operation()
+        }
+        currentTask = task
+        defer {
+            currentTask = nil
+        }
+        return try await task.value
     }
 }
