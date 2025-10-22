@@ -17,7 +17,7 @@ final class AzukiAccessTokenStore {
     /// 期限切れを判定する際の猶予秒数（ネットワーク遅延を考慮して少し短く扱う）
     private let leewaySeconds: TimeInterval = 30
     /// サーバーが極端に短い有効期限を返した場合でも数ヶ月は維持したいので最短寿命を定義する（約90日）
-    private let minimumLifetimeSeconds: TimeInterval = 60 * 60 * 24 * 90
+    private let minimumLifetimeSeconds: TimeInterval = 60   // 60 * 60 * 24 * 90
     /// Keychainへアクセスするためのユーティリティ
     private let keychain: KeychainStorage
 
