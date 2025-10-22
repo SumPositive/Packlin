@@ -234,7 +234,11 @@ struct AiCreateView: View {
             }
 
             do {
-                let dto = try await AzukiApi.shared.generatePack(userId: userId, requirement: trimmedRequirement)
+                let dto = try await requestPackFromServer(
+                    userId: userId,
+                    requirement: trimmedRequirement,
+                    canAttemptRecovery: true
+                )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
                 do {
@@ -292,6 +296,96 @@ struct AiCreateView: View {
                 }
             }
         }
+    }
+
+    /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
+    /// - Parameters:
+    ///   - userId: サーバー側でクレジット消費対象となるユーザーID
+    ///   - requirement: ユーザーが入力した要件
+    ///   - canAttemptRecovery: トークン再取得を試行できるかどうか（再帰呼び出し抑制用）
+    /// - Returns: サーバーが返したPack生成結果DTO
+    private func requestPackFromServer(userId: String, requirement: String, canAttemptRecovery: Bool) async throws -> PackJsonDTO {
+        do {
+            return try await AzukiApi.shared.generatePack(userId: userId, requirement: requirement)
+        } catch let apiError as AzukiAPIError {
+            if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
+                let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
+                if recovered {
+                    return try await requestPackFromServer(
+                        userId: userId,
+                        requirement: requirement,
+                        canAttemptRecovery: false
+                    )
+                }
+            }
+            throw apiError
+        }
+    }
+
+    /// 指定したエラーに対してトークン復旧処理を挟むべきか判定する
+    /// - Parameter error: azuki-apiから受け取ったエラー
+    /// - Returns: トークン復旧が必要ならtrue
+    private func shouldAttemptTokenRecovery(for error: AzukiAPIError) -> Bool {
+        switch error {
+        case .missingAuthToken, .unauthorized, .tokenExpired:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// 最新の購入トランザクションを再検証してアクセストークンを取り直す
+    /// - Returns: 新しいトークンが取得できたと推定できる場合はtrue
+    @discardableResult
+    private func recoverAccessTokenByVerifyingLatestTransactions() async -> Bool {
+        // StoreKit履歴から直近の購入をサーバーへ再通知し、トークンの再払い出しを期待する
+        let userId = await MainActor.run { creditStore.userId }
+        var didAttemptVerification = false
+        var didRecoverToken = false
+
+        for option in AZUKI_CREDIT_PURCHASE_OPTIONS {
+            if Task.isCancelled {
+                break
+            }
+            guard let latest = await Transaction.latest(for: option.productId) else {
+                continue
+            }
+            didAttemptVerification = true
+            do {
+                let transaction = try await resolveVerifiedTransaction(from: latest)
+                let receiptData = transaction.jsonRepresentation
+                let receipt = receiptData.base64EncodedString()
+                let verification = try await AzukiApi.shared.verifyPurchase(
+                    userId: userId,
+                    productId: option.productId,
+                    transactionId: String(transaction.id),
+                    receipt: receipt,
+                    grantCredits: option.credits
+                )
+                await MainActor.run {
+                    // サーバー側が返した最新残高でKeychainを更新し、UIと整合させる
+                    creditStore.overwrite(credits: verification.balance)
+                }
+                didRecoverToken = true
+            } catch let apiError as AzukiAPIError {
+                if case .duplicateTransaction = apiError {
+                    // すでに処理済みなら残高だけ再取得しておき、トークンはサーバー任せとする
+                    await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+                    didRecoverToken = true
+                }
+            } catch {
+                // 個別のトランザクションで失敗しても他の履歴から再取得を続ける
+                continue
+            }
+        }
+
+        if didRecoverToken {
+            return true
+        }
+        if didAttemptVerification == false {
+            return false
+        }
+        return false
     }
 
     /// Keychainに保持している残高とサーバーの残高を初回表示時に同期する
