@@ -144,6 +144,10 @@ struct AiCreateView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
+            // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
+            await AzukiApi.shared.registerTokenRecoveryHandler {
+                await recoverAccessTokenByVerifyingLatestTransactions()
+            }
             // 初回表示時に商品情報を取得しつつ、サーバー残高との同期も直ちに行う
             await loadProductsIfNeeded()
             // サーバー残高との同期は一度だけ実行し、Keychainの値と揃えておく
@@ -159,6 +163,10 @@ struct AiCreateView: View {
             // ビューを離れる際には監視タスクを終了し、重複起動を避ける
             transactionObservationTask?.cancel()
             transactionObservationTask = nil
+            // ビューが消えた後は復旧ハンドラを解除し、不要な保持を避ける
+            Task {
+                await AzukiApi.shared.clearTokenRecoveryHandler()
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)

@@ -74,6 +74,8 @@ final class AzukiApi {
     private let decoder: JSONDecoder
     /// サーバー発行のアクセストークンをKeychain経由で管理するストア
     private let accessTokenStore: AzukiAccessTokenStore
+    /// ビュー層などから注入されるトークン復旧ハンドラをスレッドセーフに保持するためのボックス
+    private let tokenRecoveryHandlerBox = TokenRecoveryHandlerBox()
 
     /// リクエストごとの認証要件
     private enum AuthorizationRequirement {
@@ -141,7 +143,7 @@ final class AzukiApi {
             throw AzukiAPIError.invalidURL
         }
 
-        let request = try makeRequest(url: url, method: "GET", body: nil, authorization: .required)
+        let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .required)
         let data = try await send(request: request)
         do {
             let response = try decoder.decode(CreditCheckResponse.self, from: data)
@@ -223,12 +225,12 @@ final class AzukiApi {
             throw AzukiAPIError.encoding
         }
 
-        let request = try makeRequest(url: url, method: "POST", body: payload, authorization: authorization)
+        let request = try await makeRequest(url: url, method: "POST", body: payload, authorization: authorization)
         return try await send(request: request)
     }
 
     /// 認証ヘッダやAcceptヘッダを共通設定する
-    private func makeRequest(url: URL, method: String, body: Data?, authorization: AuthorizationRequirement) throws -> URLRequest {
+    private func makeRequest(url: URL, method: String, body: Data?, authorization: AuthorizationRequirement) async throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -246,14 +248,46 @@ final class AzukiApi {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
         case .required:
-            // 認証必須のエンドポイントではKeychainから取得できなければ即座にエラーにする
-            guard let token = accessTokenStore.currentTokenIfValid() else {
-                throw AzukiAPIError.missingAuthToken
-            }
+            // 認証必須のエンドポイントではKeychainに無ければ復旧ハンドラを呼び出してから判定する
+            let token = try await obtainValidAccessTokenForRequiredRequest()
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
         return request
+    }
+
+    /// 認証必須リクエスト向けに有効なアクセストークンを確保する
+    /// - Returns: Authorizationヘッダへ設定すべきトークン文字列
+    private func obtainValidAccessTokenForRequiredRequest() async throws -> String {
+        // まずはKeychainに既に有効なトークンがあるかを確認する
+        if let token = accessTokenStore.currentTokenIfValid() {
+            return token
+        }
+
+        // ビュー層が登録した復旧ハンドラがあれば一度だけ呼び出してみる
+        if let handler = await tokenRecoveryHandlerBox.currentHandler() {
+            // 復旧後にKeychainへ保存されたかどうかを再判定する
+            let didRecover = await handler()
+            if didRecover {
+                if let refreshed = accessTokenStore.currentTokenIfValid() {
+                    return refreshed
+                }
+            }
+        }
+
+        // ここまででトークンが得られなければ従来通りエラーを投げ、上位へリカバリを委ねる
+        throw AzukiAPIError.missingAuthToken
+    }
+
+    /// トークン復旧ハンドラを登録する
+    /// - Parameter handler: Keychainへ新しいトークンを書き込むことを期待する非同期処理
+    func registerTokenRecoveryHandler(_ handler: @escaping () async -> Bool) async {
+        await tokenRecoveryHandlerBox.update(handler: handler)
+    }
+
+    /// 登録済みのトークン復旧ハンドラを破棄する
+    func clearTokenRecoveryHandler() async {
+        await tokenRecoveryHandlerBox.update(handler: nil)
     }
 
     /// 実際の通信と共通エラーハンドリングを一箇所へ集約
@@ -327,5 +361,22 @@ final class AzukiApi {
             return fallback.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return nil
+    }
+}
+
+/// トークン復旧ハンドラを安全に保持・更新するためのアクタ
+private actor TokenRecoveryHandlerBox {
+    /// 現在登録されている復旧ハンドラ。nilなら復旧不能を意味する。
+    private var handler: (() async -> Bool)?
+
+    /// 現在のハンドラを読み出す
+    func currentHandler() -> (() async -> Bool)? {
+        handler
+    }
+
+    /// 新しいハンドラを登録または破棄する
+    /// - Parameter handler: 代入したいハンドラ。nilを渡すと破棄。
+    func update(handler: (() async -> Bool)?) {
+        self.handler = handler
     }
 }
