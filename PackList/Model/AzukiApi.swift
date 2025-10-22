@@ -326,13 +326,14 @@ final class AzukiApi {
     /// - Returns: 新しいアクセストークン（更新に失敗した場合は nil）
     private func refreshAccessTokenIfPossible() async throws -> String? {
         try await refreshCoordinator.refresh {
-            if let existing = accessTokenStore.currentTokenIfValid() {
+            // self を明示しておくことでクロージャ内でのキャプチャがはっきりする
+            if let existing = self.accessTokenStore.currentTokenIfValid() {
                 return existing
             }
-            guard let refreshToken = refreshTokenStore.currentTokenIfValid() else {
+            guard let refreshToken = self.refreshTokenStore.currentTokenIfValid() else {
                 return nil
             }
-            guard let url = makeURL(path: "/api/auth/refresh") else {
+            guard let url = self.makeURL(path: "/api/auth/refresh") else {
                 throw AzukiAPIError.invalidURL
             }
 
@@ -342,7 +343,7 @@ final class AzukiApi {
 
             let payload: Data
             do {
-                payload = try encoder.encode(RefreshRequest(refreshToken: refreshToken))
+                payload = try self.encoder.encode(RefreshRequest(refreshToken: refreshToken))
             } catch {
                 throw AzukiAPIError.encoding
             }
@@ -356,7 +357,7 @@ final class AzukiApi {
             let data: Data
             let response: URLResponse
             do {
-                (data, response) = try await session.data(for: request)
+                (data, response) = try await self.session.data(for: request)
             } catch {
                 throw error
             }
@@ -377,12 +378,12 @@ final class AzukiApi {
 
                 let decoded: RefreshResponse
                 do {
-                    decoded = try decoder.decode(RefreshResponse.self, from: data)
+                    decoded = try self.decoder.decode(RefreshResponse.self, from: data)
                 } catch {
                     throw AzukiAPIError.decoding
                 }
 
-                storeTokensIfProvided(
+                self.storeTokensIfProvided(
                     accessToken: decoded.accessToken,
                     accessTokenExpiresAt: decoded.accessTokenExpiresAt,
                     refreshToken: decoded.refreshToken,
@@ -391,11 +392,11 @@ final class AzukiApi {
                 return decoded.accessToken
             }
 
-            let serverErrorCode = decodeServerErrorCode(from: data)
+            let serverErrorCode = self.decodeServerErrorCode(from: data)
             if status == 401 || status == 400 {
                 if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
-                    refreshTokenStore.clear()
-                    accessTokenStore.clear()
+                    self.refreshTokenStore.clear()
+                    self.accessTokenStore.clear()
                     return nil
                 }
             }
