@@ -266,12 +266,16 @@ final class AzukiApi {
 
         // ビュー層が登録した復旧ハンドラがあれば一度だけ呼び出してみる
         if let handler = await tokenRecoveryHandlerBox.currentHandler() {
-            // 復旧後にKeychainへ保存されたかどうかを再判定する
+            // 復旧ハンドラがtrueを返すかどうかに関係なく、Keychainへ再保存されたかを必ず確認する
+            // （古いバージョンのハンドラが常にfalseを返す既知の挙動に備えるため）
             let didRecover = await handler()
+            // 復旧結果のフラグはデバッグ用に保持しておきつつ、実際にはKeychainの再確認を優先する
+            if let refreshed = accessTokenStore.currentTokenIfValid() {
+                return refreshed
+            }
+            // ハンドラがtrueを返したのにKeychainへ何も保存されていない場合は想定外なので、開発中に気付けるようアサーションを置いておく
             if didRecover {
-                if let refreshed = accessTokenStore.currentTokenIfValid() {
-                    return refreshed
-                }
+                assertionFailure("Token recovery handler reported success but no token was stored.")
             }
         }
 
