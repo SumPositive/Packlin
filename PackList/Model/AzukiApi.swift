@@ -1,5 +1,5 @@
 //
-//  AzukiAPIClient.swift
+//  AzukiApi.swift
 //  PackList
 //
 //  Created by sumpo on 2025/10/12.
