@@ -241,8 +241,9 @@ actor AzukiDeviceAuthenticator {
     /// App Attest の秘密鍵から公開鍵を取り出す
     private func exportPublicKey(keyId: String) throws -> Data {
         do {
-            // iOS16 以降で追加された `key(for:)` を利用して SecKey を取得する
-            let secKey = try appAttestService.key(for: keyId)
+            // iOS16 以降で追加された `key(forKey:)` を利用して SecKey を取得する
+            // ※ Apple のドキュメントでは引数ラベルが `forKey` であるため、こちらを使用する
+            let secKey = try appAttestService.key(forKey: keyId)
             guard let representation = SecKeyCopyExternalRepresentation(secKey, nil) as Data? else {
                 throw AuthenticatorError.publicKeyExportFailed
             }
