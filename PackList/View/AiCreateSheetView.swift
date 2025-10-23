@@ -363,11 +363,13 @@ struct AiCreateView: View {
                 let transaction = try await resolveVerifiedTransaction(from: latest)
                 let receiptData = transaction.jsonRepresentation
                 let receipt = receiptData.base64EncodedString()
+                let storekitJws = transaction.jwsRepresentation
                 let verification = try await AzukiApi.shared.verifyPurchase(
                     userId: userId,
                     productId: option.productId,
                     transactionId: String(transaction.id),
                     receipt: receipt,
+                    storekitJws: storekitJws,
                     grantCredits: option.credits
                 )
                 await MainActor.run {
@@ -630,9 +632,11 @@ struct AiCreateView: View {
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
         let userId = await MainActor.run { creditStore.userId }
         let transactionId = String(transaction.id)
-        // StoreKitのトランザクションはJWSではなくJSON Dataとして取得し、Base64で安全に送信する
+        // StoreKitのトランザクションはJSON Dataとして取得し、Base64で安全に送信する
         let receiptData = transaction.jsonRepresentation
         let receipt = receiptData.base64EncodedString()
+        // StoreKit 2 が提供するJWS文字列も同時に送り、サーバーで署名検証してもらう
+        let storekitJws = transaction.jwsRepresentation
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
@@ -641,6 +645,7 @@ struct AiCreateView: View {
                 productId: option.productId,
                 transactionId: transactionId,
                 receipt: receipt,
+                storekitJws: storekitJws,
                 grantCredits: option.credits
             )
             await MainActor.run {
