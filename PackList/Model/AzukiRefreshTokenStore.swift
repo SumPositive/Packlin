@@ -13,7 +13,7 @@ final class AzukiRefreshTokenStore {
     /// Keychain へ保存する際のトークン本体キー
     private let tokenKey = "com.azukid.azuki-api.refreshToken"
     /// リフレッシュトークンの有効期限(ミリ秒)を保存する際のキー
-    private let expiryKey = "azuki-api.refreshTokenExpiry"
+    private let expiryKey = "com.azukid.azuki-api.refreshTokenExpiry"
     /// 有効期限チェック時に設ける猶予秒数
     private let leewaySeconds: TimeInterval = 60
     /// Keychain へ実際にアクセスするためのユーティリティ

@@ -13,7 +13,7 @@ final class AzukiAccessTokenStore {
     /// トークン本体をKeychainへ保存する際のキー
     private let tokenKey = "com.azukid.azuki-api.accessToken"
     /// 有効期限(ミリ秒)をKeychainへ保存する際のキー
-    private let expiryKey = "azuki-api.accessTokenExpiry"
+    private let expiryKey = "com.azukid.azuki-api.accessTokenExpiry"
     /// 期限切れを判定する際の猶予秒数（ネットワーク遅延を考慮して少し短く扱う）
     private let leewaySeconds: TimeInterval = 30
     /// Keychainへアクセスするためのユーティリティ
