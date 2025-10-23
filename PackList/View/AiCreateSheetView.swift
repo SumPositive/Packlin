@@ -364,8 +364,8 @@ struct AiCreateView: View {
                 let receiptData = transaction.jsonRepresentation
                 let receipt = receiptData.base64EncodedString()
                 // StoreKit 2 の Transaction からは iOS 17 以降 `jwsRepresentation` が廃止されたため、
-                // 代わりに JWS 文字列を表す `signedData` を利用する
-                let storekitJws = transaction.signedData
+                // ビルドに使用するSwiftコンパイラの世代に応じて適切なプロパティを参照する
+                let storekitJws = transaction.azukiSignedJws
                 let verification = try await AzukiApi.shared.verifyPurchase(
                     userId: userId,
                     productId: option.productId,
@@ -638,8 +638,8 @@ struct AiCreateView: View {
         let receiptData = transaction.jsonRepresentation
         let receipt = receiptData.base64EncodedString()
         // StoreKit 2 が提供するJWS文字列も同時に送り、サーバーで署名検証してもらう
-        // こちらも上記と同じ理由で `signedData` を利用してJWS文字列を取得する
-        let storekitJws = transaction.signedData
+        // Swiftコンパイラのバージョン差異を吸収したヘルパー経由でJWSを取り出す
+        let storekitJws = transaction.azukiSignedJws
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
@@ -809,6 +809,23 @@ struct AiCreateView: View {
                 return message
             }
         }
+    }
+}
+
+// MARK: - StoreKit 2 互換ヘルパー
+
+private extension StoreKit.Transaction {
+    /// StoreKitトランザクションからサーバー検証用のJWS文字列を抽出する共通ヘルパー
+    /// - Note: Swiftコンパイラ6世代では `signedData` のみが利用可能で、旧世代では `jwsRepresentation` が残されている。
+    ///         どちらのツールチェーンでもビルドが通るように条件付きコンパイルで吸収する。
+    var azukiSignedJws: String {
+        #if compiler(<6.0)
+        // Swift 5 系ツールチェーンでは従来通り `jwsRepresentation` が提供されている
+        return jwsRepresentation
+        #else
+        // Swift 6 系では `signedData` が正式名称になったため、そちらを参照する
+        return signedData
+        #endif
     }
 }
 
