@@ -96,7 +96,8 @@ actor AzukiDeviceAuthenticator {
         let keyId = try await generateKeyId()
         let attestationData = try await attestKey(keyId: keyId, challenge: challengeData)
         let attestationBase64 = attestationData.base64EncodedString()
-        let publicKeyData = try exportPublicKey(keyId: keyId)
+        // アテステーションオブジェクトから公開鍵（COSE 形式）を解析して取り出す
+        let publicKeyData = try exportPublicKey(fromAttestation: attestationData)
         let publicKeyBase64 = publicKeyData.base64EncodedString()
         // サーバー側では keyId をそのまま deviceId として扱う仕様のため、変換せず格納する
         let stored = StoredIdentity(
@@ -238,18 +239,315 @@ actor AzukiDeviceAuthenticator {
         }
     }
 
-    /// App Attest の秘密鍵から公開鍵を取り出す
-    private func exportPublicKey(keyId: String) throws -> Data {
+    /// アテステーションオブジェクトから公開鍵（未圧縮 ANSI X9.63 形式）を抽出する
+    /// - Note: `DCAppAttestService` から直接鍵を取り出す API が古い SDK では存在しないため、
+    ///         アテステーション (`attestationObject`) に含まれる COSE 公開鍵を自力で解析する
+    private func exportPublicKey(fromAttestation attestationObject: Data) throws -> Data {
         do {
-            // iOS16 以降で追加された `key(forKey:)` を利用して SecKey を取得する
-            // ※ Apple のドキュメントでは引数ラベルが `forKey` であるため、こちらを使用する
-            let secKey = try appAttestService.key(forKey: keyId)
-            guard let representation = SecKeyCopyExternalRepresentation(secKey, nil) as Data? else {
-                throw AuthenticatorError.publicKeyExportFailed
-            }
-            return representation
+            // まず CBOR のマップから `authData` フィールドを抜き出す
+            let authData = try extractAuthData(fromAttestationObject: attestationObject)
+            // `authData` の後半に付随する COSE 公開鍵を復元して未圧縮形式へ変換する
+            let publicKey = try extractPublicKey(fromAuthData: authData)
+            return publicKey
         } catch {
-            throw AuthenticatorError.publicKeyExportFailed
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+    }
+
+    /// アテステーションオブジェクトの CBOR マップから `authData` を取り出す
+    private func extractAuthData(fromAttestationObject attestationObject: Data) throws -> Data {
+        var reader = CBORReader(data: attestationObject)
+        let pairCount = try reader.readMapHeader()
+        var authDataCandidate: Data?
+        for _ in 0..<pairCount {
+            let key = try reader.readTextString()
+            if key == "authData" {
+                authDataCandidate = try reader.readByteString()
+            } else {
+                try reader.skipItem()
+            }
+        }
+        if let authData = authDataCandidate {
+            return authData
+        }
+        throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+    }
+
+    /// `authData` から COSE 公開鍵を解析して未圧縮形式へ変換する
+    private func extractPublicKey(fromAuthData authData: Data) throws -> Data {
+        // App Attest の `authData` 形式は WebAuthn の Attested Credential Data と同等
+        // 32 バイトの RP ID ハッシュ + 1 バイトのフラグ + 4 バイトの署名カウンタが先頭
+        var cursor = 0
+        let minimumHeaderSize = 32 + 1 + 4
+        if authData.count < minimumHeaderSize {
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+        cursor += 32 // RP ID ハッシュを読み飛ばす
+        let flags = authData[cursor]
+        cursor += 1
+        cursor += 4 // 署名カウンタを読み飛ばす
+        // フラグの 0x40 (AT) が立っていないと公開鍵が含まれない
+        if flags & 0x40 == 0 {
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+        let remaining = authData.suffix(from: cursor)
+        // AAGUID (16 バイト) + Credential ID 長 (2 バイト) + Credential ID 本体...
+        if remaining.count < 18 {
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+        var index = remaining.startIndex
+        index = remaining.index(index, offsetBy: 16)
+        let lengthHigh = Int(remaining[index])
+        index = remaining.index(after: index)
+        let lengthLow = Int(remaining[index])
+        index = remaining.index(after: index)
+        let credentialIdLength = (lengthHigh << 8) + lengthLow
+        if remaining.distance(from: index, to: remaining.endIndex) < credentialIdLength {
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+        index = remaining.index(index, offsetBy: credentialIdLength)
+        let publicKeySlice = remaining[index..<remaining.endIndex]
+        var publicKeyReader = CBORReader(data: Data(publicKeySlice))
+        let coseMap = try publicKeyReader.readCOSEKeyMap()
+        guard let xCoord = coseMap[-2], let yCoord = coseMap[-3] else {
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+        // 未圧縮形式は 0x04 + X 座標 (32 バイト) + Y 座標 (32 バイト)
+        if xCoord.count != 32 || yCoord.count != 32 {
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+        var uncompressed = Data([0x04])
+        uncompressed.append(xCoord)
+        uncompressed.append(yCoord)
+        return uncompressed
+    }
+
+    /// 最低限必要な CBOR 解析を担う小さなリーダー構造体
+    private struct CBORReader {
+        /// 元となる CBOR バイト列
+        private let data: Data
+        /// 現在の読み取り位置（インデックス）
+        private var cursor: Data.Index
+
+        init(data: Data) {
+            self.data = data
+            self.cursor = data.startIndex
+        }
+
+        /// マップのヘッダを読み込み、エントリ数を返す
+        mutating func readMapHeader() throws -> Int {
+            let (major, info) = try readTypeAndInfo()
+            if major != 5 {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            if info == 31 {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let length = try readLength(additionalInfo: info)
+            if UInt64(Int.max) < length {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            return Int(length)
+        }
+
+        /// テキスト文字列としてデコードする
+        mutating func readTextString() throws -> String {
+            let (major, info) = try readTypeAndInfo()
+            if major != 3 {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let length = try readLength(additionalInfo: info)
+            if UInt64(Int.max) < length {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let bytes = try readBytes(count: Int(length))
+            guard let string = String(data: bytes, encoding: .utf8) else {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            return string
+        }
+
+        /// バイト列をそのまま返す
+        mutating func readByteString() throws -> Data {
+            let (major, info) = try readTypeAndInfo()
+            if major != 2 {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let length = try readLength(additionalInfo: info)
+            if UInt64(Int.max) < length {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            return try readBytes(count: Int(length))
+        }
+
+        /// 任意項目を読み飛ばす（ネスト対応）
+        mutating func skipItem() throws {
+            let (major, info) = try readTypeAndInfo()
+            try skipItem(major: major, info: info)
+        }
+
+        /// COSE 鍵を表すマップを読み取り、整数キーとデータの辞書に整形する
+        mutating func readCOSEKeyMap() throws -> [Int: Data] {
+            let (major, info) = try readTypeAndInfo()
+            if major != 5 {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            if info == 31 {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let pairCount = try readLength(additionalInfo: info)
+            if UInt64(Int.max) < pairCount {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            var result: [Int: Data] = [:]
+            for _ in 0..<Int(pairCount) {
+                let key = try readInteger()
+                if let value = try readOptionalByteString() {
+                    result[key] = value
+                }
+            }
+            return result
+        }
+
+        /// 整数（正負両方）を読み取る
+        private mutating func readInteger() throws -> Int {
+            let (major, info) = try readTypeAndInfo()
+            switch major {
+            case 0:
+                let value = try readLength(additionalInfo: info)
+                if UInt64(Int.max) < value {
+                    throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+                }
+                return Int(value)
+            case 1:
+                let magnitude = try readLength(additionalInfo: info)
+                if UInt64(Int64.max) < magnitude {
+                    throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+                }
+                let signed = -1 - Int64(magnitude)
+                return Int(signed)
+            default:
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+        }
+
+        /// バイト列なら取り出し、それ以外は読み飛ばす
+        private mutating func readOptionalByteString() throws -> Data? {
+            let (major, info) = try readTypeAndInfo()
+            if major == 2 {
+                let length = try readLength(additionalInfo: info)
+                if UInt64(Int.max) < length {
+                    throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+                }
+                return try readBytes(count: Int(length))
+            }
+            try skipItem(major: major, info: info)
+            return nil
+        }
+
+        /// 型と追加情報を 1 バイト読み取る
+        private mutating func readTypeAndInfo() throws -> (UInt8, UInt8) {
+            guard cursor < data.endIndex else {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let byte = data[cursor]
+            cursor = data.index(after: cursor)
+            let major = byte >> 5
+            let info = byte & 0x1F
+            return (major, info)
+        }
+
+        /// 追加情報から長さを解釈する
+        private mutating func readLength(additionalInfo info: UInt8) throws -> UInt64 {
+            if info <= 23 {
+                return UInt64(info)
+            }
+            if info == 24 {
+                let bytes = try readBytes(count: 1)
+                return UInt64(bytes[bytes.startIndex])
+            }
+            if info == 25 {
+                let bytes = try readBytes(count: 2)
+                return bytes.reduce(0) { ($0 << 8) + UInt64($1) }
+            }
+            if info == 26 {
+                let bytes = try readBytes(count: 4)
+                return bytes.reduce(0) { ($0 << 8) + UInt64($1) }
+            }
+            if info == 27 {
+                let bytes = try readBytes(count: 8)
+                return bytes.reduce(0) { ($0 << 8) + UInt64($1) }
+            }
+            throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+        }
+
+        /// 指定バイト数を切り出す
+        private mutating func readBytes(count: Int) throws -> Data {
+            let available = data.distance(from: cursor, to: data.endIndex)
+            if available < count {
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
+            let end = data.index(cursor, offsetBy: count)
+            let slice = data[cursor..<end]
+            cursor = end
+            return Data(slice)
+        }
+
+        /// 既知の型に応じて読み飛ばし処理を行う
+        private mutating func skipItem(major: UInt8, info: UInt8) throws {
+            switch major {
+            case 0, 1:
+                _ = try readLength(additionalInfo: info)
+            case 2, 3:
+                let length = try readLength(additionalInfo: info)
+                if UInt64(Int.max) < length {
+                    throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+                }
+                _ = try readBytes(count: Int(length))
+            case 4:
+                let count = try readLength(additionalInfo: info)
+                if UInt64(Int.max) < count {
+                    throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+                }
+                for _ in 0..<Int(count) {
+                    try skipItem()
+                }
+            case 5:
+                let count = try readLength(additionalInfo: info)
+                if UInt64(Int.max) < count {
+                    throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+                }
+                for _ in 0..<Int(count) {
+                    try skipItem()
+                    try skipItem()
+                }
+            case 6:
+                _ = try readLength(additionalInfo: info)
+                try skipItem()
+            case 7:
+                if info <= 23 {
+                    return
+                }
+                if info == 24 {
+                    _ = try readBytes(count: 1)
+                    return
+                }
+                if info == 25 {
+                    _ = try readBytes(count: 2)
+                    return
+                }
+                if info == 26 {
+                    _ = try readBytes(count: 4)
+                    return
+                }
+                if info == 27 {
+                    _ = try readBytes(count: 8)
+                    return
+                }
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            default:
+                throw AzukiDeviceAuthenticator.AuthenticatorError.publicKeyExportFailed
+            }
         }
     }
 
