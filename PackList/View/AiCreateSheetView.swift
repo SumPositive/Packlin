@@ -363,7 +363,9 @@ struct AiCreateView: View {
                 let transaction = try await resolveVerifiedTransaction(from: latest)
                 let receiptData = transaction.jsonRepresentation
                 let receipt = receiptData.base64EncodedString()
-                let storekitJws = transaction.jwsRepresentation
+                // StoreKit 2 の Transaction からは iOS 17 以降 `jwsRepresentation` が廃止されたため、
+                // 代わりに JWS 文字列を表す `signedData` を利用する
+                let storekitJws = transaction.signedData
                 let verification = try await AzukiApi.shared.verifyPurchase(
                     userId: userId,
                     productId: option.productId,
@@ -636,7 +638,8 @@ struct AiCreateView: View {
         let receiptData = transaction.jsonRepresentation
         let receipt = receiptData.base64EncodedString()
         // StoreKit 2 が提供するJWS文字列も同時に送り、サーバーで署名検証してもらう
-        let storekitJws = transaction.jwsRepresentation
+        // こちらも上記と同じ理由で `signedData` を利用してJWS文字列を取得する
+        let storekitJws = transaction.signedData
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
