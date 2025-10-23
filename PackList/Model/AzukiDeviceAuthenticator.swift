@@ -83,7 +83,8 @@ actor AzukiDeviceAuthenticator {
     /// すでにアテステーション済みの端末識別情報があれば返し、無ければ Secure Enclave で新規生成する
     /// - Returns: サーバーへ送信するための端末識別情報
     func ensureIdentity() async throws -> DeviceIdentity {
-        if let existing = await currentIdentity() {
+        // すでにメモリ／Keychain に情報があれば、それをそのまま返す
+        if let existing = currentIdentity() {
             return existing
         }
         if appAttestService.isSupported == false {
@@ -240,7 +241,8 @@ actor AzukiDeviceAuthenticator {
     /// App Attest の秘密鍵から公開鍵を取り出す
     private func exportPublicKey(keyId: String) throws -> Data {
         do {
-            let secKey = try appAttestService.key(forKey: keyId)
+            // iOS16 以降で追加された `key(for:)` を利用して SecKey を取得する
+            let secKey = try appAttestService.key(for: keyId)
             guard let representation = SecKeyCopyExternalRepresentation(secKey, nil) as Data? else {
                 throw AuthenticatorError.publicKeyExportFailed
             }
