@@ -360,20 +360,9 @@ struct AiCreateView: View {
             }
             didAttemptVerification = true
             do {
-                let transaction = try await resolveVerifiedTransaction(from: latest)
+                let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: latest)
                 let receiptData = transaction.jsonRepresentation
                 let receipt = receiptData.base64EncodedString()
-                // StoreKit 2 の Transaction からは iOS 17 以降 `jwsRepresentation` が廃止されたため、
-                // ビルドに使用するSwiftコンパイラの世代に応じて適切なプロパティを参照する
-                // iOS 18 以降で追加された `signedDataRepresentation` を必ず利用できる設計だが、
-                // それ未満のOSで実行されるとここではJWSを生成できないため、開発段階で気付きやすいように明示的にスキップする
-                guard #available(iOS 18.0, *) else {
-                    #if DEBUG
-                    assertionFailure("iOS 18 未満ではトランザクションJWSを取得できません")
-                    #endif
-                    continue
-                }
-                let storekitJws = transaction.azukiSignedJws
                 let verification = try await AzukiApi.shared.verifyPurchase(
                     userId: userId,
                     productId: option.productId,
@@ -479,8 +468,8 @@ struct AiCreateView: View {
                 switch outcome {
                 case .success(let verificationResult):
                     // 3. トランザクション署名を検証し、正規購入であればサーバーへ伝えて残高を加算する
-                    let transaction = try await resolveVerifiedTransaction(from: verificationResult)
-                    await finalizePurchase(option: option, transaction: transaction)
+                    let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: verificationResult)
+                    await finalizePurchase(option: option, transaction: transaction, storekitJws: storekitJws)
 
                 case .pending:
                     // ファミリー共有などで承認待ちになる場合
@@ -617,12 +606,14 @@ struct AiCreateView: View {
     }
 
     /// StoreKit 2 の検証結果から信頼できる `Transaction` を取り出す
-    private func resolveVerifiedTransaction(from result: VerificationResult<StoreKit.Transaction>) async throws -> StoreKit.Transaction {
+    private func resolveVerifiedTransaction(from result: VerificationResult<StoreKit.Transaction>) async throws -> (transaction: StoreKit.Transaction, storekitJws: String) {
         switch result {
         case .verified(let transaction):
-            return transaction
+            // signedData と jwsRepresentation を自動で出し分けたJWS文字列を同時に返し、呼び出し側での煩雑な分岐を避ける
+            let jws = result.jwsForServer
+            return (transaction, jws)
         case .unverified(let transaction, let verificationError):
-                let baseMessage = verificationError.localizedDescription
+            let baseMessage = verificationError.localizedDescription
             // StoreKit 2 の `finish()` は iOS 18 から投げなくなったので、
             // ここでは失敗しても致命的ではないことを前提にベストエフォートで完了させる
             await transaction.finish()
@@ -631,7 +622,7 @@ struct AiCreateView: View {
     }
 
     /// トランザクションの完了とKeychain残高・サーバー残高の更新をまとめて処理する
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction) async {
+    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, storekitJws: String) async {
         // 1. StoreKitのトランザクション完了はdeferでまとめて実行し、途中で失敗してもダブルカウントを避ける
         defer {
             Task {
@@ -646,15 +637,7 @@ struct AiCreateView: View {
         let receiptData = transaction.jsonRepresentation
         let receipt = receiptData.base64EncodedString()
         // StoreKit 2 が提供するJWS文字列も同時に送り、サーバーで署名検証してもらう
-        // Swiftコンパイラのバージョン差異を吸収したヘルパー経由でJWSを取り出す
-        // iOS 18 以降のみ対応のため、対象外OSでは早期に処理を抜けておく
-        guard #available(iOS 18.0, *) else {
-            #if DEBUG
-            assertionFailure("iOS 18 未満ではトランザクションJWSを送信できません")
-            #endif
-            return
-        }
-        let storekitJws = transaction.azukiSignedJws
+        // Swift 5 + iOS 18 以降で追加された signedData と従来の jwsRepresentation を状況に応じて切り替え済み
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
@@ -713,14 +696,14 @@ struct AiCreateView: View {
     private func handleTransactionUpdate(_ update: VerificationResult<StoreKit.Transaction>) async {
         do {
             // StoreKitの検証結果を通過したトランザクションのみを対象にする
-            let transaction = try await resolveVerifiedTransaction(from: update)
+            let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: update)
             // Configに存在しないProduct IDの場合は終了処理だけ行い、以降の処理を避ける
             guard let option = AZUKI_CREDIT_PURCHASE_OPTIONS.first(where: { $0.productId == transaction.productID }) else {
                 await transaction.finish()
                 return
             }
 
-            await finalizePurchase(option: option, transaction: transaction)
+            await finalizePurchase(option: option, transaction: transaction, storekitJws: storekitJws)
         } catch {
             // 検証に失敗した場合やAPI通信の例外は、デバッグ出力のみ行いユーザーへ重複通知しない
             #if DEBUG
@@ -829,35 +812,19 @@ struct AiCreateView: View {
 
 // MARK: - StoreKit 2 互換ヘルパー
 
-@available(iOS 18.0, *)
-private extension StoreKit.Transaction {
-    /// StoreKitトランザクションからサーバー検証用のJWS文字列を抽出する共通ヘルパー
-    /// - Note: Swift 5 の公開インターフェースでは `signedDataRepresentation` がまだ見えていないため、
-    ///         Objective-C ランタイム経由で同名プロパティを安全に引き当てる。
-    ///         取得できなかった場合は旧名称 `jwsRepresentation` も順番に探索し、
-    ///         それでも得られなければアサートを発火させて開発段階で気付きやすくする。
-    var azukiSignedJws: String {
-        // Swift 5 から iOS 18 SDK を扱うと、`Transaction` 型に `signedDataRepresentation` が現れないケースがある。
-        // そのため `AnyObject` へブリッジし、KVC を利用して同名キーを直接参照するようにしている。
-        let anyObject = self as AnyObject
-
-        // 1. 新名称 `signedDataRepresentation` を優先的に取得する
-        if let modernJws = anyObject.value(forKey: "signedDataRepresentation") as? String,
-           modernJws.isEmpty == false {
-            return modernJws
+@available(iOS 15.0, *)
+private extension VerificationResult where SignedType == StoreKit.Transaction {
+    /// サーバー検証に送るJWS（文字列）。iOS 18 以降で追加された `signedData` と旧来の `jwsRepresentation` を透過的に扱う。
+    /// - Note: Swift 5 かつ iOS 18 以降であれば `signedData` が Data として提供されるのでUTF-8文字列へ変換し、それ未満では既存プロパティを利用する。
+    var jwsForServer: String {
+        if #available(iOS 18.0, *) {
+            // iOS 18 以降では JWS Compact Serialization の Data が返るため、UTF-8 文字列へ復元して返却する
+            if let string = String(data: self.signedData, encoding: .utf8) {
+                return string
+            }
         }
-
-        // 2. 過去名称 `jwsRepresentation` も試し、古いSDKでも動くようにしておく
-        if let legacyJws = anyObject.value(forKey: "jwsRepresentation") as? String,
-           legacyJws.isEmpty == false {
-            return legacyJws
-        }
-
-        // 3. どちらも取得できなかった場合は空文字を返しつつデバッグ時に通知する
-        #if DEBUG
-        assertionFailure("StoreKit Transaction の JWS を取得できませんでした")
-        #endif
-        return ""
+        // iOS 15 〜 17 では従来の文字列プロパティをそのまま返し、既存のサーバー検証フローを継続させる
+        return self.jwsRepresentation
     }
 }
 
