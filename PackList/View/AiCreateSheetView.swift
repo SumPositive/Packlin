@@ -365,6 +365,14 @@ struct AiCreateView: View {
                 let receipt = receiptData.base64EncodedString()
                 // StoreKit 2 の Transaction からは iOS 17 以降 `jwsRepresentation` が廃止されたため、
                 // ビルドに使用するSwiftコンパイラの世代に応じて適切なプロパティを参照する
+                // iOS 18 以降で追加された `signedDataRepresentation` を必ず利用できる設計だが、
+                // それ未満のOSで実行されるとここではJWSを生成できないため、開発段階で気付きやすいように明示的にスキップする
+                guard #available(iOS 18.0, *) else {
+                    #if DEBUG
+                    assertionFailure("iOS 18 未満ではトランザクションJWSを取得できません")
+                    #endif
+                    continue
+                }
                 let storekitJws = transaction.azukiSignedJws
                 let verification = try await AzukiApi.shared.verifyPurchase(
                     userId: userId,
@@ -639,6 +647,13 @@ struct AiCreateView: View {
         let receipt = receiptData.base64EncodedString()
         // StoreKit 2 が提供するJWS文字列も同時に送り、サーバーで署名検証してもらう
         // Swiftコンパイラのバージョン差異を吸収したヘルパー経由でJWSを取り出す
+        // iOS 18 以降のみ対応のため、対象外OSでは早期に処理を抜けておく
+        guard #available(iOS 18.0, *) else {
+            #if DEBUG
+            assertionFailure("iOS 18 未満ではトランザクションJWSを送信できません")
+            #endif
+            return
+        }
         let storekitJws = transaction.azukiSignedJws
 
         do {
@@ -814,18 +829,14 @@ struct AiCreateView: View {
 
 // MARK: - StoreKit 2 互換ヘルパー
 
+@available(iOS 18.0, *)
 private extension StoreKit.Transaction {
     /// StoreKitトランザクションからサーバー検証用のJWS文字列を抽出する共通ヘルパー
-    /// - Note: Swiftコンパイラ6世代では `signedDataRepresentation` のみが利用可能で、旧世代では `jwsRepresentation` が残されている。
-    ///         どちらのツールチェーンでもビルドが通るように条件付きコンパイルで吸収する。
+    /// - Note: 本アプリはSwift 5系かつiOS 18 以降を前提にしているため、`signedDataRepresentation` のみを利用する
     var azukiSignedJws: String {
-        #if compiler(<6.0)
-        // Swift 5 系ツールチェーンでは従来通り `jwsRepresentation` が提供されている
-        return jwsRepresentation
-        #else
-        // Swift 6 系では `signedDataRepresentation` が正式名称になったため、そちらを参照する
+        // iOS 18 で`jwsRepresentation`が`deprecated`となり、`signedDataRepresentation`が正規のプロパティとなった
+        // そのためここでは常に新しい名称を採用し、将来のAPI変更にも対応しやすい構造にしておく
         return signedDataRepresentation
-        #endif
     }
 }
 
