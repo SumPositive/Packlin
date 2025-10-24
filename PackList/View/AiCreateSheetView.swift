@@ -832,11 +832,32 @@ struct AiCreateView: View {
 @available(iOS 18.0, *)
 private extension StoreKit.Transaction {
     /// StoreKitトランザクションからサーバー検証用のJWS文字列を抽出する共通ヘルパー
-    /// - Note: 本アプリはSwift 5系かつiOS 18 以降を前提にしているため、`signedDataRepresentation` のみを利用する
+    /// - Note: Swift 5 の公開インターフェースでは `signedDataRepresentation` がまだ見えていないため、
+    ///         Objective-C ランタイム経由で同名プロパティを安全に引き当てる。
+    ///         取得できなかった場合は旧名称 `jwsRepresentation` も順番に探索し、
+    ///         それでも得られなければアサートを発火させて開発段階で気付きやすくする。
     var azukiSignedJws: String {
-        // iOS 18 で`jwsRepresentation`が`deprecated`となり、`signedDataRepresentation`が正規のプロパティとなった
-        // そのためここでは常に新しい名称を採用し、将来のAPI変更にも対応しやすい構造にしておく
-        return signedDataRepresentation
+        // Swift 5 から iOS 18 SDK を扱うと、`Transaction` 型に `signedDataRepresentation` が現れないケースがある。
+        // そのため `AnyObject` へブリッジし、KVC を利用して同名キーを直接参照するようにしている。
+        let anyObject = self as AnyObject
+
+        // 1. 新名称 `signedDataRepresentation` を優先的に取得する
+        if let modernJws = anyObject.value(forKey: "signedDataRepresentation") as? String,
+           modernJws.isEmpty == false {
+            return modernJws
+        }
+
+        // 2. 過去名称 `jwsRepresentation` も試し、古いSDKでも動くようにしておく
+        if let legacyJws = anyObject.value(forKey: "jwsRepresentation") as? String,
+           legacyJws.isEmpty == false {
+            return legacyJws
+        }
+
+        // 3. どちらも取得できなかった場合は空文字を返しつつデバッグ時に通知する
+        #if DEBUG
+        assertionFailure("StoreKit Transaction の JWS を取得できませんでした")
+        #endif
+        return ""
     }
 }
 
