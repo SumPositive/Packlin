@@ -816,15 +816,15 @@ struct AiCreateView: View {
 
 private extension StoreKit.Transaction {
     /// StoreKitトランザクションからサーバー検証用のJWS文字列を抽出する共通ヘルパー
-    /// - Note: Swiftコンパイラ6世代では `signedData` のみが利用可能で、旧世代では `jwsRepresentation` が残されている。
+    /// - Note: Swiftコンパイラ6世代では `signedDataRepresentation` のみが利用可能で、旧世代では `jwsRepresentation` が残されている。
     ///         どちらのツールチェーンでもビルドが通るように条件付きコンパイルで吸収する。
     var azukiSignedJws: String {
         #if compiler(<6.0)
         // Swift 5 系ツールチェーンでは従来通り `jwsRepresentation` が提供されている
         return jwsRepresentation
         #else
-        // Swift 6 系では `signedData` が正式名称になったため、そちらを参照する
-        return signedData
+        // Swift 6 系では `signedDataRepresentation` が正式名称になったため、そちらを参照する
+        return signedDataRepresentation
         #endif
     }
 }
