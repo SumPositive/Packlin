@@ -610,7 +610,7 @@ struct AiCreateView: View {
         switch result {
         case .verified(let transaction):
             // signedData と jwsRepresentation を自動で出し分けたJWS文字列を同時に返し、呼び出し側での煩雑な分岐を避ける
-            let jws = result.jwsForServer
+                let jws = result.jwsRepresentation //.jwsForServer
             return (transaction, jws)
         case .unverified(let transaction, let verificationError):
             let baseMessage = verificationError.localizedDescription
