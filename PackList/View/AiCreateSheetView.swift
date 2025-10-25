@@ -611,7 +611,12 @@ struct AiCreateView: View {
         case .verified(let transaction):
             // signedData と jwsRepresentation を自動で出し分けたJWS文字列を同時に返し、呼び出し側での煩雑な分岐を避ける
             // iOS 18 では signedData が Base64 文字列の Data として返る場合もあるため、拡張プロパティ側で安全に復元する
-            let jws = result.jwsForServer
+                let jws = result.jwsRepresentation  // StoreKit 2
+                print("dotCount =", jws.filter { $0 == "." }.count)   // => 2 のはず
+                print("firstDot at", jws.firstIndex(of: ".") != nil)  // true
+                print("length =", jws.count)
+                
+//            let jws = result.jwsForServer
             return (transaction, jws)
         case .unverified(let transaction, let verificationError):
             let baseMessage = verificationError.localizedDescription
@@ -821,9 +826,9 @@ private extension VerificationResult where SignedType == StoreKit.Transaction {
         if #available(iOS 18.0, *) {
             // iOS 18 以降では signedData から直接 JWS 文字列が取得できる場合と、Base64 文字列の Data が返る場合がある
             // そのためまずは UTF-8 文字列へ復元を試み、ピリオドが含まれて正常なJWS形式であればそのまま返す
-            if let directString = String(data: self.signedData, encoding: .utf8), directString.contains(".") {
-                return directString
-            }
+//            if let directString = String(data: self.signedData, encoding: .utf8), directString.contains(".") {
+//                return directString
+//            }
             // directString が取得できない場合は Base64 デコードを試し、復号後に UTF-8 文字列化してサーバーへ送る
             if let decodedData = Data(base64Encoded: self.signedData),
                let decodedString = String(data: decodedData, encoding: .utf8),
