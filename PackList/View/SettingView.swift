@@ -309,8 +309,16 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = false
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
         @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
-
+        
+        // GALoggerのため変更前の設定値を記録する
+        @State var ona_insertionPosition: InsertionPosition?
+        @State var ona_showNeedWeight: Bool?
+        @State var ona_weightDisplayInKg: Bool?
+        @State var ona_linkCheckWithStock: Bool?
+        @State var ona_footerMessage: Bool?
+        
         var body: some View {
+
             VStack(alignment: .leading, spacing: 20) {
                 // 新規追加の位置
                 HStack(spacing: 8) {
@@ -375,6 +383,42 @@ struct SettingView: View {
                                 .symbolRenderingMode(.hierarchical)
                         }
                     }
+                }
+            }
+            .onAppear {
+                // GALoggerのため変更前の設定値を記録する
+                ona_insertionPosition  = insertionPosition
+                ona_showNeedWeight     = showNeedWeight
+                ona_weightDisplayInKg  = weightDisplayInKg
+                ona_linkCheckWithStock = linkCheckWithStock
+                ona_footerMessage      = footerMessage
+            }
+            .onDisappear {
+                // 変更あればGALogger送信する
+                if let ona = ona_insertionPosition, ona != insertionPosition {
+                    GALogger.log(.function(name: "setting",
+                                           option: "insertionPosition:"
+                                                    + insertionPosition.rawValue))
+                }
+                if let ona = ona_showNeedWeight, ona != showNeedWeight {
+                    GALogger.log(.function(name: "setting",
+                                           option: "showNeedWeight:"
+                                           + showNeedWeight.description))
+                }
+                if let ona = ona_weightDisplayInKg, ona != weightDisplayInKg {
+                    GALogger.log(.function(name: "setting",
+                                           option: "weightDisplayInKg:"
+                                           + weightDisplayInKg.description))
+                }
+                if let ona = ona_linkCheckWithStock, ona != linkCheckWithStock {
+                    GALogger.log(.function(name: "setting",
+                                           option: "linkCheckWithStock:"
+                                           + linkCheckWithStock.description))
+                }
+                if let ona = ona_footerMessage, ona != footerMessage {
+                    GALogger.log(.function(name: "setting",
+                                           option: "footerMessage:"
+                                           + footerMessage.description))
                 }
             }
         }

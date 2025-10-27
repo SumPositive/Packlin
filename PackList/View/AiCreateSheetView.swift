@@ -96,11 +96,13 @@ struct AiCreateView: View {
                 if isRequirementEmpty {
                     // 入力例
                     Text("""
-                        例）夏の3泊4日キャンプ。
-                        家族4人（大人2人、子ども2人）用の持ち物を準備。
-                        食材は現地調達。
-                        雨天も想定。
-                        他にあれば助かるものも多めに入れて。
+                        例）海外旅行5泊6日
+                        イギリス、スペイン訪問。
+                        家族4人（大人2人、子ども2人）の持ち物。
+                        ＜日程、行程、アクティビティなどの詳細もあれば記入＞
+                        4人でスキューバダイビングに参加。
+                        大人1人がスカイダイビングに参加。
+                        雨天も想定。救急用品も充実させたい。
                         """)
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 16)
@@ -774,17 +776,17 @@ struct AiCreateView: View {
         var id: String {
             switch self {
             case .generationSuccess(let packName):
-                return "ai-generation-success-\(packName)"
+                return "ai-generationSuccess-\(packName)"
             case .generationFailure(let message):
-                return "ai-generation-failure-\(message)"
+                return "ai-generationFailure-\(message)"
             case .creditShortage:
-                return "ai-credit-shortage"
+                return "ai-creditShortage"
             case .purchaseSuccess(let added, let priceYen):
-                return "ai-purchase-success-\(added)-\(priceYen)"
+                return "ai-purchaseSuccess-\(added)-\(priceYen)"
             case .purchaseAlreadyProcessed:
-                return "ai-purchase-duplicate"
+                return "ai-purchaseAlreadyProcessed"
             case .purchaseFailure(let message):
-                return "ai-purchase-failure-\(message)"
+                return "ai-purchaseFailure-\(message)"
             }
         }
 
@@ -808,7 +810,7 @@ struct AiCreateView: View {
         var message: String {
             switch self {
             case .generationSuccess(let packName):
-                return String(localized: "パック『\(packName)』を追加しました。")
+                return String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧に戻って見てください")
             case .generationFailure(let message):
                 return message
             case .creditShortage:
