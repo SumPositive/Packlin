@@ -27,46 +27,55 @@ enum AzukiAPIError: LocalizedError {
     case receiptBelongsToOtherUser
     case deviceSecurityUnavailable
     case deviceSignatureFailed
+    case notFound
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL:
-            return String(localized: "サーバーのURLを組み立てられませんでした。時間をおいて再度お試しください。")
-        case .invalidResponse:
-            return String(localized: "サーバーの応答が不正でした。通信状況をご確認ください。")
-        case .server(let statusCode):
-            return String(localized: "サーバーエラー") + "(\(statusCode))"
-                + String(localized: "が発生しました。サポートへお問い合わせください。")
-        case .serverError(let message):
-                return String(localized: "サーバーエラー") + "「\(message)」"
-                + String(localized: "が発生しました。サポートへお問い合わせください。")
-        case .decoding:
-            return String(localized: "サーバーから受信したデータを解析できませんでした。")
-        case .encoding:
-            return String(localized: "送信データの準備に失敗しました。入力内容をご確認ください。")
-        case .insufficientCredits:
-            return String(localized: "クレジットが不足しています。購入後に再度お試しください。")
-        case .missingAuthToken:
-            return String(localized: "アクセストークンが見つかりません。購入履歴を復元してから再度お試しください。")
-        case .unauthorized:
-            return String(localized: "認証に失敗しました。通信状況を確認しても解決しない場合はサポートへご連絡ください。")
-        case .forbiddenUser:
-            return String(localized: "ユーザー情報の検証に失敗しました。サポートへお問い合わせください。")
-        case .duplicateTransaction:
-            return String(localized: "この購入はすでに処理済みです。反映済みかをご確認ください。")
-        case .unknownProduct:
-            return String(localized: "サーバー側の商品の登録と一致しません。アプリを最新に更新してからお試しください。")
-        case .purchaseMismatch:
-            return String(localized: "購入情報の整合性を確認できませんでした。時間をおいて再度お試しください。")
-        case .tokenExpired:
-            return String(localized: "アクセストークンの有効期限が切れました。購入履歴の復元を行ってください。")
-        case .receiptBelongsToOtherUser:
-            return String(localized: "この購入情報は別のユーザーに紐づいています。サポートへお問い合わせください。")
-        case .deviceSecurityUnavailable:
-            return String(localized: "端末のセキュリティ機能を利用できません。最新のiOSへ更新後、再度お試しください。")
-        case .deviceSignatureFailed:
-            return String(localized: "端末認証に失敗しました。アプリを再起動してから再度お試しください。")
+            case .invalidURL: // サーバーのURLを組み立てられませんでした
+                return errorMsg("invalidURL")
+            case .invalidResponse: // サーバーの応答が不正でした
+                return errorMsg("invalidResponse")
+            case .server(let statusCode): // サーバーエラー
+                return errorMsg("statusCode-\(statusCode)")
+            case .serverError(let message): // サーバーエラー
+                return errorMsg("serverError-\(message)")
+            case .decoding: // サーバーから受信したデータを解析できません
+                return errorMsg("decoding")
+            case .encoding: // 送信データの準備に失敗しました
+                return errorMsg("400-encoding")
+            case .insufficientCredits: // クレジットが不足しています
+                return errorMsg("402-insufficientCredits")
+            case .missingAuthToken: // アクセストークンが見つかりません
+                return errorMsg("401-missingAuthToken")
+            case .unauthorized: // 認証に失敗しました
+                return errorMsg("401-unauthorized")
+            case .forbiddenUser: // ユーザー情報の検証に失敗しました
+                return errorMsg("401-forbiddenUser")
+            case .duplicateTransaction: // この購入はすでに処理済みです
+                return errorMsg("409-duplicateTransaction")
+            case .unknownProduct: // サーバー側の商品の登録と一致しません
+                return errorMsg("406-unknownProduct")
+            case .purchaseMismatch: // 購入情報の整合性を確認できません
+                return errorMsg("400-purchaseMismatch")
+            case .tokenExpired: // アクセストークンの有効期限が切れました
+                return errorMsg("401-tokenExpired")
+            case .receiptBelongsToOtherUser: // この購入情報は別のユーザーに紐づいています
+                return errorMsg("400-receiptBelongsToOtherUser")
+            case .deviceSecurityUnavailable: // 端末のセキュリティ機能を利用できません
+                return errorMsg("400-deviceSecurityUnavailable")
+            case .deviceSignatureFailed: // 端末認証に失敗しました
+                return errorMsg("401-deviceSignatureFailed")
+            case .notFound: // 404 サイトが見つかりません
+                return errorMsg("404-notFound")
         }
+        
+        /// アプリユーザに見せるメッセージ
+        func errorMsg(_ msg: String) -> String {
+            log(.error, "AzukiAPIError: " + msg)
+            return String(localized: "通信障害が発生しているようです。しばらくしてから再度お試しください。")
+            + "\n [\(msg)]"
+        }
+
     }
 }
 
@@ -469,8 +478,11 @@ final class AzukiApi {
                         return nil
                     }
                 }
-                if status == 401 {
+                if status == 401 { // Unauthorized  アクセス権が無い、または認証に失敗
                     return nil
+                }
+                if status == 404 { // Not Found Webページが見つからない
+                    throw AzukiAPIError.server(statusCode: status)
                 }
                 throw AzukiAPIError.server(statusCode: status)
             }
@@ -616,11 +628,12 @@ final class AzukiApi {
                 else if serverErrorCode == "mismatched_grant" {
                     throw AzukiAPIError.purchaseMismatch
                 }
-                else if let msg = serverErrorCode {
-                    throw AzukiAPIError.serverError(message: msg)
-                }
             }
-            throw AzukiAPIError.server(statusCode: status)
+            if let msg = serverErrorCode {
+                throw AzukiAPIError.serverError(message: msg)
+            }
+            //throw AzukiAPIError.server(statusCode: status)
+            throw AzukiAPIError.serverError(message: "(\(status))" + httpResponse.description)
         } catch let error as AzukiAPIError {
             throw error
         } catch {

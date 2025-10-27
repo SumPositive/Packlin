@@ -188,23 +188,6 @@
         }
       }
     },
-    "action.pack.download" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Load Pack"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "パックを読み込む"
-          }
-        }
-      }
-    },
     "action.pack.upload" : {
       "localizations" : {
         "en" : {
@@ -234,91 +217,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "アプリの紹介・取扱説明"
-          }
-        }
-      }
-    },
-    "ad.donate.banner" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch Ad to Donate"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "広告を見て寄付"
-          }
-        }
-      }
-    },
-    "ad.donate.video" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch Video Ad to Donate"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "動画広告を見て寄付"
-          }
-        }
-      }
-    },
-    "ad.empowering.developers" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Support the Developer"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "開発者を応援する"
-          }
-        }
-      }
-    },
-    "ad.video.sound" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sound may play"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "音が出る場合があります"
-          }
-        }
-      }
-    },
-    "ai.create.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Let’s create a pack with AI!"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "AIにパックを作ってもらおう"
           }
         }
       }
@@ -1101,125 +999,6 @@
         }
       }
     },
-    "setting.adClose" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "閉じる"
-          }
-        }
-      }
-    },
-    "setting.adDescription" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watching the entire video helps support the developer."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "動画を最後まで視聴すると開発者をサポートできます"
-          }
-        }
-      }
-    },
-    "setting.adLoading" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading advertisement..."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を読み込み中..."
-          }
-        }
-      }
-    },
-    "setting.adPlay" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play ad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を再生"
-          }
-        }
-      }
-    },
-    "setting.adRetry" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retry"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "再読み込み"
-          }
-        }
-      }
-    },
-    "setting.adRewardThanks" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thank you for watching the ad!"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告をご視聴いただきありがとうございます！"
-          }
-        }
-      }
-    },
-    "setting.adVideoTitle" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Video Ad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "動画広告"
-          }
-        }
-      }
-    },
     "setting.autoItemReorder" : {
       "localizations" : {
         "en" : {
@@ -1232,125 +1011,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "編集操作に応じて自動で並べ替え"
-          }
-        }
-      }
-    },
-    "setting.bannerAdTitle" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap to Watch the Ad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "タップして広告をご覧ください"
-          }
-        }
-      }
-    },
-    "setting.footer.message" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Footer Description"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "フッターの説明文"
-          }
-        }
-      }
-    },
-    "setting.import.error.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import failed"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取り込みに失敗しました"
-          }
-        }
-      }
-    },
-    "setting.import.success.message" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ has been imported."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ を取り込みました"
-          }
-        }
-      }
-    },
-    "setting.import.success.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import completed"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取り込み完了"
-          }
-        }
-      }
-    },
-    "setting.info" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About & User Guide"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "アプリの紹介・取扱説明"
-          }
-        }
-      }
-    },
-    "setting.infoUnavailable" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information unavailable"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "情報を表示できません"
           }
         }
       }
@@ -1383,91 +1043,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "末尾"
-          }
-        }
-      }
-    },
-    "setting.insertion.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Position"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "新規追加位置"
-          }
-        }
-      }
-    },
-    "setting.linkCheckWithStock.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sync Check with Stock"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "チェックと在庫を連動"
-          }
-        }
-      }
-    },
-    "setting.needWeight.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Required Weight"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "必要重量を表示"
-          }
-        }
-      }
-    },
-    "setting.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "設定"
-          }
-        }
-      }
-    },
-    "setting.weightDisplayInKg.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show weight scale in Kg"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "重量計をKgで表示"
           }
         }
       }
@@ -1520,12 +1095,6 @@
         }
       }
     },
-    "アクセストークンが見つかりません。購入履歴を復元してから再度お試しください。" : {
-
-    },
-    "アクセストークンの有効期限が切れました。購入履歴の復元を行ってください。" : {
-
-    },
     "アプリの紹介・取扱説明" : {
       "comment" : "A label for the \"App Information\" option in the settings menu.",
       "isCommentAutoGenerated" : true
@@ -1533,36 +1102,11 @@
     "お作りしています..." : {
 
     },
-    "が発生しました。サポートへお問い合わせください。" : {
-
-    },
-    "クレジットが不足しています。購入後に再度お試しください。" : {
-
-    },
     "この購入はすでにサーバーへ登録済みでした。最新残高を読み込み済みです。" : {
       "comment" : "Text displayed in an alert when a user attempts to purchase AI credits that have already been processed by the server. It confirms that the purchase was already registered and that the user's balance has been updated accordingly.",
       "isCommentAutoGenerated" : true
     },
-    "この購入はすでに処理済みです。反映済みかをご確認ください。" : {
-
-    },
-    "この購入情報は別のユーザーに紐づいています。サポートへお問い合わせください。" : {
-      "comment" : "Error message when the receipt belongs to another user.",
-      "isCommentAutoGenerated" : true
-    },
     "ご要望を入れてください。" : {
-
-    },
-    "サーバーエラー" : {
-
-    },
-    "サーバーから受信したデータを解析できませんでした。" : {
-
-    },
-    "サーバーのURLを組み立てられませんでした。時間をおいて再度お試しください。" : {
-
-    },
-    "サーバーの応答が不正でした。通信状況をご確認ください。" : {
 
     },
     "サーバーの残高確認に失敗しました。時間をおいて再度お試しください。" : {
@@ -1571,9 +1115,6 @@
     "サーバーの残高確認に失敗しました。通信環境をご確認ください。" : {
       "comment" : "Alert message shown when refreshing the user's credit balance from the server fails, regardless of whether the error is an `AzukiAPIError` or another type.",
       "isCommentAutoGenerated" : true
-    },
-    "サーバー側の商品の登録と一致しません。アプリを最新に更新してからお試しください。" : {
-
     },
     "タップして広告をご覧ください" : {
       "comment" : "A navigation title that appears at the top of the view, describing its purpose.",
@@ -1609,9 +1150,6 @@
     "フッターの説明文" : {
       "comment" : "A label displayed above a toggle that controls whether the footer message is shown.",
       "isCommentAutoGenerated" : true
-    },
-    "ユーザー情報の検証に失敗しました。サポートへお問い合わせください。" : {
-
     },
     "例）夏の3泊4日キャンプ。\n家族4人（大人2人、子ども2人）用の持ち物を準備。\n食材は現地調達。\n雨天も想定。" : {
 
@@ -1678,12 +1216,6 @@
     "生成完了" : {
 
     },
-    "端末のセキュリティ機能を利用できません。最新のiOSへ更新後、再度お試しください。" : {
-
-    },
-    "端末認証に失敗しました。アプリを再起動してから再度お試しください。" : {
-
-    },
     "要望を入力して「チャッピーに作ってもらう」を押してください。新しいパックの作成に成功するとAI利用回数が1つ減ります" : {
 
     },
@@ -1692,9 +1224,6 @@
       "isCommentAutoGenerated" : true
     },
     "認証に失敗しました。アプリを再起動しても解決しない場合はサポートへお問い合わせください。" : {
-
-    },
-    "認証に失敗しました。通信状況を確認しても解決しない場合はサポートへご連絡ください。" : {
 
     },
     "購入が承認待ちです。承認が完了すると自動で反映されます。" : {
@@ -1713,15 +1242,13 @@
       "comment" : "Text displayed in an alert when a user tries to purchase AI credits but the purchase has already been processed on the server-side.",
       "isCommentAutoGenerated" : true
     },
-    "購入情報の整合性を確認できませんでした。時間をおいて再度お試しください。" : {
-
-    },
     "購入情報の確認に失敗しました。時間をおいて再度お試しください。" : {
       "comment" : "Alert message shown when an error occurs during the purchase confirmation process.",
       "isCommentAutoGenerated" : true
     },
-    "送信データの準備に失敗しました。入力内容をご確認ください。" : {
-
+    "通信障害が発生しているようです。しばらくしてから再度お試しください。" : {
+      "comment" : "Message to be shown to the user when an error occurs while contacting the azuki-api.",
+      "isCommentAutoGenerated" : true
     },
     "重量計をKgで表示" : {
       "comment" : "A toggle label that lets the user choose whether to display the weight scale in kilograms.",

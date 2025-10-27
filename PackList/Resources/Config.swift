@@ -30,8 +30,9 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 #if DEBUG
 // Local server　同一セグメント内のMac開発ローカルサーバに接続する
 // ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
-// 疎通確認："http://192.168.1.210:8787/health"
-let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.workers.dev")!
+// 実機接続するため ngrok により localhost を公開する
+// $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
+let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")!
 #else
 // 本番 Deploy server
 let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.workers.dev")!
@@ -46,8 +47,6 @@ let AZUKI_CREDIT_PURCHASE_OPTIONS: [(productId: String, priceYen: Int, credits: 
     (productId: AZUKI_API_CREDIT_PRODUCT_STANDARD, priceYen: 100, credits: 11),
 //    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 60),
 ]
-/// OpenAIへ転送するモデル名。サーバーが代理実行するためクライアント側で明示しておく
-let OPENAI_CHAT_COMPLETION_MODEL = "gpt-5" //"gpt-4o-mini"
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
 let CHATGPT_GENERATION_CREDIT_COST = 1
 
