@@ -14,12 +14,32 @@ import StoreKit
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    
+    /// TextEditorにフォーカスが当たっているかどうかを追跡するフォーカス状態
+    @FocusState private var isRequirementFocused: Bool
+
     var body: some View {
         NavigationView {
             ScrollView {
-                AiCreateView()
+                AiCreateView(requirementFocus: $isRequirementFocused)
             }
+            // 背景タップでキーボードを閉じるためのジェスチャ
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    // すでにフォーカスがあれば解除してキーボードを閉じる
+                    if isRequirementFocused {
+                        isRequirementFocused = false
+                    }
+                }
+            )
+            // スクロール操作でもフォーカスを外してキーボードを閉じる
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 1).onChanged { _ in
+                    if isRequirementFocused {
+                        isRequirementFocused = false
+                    }
+                }
+            )
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(Text("app.title"))
             .navigationBarTitleDisplayMode(.inline)
@@ -40,6 +60,8 @@ struct AiCreateView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var creditStore: CreditStore
+    /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
+    private let requirementFocus: FocusState<Bool>.Binding
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
@@ -60,6 +82,12 @@ struct AiCreateView: View {
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
+    /// - Parameter requirementFocus: TextEditorのフォーカスを外部で管理するためのバインディング
+    init(requirementFocus: FocusState<Bool>.Binding) {
+        self.requirementFocus = requirementFocus
     }
 
     var body: some View {
@@ -83,6 +111,8 @@ struct AiCreateView: View {
                 TextEditor(text: $requirementText)
                     .frame(minHeight: 140, maxHeight: 200)
                     .padding(8)
+                    // TextEditorにフォーカスを割り当て、親からの制御を受ける
+                    .focused(requirementFocus)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(Color(uiColor: .secondarySystemBackground))
