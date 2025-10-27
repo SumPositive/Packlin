@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseAnalytics
 
 /// azuki-api へ問い合わせる際に発生するエラーをまとめる列挙
 /// 日本語のLocalizedDescriptionを返してUIでそのまま表示できるようにする
@@ -72,6 +73,8 @@ enum AzukiAPIError: LocalizedError {
         /// アプリユーザに見せるメッセージ
         func errorMsg(_ msg: String) -> String {
             log(.error, "AzukiAPIError: " + msg)
+            GALogger.log(.error_occured(domain: "AzukiApi", code: -1, message: msg))
+            
             return String(localized: "通信障害が発生しているようです。しばらくしてから再度お試しください。")
             + "\n [\(msg)]"
         }
@@ -238,7 +241,13 @@ final class AzukiApi {
         } catch {
             throw AzukiAPIError.deviceSignatureFailed
         }
-
+        
+        // ログイン/ユーザー判明時や状態変化時に設定
+        Analytics.setUserID(userId)                 // 任意のユーザーID
+        //Analytics.setUserProperty("pro", forName: "plan") // "free"/"pro"
+        //Analytics.setUserProperty("ja-JP", forName: "locale")
+        Analytics.setUserProperty("ios", forName: "platform")
+        
         let body = VerifyRequest(
             userId: userId,
             productId: productId,

@@ -252,6 +252,9 @@ struct AiCreateView: View {
                 do {
                     let packName = try await MainActor.run { () -> String in
                         let importedPack = try createPack(from: dto)
+
+                        GALogger.log(.packlin_request(userId: userId,
+                                                      requirement: trimmedRequirement))
                         return importedPack.name
                     }
                     await MainActor.run {

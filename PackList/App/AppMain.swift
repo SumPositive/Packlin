@@ -60,6 +60,8 @@ struct AppMain: App {
 #if canImport(FirebaseAnalytics)
         // 日本語コメント：AnalyticsEventAppOpenでアプリ起動を追跡
         Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
+
+        GALogger.log(.app_launch)
 #endif
 
         // Migrate： V2-CoreData --> V3-SwiftData

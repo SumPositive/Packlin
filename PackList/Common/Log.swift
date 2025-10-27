@@ -48,3 +48,62 @@ func log(_ level: LogLevel,
     print("\(fileName)(\(line)) \(function) \(level.prefix) \(message)")
 }
 
+
+import FirebaseAnalytics
+
+enum GAEvent {
+    case app_launch
+    case packlin_request(userId: String, requirement: String)
+    case pack_generated(source: String, itemsCount: Int)
+    case purchase(productId: String, price: Double, currency: String)
+    case credit_balance(remaining: Int)
+    case error_occured(domain: String, code: Int, message: String?)
+    case screen_view(name: String) // SwiftUI手動トラッキング用
+}
+
+struct GALogger {
+    static func log(_ event: GAEvent) {
+        switch event {
+            case .app_launch:
+                Analytics.logEvent("app_launch", parameters: nil)
+                
+            case let .packlin_request(userId, requirement):
+                Analytics.logEvent("packlin_request", parameters: [
+                    "userId": userId,
+                    "requirement": requirement
+                ])
+
+            case let .pack_generated(source, itemsCount):
+                Analytics.logEvent("pack_generated", parameters: [
+                    "source": source,                // "user","ai","template" など
+                    "items_count": itemsCount        // Int
+                ])
+                
+            case let .purchase(productId, price, currency):
+                Analytics.logEvent("purchase", parameters: [
+                    "product_id": productId,
+                    "value": price,                  // GA4汎用: 課金額などは value
+                    "currency": currency            // "JPY" 等
+                ])
+                
+            case let .credit_balance(remaining):
+                Analytics.logEvent("credit_balance", parameters: [
+                    "remaining": remaining
+                ])
+                
+            case let .error_occured(domain, code, message):
+                Analytics.logEvent("error_occured", parameters: [
+                    "error_domain": domain,
+                    "error_code": code,
+                    "error_message": message ?? ""
+                ])
+                
+            case let .screen_view(name):
+                // GA4は自動スクリーン計測もあるが、SwiftUIは明示送信が安定
+                Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+                    AnalyticsParameterScreenName: name
+                ])
+        }
+    }
+}
+

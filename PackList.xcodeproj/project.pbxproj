@@ -132,7 +132,6 @@
 				C3D2BB682E6A7967002B900A /* Sources */,
 				C3D2BB692E6A7967002B900A /* Frameworks */,
 				C3D2BB6A2E6A7967002B900A /* Resources */,
-				C3F1A1A62E90F10000ABCD00 /* Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -269,30 +268,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		C3F1A1A62E90F10000ABCD00 /* Crashlytics */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
-				"$(SRCROOT)/PackList/Resources/GoogleService-Info.plist",
-			);
-			name = Crashlytics;
-			outputFileListPaths = (
-			);
-                        outputPaths = (
-                                "$(DERIVED_FILE_DIR)/firebase_crashlytics_success",
-                        );
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-                        shellScript = "set -eu\n# Crashlytics実行前にGoogleService-Info.plistから必要情報を読み込む\n# ここで指定するパスはリポジトリ構成に合わせておくと混乱を防げる\nGOOGLE_SERVICE_INFO_PLIST=\"${SRCROOT}/PackList/Resources/GoogleService-Info.plist\"\nif [ ! -f \"$GOOGLE_SERVICE_INFO_PLIST\" ]; then\n  echo \"error: GoogleService-Info.plistが見つかりません\"\n  exit 1\nfi\n# GOOGLE_APP_ID をPlistから抽出して環境変数として渡す\n# Crashlytics公式スクリプトは環境変数GOOGLE_APP_IDを参照するため事前に設定する\nexport GOOGLE_APP_ID=\"\$(/usr/libexec/PlistBuddy -c 'Print :GOOGLE_APP_ID' \"$GOOGLE_SERVICE_INFO_PLIST\")\"\nif [ -z \"$GOOGLE_APP_ID\" ]; then\n  echo \"error: GOOGLE_APP_IDをPlistから取得できません\"\n  exit 1\nfi\n# Crashlyticsの公式スクリプトを実行\n# ここまででエラーにならなければGoogleService-Info.plistが正しく読めたことになる\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C3D2BB682E6A7967002B900A /* Sources */ = {
