@@ -8,6 +8,15 @@
 import Foundation
 import SwiftUI
 import SwiftData
+#if canImport(FirebaseCore)
+import FirebaseCore
+#endif
+#if canImport(FirebaseAnalytics)
+import FirebaseAnalytics
+#endif
+#if canImport(FirebaseCrashlytics)
+import FirebaseCrashlytics
+#endif
 #if canImport(GoogleMobileAds)
 import GoogleMobileAds
 #endif
@@ -39,6 +48,20 @@ struct AppMain: App {
     }()
 
     init() {
+        // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
+#if canImport(FirebaseCore)
+        if FirebaseApp.app() == nil {
+            // 日本語コメント：初回起動時のみFirebaseAppを構成する
+            FirebaseApp.configure()
+        }
+#endif
+
+        // Analytics：アプリ起動イベントを記録する
+#if canImport(FirebaseAnalytics)
+        // 日本語コメント：AnalyticsEventAppOpenでアプリ起動を追跡
+        Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
+#endif
+
         // Migrate： V2-CoreData --> V3-SwiftData
         MigratingFromV2toV3().migrateIfNeeded(modelContainer: sharedModelContainer)
 
@@ -134,6 +157,10 @@ struct AppMain: App {
                 PackImporter.insertPack(from: dto, into: context, order: nextOrder)
             } catch {
                 debugPrint("Failed to load sample pack \(fileName): \(error)")
+#if canImport(FirebaseCrashlytics)
+                // 日本語コメント：サンプル読み込み失敗をCrashlyticsへ送信
+                Crashlytics.crashlytics().record(error: error)
+#endif
             }
         }
 
@@ -146,6 +173,10 @@ struct AppMain: App {
                 context.undoManager?.removeAllActions()
             } catch {
                 debugPrint("Failed to save sample packs: \(error)")
+#if canImport(FirebaseCrashlytics)
+                // 日本語コメント：DB保存失敗をCrashlyticsへ送信
+                Crashlytics.crashlytics().record(error: error)
+#endif
             }
         }
     }
