@@ -285,11 +285,12 @@
 			name = Crashlytics;
 			outputFileListPaths = (
 			);
-			outputPaths = (
-			);
+                        outputPaths = (
+                                "$(DERIVED_FILE_DIR)/firebase_crashlytics_success",
+                        );
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+                        shellScript = "set -eu\n# Crashlytics実行前にGoogleService-Info.plistから必要情報を読み込む\n# ここで指定するパスはリポジトリ構成に合わせておくと混乱を防げる\nGOOGLE_SERVICE_INFO_PLIST=\"${SRCROOT}/PackList/Resources/GoogleService-Info.plist\"\nif [ ! -f \"$GOOGLE_SERVICE_INFO_PLIST\" ]; then\n  echo \"error: GoogleService-Info.plistが見つかりません\"\n  exit 1\nfi\n# GOOGLE_APP_ID をPlistから抽出して環境変数として渡す\n# Crashlytics公式スクリプトは環境変数GOOGLE_APP_IDを参照するため事前に設定する\nexport GOOGLE_APP_ID=\"\$(/usr/libexec/PlistBuddy -c 'Print :GOOGLE_APP_ID' \"$GOOGLE_SERVICE_INFO_PLIST\")\"\nif [ -z \"$GOOGLE_APP_ID\" ]; then\n  echo \"error: GOOGLE_APP_IDをPlistから取得できません\"\n  exit 1\nfi\n# Crashlyticsの公式スクリプトを実行\n# ここまででエラーにならなければGoogleService-Info.plistが正しく読めたことになる\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
