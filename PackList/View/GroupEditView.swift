@@ -123,17 +123,17 @@ struct GroupEditView: View {
             .padding(.top, 8)
             .padding(.bottom, -7)
             TextEditor(text: $group.memo)
-                .font(FONT_EDIT)
+                .font(FONT_MEMO)
                 .onChange(of: group.memo) { oldValue, newValue in
                     // 最大文字数制限
                     if APP_MAX_MEMO_LEN < newValue.count {
                         group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                     }
                 }
-                .frame(height: 80)
+                .frame(height: 180)
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 280)
+        .frame(width: 320, height: 380)
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()

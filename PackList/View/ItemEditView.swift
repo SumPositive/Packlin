@@ -230,7 +230,7 @@ struct ItemEditView: View {
                 // メモ
                 EditorSection(title: "edit.memo") {
                     TextEditor(text: $item.memo)
-                        .font(FONT_EDIT)
+                        .font(FONT_MEMO)
                         .focused($focusedField, equals: .memo)
                         .frame(minHeight: 120)
                         .scrollContentBackground(.hidden)

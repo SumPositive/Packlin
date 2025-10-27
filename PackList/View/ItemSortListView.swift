@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import FirebaseAnalytics
 
 /// 並べ替え一覧
 struct ItemSortListView: View {
@@ -112,6 +113,7 @@ struct ItemSortListView: View {
             .onAppear {
                 updateUndoRedo()
                 refreshDisplayedItems(forceReset: true)
+                GALogger.log(.function(name: "item_sort", option: sortOption.rawValue))
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()

@@ -53,6 +53,7 @@ import FirebaseAnalytics
 
 enum GAEvent {
     case app_launch
+    case function(name: String, option: String)
     case packlin_request(userId: String, requirement: String)
     case pack_generated(source: String, itemsCount: Int)
     case purchase(productId: String, price: Double, currency: String)
@@ -66,6 +67,12 @@ struct GALogger {
         switch event {
             case .app_launch:
                 Analytics.logEvent("app_launch", parameters: nil)
+                
+            case let .function(name, option):
+                Analytics.logEvent("function", parameters: [
+                    "name": name,
+                    "option": option
+                ])
                 
             case let .packlin_request(userId, requirement):
                 Analytics.logEvent("packlin_request", parameters: [

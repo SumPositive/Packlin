@@ -120,6 +120,7 @@ struct SettingView: View {
             Button(action: {
                 // SafariでURLを表示する
                 showSafari = true
+                GALogger.log(.function(name: "settings", option: "tap_info"))
             }) {
                 Label {
                     Text("アプリの紹介・取扱説明")
@@ -151,6 +152,7 @@ struct SettingView: View {
             Button(action: {
                 // パックをChatGPTで生成
                 showChatGPTsheet = true
+                GALogger.log(.function(name: "settings", option: "tap_packlin"))
             }) {
                 Label {
                     Text("チャッピー(AI)に作ってもらおう")
@@ -181,6 +183,7 @@ struct SettingView: View {
             // 共有 Pack_*.pack を読み込む
             Button(action: {
                 isPresentingImporter = true
+                GALogger.log(.function(name: "settings", option: "tap_import"))
             }) {
                 Label {
                     Text("パックを読み込む")

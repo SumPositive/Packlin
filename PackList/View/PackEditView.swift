@@ -149,14 +149,14 @@ struct PackEditView: View {
             .padding(.top, 8)
             .padding(.bottom, -7)
             TextEditor(text: $pack.memo)
-                .font(FONT_EDIT)
+                .font(FONT_MEMO)
                 .onChange(of: pack.memo) { oldValue, newValue in
                     // 最大文字数制限
                     if APP_MAX_MEMO_LEN < newValue.count {
                         pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                     }
                 }
-                .frame(height: 80)
+                .frame(height: 180)
 
             Text("edit.info.swipeToDismiss")
                 .font(.caption2)
@@ -164,7 +164,7 @@ struct PackEditView: View {
                 .padding(.top, 4)
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 300)
+        .frame(width: 320, height: 400)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
