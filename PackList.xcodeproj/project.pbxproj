@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-                C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
-                C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
-                C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */; };
+		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
+		C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
+		C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,16 +67,16 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-                C3D2BB692E6A7967002B900A /* Frameworks */ = {
-                        isa = PBXFrameworksBuildPhase;
-                        buildActionMask = 2147483647;
-                        files = (
-                                C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
-                                C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */,
-                                C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */,
-                        );
-                        runOnlyForDeploymentPostprocessing = 0;
-                };
+		C3D2BB692E6A7967002B900A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
+				C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */,
+				C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C3D2BB782E6A7969002B900A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -128,12 +128,12 @@
 		C3D2BB6B2E6A7967002B900A /* PackList */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C3D2BB8F2E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackList" */;
-                        buildPhases = (
-                                C3D2BB682E6A7967002B900A /* Sources */,
-                                C3D2BB692E6A7967002B900A /* Frameworks */,
-                                C3D2BB6A2E6A7967002B900A /* Resources */,
-                                C3F1A1A62E90F10000ABCD00 /* Crashlytics */,
-                        );
+			buildPhases = (
+				C3D2BB682E6A7967002B900A /* Sources */,
+				C3D2BB692E6A7967002B900A /* Frameworks */,
+				C3D2BB6A2E6A7967002B900A /* Resources */,
+				C3F1A1A62E90F10000ABCD00 /* Crashlytics */,
+			);
 			buildRules = (
 			);
 			dependencies = (
@@ -141,12 +141,12 @@
 			fileSystemSynchronizedGroups = (
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 			);
-                        name = PackList;
-                        packageProductDependencies = (
-                                C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
-                                C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */,
-                                C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */,
-                        );
+			name = PackList;
+			packageProductDependencies = (
+				C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
+				C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */,
+				C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */,
+			);
 			productName = PackList;
 			productReference = C3D2BB6C2E6A7967002B900A /* PackList.app */;
 			productType = "com.apple.product-type.application";
@@ -230,10 +230,10 @@
 			);
 			mainGroup = C3D2BB632E6A7967002B900A;
 			minimizedProjectReferenceProxies = 1;
-                        packageReferences = (
-                                C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-                                C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-                        );
+			packageReferences = (
+				C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C3D2BB6D2E6A7967002B900A /* Products */;
 			projectDirPath = "";
@@ -245,29 +245,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXShellScriptBuildPhase section */
-                C3F1A1A62E90F10000ABCD00 /* Crashlytics */ = {
-                        isa = PBXShellScriptBuildPhase;
-                        buildActionMask = 2147483647;
-                        files = (
-                        );
-                        inputFileListPaths = (
-                        );
-                        inputPaths = (
-                                "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
-                                "$(SRCROOT)/PackList/Resources/GoogleService-Info.plist",
-                        );
-                        name = Crashlytics;
-                        outputFileListPaths = (
-                        );
-                        outputPaths = (
-                        );
-                        runOnlyForDeploymentPostprocessing = 0;
-                        shellPath = /bin/sh;
-                        shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
-                };
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		C3D2BB6A2E6A7967002B900A /* Resources */ = {
@@ -292,6 +269,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C3F1A1A62E90F10000ABCD00 /* Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
+				"$(SRCROOT)/PackList/Resources/GoogleService-Info.plist",
+			);
+			name = Crashlytics;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C3D2BB682E6A7967002B900A /* Sources */ = {
@@ -650,40 +650,40 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-                C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
-                        isa = XCRemoteSwiftPackageReference;
-                        repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
-                        requirement = {
-                                kind = upToNextMajorVersion;
-                                minimumVersion = 12.11.0;
-                        };
-                };
-                C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-                        isa = XCRemoteSwiftPackageReference;
-                        repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
-                        requirement = {
-                                kind = upToNextMajorVersion;
-                                minimumVersion = 10.19.0;
-                        };
-                };
+		C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.11.0;
+			};
+		};
+		C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.19.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-                C36757AC2E80330F0098BB22 /* GoogleMobileAds */ = {
-                        isa = XCSwiftPackageProductDependency;
-                        package = C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-                        productName = GoogleMobileAds;
-                };
-                C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */ = {
-                        isa = XCSwiftPackageProductDependency;
-                        package = C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-                        productName = FirebaseAnalytics;
-                };
-                C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */ = {
-                        isa = XCSwiftPackageProductDependency;
-                        package = C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-                        productName = FirebaseCrashlytics;
-                };
+		C36757AC2E80330F0098BB22 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C3D2BB642E6A7967002B900A /* Project object */;
