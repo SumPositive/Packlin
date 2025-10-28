@@ -650,7 +650,7 @@ struct AiCreateView: View {
         let limit = AZUKI_CREDIT_BALANCE_LIMIT
         let currentCredits = creditStore.credits
         if limit <= currentCredits {
-            return String(localized: "AI利用回数券は最大\(limit)回まで保管できます。既存の回数を利用してからご購入ください。")
+            return String(localized: "AI利用回数券は最大\(limit)回まで保管できます。今ある回数を利用してからご購入ください。")
         }
         let remainingCapacity = limit - currentCredits
         let hasDisabledOption = AZUKI_CREDIT_PURCHASE_OPTIONS.contains { option in
