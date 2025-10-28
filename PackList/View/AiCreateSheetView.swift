@@ -72,6 +72,8 @@ struct AiCreateView: View {
     @State private var didRequestInitialBalance = false
     /// StoreKitのトランザクション更新ストリームを監視するためのタスク
     @State private var transactionObservationTask: Task<Void, Never>?
+    /// すでにユーザーへ通知済みのトランザクションIDを記録し、同じ購入結果のアラートを連続表示しないようにする
+    @State private var notifiedTransactionIds: Set<String> = []
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -199,6 +201,8 @@ struct AiCreateView: View {
             Task {
                 await AzukiApi.shared.clearTokenRecoveryHandler()
             }
+            // 一連の購入処理で通知済みリストに溜めたIDも破棄しておき、再表示時に最新状態で判断できるようにする
+            notifiedTransactionIds.removeAll()
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -730,6 +734,9 @@ struct AiCreateView: View {
 
     /// トランザクションの完了とKeychain残高・サーバー残高の更新をまとめて処理する
     private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, storekitJws: String) async {
+        // 0. 同じトランザクションに対して複数回アラートを出さないよう、IDをキーに管理する
+        let transactionIdentifier = String(transaction.id)
+
         // 1. StoreKitのトランザクション完了はdeferでまとめて実行し、途中で失敗してもダブルカウントを避ける
         defer {
             Task {
@@ -739,7 +746,7 @@ struct AiCreateView: View {
 
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
         let userId = await MainActor.run { creditStore.userId }
-        let transactionId = String(transaction.id)
+        let transactionId = transactionIdentifier
         // StoreKitのトランザクションはJSON Dataとして取得し、Base64で安全に送信する
         let receiptData = transaction.jsonRepresentation
         let receipt = receiptData.base64EncodedString()
@@ -759,10 +766,14 @@ struct AiCreateView: View {
             await MainActor.run {
                 // 4. サーバーが返した残高でKeychainを上書きし、UIへ成功メッセージを表示
                 creditStore.overwrite(credits: verification.balance)
-                if verification.duplicate {
-                    alertState = .purchaseAlreadyProcessed
-                } else {
-                    alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+                if notifiedTransactionIds.contains(transactionIdentifier) == false {
+                    // ユーザーへはまだ案内していない購入なので、このタイミングでアラートを掲示する
+                    notifiedTransactionIds.insert(transactionIdentifier)
+                    if verification.duplicate {
+                        alertState = .purchaseAlreadyProcessed
+                    } else {
+                        alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+                    }
                 }
             }
         } catch let apiError as AzukiAPIError {
@@ -770,18 +781,28 @@ struct AiCreateView: View {
             if case .duplicateTransaction = apiError {
                 await refreshCreditBalanceFromServer(showAlertOnFailure: false)
                 await MainActor.run {
-                    alertState = .purchaseAlreadyProcessed
+                    if notifiedTransactionIds.contains(transactionIdentifier) == false {
+                        // サーバー側で既に処理済みだった購入についても、一度だけ状況を知らせる
+                        notifiedTransactionIds.insert(transactionIdentifier)
+                        alertState = .purchaseAlreadyProcessed
+                    }
                 }
                 return
             }
             let message = apiError.errorDescription
             ?? String(localized: "購入情報の確認に失敗しました。時間をおいて再度お試しください。")
             await MainActor.run {
-                alertState = .purchaseFailure(message: message)
+                if notifiedTransactionIds.contains(transactionIdentifier) == false {
+                    // 成功アラートをすでに出した後であれば重ねて失敗通知を出さない
+                    alertState = .purchaseFailure(message: message)
+                }
             }
         } catch {
             await MainActor.run {
-                alertState = .purchaseFailure(message: String(localized: "購入結果をサーバーへ反映できませんでした。通信環境をご確認ください。"))
+                if notifiedTransactionIds.contains(transactionIdentifier) == false {
+                    // 例外発生時も同様に、未通知の場合のみエラーアラートを表示する
+                    alertState = .purchaseFailure(message: String(localized: "購入結果をサーバーへ反映できませんでした。通信環境をご確認ください。"))
+                }
             }
         }
     }
