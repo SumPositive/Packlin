@@ -48,7 +48,17 @@ final class CreditStore: ObservableObject {
         if amount < 1 {
             return
         }
-        credits += amount
+        // 端末で保管できる最大回数を超えないように調整
+        let limit = AZUKI_CREDIT_BALANCE_LIMIT
+        if limit <= credits {
+            return
+        }
+        let availableRoom = limit - credits
+        let increment = min(amount, availableRoom)
+        if increment < 1 {
+            return
+        }
+        credits += increment
         persist()
     }
 
@@ -70,7 +80,12 @@ final class CreditStore: ObservableObject {
         if amount < 0 {
             credits = 0
         } else {
-            credits = amount
+            let limit = AZUKI_CREDIT_BALANCE_LIMIT
+            if amount <= limit {
+                credits = amount
+            } else {
+                credits = limit
+            }
         }
         persist()
     }

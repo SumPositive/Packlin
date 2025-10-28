@@ -485,6 +485,17 @@ struct AiCreateView: View {
     /// - Parameter option: Configで定義したオプションタプル
     private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
         Task {
+            // 端末に保管できる上限を超えないか事前にチェックする
+            let limit = AZUKI_CREDIT_BALANCE_LIMIT
+            let currentCredits = await MainActor.run { creditStore.credits }
+            if limit <= currentCredits || limit < currentCredits + option.credits {
+                await MainActor.run {
+                    alertState = .purchaseLimitReached(max: limit)
+                    processingProductId = nil
+                }
+                return
+            }
+
             await MainActor.run {
                 // 複数ボタンが並ぶため、購入中の選択肢のみローディング表示へ切り替える
                 processingProductId = option.productId
@@ -577,11 +588,18 @@ struct AiCreateView: View {
                     }
                     .buttonStyle(.bordered)
                     .tint(.accentColor.opacity(1.0))
-                    .disabled(processingProductId != nil)
+                    .disabled(processingProductId != nil || isPurchaseUnavailable(for: option))
                 }
             }
             .padding(.horizontal, 40)
-            
+
+            if let warningMessage = purchaseLimitWarning {
+                Text(warningMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 40)
+            }
+
             Label {
                 Text("回数券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。")
                     .font(.caption)
@@ -593,6 +611,34 @@ struct AiCreateView: View {
                     .symbolRenderingMode(.hierarchical)
             }
         }
+    }
+
+    /// 購入オプションが上限に達して利用できないかどうかを判定する
+    private func isPurchaseUnavailable(for option: (productId: String, priceYen: Int, credits: Int)) -> Bool {
+        // 画面表示中はMainActor上なので直接残高を参照してよい
+        let limit = AZUKI_CREDIT_BALANCE_LIMIT
+        let currentCredits = creditStore.credits
+        if limit <= currentCredits {
+            return true
+        }
+        return limit < currentCredits + option.credits
+    }
+
+    /// 現在の残高と上限に応じて注意書きを表示するための文言を返す
+    private var purchaseLimitWarning: String? {
+        let limit = AZUKI_CREDIT_BALANCE_LIMIT
+        let currentCredits = creditStore.credits
+        if limit <= currentCredits {
+            return String(localized: "AI利用回数券は最大\(limit)回まで保管できます。既存の回数を利用してからご購入ください。")
+        }
+        let remainingCapacity = limit - currentCredits
+        let hasDisabledOption = AZUKI_CREDIT_PURCHASE_OPTIONS.contains { option in
+            limit < currentCredits + option.credits
+        }
+        if hasDisabledOption {
+            return String(localized: "あと\(remainingCapacity)回分まで購入できます。上限を超えるプランは選択できません。")
+        }
+        return nil
     }
 
     /// StoreKit 2 から商品情報を取得し、`storeProducts` へキャッシュする
@@ -800,6 +846,8 @@ struct AiCreateView: View {
         case purchaseAlreadyProcessed
         /// クレジット購入が失敗した場合
         case purchaseFailure(message: String)
+        /// クレジット保管上限に達している場合
+        case purchaseLimitReached(max: Int)
 
         var id: String {
             switch self {
@@ -815,6 +863,8 @@ struct AiCreateView: View {
                 return "ai-purchaseAlreadyProcessed"
             case .purchaseFailure(let message):
                 return "ai-purchaseFailure-\(message)"
+            case .purchaseLimitReached(let max):
+                return "ai-purchaseLimitReached-\(max)"
             }
         }
 
@@ -832,6 +882,8 @@ struct AiCreateView: View {
                 return String(localized: "購入履歴が確認できました")
             case .purchaseFailure:
                 return String(localized: "購入中止")
+            case .purchaseLimitReached:
+                return String(localized: "これ以上追加購入できません")
             }
         }
 
@@ -849,6 +901,8 @@ struct AiCreateView: View {
                 return String(localized: "この購入はすでに完了しています。残高を更新しました。")
             case .purchaseFailure(let message):
                 return message
+            case .purchaseLimitReached(let max):
+                return String(localized: "AI利用回数券は最大\(max)回まで保管できます。既存の回数を利用してから再度お試しください。")
             }
         }
     }

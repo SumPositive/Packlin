@@ -47,6 +47,8 @@ let AZUKI_CREDIT_PURCHASE_OPTIONS: [(productId: String, priceYen: Int, credits: 
     (productId: AZUKI_API_CREDIT_PRODUCT_STANDARD, priceYen: 100, credits: 11),
 //    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 60),
 ]
+/// AI利用回数券を端末に保管できる最大数
+let AZUKI_CREDIT_BALANCE_LIMIT: Int = 16
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
 let CHATGPT_GENERATION_CREDIT_COST = 1
 
