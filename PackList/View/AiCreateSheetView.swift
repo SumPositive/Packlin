@@ -540,6 +540,24 @@ struct AiCreateView: View {
                         ?? String(localized: "AI利用回数券の購入に失敗しました。")
                     alertState = .purchaseFailure(message: message)
                 }
+            } catch let storekitError as StoreKitError {
+                await MainActor.run {
+                    // StoreKit自体が投げるエラーのうち、ユーザーキャンセルは独自アラートに寄せる
+                    if storekitError.code == .userCancelled {
+                        // 購入シートを閉じた直後にここへ入ることがあるので、明示的に同じ文言を再利用する
+                        alertState = .purchaseFailure(message: String(localized: "購入を中止しました。必要であれば再度お試しください。"))
+                    } else {
+                        // それ以外のStoreKitエラーは可能な限り詳細な説明をユーザーへ伝える
+                        let message = storekitError.errorDescription
+                            ?? storekitError.localizedDescription
+                        alertState = .purchaseFailure(message: message)
+                    }
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    // Taskキャンセル（StoreKit購入ダイアログを閉じる等）もユーザーによる中断として扱い、二重アラートを避ける
+                    alertState = .purchaseFailure(message: String(localized: "購入を中止しました。必要であれば再度お試しください。"))
+                }
             } catch let localized as LocalizedError {
                 await MainActor.run {
                     let message = localized.errorDescription ?? localized.localizedDescription
