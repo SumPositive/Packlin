@@ -98,7 +98,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("要望を入力して「チャッピーに作ってもらう」を押してください。新しいパックの作成に成功するとAI利用回数が1つ減ります")
+            Text("要望を入力して「チャッピーに作ってもらう」を押してください。新しいパックの作成に成功するとAI利用券を1枚もぎりますね")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -165,13 +165,13 @@ struct AiCreateView: View {
             
             HStack {
                 Spacer()
-                Text("AI利用回数残り \(creditStore.credits) 回")
+                Text("AI利用券残り \(creditStore.credits) 枚")
                     .font(.body)
                     .foregroundStyle(.secondary)
                 Spacer()
             }
 
-            // AI利用回数券購入
+            // AI利用券購入
             creditPurchaseMenu
             
         }
@@ -234,7 +234,7 @@ struct AiCreateView: View {
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            alertState = .generationFailure(message: String(localized: "パック作成の要望を入れてください。"))
+            alertState = .generationFailure(message: String(localized: "パック作成の要望を入れてね"))
             return
         }
 
@@ -465,7 +465,7 @@ struct AiCreateView: View {
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {
                 let message = apiError.errorDescription
-                ?? String(localized: "回数の残高確認ができません。時間をおいて再度お試しください。")
+                ?? String(localized: "AI利用券の枚数が確認できません。時間をおいて再度お試しください。")
                 await MainActor.run {
                     alertState = .generationFailure(message: message)
                 }
@@ -476,7 +476,7 @@ struct AiCreateView: View {
         } catch {
             if showAlertOnFailure {
                 await MainActor.run {
-                    alertState = .generationFailure(message: String(localized: "回数の残高確認ができません。通信環境をご確認ください。"))
+                    alertState = .generationFailure(message: String(localized: "AI利用券の枚数が確認できません。通信環境をご確認ください。"))
                 }
             }
             #if DEBUG
@@ -541,7 +541,7 @@ struct AiCreateView: View {
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
                     let message = flowError.errorDescription
-                        ?? String(localized: "AI利用回数券の購入に失敗しました。")
+                        ?? String(localized: "AI利用券の購入に失敗しました。")
                     alertState = .purchaseFailure(message: message)
                 }
             } catch StoreKitError.userCancelled {
@@ -568,7 +568,7 @@ struct AiCreateView: View {
                 }
             } catch {
                 await MainActor.run {
-                    alertState = .purchaseFailure(message: String(localized: "AI利用回数券の購入中にエラーが発生しました。通信環境をご確認ください。"))
+                    alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中にエラーが発生しました。通信環境をご確認ください。"))
                 }
             }
 
@@ -582,7 +582,7 @@ struct AiCreateView: View {
     private var creditPurchaseMenu: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                Text("AI利用回数券購入")
+                Text("AI利用券の購入")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "cart")
@@ -601,7 +601,7 @@ struct AiCreateView: View {
                                     .progressViewStyle(.circular)
                                     .padding(.horizontal, 8)
                             }
-                            Text("\(option.credits)回券：¥\(option.priceYen)")
+                            Text("\(option.credits)枚：¥\(option.priceYen)")
                                 .font(.title3.weight(.bold))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -622,7 +622,7 @@ struct AiCreateView: View {
             }
 
             Label {
-                Text("回数券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。")
+                Text("AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } icon: {
@@ -650,14 +650,14 @@ struct AiCreateView: View {
         let limit = AZUKI_CREDIT_BALANCE_LIMIT
         let currentCredits = creditStore.credits
         if limit <= currentCredits {
-            return String(localized: "AI利用回数券は最大\(limit)回まで保管できます。今ある回数を利用してからご購入ください。")
+            return String(localized: "AI利用券は最大\(limit)枚まで保管できます。今ある券を利用してからご購入ください。")
         }
         let remainingCapacity = limit - currentCredits
         let hasDisabledOption = AZUKI_CREDIT_PURCHASE_OPTIONS.contains { option in
             limit < currentCredits + option.credits
         }
         if hasDisabledOption {
-            return String(localized: "あと\(remainingCapacity)回分まで購入できます。上限を超えるプランは選択できません。")
+            return String(localized: "あと\(remainingCapacity)枚まで購入できます。上限を超える購入はできません。")
         }
         return nil
     }
@@ -934,13 +934,13 @@ struct AiCreateView: View {
             case .creditShortage:
                 return String(localized: "AI利用券が不足しています。下のメニューから購入してください")
             case .purchaseSuccess(let added, let priceYen):
-                return String(localized: "¥\(priceYen)の購入でAI利用券を\(added)追加しました。")
+                return String(localized: "AI利用券を\(added)枚追加しました。")
             case .purchaseAlreadyProcessed:
-                return String(localized: "この購入はすでに完了しています。残高を更新しました。")
+                return String(localized: "この購入はすでに完了しています。枚数を更新しました。")
             case .purchaseFailure(let message):
                 return message
             case .purchaseLimitReached(let max):
-                return String(localized: "AI利用回数券は最大\(max)回まで保管できます。既存の回数を利用してから再度お試しください。")
+                return String(localized: "AI利用券は最大\(max)枚まで保管できます。既存の券を利用してから再度お試しください。")
             }
         }
     }
