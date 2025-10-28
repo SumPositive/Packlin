@@ -24,21 +24,15 @@ struct AiCreateSheetView: View {
             }
             // 背景タップでキーボードを閉じるためのジェスチャ
             .contentShape(Rectangle())
+            // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
             .simultaneousGesture(
-                TapGesture().onEnded {
-                    // すでにフォーカスがあれば解除してキーボードを閉じる
+                DragGesture(minimumDistance: 24).onChanged { _ in
+                    // ScrollView本体でのドラッグだけに反応し、TextEditor内の操作ではフォーカスを保つ
                     if isRequirementFocused {
                         isRequirementFocused = false
                     }
-                }
-            )
-            // スクロール操作でもフォーカスを外してキーボードを閉じる
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 1).onChanged { _ in
-                    if isRequirementFocused {
-                        isRequirementFocused = false
-                    }
-                }
+                },
+                including: .gesture
             )
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(Text("app.title"))
@@ -108,8 +102,9 @@ struct AiCreateView: View {
             
             // 入力欄とプレースホルダー
             ZStack(alignment: .topLeading) {
+                // 入力欄
                 TextEditor(text: $requirementText)
-                    .frame(minHeight: 140, maxHeight: 200)
+                    .frame(height: 200)
                     .padding(8)
                     // TextEditorにフォーカスを割り当て、親からの制御を受ける
                     .focused(requirementFocus)
@@ -123,20 +118,22 @@ struct AiCreateView: View {
                     )
                     .accessibilityLabel(Text("パックの要望入力"))
 
+                // プレースホルダー
                 if isRequirementEmpty {
                     // 入力例
                     Text("""
-                        例）海外旅行5泊6日
-                        イギリス、スペイン訪問。
-                        家族4人（大人2人、子ども2人）の持ち物。
-                        ＜日程、行程、アクティビティなどの詳細もあれば記入＞
-                        4人でスキューバダイビングに参加。
-                        大人1人がスカイダイビングに参加。
-                        雨天も想定。救急用品も充実させたい。
+                        （例）
+                        海外旅行5泊6日　イギリス、スペイン
+                        家族4人（大人2人、子ども2人）
+                        ＜日程、行程、アクティビティなども記入＞
+                        4人でスキューバダイビングに参加
+                        大人1人がスカイダイビングに参加
+                        雨天も想定。救急用品も持参
                         """)
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 16)
-                        .padding(.horizontal, 16)
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
                 }
             }
 
@@ -162,7 +159,7 @@ struct AiCreateView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Divider() // 区切り線
+            //Divider() // 区切り線
             
             HStack {
                 Spacer()
@@ -591,7 +588,8 @@ struct AiCreateView: View {
                     .foregroundStyle(.secondary)
             } icon: {
                 Image(systemName: "exclamationmark.triangle")
-                    .imageScale(.large)
+                    //.imageScale(.large)
+                    .foregroundColor(.red) 
                     .symbolRenderingMode(.hierarchical)
             }
         }
