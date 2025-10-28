@@ -109,6 +109,7 @@ struct GroupListView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.backward")
+                            .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)
@@ -136,6 +137,7 @@ struct GroupListView: View {
 
                     Button(action: addGroup) {
                         Image(systemName: "plus.square")
+                            .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)

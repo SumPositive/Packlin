@@ -144,6 +144,7 @@ struct ItemListView: View {
             }) {
                 HStack(spacing: 0) {
                     Image(systemName: "chevron.backward")
+                        .imageScale(.large)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     //Text("Group")
                 }
@@ -182,7 +183,6 @@ struct ItemListView: View {
                 Image(systemName: "plus.circle")
                     .imageScale(.large)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    .padding(.trailing, 8)
             }
             .disabled(isShowingPopup)
         }

@@ -93,15 +93,14 @@ struct ItemSortListView: View {
                 Toggle(isOn: $autoItemReorder) {
                     HStack(spacing: 0) {
                         Spacer()
-                        Image(systemName: "arrow.up.arrow.down")
-                            .imageScale(.small)
+                        Image(systemName: "mount")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .padding(4)
+                            .padding(8)
 
-                        Text("setting.autoItemReorder")
+                        Text("変更あればすぐに並べ替える")
                             .font(.body)
-                            .foregroundStyle(.secondary)
                     }
+                    .foregroundStyle(.secondary)
                 }
                 .padding(.trailing, 16)
             }
@@ -197,6 +196,7 @@ struct ItemSortListView: View {
             }) {
                 HStack(spacing: 0) {
                     Image(systemName: "chevron.backward")
+                        .imageScale(.large)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
             }
@@ -222,7 +222,6 @@ struct ItemSortListView: View {
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .disabled(!canRedo || isShowingPopup)
-            .padding(.trailing, 8)
         }
     }
 

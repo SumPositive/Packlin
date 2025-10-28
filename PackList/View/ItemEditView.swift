@@ -301,6 +301,7 @@ struct ItemEditView: View {
                     onDismiss()
                 } label: {
                     Image(systemName: "chevron.backward")
+                        .imageScale(.large)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .padding(.trailing, 8)
@@ -324,7 +325,7 @@ struct ItemEditView: View {
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                 }
                 .disabled(!canRedo)
-                .padding(.trailing, 8)
+                //.padding(.trailing, 8)
             }
         }
         .simultaneousGesture(
@@ -382,6 +383,26 @@ struct ItemEditView: View {
         }
     }
 
+    /// アイテム削除
+    private func deleteItem() {
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+        
+        if let group = item.parent,
+           let index = group.child.firstIndex(where: { $0.id == item.id }) {
+            withAnimation {
+                group.child.remove(at: index)
+                group.normalizeItemOrder()
+            }
+        }
+        modelContext.delete(item)
+    }
+    
+    /// アイテム複製
     private func duplicateItem() {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -420,24 +441,6 @@ struct ItemEditView: View {
         item.weight = 0
         // フォーカスを.nameへ
         //focusedField = .name
-    }
-
-    private func deleteItem() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        
-        if let group = item.parent,
-           let index = group.child.firstIndex(where: { $0.id == item.id }) {
-            withAnimation {
-                group.child.remove(at: index)
-                group.normalizeItemOrder()
-            }
-        }
-        modelContext.delete(item)
     }
 
     private func updateUndoRedo() {

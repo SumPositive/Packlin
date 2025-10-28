@@ -74,6 +74,7 @@ struct PackListView: View {
                         isShowSetting = true
                     } label: {
                         Image(systemName: "gearshape")
+                            .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
                     }
@@ -88,7 +89,7 @@ struct PackListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!canUndo || isShowingPopup)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 16)
 
                     Spacer()
                     Text("app.title")
@@ -102,14 +103,14 @@ struct PackListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!canRedo || isShowingPopup)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 16)
                     
                     Button {
                         addPack()
                     }
                     label: {
                         Image(systemName: "cross.case")
-                            //.imageScale(.large)
+                            .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(isShowingPopup)

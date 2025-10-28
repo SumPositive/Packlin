@@ -22,7 +22,6 @@ struct ItemRowView: View {
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
     private var weightUnit: String { String(localized: "unit.gram") }
-    private var hasClipboardItem: Bool { RowClipboard.item != nil }
 
     init(item: M3Item,
          onEdit: @escaping (M3Item, CGPoint) -> Void) {
@@ -158,34 +157,25 @@ struct ItemRowView: View {
                 .padding(.trailing, 30)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ
-            // Clipboard カット
+            // アイテム削除
             Button {
-                cutItemToClipboard()
+                deleteItem()
             } label: {
-                Label("clipboard.cut", systemImage: "scissors")
+                Label("削除", systemImage: "trash")
             }
             .tint(.orange)
             .disabled(item.parent == nil)
-            // Clipboard ペースト
+            // アイテム複製
             Button {
-                /// Clipboard 上にペースト
-                pasteItemAbove()
+                duplicateItem()
             } label: {
-                Label("clipboard.paste", systemImage: "arrow.up.doc")
-            }
-            .tint(.green)
-            .disabled(!hasClipboardItem || item.parent == nil)
-            // Clipboard コピー
-            Button {
-                copyItemToClipboard()
-            } label: {
-                Label("clipboard.copy", systemImage: "doc.on.doc")
+                Label("複製", systemImage: "plus.square.on.square")
             }
             .tint(.blue)
         }
     }
 
-    /// 削除
+    /// アイテム削除
     private func deleteItem() {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -193,81 +183,34 @@ struct ItemRowView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-
-        if let parent = item.parent,
-           let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+        
+        if let group = item.parent,
+           let index = group.child.firstIndex(where: { $0.id == item.id }) {
             withAnimation {
-                parent.child.remove(at: index)
-                parent.normalizeItemOrder()
+                group.child.remove(at: index)
+                group.normalizeItemOrder()
             }
         }
         modelContext.delete(item)
     }
 
-    /// Clipboard コピー
-    private func copyItemToClipboard() {
-        RowClipboard.clear()
-        RowClipboard.item = cloneItem(item)
-    }
-    /// Clipboard カット
-    private func cutItemToClipboard() {
-        copyItemToClipboard()
-        deleteItem()
-    }
-    /// Clipboard 上にペースト
-    private func pasteItemAbove() {
-        pasteItem(atOffset: 0)
-    }
-    /// Clipboard 下にペースト
-    private func pasteItemBelow() {
-        pasteItem(atOffset: 1)
-    }
-    /// Clipboard ペースト
-    private func pasteItem(atOffset offset: Int) {
-        guard let clipboardItem = RowClipboard.item,
-              let parent = item.parent else { return }
-
+    /// アイテム複製
+    private func duplicateItem() {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
         defer {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-
-        // 貼り付け先の order（表示順）を正しく推定するため、いったん order 順に並べ替える
-        let orderedItems = parent.child.sorted { lhs, rhs in
-            if lhs.order != rhs.order {
-                return lhs.order < rhs.order
-            }
-            return lhs.id < rhs.id
-        }
-        // 現在の行が表示順のどこにいるかを控えておく。見つからない場合は安全のため末尾挿入に切り替える
-        let orderedIndex = orderedItems.firstIndex { $0.id == item.id } ?? orderedItems.count
-        // offset を考慮した挿入位置を計算（上に貼る = 同じ位置、下に貼る = +1）
-        let targetOrderedIndex = min(max(orderedIndex + offset, 0), orderedItems.count)
-
-        // sparseOrderForInsertion を使って order の空き番号を算出する
-        let newOrder = sparseOrderForInsertion(items: orderedItems, index: targetOrderedIndex) {
-            // 空きがない場合は正規化してから再計算する
-            parent.normalizeItemOrder()
-        }
-
-        let newItem = cloneItem(clipboardItem, parent: parent)
-        newItem.order = newOrder
+        guard let parent = item.parent else { return }
+        let newItem = M3Item(name: item.name, memo: item.memo,
+                             stock: item.stock, need: item.need, weight: item.weight,
+                             order: item.order,
+                             parent: parent)
         modelContext.insert(newItem)
-
-        let insertionIndex: Int
-        if let currentIndex = parent.child.firstIndex(where: { $0.id == item.id }) {
-            insertionIndex = min(max(currentIndex + offset, 0), parent.child.count)
-        } else {
-            insertionIndex = parent.child.count
-        }
-
         withAnimation {
-            if insertionIndex <= parent.child.count {
-                parent.child.insert(newItem, at: insertionIndex)
-            } else {
-                parent.child.append(newItem)
+            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
+                parent.child.insert(newItem, at: index + 1)
             }
             parent.normalizeItemOrder()
         }
