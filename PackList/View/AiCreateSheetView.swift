@@ -53,6 +53,7 @@ struct AiCreateSheetView: View {
 struct AiCreateView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
     @EnvironmentObject private var creditStore: CreditStore
     /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
     private let requirementFocus: FocusState<Bool>.Binding
@@ -394,36 +395,42 @@ struct AiCreateView: View {
             if Task.isCancelled {
                 break
             }
-            guard let latest = await Transaction.latest(for: option.productId) else {
-                continue
-            }
-            didAttemptVerification = true
-            do {
-                let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: latest)
-                let receiptData = transaction.jsonRepresentation
-                let receipt = receiptData.base64EncodedString()
-                let verification = try await AzukiApi.shared.verifyPurchase(
-                    userId: userId,
-                    productId: option.productId,
-                    transactionId: String(transaction.id),
-                    receipt: receipt,
-                    storekitJws: storekitJws,
-                    grantCredits: option.credits
-                )
+            // 日本と海外で商品IDが分かれたため、両方のトランザクションを順番に確認する
+            for productId in option.allProductIds {
+                if Task.isCancelled {
+                    break
+                }
+                guard let latest = await Transaction.latest(for: productId) else {
+                    continue
+                }
+                didAttemptVerification = true
+                do {
+                    let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: latest)
+                    let receiptData = transaction.jsonRepresentation
+                    let receipt = receiptData.base64EncodedString()
+                    let verification = try await AzukiApi.shared.verifyPurchase(
+                        userId: userId,
+                        productId: productId,
+                        transactionId: String(transaction.id),
+                        receipt: receipt,
+                        storekitJws: storekitJws,
+                        grantCredits: option.credits
+                    )
                 await MainActor.run {
                     // サーバー側が返した最新残高でKeychainを更新し、UIと整合させる
                     creditStore.overwrite(credits: verification.balance)
                 }
                 didRecoverToken = true
-            } catch let apiError as AzukiAPIError {
-                if case .duplicateTransaction = apiError {
-                    // すでに処理済みなら残高だけ再取得しておき、トークンはサーバー任せとする
-                    await refreshCreditBalanceFromServer(showAlertOnFailure: false)
-                    didRecoverToken = true
+                } catch let apiError as AzukiAPIError {
+                    if case .duplicateTransaction = apiError {
+                        // すでに処理済みなら残高だけ再取得しておき、トークンはサーバー任せとする
+                        await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+                        didRecoverToken = true
+                    }
+                } catch {
+                    // 個別のトランザクションで失敗しても他の履歴から再取得を続ける
+                    continue
                 }
-            } catch {
-                // 個別のトランザクションで失敗しても他の履歴から再取得を続ける
-                continue
             }
         }
 
@@ -486,8 +493,11 @@ struct AiCreateView: View {
     }
 
     /// AI利用回数券購入
-    /// - Parameter option: Configで定義したオプションタプル
-    private func purchaseCredits(option: (productId: String, priceYen: Int, credits: Int)) {
+    /// - Parameter option: Configで定義した購入オプション構造体
+    private func purchaseCredits(option: AzukiCreditPurchaseOption) {
+        // Localeから現在のストア商品IDを導出しておき、Task内で安全に利用する
+        let currentLocale = locale
+        let productId = option.productId(for: currentLocale)
         Task {
             // 端末に保管できる上限を超えないか事前にチェックする
             let limit = AZUKI_CREDIT_BALANCE_LIMIT
@@ -502,7 +512,7 @@ struct AiCreateView: View {
 
             await MainActor.run {
                 // 複数ボタンが並ぶため、購入中の選択肢のみローディング表示へ切り替える
-                processingProductId = option.productId
+                processingProductId = productId
             }
 
             do {
@@ -510,7 +520,7 @@ struct AiCreateView: View {
                 // シミュレータ用のテストセッションはあえて起動せず、実運用と同じ購入体験を得る
                 // 1. StoreKit2 から商品情報を取得（初回のみネットワーク越し）
                 await loadProductsIfNeeded()
-                let product = try await fetchProduct(matching: option.productId)
+                let product = try await fetchProduct(matching: productId)
 
                 // 2. ユーザーに課金ダイアログを提示
                 let outcome = try await product.purchase()
@@ -519,7 +529,7 @@ struct AiCreateView: View {
                 case .success(let verificationResult):
                     // 3. トランザクション署名を検証し、正規購入であればサーバーへ伝えて残高を加算する
                     let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: verificationResult)
-                    await finalizePurchase(option: option, transaction: transaction, storekitJws: storekitJws)
+                    await finalizePurchase(option: option, productId: productId, transaction: transaction, storekitJws: storekitJws)
 
                 case .pending:
                     // ファミリー共有などで承認待ちになる場合
@@ -591,17 +601,17 @@ struct AiCreateView: View {
 
             // Config側で定義した金額・クレジットの対応表をそのまま描画する
             VStack(alignment: .leading, spacing: 4) {
-                ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productId) { option in
+                ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productIdJapan) { option in
                     Button {
                         purchaseCredits(option: option)
                     } label: {
                         HStack(spacing: 0) {
-                            if processingProductId == option.productId {
+                            if processingProductId == option.productId(for: locale) {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                                     .padding(.horizontal, 8)
                             }
-                            Text("\(option.credits)枚：¥\(option.priceYen)")
+                            Text(option.localizedButtonTitle(for: locale))
                                 .font(.title3.weight(.bold))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -635,7 +645,7 @@ struct AiCreateView: View {
     }
 
     /// 購入オプションが上限に達して利用できないかどうかを判定する
-    private func isPurchaseUnavailable(for option: (productId: String, priceYen: Int, credits: Int)) -> Bool {
+    private func isPurchaseUnavailable(for option: AzukiCreditPurchaseOption) -> Bool {
         // 画面表示中はMainActor上なので直接残高を参照してよい
         let limit = AZUKI_CREDIT_BALANCE_LIMIT
         let currentCredits = creditStore.credits
@@ -671,7 +681,8 @@ struct AiCreateView: View {
         }
 
         // StoreKit の商品取得も実機 Sandbox を前提にしているため、シミュレータ固有の処理は挟まない
-        let identifiers = Set(AZUKI_CREDIT_PURCHASE_OPTIONS.map { $0.productId })
+        let currentLocale = locale
+        let identifiers = Set(AZUKI_CREDIT_PURCHASE_OPTIONS.map { $0.productId(for: currentLocale) })
         do {
             let products = try await Product.products(for: identifiers)
             await MainActor.run {
@@ -733,7 +744,7 @@ struct AiCreateView: View {
     }
 
     /// トランザクションの完了とKeychain残高・サーバー残高の更新をまとめて処理する
-    private func finalizePurchase(option: (productId: String, priceYen: Int, credits: Int), transaction: StoreKit.Transaction, storekitJws: String) async {
+    private func finalizePurchase(option: AzukiCreditPurchaseOption, productId: String, transaction: StoreKit.Transaction, storekitJws: String) async {
         // 0. 同じトランザクションに対して複数回アラートを出さないよう、IDをキーに管理する
         let transactionIdentifier = String(transaction.id)
 
@@ -757,7 +768,7 @@ struct AiCreateView: View {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
             let verification = try await AzukiApi.shared.verifyPurchase(
                 userId: userId,
-                productId: option.productId,
+                productId: productId,
                 transactionId: transactionId,
                 receipt: receipt,
                 storekitJws: storekitJws,
@@ -772,7 +783,7 @@ struct AiCreateView: View {
                     if verification.duplicate {
                         alertState = .purchaseAlreadyProcessed
                     } else {
-                        alertState = .purchaseSuccess(added: option.credits, priceYen: option.priceYen)
+                        alertState = .purchaseSuccess(added: option.credits, productId: productId)
                     }
                 }
             }
@@ -826,12 +837,12 @@ struct AiCreateView: View {
             // StoreKitの検証結果を通過したトランザクションのみを対象にする
             let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: update)
             // Configに存在しないProduct IDの場合は終了処理だけ行い、以降の処理を避ける
-            guard let option = AZUKI_CREDIT_PURCHASE_OPTIONS.first(where: { $0.productId == transaction.productID }) else {
+            guard let option = AZUKI_CREDIT_PURCHASE_OPTIONS.first(where: { $0.contains(productId: transaction.productID) }) else {
                 await transaction.finish()
                 return
             }
 
-            await finalizePurchase(option: option, transaction: transaction, storekitJws: storekitJws)
+            await finalizePurchase(option: option, productId: transaction.productID, transaction: transaction, storekitJws: storekitJws)
         } catch {
             // 検証に失敗した場合やAPI通信の例外は、デバッグ出力のみ行いユーザーへ重複通知しない
             #if DEBUG
@@ -879,7 +890,7 @@ struct AiCreateView: View {
         /// クレジットが不足している場合
         case creditShortage
         /// クレジット購入が成功した場合
-        case purchaseSuccess(added: Int, priceYen: Int)
+        case purchaseSuccess(added: Int, productId: String)
         /// サーバー側ですでに反映済みの購入だった場合
         case purchaseAlreadyProcessed
         /// クレジット購入が失敗した場合
@@ -895,8 +906,8 @@ struct AiCreateView: View {
                 return "ai-generationFailure-\(message)"
             case .creditShortage:
                 return "ai-creditShortage"
-            case .purchaseSuccess(let added, let priceYen):
-                return "ai-purchaseSuccess-\(added)-\(priceYen)"
+            case .purchaseSuccess(let added, let productId):
+                return "ai-purchaseSuccess-\(added)-\(productId)"
             case .purchaseAlreadyProcessed:
                 return "ai-purchaseAlreadyProcessed"
             case .purchaseFailure(let message):
@@ -933,7 +944,7 @@ struct AiCreateView: View {
                 return message
             case .creditShortage:
                 return String(localized: "AI利用券が不足しています。下のメニューから購入してください")
-            case .purchaseSuccess(let added, let priceYen):
+            case .purchaseSuccess(let added, _):
                 return String(localized: "AI利用券を\(added)枚追加しました。")
             case .purchaseAlreadyProcessed:
                 return String(localized: "この購入はすでに完了しています。枚数を更新しました。")

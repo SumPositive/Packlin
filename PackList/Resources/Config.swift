@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import UniformTypeIdentifiers
 
 
@@ -38,14 +39,155 @@ let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.
 let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.workers.dev")!
 #endif
 /// 消費型クレジットの商品ID群（azuki-api側の環境変数：IAP_PRODUCT_CREDIT_MAP と一致させる）
-let AZUKI_API_CREDIT_PRODUCT_SMALL = "AiCredit_JPY50"   // ¥50 / +5クレジット
-let AZUKI_API_CREDIT_PRODUCT_STANDARD = "AiCredit_JPY100" // ¥100 / +11クレジット
-//let AZUKI_API_CREDIT_PRODUCT_BULK = "AiCredit_JPY500"    // ¥500 / +60クレジット
-/// UIで使い回すための購入オプション定義（タプルで十分なためstructは用意しない）
-let AZUKI_CREDIT_PURCHASE_OPTIONS: [(productId: String, priceYen: Int, credits: Int)] = [
-    (productId: AZUKI_API_CREDIT_PRODUCT_SMALL, priceYen: 50, credits: 5),
-    (productId: AZUKI_API_CREDIT_PRODUCT_STANDARD, priceYen: 100, credits: 11),
-//    (productId: AZUKI_API_CREDIT_PRODUCT_BULK, priceYen: 500, credits: 60),
+/// - Note: 配信地域ごとにIDが異なるため、日本向けとその他地域向けで定数を分けて管理する
+let AZUKI_API_CREDIT_PRODUCT_SMALL_JPY = "AiCredit_5_JPY"     // 日本向け：¥50 / +5クレジット
+let AZUKI_API_CREDIT_PRODUCT_STANDARD_JPY = "AiCredit_11_JPY" // 日本向け：¥100 / +11クレジット
+let AZUKI_API_CREDIT_PRODUCT_SMALL_USD = "AiCredit_5_USD"     // 海外向け：$0.50 / +5クレジット
+let AZUKI_API_CREDIT_PRODUCT_STANDARD_USD = "AiCredit_11_USD" // 海外向け：$1.00 / +11クレジット
+//let AZUKI_API_CREDIT_PRODUCT_BULK = "AiCredit_JPY500"    // ¥500 / +60クレジット（未使用）
+/// AI利用券の金額表示をLocaleに合わせて切り替えるための構造体
+struct AzukiCreditPurchaseOption: Hashable {
+    /// StoreKitの商品ID（日本向け）
+    let productIdJapan: String
+    /// StoreKitの商品ID（その他地域向け）
+    let productIdGlobal: String
+    /// 日本語表示向けの税込価格（円）
+    let priceYen: Int
+    /// 英語表示向けの税込価格（ドル）
+    let priceUsd: Decimal
+    /// 加算されるクレジット枚数
+    let credits: Int
+
+    /// 端末のLocaleから実際に利用すべき商品IDを決定する
+    /// - Parameter locale: 現在のLocale（地域と言語を判定する）
+    /// - Returns: 日本なら日本向けID、それ以外なら海外向けID
+    func productId(for locale: Locale) -> String {
+        if isJapan(locale: locale) {
+            return productIdJapan
+        }
+        return productIdGlobal
+    }
+
+    /// すべての地域向けIDを配列として返す（トランザクション再検証等で利用）
+    var allProductIds: [String] {
+        Array(Set([productIdJapan, productIdGlobal]))
+    }
+
+    /// 与えられた商品IDがこのオプションに該当するかを判定する
+    /// - Parameter productId: StoreKitから返ってきた商品ID
+    /// - Returns: 日本向けまたは海外向けIDのいずれかと一致すればtrue
+    func contains(productId: String) -> Bool {
+        if productId == productIdJapan {
+            return true
+        }
+        return productId == productIdGlobal
+    }
+
+    /// アプリのLocaleに応じた価格文字列を返す
+    /// - Parameter locale: SwiftUIから渡される現在のLocale
+    /// - Returns: 「¥50」や「$0.50」のような通貨文字列
+    func localizedPriceString(for locale: Locale) -> String {
+        // Localeが英語圏かどうかを簡易判定（言語コードがenで始まる場合にドル表記）
+        if isEnglish(locale: locale) {
+            // NumberFormatterでドル価格を2桁固定表示する
+            let formatter = NumberFormatter()
+            formatter.locale = Locale(identifier: "en_US")
+            formatter.numberStyle = .currency
+            formatter.currencyCode = "USD"
+            formatter.minimumFractionDigits = 2
+            formatter.maximumFractionDigits = 2
+            let number = NSDecimalNumber(decimal: priceUsd)
+            if let formatted = formatter.string(from: number) {
+                return formatted
+            }
+            // フォーマットに失敗した場合は素直な文字列へフォールバック
+            return "$\(number.stringValue)"
+        }
+
+        // 日本語などその他のLocaleでは円表記にする
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "JPY"
+        formatter.maximumFractionDigits = 0
+        let number = NSNumber(value: priceYen)
+        if let formatted = formatter.string(from: number) {
+            return formatted
+        }
+        // フォーマット失敗時は簡易文字列へフォールバック
+        return "¥\(priceYen)"
+    }
+
+    /// ロケールに応じたボタン表示文言を返す
+    /// - Parameter locale: 文字列判定に利用するLocale
+    /// - Returns: 日本語なら「5枚：¥50」、英語なら「Get 5 credits: $0.50」など
+    func localizedButtonTitle(for locale: Locale) -> String {
+        let priceText = localizedPriceString(for: locale)
+        if isEnglish(locale: locale) {
+            // 英語環境では「credits」を用いた案内に切り替える
+            return "Get \(credits) credits: \(priceText)"
+        }
+        // 日本語環境では従来の表記を踏襲する
+        return "\(credits)枚：\(priceText)"
+    }
+
+    /// Localeが英語かどうかを判定するための補助メソッド
+    /// - Parameter locale: 判定対象のLocale
+    /// - Returns: 英語ならtrue、それ以外ならfalse
+    private func isEnglish(locale: Locale) -> Bool {
+        if let legacyCode = locale.languageCode?.lowercased() {
+            if legacyCode.hasPrefix("en") {
+                return true
+            }
+        }
+        // iOS 16未満との互換を考慮してidentifierも確認する
+        let identifier = locale.identifier.lowercased()
+        if identifier.hasPrefix("en") {
+            return true
+        }
+        return false
+    }
+
+    /// Localeの地域情報から日本かどうかを判定する
+    /// - Parameter locale: 地域コードを含むLocale
+    /// - Returns: 日本ならtrue、それ以外ならfalse
+    private func isJapan(locale: Locale) -> Bool {
+        if let regionCode = locale.regionCode?.lowercased() {
+            if regionCode == "jp" {
+                return true
+            }
+        }
+        // regionCodeが取得できないケースに備えてidentifierも確認する
+        let identifier = locale.identifier.lowercased()
+        if identifier.contains("_jp") || identifier.contains("-jp") {
+            return true
+        }
+        return false
+    }
+}
+
+/// UIで使い回すための購入オプション定義
+let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
+    AzukiCreditPurchaseOption(
+        productIdJapan: AZUKI_API_CREDIT_PRODUCT_SMALL_JPY,
+        productIdGlobal: AZUKI_API_CREDIT_PRODUCT_SMALL_USD,
+        priceYen: 50,
+        priceUsd: Decimal(50) / Decimal(100),
+        credits: 5
+    ),
+    AzukiCreditPurchaseOption(
+        productIdJapan: AZUKI_API_CREDIT_PRODUCT_STANDARD_JPY,
+        productIdGlobal: AZUKI_API_CREDIT_PRODUCT_STANDARD_USD,
+        priceYen: 100,
+        priceUsd: Decimal(100) / Decimal(100),
+        credits: 11
+    ),
+//    AzukiCreditPurchaseOption(
+//        productId: AZUKI_API_CREDIT_PRODUCT_BULK,
+//        priceYen: 500,
+//        priceUsd: Decimal(500) / Decimal(100),
+//        credits: 60
+//    ),
 ]
 /// AI利用回数券を端末に保管できる最大数
 let AZUKI_CREDIT_BALANCE_LIMIT: Int = 16
