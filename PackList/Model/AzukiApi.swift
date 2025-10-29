@@ -151,8 +151,9 @@ final class AzukiApi {
         guard let url = makeURL(path: "/api/openai") else {
             throw AzukiAPIError.invalidURL
         }
-
-        let requestBody = GenerateRequest(userId: userId, requirement: requirement)
+        // リクエスト パラメータ
+        let requestBody = GenerateRequest(userId: userId,
+                                          requirement: requirement)
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
             return try decoder.decode(PackJsonDTO.self, from: data)
@@ -184,6 +185,12 @@ final class AzukiApi {
         }
     }
 
+    struct VerifyPurchaseResult {
+        /// サーバーが返した最新残高
+        let balance: Int
+        /// サーバー側ですでに処理済みだったかどうか
+        let duplicate: Bool
+    }
     /// StoreKitで購入したトランザクションをサーバーへ通知し、残高を更新してもらう
     /// - Parameters:
     ///   - userId: azuki-apiが管理するユーザー識別子
@@ -192,14 +199,12 @@ final class AzukiApi {
     ///   - receipt: StoreKitトランザクションのJWS等、サーバーでハッシュ化する生データ
     ///   - grantCredits: 付与予定のクレジット数（サーバー側の定義と一致する必要がある）
     /// - Returns: サーバーが更新した最新残高
-    struct VerifyPurchaseResult {
-        /// サーバーが返した最新残高
-        let balance: Int
-        /// サーバー側ですでに処理済みだったかどうか
-        let duplicate: Bool
-    }
-
-    func verifyPurchase(userId: String, productId: String, transactionId: String, receipt: String, storekitJws: String, grantCredits: Int) async throws -> VerifyPurchaseResult {
+    func verifyPurchase(userId: String,
+                        productId: String,
+                        transactionId: String,
+                        receipt: String,
+                        storekitJws: String,
+                        grantCredits: Int) async throws -> VerifyPurchaseResult {
         struct VerifyRequest: Encodable {
             let userId: String
             let productId: String

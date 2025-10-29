@@ -107,7 +107,7 @@ struct AiCreateView: View {
             ZStack(alignment: .topLeading) {
                 // 入力欄
                 TextEditor(text: $requirementText)
-                    .frame(height: 200)
+                    .frame(height: 220)
                     .padding(8)
                     // TextEditorにフォーカスを割り当て、親からの制御を受ける
                     .focused(requirementFocus)
@@ -414,7 +414,7 @@ struct AiCreateView: View {
                         transactionId: String(transaction.id),
                         receipt: receipt,
                         storekitJws: storekitJws,
-                        grantCredits: option.credits
+                        grantCredits: option.tickets
                     )
                 await MainActor.run {
                     // サーバー側が返した最新残高でKeychainを更新し、UIと整合させる
@@ -502,7 +502,7 @@ struct AiCreateView: View {
             // 端末に保管できる上限を超えないか事前にチェックする
             let limit = AZUKI_CREDIT_BALANCE_LIMIT
             let currentCredits = await MainActor.run { creditStore.credits }
-            if limit <= currentCredits || limit < currentCredits + option.credits {
+            if limit <= currentCredits || limit < currentCredits + option.tickets {
                 await MainActor.run {
                     alertState = .purchaseLimitReached(max: limit)
                     processingProductId = nil
@@ -652,7 +652,7 @@ struct AiCreateView: View {
         if limit <= currentCredits {
             return true
         }
-        return limit < currentCredits + option.credits
+        return limit < currentCredits + option.tickets
     }
 
     /// 現在の残高と上限に応じて注意書きを表示するための文言を返す
@@ -664,7 +664,7 @@ struct AiCreateView: View {
         }
         let remainingCapacity = limit - currentCredits
         let hasDisabledOption = AZUKI_CREDIT_PURCHASE_OPTIONS.contains { option in
-            limit < currentCredits + option.credits
+            limit < currentCredits + option.tickets
         }
         if hasDisabledOption {
             return String(localized: "あと\(remainingCapacity)枚まで購入できます。上限を超える購入はできません。")
@@ -772,7 +772,7 @@ struct AiCreateView: View {
                 transactionId: transactionId,
                 receipt: receipt,
                 storekitJws: storekitJws,
-                grantCredits: option.credits
+                grantCredits: option.tickets
             )
             await MainActor.run {
                 // 4. サーバーが返した残高でKeychainを上書きし、UIへ成功メッセージを表示
@@ -783,7 +783,7 @@ struct AiCreateView: View {
                     if verification.duplicate {
                         alertState = .purchaseAlreadyProcessed
                     } else {
-                        alertState = .purchaseSuccess(added: option.credits, productId: productId)
+                        alertState = .purchaseSuccess(added: option.tickets, productId: productId)
                     }
                 }
             }
