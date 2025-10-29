@@ -748,12 +748,8 @@ struct AiCreateView: View {
         // 0. 同じトランザクションに対して複数回アラートを出さないよう、IDをキーに管理する
         let transactionIdentifier = String(transaction.id)
 
-        // 1. StoreKitのトランザクション完了はdeferでまとめて実行し、途中で失敗してもダブルカウントを避ける
-        defer {
-            Task {
-                await transaction.finish()
-            }
-        }
+        // 1. StoreKitトランザクションの完了はサーバー検証の成功を確認してから行い、
+        //    検証に失敗したケースではfinishを呼ばずに中断できるようにする
 
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
         let userId = await MainActor.run { creditStore.userId }
@@ -787,6 +783,8 @@ struct AiCreateView: View {
                     }
                 }
             }
+            // 5. サーバー検証まで完了したため、ここで初めてStoreKit側のトランザクションを終了させる
+            await transaction.finish()
         } catch let apiError as AzukiAPIError {
             // サーバー側ですでに処理済みであれば最新残高を取得し直す
             if case .duplicateTransaction = apiError {
@@ -798,47 +796,25 @@ struct AiCreateView: View {
                         alertState = .purchaseAlreadyProcessed
                     }
                 }
+                // duplicate もサーバー連携が成立しているため、確実にトランザクションを消化する
+                await transaction.finish()
                 return
             }
-            await grantCreditsLocallyAfterVerificationFailure(
-                transactionIdentifier: transactionIdentifier,
-                productId: productId,
-                addedCredits: option.tickets,
-                underlyingError: apiError
-            )
-        } catch {
-            await grantCreditsLocallyAfterVerificationFailure(
-                transactionIdentifier: transactionIdentifier,
-                productId: productId,
-                addedCredits: option.tickets,
-                underlyingError: error
-            )
-        }
-    }
-
-    /// サーバー検証に失敗してもStoreKit上は購入成功扱いのケースで、端末側だけでも補填する
-    /// - Parameters:
-    ///   - transactionIdentifier: StoreKitのトランザクションID（アラート二重表示防止に使用）
-    ///   - productId: ユーザーへ案内するための商品ID
-    ///   - addedCredits: 端末側で付与するクレジット枚数
-    ///   - underlyingError: デバッグログに残すための元エラー
-    private func grantCreditsLocallyAfterVerificationFailure(
-        transactionIdentifier: String,
-        productId: String,
-        addedCredits: Int,
-        underlyingError: Error
-    ) async {
-        #if DEBUG
-        print("[Purchase] fallback credit grant for transaction: \(transactionIdentifier), error: \(underlyingError)")
-        #endif
-        await MainActor.run {
-            // サーバー連携が失敗しても、ユーザーが課金だけされる事態を避けるためにローカル残高へ先行付与する
-            creditStore.add(credits: addedCredits)
-            if notifiedTransactionIds.contains(transactionIdentifier) == false {
-                // 端末内で一度だけ成功アラートを表示し、重複付与を防ぐ
-                notifiedTransactionIds.insert(transactionIdentifier)
-                alertState = .purchaseSuccess(added: addedCredits, productId: productId)
+            await MainActor.run {
+                // サーバー検証で失敗した場合はトランザクションを完了させず、ユーザーにも購入を中止した旨を案内する
+                let fallbackMessage = String(localized: "サーバーで購入内容を確認できなかったため、この取引は完了していません。通信環境をご確認のうえ、時間をおいて再度お試しください。")
+                let detailed = apiError.errorDescription ?? fallbackMessage
+                alertState = .purchaseFailure(message: fallbackMessage + "\n" + detailed)
             }
+            return
+        } catch {
+            await MainActor.run {
+                // 不明なエラーでもトランザクションを消化しないことで、後から再処理できるようにする
+                let fallbackMessage = String(localized: "購入の検証中にエラーが発生しました。この取引は完了していません。時間をおいて再度お試しください。")
+                let detailed = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                alertState = .purchaseFailure(message: fallbackMessage + "\n" + detailed)
+            }
+            return
         }
     }
 
