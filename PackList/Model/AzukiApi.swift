@@ -71,12 +71,12 @@ enum AzukiAPIError: LocalizedError {
         }
         
         /// アプリユーザに見せるメッセージ
-        func errorMsg(_ msg: String) -> String {
+        func errorMsg(_ message: String) -> String {
+            let msg = String(message.prefix(50))
             log(.error, "AzukiAPIError: " + msg)
             GALogger.log(.error_occured(domain: "AzukiApi", code: -1, message: msg))
-            
             return String(localized: "通信障害が発生しているようです。しばらくしてから再度お試しください。")
-            + "\n [\(msg)]"
+                    + "\n\n [\(msg)]"
         }
 
     }

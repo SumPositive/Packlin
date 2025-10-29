@@ -99,7 +99,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("要望を入力して「チャッピーに作ってもらう」を押してください。新しいパックの作成に成功するとAI利用券を1枚もぎりますね")
+            Text("要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックの取り込みに成功するとAI利用券が1枚減ります")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -148,7 +148,7 @@ struct AiCreateView: View {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "お作りしています..." : "チャッピーに作ってもらう")
+                    Text(isGenerating ? "作ってますよ..." : "チャッピー！作って")
                         .font(.callout.weight(.semibold))
                         .padding(.horizontal, 16)
                 }
@@ -157,7 +157,7 @@ struct AiCreateView: View {
             .disabled(isRequirementEmpty || isGenerating)
 
             if isGenerating {
-                Text("チャッピーに依頼中です。もう少しお待ちください")
+                Text("チャッピーが作ってます。もう少しお待ちください")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -515,6 +515,8 @@ struct AiCreateView: View {
                 processingProductId = productId
             }
 
+            let msgPurchaseCancel = String(localized: "購入を中止しました。課金されません。再度お試しください。")
+            
             do {
                 // 実機（Sandbox Apple ID）での挙動確認を前提とし、StoreKit 本番フローをそのまま利用する
                 // シミュレータ用のテストセッションはあえて起動せず、実運用と同じ購入体験を得る
@@ -526,27 +528,27 @@ struct AiCreateView: View {
                 let outcome = try await product.purchase()
 
                 switch outcome {
-                case .success(let verificationResult):
-                    // 3. トランザクション署名を検証し、正規購入であればサーバーへ伝えて残高を加算する
-                    let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: verificationResult)
-                    await finalizePurchase(option: option, productId: productId, transaction: transaction, storekitJws: storekitJws)
-
-                case .pending:
-                    // ファミリー共有などで承認待ちになる場合
-                    await MainActor.run {
-                        alertState = .purchaseFailure(message: String(localized: "購入が承認待ちです。承認が完了すると自動で反映されます。"))
-                    }
-
-                case .userCancelled:
-                    // ユーザーがキャンセルした場合は状況を伝えるメッセージを表示
-                    await MainActor.run {
-                        alertState = .purchaseFailure(message: String(localized: "購入を中止しました。必要であれば再度お試しください。"))
-                    }
-
-                @unknown default:
-                    await MainActor.run {
-                        alertState = .purchaseFailure(message: String(localized: "想定外の購入結果が返りました。時間をおいて再度お試しください。"))
-                    }
+                    case .success(let verificationResult):
+                        // 3. トランザクション署名を検証し、正規購入であればサーバーへ伝えて残高を加算する
+                        let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: verificationResult)
+                        await finalizePurchase(option: option, productId: productId, transaction: transaction, storekitJws: storekitJws)
+                        
+                    case .pending:
+                        // ファミリー共有などで承認待ちになる場合
+                        await MainActor.run {
+                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです。まだ課金はされません。承認が完了すると自動で反映されます。"))
+                        }
+                        
+                    case .userCancelled:
+                        // ユーザーがキャンセルした場合は状況を伝えるメッセージを表示
+                        await MainActor.run {
+                            alertState = .purchaseFailure(message: msgPurchaseCancel)
+                        }
+                        
+                    @unknown default:
+                        await MainActor.run {
+                            alertState = .purchaseFailure(message: String(localized: "想定外の購入結果が返りました。時間をおいて再度お試しください。"))
+                        }
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
@@ -557,7 +559,7 @@ struct AiCreateView: View {
             } catch StoreKitError.userCancelled {
                 await MainActor.run {
                     // StoreKitが返すユーザーキャンセルはここで一元的に処理し、二重アラートの発生を確実に抑止する
-                    alertState = .purchaseFailure(message: String(localized: "購入を中止しました。必要であれば再度お試しください。"))
+                    alertState = .purchaseFailure(message: msgPurchaseCancel)
                 }
             } catch let storekitError as StoreKitError {
                 await MainActor.run {
@@ -569,7 +571,7 @@ struct AiCreateView: View {
             } catch is CancellationError {
                 await MainActor.run {
                     // Taskキャンセル（StoreKit購入ダイアログを閉じる等）もユーザーによる中断として扱い、二重アラートを避ける
-                    alertState = .purchaseFailure(message: String(localized: "購入を中止しました。必要であれば再度お試しください。"))
+                    alertState = .purchaseFailure(message: msgPurchaseCancel)
                 }
             } catch let localized as LocalizedError {
                 await MainActor.run {
@@ -724,27 +726,28 @@ struct AiCreateView: View {
     /// StoreKit 2 の検証結果から信頼できる `Transaction` を取り出す
     private func resolveVerifiedTransaction(from result: VerificationResult<StoreKit.Transaction>) async throws -> (transaction: StoreKit.Transaction, storekitJws: String) {
         switch result {
-        case .verified(let transaction):
-            // signedData と jwsRepresentation を自動で出し分けたJWS文字列を同時に返し、呼び出し側での煩雑な分岐を避ける
-            // iOS 18 では signedData が Base64 文字列の Data として返る場合もあるため、拡張プロパティ側で安全に復元する
+            case .verified(let transaction):
+                // signedData と jwsRepresentation を自動で出し分けたJWS文字列を同時に返し、呼び出し側での煩雑な分岐を避ける
+                // iOS 18 では signedData が Base64 文字列の Data として返る場合もあるため、拡張プロパティ側で安全に復元する
                 let jws = result.jwsRepresentation  // StoreKit 2
-                print("dotCount =", jws.filter { $0 == "." }.count)   // => 2 のはず
-                print("firstDot at", jws.firstIndex(of: ".") != nil)  // true
-                print("length =", jws.count)
-                
-//            let jws = result.jwsForServer
-            return (transaction, jws)
-        case .unverified(let transaction, let verificationError):
-            let baseMessage = verificationError.localizedDescription
-            // StoreKit 2 の `finish()` は iOS 18 から投げなくなったので、
-            // ここでは失敗しても致命的ではないことを前提にベストエフォートで完了させる
-            await transaction.finish()
-            throw PurchaseFlowError.transactionUnverified(message: baseMessage)
+                //print("dotCount =", jws.filter { $0 == "." }.count)   // => 2 のはず
+                //print("firstDot at", jws.firstIndex(of: ".") != nil)  // true
+                //print("length =", jws.count)
+                return (transaction, jws)
+            case .unverified(let transaction, let verificationError):
+                let baseMessage = verificationError.localizedDescription
+                // StoreKit 2 の `finish()` は iOS 18 から投げなくなったので、
+                // ここでは失敗しても致命的ではないことを前提にベストエフォートで完了させる
+                await transaction.finish()
+                throw PurchaseFlowError.transactionUnverified(message: baseMessage)
         }
     }
 
     /// トランザクションの完了とKeychain残高・サーバー残高の更新をまとめて処理する
-    private func finalizePurchase(option: AzukiCreditPurchaseOption, productId: String, transaction: StoreKit.Transaction, storekitJws: String) async {
+    private func finalizePurchase(option: AzukiCreditPurchaseOption,
+                                  productId: String,
+                                  transaction: StoreKit.Transaction,
+                                  storekitJws: String) async {
         // 0. 同じトランザクションに対して複数回アラートを出さないよう、IDをキーに管理する
         let transactionIdentifier = String(transaction.id)
 
@@ -759,6 +762,11 @@ struct AiCreateView: View {
         let receipt = receiptData.base64EncodedString()
         // StoreKit 2 が提供するJWS文字列も同時に送り、サーバーで署名検証してもらう
         // Swift 5 + iOS 18 以降で追加された signedData と従来の jwsRepresentation を状況に応じて切り替え済み
+        
+        // verifyPurchaseに失敗し、購入中止したときのメッセージ
+        let fallbackMessage = String(
+            localized: "購入の結果待ちです。まだ課金はされません。確認が完了すると自動で反映されます。")
+
 
         do {
             // 3. azuki-apiへ購入内容を通知し、サーバー側でも残高を更新してもらう
@@ -784,7 +792,8 @@ struct AiCreateView: View {
                 }
             }
             // 5. サーバー検証まで完了したため、ここで初めてStoreKit側のトランザクションを終了させる
-            await transaction.finish()
+            await transaction.finish() // 購入完了
+            
         } catch let apiError as AzukiAPIError {
             // サーバー側ですでに処理済みであれば最新残高を取得し直す
             if case .duplicateTransaction = apiError {
@@ -797,22 +806,19 @@ struct AiCreateView: View {
                     }
                 }
                 // duplicate もサーバー連携が成立しているため、確実にトランザクションを消化する
-                await transaction.finish()
+                await transaction.finish() // 購入完了
                 return
             }
             await MainActor.run {
                 // サーバー検証で失敗した場合はトランザクションを完了させず、ユーザーにも購入を中止した旨を案内する
-                let fallbackMessage = String(localized: "サーバーで購入内容を確認できなかったため、この取引は完了していません。通信環境をご確認のうえ、時間をおいて再度お試しください。")
-                let detailed = apiError.errorDescription ?? fallbackMessage
-                alertState = .purchaseFailure(message: fallbackMessage + "\n" + detailed)
+                let detailed = apiError.errorDescription ?? "verifyPurchase.error"
+                alertState = .purchaseFailure(message: fallbackMessage + "\n\n" + detailed)
             }
             return
         } catch {
             await MainActor.run {
                 // 不明なエラーでもトランザクションを消化しないことで、後から再処理できるようにする
-                let fallbackMessage = String(localized: "購入の検証中にエラーが発生しました。この取引は完了していません。時間をおいて再度お試しください。")
-                let detailed = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                alertState = .purchaseFailure(message: fallbackMessage + "\n" + detailed)
+                alertState = .purchaseFailure(message: fallbackMessage)
             }
             return
         }
@@ -842,12 +848,13 @@ struct AiCreateView: View {
                 return
             }
 
-            await finalizePurchase(option: option, productId: transaction.productID, transaction: transaction, storekitJws: storekitJws)
+            await finalizePurchase(option: option,
+                                   productId: transaction.productID,
+                                   transaction: transaction,
+                                   storekitJws: storekitJws)
         } catch {
             // 検証に失敗した場合やAPI通信の例外は、デバッグ出力のみ行いユーザーへ重複通知しない
-            #if DEBUG
-            print("[Transaction] failed to handle update: \(error)")
-            #endif
+            log(.debug, "[Transaction] failed to handle update: \(error)")
         }
     }
 
@@ -860,7 +867,7 @@ struct AiCreateView: View {
         var errorDescription: String? {
             switch self {
             case .productNotFound:
-                return String(localized: "購入対象の商品情報が見つかりません。")
+                return String(localized: "商品情報が見つかりません。")
             case .transactionUnverified(let message):
                 return message
             }
@@ -930,7 +937,7 @@ struct AiCreateView: View {
             case .purchaseAlreadyProcessed:
                 return String(localized: "購入履歴が確認できました")
             case .purchaseFailure:
-                return String(localized: "購入中止")
+                return String(localized: "購入状況")
             case .purchaseLimitReached:
                 return String(localized: "これ以上追加購入できません")
             }
