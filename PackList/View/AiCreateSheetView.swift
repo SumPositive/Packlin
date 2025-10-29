@@ -722,7 +722,8 @@ struct AiCreateView: View {
     }
 
     /// StoreKit 2 の検証結果から信頼できる `Transaction` を取り出す
-    private func resolveVerifiedTransaction(from result: VerificationResult<StoreKit.Transaction>) async throws -> (transaction: StoreKit.Transaction, storekitJws: String) {
+    private func resolveVerifiedTransaction(from result: VerificationResult<StoreKit.Transaction>)
+    async throws -> (transaction: StoreKit.Transaction, storekitJws: String) {
         switch result {
         case .verified(let transaction):
             // signedData と jwsRepresentation を自動で出し分けたJWS文字列を同時に返し、呼び出し側での煩雑な分岐を避ける
@@ -744,7 +745,10 @@ struct AiCreateView: View {
     }
 
     /// トランザクションの完了とKeychain残高・サーバー残高の更新をまとめて処理する
-    private func finalizePurchase(option: AzukiCreditPurchaseOption, productId: String, transaction: StoreKit.Transaction, storekitJws: String) async {
+    private func finalizePurchase(option: AzukiCreditPurchaseOption,
+                                  productId: String,
+                                  transaction: StoreKit.Transaction,
+                                  storekitJws: String) async {
         // 0. 同じトランザクションに対して複数回アラートを出さないよう、IDをキーに管理する
         let transactionIdentifier = String(transaction.id)
 
@@ -800,6 +804,7 @@ struct AiCreateView: View {
                 }
                 return
             }
+            // サーバー検証に失敗してもStoreKit上は購入成功扱いのケースで、端末側だけでも補填する
             await grantCreditsLocallyAfterVerificationFailure(
                 transactionIdentifier: transactionIdentifier,
                 productId: productId,
@@ -807,6 +812,7 @@ struct AiCreateView: View {
                 underlyingError: apiError
             )
         } catch {
+            // サーバー検証に失敗してもStoreKit上は購入成功扱いのケースで、端末側だけでも補填する
             await grantCreditsLocallyAfterVerificationFailure(
                 transactionIdentifier: transactionIdentifier,
                 productId: productId,
