@@ -13,7 +13,8 @@ import FirebaseCrashlytics
 
 /// AI生成完了をローカル通知で伝えるための管理クラス
 /// UNUserNotificationCenterをラップして、許可確認と通知発行をまとめる役割を持つ
-final class LocalNotificationManager {
+/// 通知のデリゲート機能を扱うためNSObjectを継承する
+final class LocalNotificationManager: NSObject {
     /// 生成したマネージャをシングルトンで使い回し、通知センターとのやり取りを一元化する
     static let shared = LocalNotificationManager()
 
@@ -24,7 +25,11 @@ final class LocalNotificationManager {
     /// UserDefaultsへのアクセスに使う
     private let userDefaults = UserDefaults.standard
 
-    private init() {}
+    private override init() {
+        super.init()
+        // アプリが前面にあってもバナーやサウンドを出すため、UNUserNotificationCenterDelegateを自分に設定する
+        notificationCenter.delegate = self
+    }
 
     /// AI生成が成功した際にローカル通知を発行する
     /// - Parameter packName: 生成したパックの名称
@@ -136,6 +141,15 @@ final class LocalNotificationManager {
                 }
             }
         }
+    }
+}
+
+// MARK: - UNUserNotificationCenterDelegate
+
+extension LocalNotificationManager: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // アプリ起動中（フォアグラウンド）でもバナーとサウンドを見せることで、シートを閉じた後の進捗を確実に伝える
+        completionHandler([.banner, .sound, .list])
     }
 }
 
