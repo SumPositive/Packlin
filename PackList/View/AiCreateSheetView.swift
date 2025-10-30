@@ -61,10 +61,12 @@ struct AiCreateView: View {
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
     @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
-    /// インポート処理やプロンプト転送の状態を伝えるためのアラート
+    /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
     @State private var isGenerating = false
+    /// 生成処理の結果を画面内に表示して利用者へ知らせるためのフィードバック
+    @State private var inlineGenerationFeedback: GenerationFeedback?
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
     @State private var processingProductId: String?
     /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
@@ -75,6 +77,8 @@ struct AiCreateView: View {
     @State private var transactionObservationTask: Task<Void, Never>?
     /// すでにユーザーへ通知済みのトランザクションIDを記録し、同じ購入結果のアラートを連続表示しないようにする
     @State private var notifiedTransactionIds: Set<String> = []
+    /// ビューが画面上に表示されているかどうかを保持し、通知とアラートの出し分けに利用する
+    @State private var isViewVisible = true
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -140,6 +144,8 @@ struct AiCreateView: View {
             }
 
             Button {
+                // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
+                inlineGenerationFeedback = nil
                 generatePackWithOpenAI()
             } label: {
                 HStack {
@@ -161,6 +167,27 @@ struct AiCreateView: View {
                     .foregroundStyle(.secondary)
             }
 
+            if let feedback = inlineGenerationFeedback {
+                // 成功と失敗で色やアイコンを切り替え、視覚的に状態を把握しやすくする
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: feedback.iconName)
+                        .foregroundStyle(feedback.tintColor)
+                        .accessibilityHidden(true)
+                    Text(feedback.message)
+                        .font(.footnote)
+                        .foregroundStyle(feedback.tintColor)
+                }
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(feedback.backgroundColor)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(feedback.tintColor.opacity(0.3), lineWidth: 1)
+                )
+            }
+
             //Divider() // 区切り線
             
             HStack {
@@ -177,6 +204,12 @@ struct AiCreateView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            // シートが表示されたら画面内フィードバックを優先で伝えるためのフラグを立てる
+            isViewVisible = true
+            // 古い結果メッセージが残っていると誤解を招くので表示のたびにリセットする
+            inlineGenerationFeedback = nil
+        }
         .task {
             // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
             await AzukiApi.shared.registerTokenRecoveryHandler {
@@ -197,6 +230,10 @@ struct AiCreateView: View {
             // ビューを離れる際には監視タスクを終了し、重複起動を避ける
             transactionObservationTask?.cancel()
             transactionObservationTask = nil
+            // 画面から離れたので、以降はローカル通知で結果を伝える
+            isViewVisible = false
+            // 画面を閉じるときに表示中のメッセージも消去して、再表示時に新鮮な状態で始められるようにする
+            inlineGenerationFeedback = nil
             // ビューが消えた後は復旧ハンドラを解除し、不要な保持を避ける
             Task {
                 await AzukiApi.shared.clearTokenRecoveryHandler()
@@ -234,7 +271,7 @@ struct AiCreateView: View {
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            alertState = .generationFailure(message: String(localized: "パック作成の要望を入れてね"))
+            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
             return
         }
 
@@ -256,12 +293,10 @@ struct AiCreateView: View {
                 }
             }
 
-            // ローカル残高が不足している場合に限り不足アラートを出す（Keychain保存なので通信不要）
+            // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
             let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
             if hasEnoughCredits == false {
-                await MainActor.run {
-                    alertState = .creditShortage
-                }
+                await presentCreditShortageFeedback()
                 return
             }
 
@@ -271,9 +306,7 @@ struct AiCreateView: View {
                     shouldRestoreCredits = true
                 }
             } catch {
-                await MainActor.run {
-                    alertState = .creditShortage
-                }
+                await presentCreditShortageFeedback()
                 return
             }
 
@@ -293,9 +326,8 @@ struct AiCreateView: View {
                                                       requirement: trimmedRequirement))
                         return importedPack.name
                     }
-                    await MainActor.run {
-                        alertState = .generationSuccess(packName: packName)
-                    }
+                    // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
+                    await presentGenerationSuccess(packName: packName)
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -303,9 +335,7 @@ struct AiCreateView: View {
                     } else {
                         message = error.localizedDescription
                     }
-                    await MainActor.run {
-                        alertState = .generationFailure(message: message)
-                    }
+                    await presentGenerationFailure(message: message)
                 }
             } catch let apiError as AzukiAPIError {
                 // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
@@ -315,34 +345,62 @@ struct AiCreateView: View {
                     shouldRestoreCredits = false
                     // サーバーの残高を参照してKeychainを最新化し、複数端末での消費にも追随させる
                     await refreshCreditBalanceFromServer(showAlertOnFailure: false)
-                    await MainActor.run {
-                        alertState = .creditShortage
-                    }
+                    await presentCreditShortageFeedback()
                 case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
                     let message = apiError.errorDescription
                     ?? String(localized: "認証に失敗しました。アプリを再起動して再度お試しください")
-                    await MainActor.run {
-                        alertState = .generationFailure(message: message)
-                    }
+                    await presentGenerationFailure(message: message)
                 default:
                     let message = apiError.errorDescription
                     ?? String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください")
-                    await MainActor.run {
-                        alertState = .generationFailure(message: message)
-                    }
+                    await presentGenerationFailure(message: message)
                 }
             } catch let localized as LocalizedError {
                 let message = localized.errorDescription ?? localized.localizedDescription
-                await MainActor.run {
-                    alertState = .generationFailure(message: message)
-                }
+                await presentGenerationFailure(message: message)
             } catch {
-                await MainActor.run {
-                    alertState = .generationFailure(message:
-                                                        String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください"))
-                }
+                await presentGenerationFailure(message:
+                                                    String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください"))
             }
         }
+    }
+
+    /// 生成成功をユーザーへ伝える。画面表示中は画面内メッセージ、閉じていればローカル通知で知らせる
+    /// - Parameter packName: 生成に成功したパック名
+    private func presentGenerationSuccess(packName: String) async {
+        let viewVisible = await MainActor.run { isViewVisible }
+        if viewVisible {
+            await MainActor.run {
+                inlineGenerationFeedback = .success(message: String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧に戻って見てください"))
+            }
+            return
+        }
+        await LocalNotificationManager.shared.notifyPackGenerationSucceeded(packName: packName)
+    }
+
+    /// 生成失敗をユーザーへ伝える。画面表示中は画面内メッセージ、閉じていればローカル通知で知らせる
+    /// - Parameter message: 利用者へ伝える詳細メッセージ
+    private func presentGenerationFailure(message: String) async {
+        let viewVisible = await MainActor.run { isViewVisible }
+        if viewVisible {
+            await MainActor.run {
+                inlineGenerationFeedback = .failure(message: message)
+            }
+            return
+        }
+        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: message)
+    }
+
+    /// クレジット不足時のフィードバック。画面表示中は画面内メッセージ、閉じていれば失敗通知を送る
+    private func presentCreditShortageFeedback() async {
+        let viewVisible = await MainActor.run { isViewVisible }
+        if viewVisible {
+            await MainActor.run {
+                inlineGenerationFeedback = .failure(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
+            }
+            return
+        }
+        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
     }
 
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
@@ -473,7 +531,7 @@ struct AiCreateView: View {
                 let message = apiError.errorDescription
                 ?? String(localized: "AI利用券の枚数が確認できません。時間をおいて再度お試しください。")
                 await MainActor.run {
-                    alertState = .generationFailure(message: message)
+                    inlineGenerationFeedback = .failure(message: message)
                 }
             }
             #if DEBUG
@@ -482,7 +540,7 @@ struct AiCreateView: View {
         } catch {
             if showAlertOnFailure {
                 await MainActor.run {
-                    alertState = .generationFailure(message: String(localized: "AI利用券の枚数が確認できません。通信環境をご確認ください。"))
+                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用券の枚数が確認できません。通信環境をご確認ください。"))
                 }
             }
             #if DEBUG
@@ -887,14 +945,56 @@ struct AiCreateView: View {
         return PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
     }
 
+    /// 生成結果を画面内で伝えるための簡易ステータス
+    private enum GenerationFeedback: Equatable {
+        /// 成功時のメッセージ
+        case success(message: String)
+        /// 失敗時のメッセージ
+        case failure(message: String)
+
+        /// ラベルに表示する文言
+        var message: String {
+            switch self {
+            case .success(let message):
+                return message
+            case .failure(let message):
+                return message
+            }
+        }
+
+        /// 成功／失敗に応じた色味
+        var tintColor: Color {
+            switch self {
+            case .success:
+                return Color.green
+            case .failure:
+                return Color.red
+            }
+        }
+
+        /// 背景色を薄く敷いて可読性を高める
+        var backgroundColor: Color {
+            switch self {
+            case .success:
+                return Color.green.opacity(0.12)
+            case .failure:
+                return Color.red.opacity(0.12)
+            }
+        }
+
+        /// 状態に合わせたアイコンを返す
+        var iconName: String {
+            switch self {
+            case .success:
+                return "checkmark.circle.fill"
+            case .failure:
+                return "exclamationmark.triangle.fill"
+            }
+        }
+    }
+
     /// アラート表示用の状態定義
     private enum AlertState: Identifiable {
-        /// azuki-api経由での生成が成功した場合
-        case generationSuccess(packName: String)
-        /// azuki-api経由での生成が失敗した場合
-        case generationFailure(message: String)
-        /// クレジットが不足している場合
-        case creditShortage
         /// クレジット購入が成功した場合
         case purchaseSuccess(added: Int, productId: String)
         /// サーバー側ですでに反映済みの購入だった場合
@@ -906,12 +1006,6 @@ struct AiCreateView: View {
 
         var id: String {
             switch self {
-            case .generationSuccess(let packName):
-                return "ai-generationSuccess-\(packName)"
-            case .generationFailure(let message):
-                return "ai-generationFailure-\(message)"
-            case .creditShortage:
-                return "ai-creditShortage"
             case .purchaseSuccess(let added, let productId):
                 return "ai-purchaseSuccess-\(added)-\(productId)"
             case .purchaseAlreadyProcessed:
@@ -925,12 +1019,6 @@ struct AiCreateView: View {
 
         var title: String {
             switch self {
-            case .generationSuccess:
-                return String(localized: "パックが出来上がりました")
-            case .generationFailure:
-                return String(localized: "パックを生成できません")
-            case .creditShortage:
-                return String(localized: "AI利用券が不足しています")
             case .purchaseSuccess:
                 return String(localized: "購入が完了しました")
             case .purchaseAlreadyProcessed:
@@ -944,12 +1032,6 @@ struct AiCreateView: View {
 
         var message: String {
             switch self {
-            case .generationSuccess(let packName):
-                return String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧に戻って見てください")
-            case .generationFailure(let message):
-                return message
-            case .creditShortage:
-                return String(localized: "AI利用券が不足しています。下のメニューから購入してください")
             case .purchaseSuccess(let added, _):
                 return String(localized: "AI利用券を\(added)枚追加しました。")
             case .purchaseAlreadyProcessed:
