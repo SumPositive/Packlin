@@ -126,7 +126,8 @@ final class LocalNotificationManager {
 
     /// UNNotificationRequestをasync/awaitで追加する
     private func add(request: UNNotificationRequest) async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        // Voidを返すContinuationであることを明示して型推論の失敗を防ぎ、可読性も高める
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             notificationCenter.add(request) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
