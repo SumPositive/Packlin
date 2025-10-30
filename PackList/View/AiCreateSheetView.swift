@@ -99,7 +99,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックの取り込みに成功するとAI利用券が1枚減ります")
+            Text("下の欄に要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックの取り込みに成功するとAI利用券が1枚減ります")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -107,7 +107,7 @@ struct AiCreateView: View {
             ZStack(alignment: .topLeading) {
                 // 入力欄
                 TextEditor(text: $requirementText)
-                    .frame(height: 220)
+                    .frame(height: 200)
                     .padding(8)
                     // TextEditorにフォーカスを割り当て、親からの制御を受ける
                     .focused(requirementFocus)
@@ -130,7 +130,6 @@ struct AiCreateView: View {
                         家族4人（大人2人、子ども2人）
                         ＜日程、行程、アクティビティなども記入＞
                         4人でスキューバダイビングに参加
-                        大人1人がスカイダイビングに参加
                         雨天も想定。救急用品も持参
                         """)
                     .foregroundStyle(.secondary)
@@ -148,7 +147,7 @@ struct AiCreateView: View {
                         ProgressView()
                             .progressViewStyle(.circular)
                     }
-                    Text(isGenerating ? "作ってますよ..." : "チャッピー！作って")
+                    Text(isGenerating ? "作ってます..." : "チャッピー！作って")
                         .font(.callout.weight(.semibold))
                         .padding(.horizontal, 16)
                 }
