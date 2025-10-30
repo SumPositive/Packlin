@@ -91,7 +91,8 @@ final class LocalNotificationManager {
 
     /// 通知設定をasync/awaitで取得する
     private func fetchNotificationSettings() async -> UNNotificationSettings {
-        await withCheckedContinuation { continuation in
+        // continuationの型を明示してSwiftコンパイラが迷わないようにし、非同期APIを安全にラップする
+        await withCheckedContinuation { (continuation: CheckedContinuation<UNNotificationSettings, Never>) in
             notificationCenter.getNotificationSettings { settings in
                 continuation.resume(returning: settings)
             }
@@ -102,7 +103,8 @@ final class LocalNotificationManager {
     private func requestAuthorization() async -> Bool {
         if userDefaults.bool(forKey: authorizationRequestedKey) {
             // 既にダイアログを出している場合は再表示しない代わりに最新設定を問い合わせる
-            return await withCheckedContinuation { continuation in
+            // requestAuthorizationを繰り返さない代わりに、最新設定から許可状態を判定する
+            return await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
                 notificationCenter.getNotificationSettings { settings in
                     let status = settings.authorizationStatus
                     let granted = status == .authorized || status == .provisional || status == .ephemeral
@@ -112,7 +114,8 @@ final class LocalNotificationManager {
         }
 
         let options: UNAuthorizationOptions = [.alert, .sound]
-        let granted = await withCheckedContinuation { continuation in
+        // 許可ダイアログの結果もContinuationで受け取り、呼び出し元がawaitで扱えるようにする
+        let granted = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
             notificationCenter.requestAuthorization(options: options) { accepted, _ in
                 continuation.resume(returning: accepted)
             }
