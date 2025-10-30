@@ -48,6 +48,122 @@ struct AiCreateSheetView: View {
     }
 }
 
+/// チャット履歴1件を保持するモデル
+struct AiChatMessage: Identifiable, Codable, Equatable {
+    /// メッセージの送り手
+    enum Role: String, Codable {
+        case user
+        case assistant
+
+        /// APIへ送る際に識別しやすい大文字タグ
+        var serverTag: String {
+            switch self {
+            case .user:
+                return "USER"
+            case .assistant:
+                return "ASSISTANT"
+            }
+        }
+
+        /// 表示上、ユーザー発言かどうかのブール値
+        var isUser: Bool {
+            self == .user
+        }
+    }
+
+    let id: UUID
+    let role: Role
+    let content: String
+
+    init(id: UUID = UUID(), role: Role, content: String) {
+        self.id = id
+        self.role = role
+        self.content = content
+    }
+}
+
+/// チャットの吹き出しを描画するビュー
+private struct AiChatMessageBubble: View {
+    let message: AiChatMessage
+
+    var body: some View {
+        HStack {
+            if message.role.isUser {
+                Spacer(minLength: 24)
+                bubbleView
+            } else {
+                bubbleView
+                Spacer(minLength: 24)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .animation(.easeInOut(duration: 0.2), value: message.id)
+    }
+
+    /// メッセージ本体の吹き出し
+    private var bubbleView: some View {
+        Text(message.content)
+            .font(.callout)
+            .multilineTextAlignment(.leading)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .foregroundStyle(textColor)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(backgroundColor)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(borderColor, lineWidth: 0.6)
+            )
+    }
+
+    /// 吹き出し背景色
+    private var backgroundColor: Color {
+        if message.role.isUser {
+            return Color.accentColor
+        }
+        return Color(uiColor: .systemGray5)
+    }
+
+    /// 文字色
+    private var textColor: Color {
+        if message.role.isUser {
+            return Color.white
+        }
+        return Color.primary
+    }
+
+    /// 吹き出しの枠線色
+    private var borderColor: Color {
+        if message.role.isUser {
+            return Color.accentColor.opacity(0.6)
+        }
+        return Color(uiColor: .separator).opacity(0.4)
+    }
+}
+
+/// チャット履歴が空のときに表示する案内ビュー
+private struct AiChatEmptyPlaceholder: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text(String(localized: "まだチャットはありません"))
+                    .font(.callout.weight(.semibold))
+            } icon: {
+                Image(systemName: "text.bubble")
+                    .imageScale(.medium)
+                    .symbolRenderingMode(.hierarchical)
+            }
+
+            Text(String(localized: "下の入力欄に旅程や希望を書くと、チャッピーが返事とパック案を提案してくれます。"))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 
 /// AIで新しいパックを生成するためのビュー
 struct AiCreateView: View {
@@ -57,16 +173,30 @@ struct AiCreateView: View {
     @EnvironmentObject private var creditStore: CreditStore
     /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
     private let requirementFocus: FocusState<Bool>.Binding
+    /// 保存するチャット履歴の最大件数（サーバーへ渡す文量を抑えるための安全弁）
+    private let chatHistoryLimit = 30
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
     @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
+    /// チャット履歴をJSON化して永続化するためのAppStorage
+    @AppStorage(AppStorageKey.aiChatHistory) private var chatHistoryData: Data = Data()
+    /// OpenAI ThreadsのスレッドIDを保持して差分送信に活用する
+    @AppStorage(AppStorageKey.aiChatThreadId) private var chatThreadIdStorage: String = ""
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
     @State private var isGenerating = false
     /// 生成処理の結果を画面内に表示して利用者へ知らせるためのフィードバック
     @State private var inlineGenerationFeedback: GenerationFeedback?
+    /// チャットメッセージ群（ユーザーとAIの往復を保持）
+    @State private var chatMessages: [AiChatMessage] = []
+    /// 現在進行中のOpenAIスレッドID（AppStorageと同期）
+    @State private var activeChatThreadId: String?
+    /// AppStorageから履歴を復元済みかどうかのフラグ（多重読み込み防止）
+    @State private var didLoadChatHistory = false
+    /// 復元中にAppStorageへ上書きしないためのフラグ
+    @State private var isRestoringChatSession = false
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
     @State private var processingProductId: String?
     /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
@@ -107,14 +237,31 @@ struct AiCreateView: View {
                 .font(.body)
                 .foregroundStyle(.secondary)
             
-            // 入力欄とプレースホルダー
-            ZStack(alignment: .topLeading) {
-                // 入力欄
-                TextEditor(text: $requirementText)
-                    .frame(height: 200)
-                    .padding(8)
-                    // TextEditorにフォーカスを割り当て、親からの制御を受ける
-                    .focused(requirementFocus)
+            // チャット履歴を表示する領域
+            VStack(alignment: .leading, spacing: 8) {
+                Text(String(localized: "AIとのチャット履歴"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 12) {
+                            if chatMessages.isEmpty {
+                                AiChatEmptyPlaceholder()
+                                    .padding(.vertical, 16)
+                                    .padding(.horizontal, 12)
+                            } else {
+                                ForEach(chatMessages) { message in
+                                    AiChatMessageBubble(message: message)
+                                        .id(message.id)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 4)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 260)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(Color(uiColor: .secondarySystemBackground))
@@ -123,30 +270,65 @@ struct AiCreateView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
-                    .accessibilityLabel(Text("パックの要望入力"))
+                    .onChange(of: chatMessages) { messages in
+                        if let last = messages.last {
+                            DispatchQueue.main.async {
+                                withAnimation {
+                                    proxy.scrollTo(last.id, anchor: .bottom)
+                                }
+                            }
+                        }
+                    }
+                    .onAppear {
+                        if let last = chatMessages.last {
+                            DispatchQueue.main.async {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            }
+                        }
+                    }
+                }
+            }
 
-                // プレースホルダー
-                if isRequirementEmpty {
-                    // 入力例
-                    Text("""
-                        （例）
-                        海外旅行5泊6日　イギリス、スペイン
-                        家族4人（大人2人、子ども2人）
-                        ＜日程、行程、アクティビティなども記入＞
-                        4人でスキューバダイビングに参加
-                        雨天も想定。救急用品も持参
-                        """)
+            // チャット入力欄とプレースホルダー
+            VStack(alignment: .leading, spacing: 4) {
+                Text(String(localized: "チャットにメッセージを送ってください"))
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 16)
-                    .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
+
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $requirementText)
+                        .frame(height: 140)
+                        .padding(8)
+                        .focused(requirementFocus)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(uiColor: .secondarySystemBackground))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                        .accessibilityLabel(Text("パックの要望入力"))
+
+                    if isRequirementEmpty {
+                        Text("""
+                            （例）
+                            海外旅行5泊6日　イギリス、スペイン
+                            家族4人（大人2人、子ども2人）
+                            ＜日程、行程、アクティビティなども記入＞
+                            4人でスキューバダイビングに参加
+                            雨天も想定。救急用品も持参
+                            """)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 16)
+                        .allowsHitTesting(false)
+                    }
                 }
             }
 
             Button {
-                // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
-                inlineGenerationFeedback = nil
-                generatePackWithOpenAI()
+                sendDraftMessage()
             } label: {
                 HStack {
                     if isGenerating {
@@ -205,10 +387,24 @@ struct AiCreateView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
+            // AppStorageに保存していたチャット履歴を復元
+            loadChatHistoryIfNeeded()
             // シートが表示されたら画面内フィードバックを優先で伝えるためのフラグを立てる
             isViewVisible = true
             // 古い結果メッセージが残っていると誤解を招くので表示のたびにリセットする
             inlineGenerationFeedback = nil
+        }
+        .onChange(of: chatMessages) { _ in
+            if isRestoringChatSession {
+                return
+            }
+            persistChatSession()
+        }
+        .onChange(of: activeChatThreadId) { _ in
+            if isRestoringChatSession {
+                return
+            }
+            persistChatSession()
         }
         .task {
             // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
@@ -267,15 +463,138 @@ struct AiCreateView: View {
         return Color(uiColor: .systemGray6)
     }
 
+    /// チャット入力欄のテキストを送信し、履歴へ追加してから生成処理を開始する
+    @MainActor
+    private func sendDraftMessage() {
+        let trimmed = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            return
+        }
+        if isGenerating {
+            return
+        }
+        inlineGenerationFeedback = nil
+        appendUserMessage(trimmed)
+        requirementText = ""
+        requirementFocus.wrappedValue = false
+        generatePackWithOpenAI()
+    }
+
+    /// ユーザーのチャット発言を履歴へ追加する
+    @MainActor
+    private func appendUserMessage(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return
+        }
+        chatMessages.append(AiChatMessage(role: .user, content: trimmed))
+        trimChatHistoryIfNeeded()
+    }
+
+    /// AIからの返信を履歴へ追加する
+    @MainActor
+    private func appendAssistantMessage(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return
+        }
+        chatMessages.append(AiChatMessage(role: .assistant, content: trimmed))
+        trimChatHistoryIfNeeded()
+    }
+
+    /// 履歴件数が上限を超えたときに古いものから削除する
+    @MainActor
+    private func trimChatHistoryIfNeeded() {
+        let limit = chatHistoryLimit
+        if limit < chatMessages.count {
+            let overflow = chatMessages.count - limit
+            chatMessages.removeFirst(overflow)
+        }
+    }
+
+    /// AppStorageからチャット履歴を復元する
+    @MainActor
+    private func loadChatHistoryIfNeeded() {
+        if didLoadChatHistory {
+            return
+        }
+        didLoadChatHistory = true
+        isRestoringChatSession = true
+        defer {
+            isRestoringChatSession = false
+        }
+
+        // 保存済みのスレッドIDを復元して、次回から差分送信できるようにする
+        let trimmedThreadId = chatThreadIdStorage.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedThreadId.isEmpty {
+            setActiveThreadId(nil)
+        } else {
+            setActiveThreadId(trimmedThreadId)
+        }
+
+        if chatHistoryData.isEmpty {
+            chatMessages = []
+            return
+        }
+        do {
+            let restored = try JSONDecoder().decode([AiChatMessage].self, from: chatHistoryData)
+            if chatHistoryLimit < restored.count {
+                chatMessages = Array(restored.suffix(chatHistoryLimit))
+            } else {
+                chatMessages = restored
+            }
+        } catch {
+            chatMessages = []
+        }
+    }
+
+    /// 現在のチャット履歴とスレッドIDをAppStorageへ保存する
+    @MainActor
+    private func persistChatSession() {
+        do {
+            let data = try JSONEncoder().encode(chatMessages)
+            chatHistoryData = data
+        } catch {
+            // 保存に失敗しても利用者への影響は軽微なのでログのみ残す
+            log(.error, "Failed to encode chat history: \(error.localizedDescription)")
+        }
+
+        // スレッドIDは空文字を避け、ユーザーに見えない内部状態だけを保存する
+        if let threadId = activeChatThreadId?.trimmingCharacters(in: .whitespacesAndNewlines), threadId.isEmpty == false {
+            chatThreadIdStorage = threadId
+            return
+        }
+        chatThreadIdStorage = ""
+    }
+
+    /// OpenAIのスレッドIDをView状態とAppStorageへ反映する
+    @MainActor
+    private func setActiveThreadId(_ threadId: String?) {
+        if let threadId {
+            let trimmed = threadId.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty == false {
+                activeChatThreadId = trimmed
+                return
+            }
+        }
+        activeChatThreadId = nil
+    }
+
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
-        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedRequirement.isEmpty {
+        let currentMessages = chatMessages
+        // もっとも新しいユーザー発言だけを抽出し、Threads APIへ差分送信する
+        let latestUserMessage = currentMessages.last { message in
+            message.role == .user
+        }?.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmedMessage = latestUserMessage, trimmedMessage.isEmpty == false else {
             inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
             return
         }
 
         let userId = creditStore.userId
+        let currentThreadId = activeChatThreadId
         isGenerating = true
         Task {
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
@@ -311,23 +630,30 @@ struct AiCreateView: View {
             }
 
             do {
-                let dto = try await requestPackFromServer(
+                let response = try await requestPackFromServer(
                     userId: userId,
-                    requirement: trimmedRequirement,
+                    threadId: currentThreadId,
+                    message: trimmedMessage,
                     canAttemptRecovery: true
                 )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
+                await MainActor.run {
+                    setActiveThreadId(response.threadId)
+                }
                 do {
                     let packName = try await MainActor.run { () -> String in
-                        let importedPack = try createPack(from: dto)
+                        let importedPack = try createPack(from: response.pack)
 
                         GALogger.log(.packlin_request(userId: userId,
-                                                      requirement: trimmedRequirement))
+                                                      requirement: trimmedMessage))
                         return importedPack.name
                     }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
                     await presentGenerationSuccess(packName: packName)
+                    if let chatReply = response.pack.chat {
+                        await appendAssistantMessage(chatReply)
+                    }
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -406,19 +732,37 @@ struct AiCreateView: View {
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
     /// - Parameters:
     ///   - userId: サーバー側でクレジット消費対象となるユーザーID
-    ///   - requirement: ユーザーが入力した要件
+    ///   - threadId: 既存スレッドのID（nilならサーバー側で新規作成される）
+    ///   - message: 今回送るユーザーの発言本文
     ///   - canAttemptRecovery: トークン再取得を試行できるかどうか（再帰呼び出し抑制用）
-    /// - Returns: サーバーが返したPack生成結果DTO
-    private func requestPackFromServer(userId: String, requirement: String, canAttemptRecovery: Bool) async throws -> PackJsonDTO {
+    /// - Returns: スレッド情報とパックDTOを含んだレスポンス
+    private func requestPackFromServer(userId: String, threadId: String?, message: String, canAttemptRecovery: Bool) async throws -> AzukiApi.AssistantChatResponse {
         do {
-            return try await AzukiApi.shared.generatePack(userId: userId, requirement: requirement)
+            return try await AzukiApi.shared.generatePack(userId: userId,
+                                                         threadId: threadId,
+                                                         message: message)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
                 if recovered {
                     return try await requestPackFromServer(
                         userId: userId,
-                        requirement: requirement,
+                        threadId: threadId,
+                        message: message,
+                        canAttemptRecovery: false
+                    )
+                }
+            }
+            if canAttemptRecovery {
+                if case .notFound = apiError, threadId != nil {
+                    // サーバー側でスレッドが破棄されていた場合はローカル状態をリセットしてから再試行
+                    await MainActor.run {
+                        setActiveThreadId(nil)
+                    }
+                    return try await requestPackFromServer(
+                        userId: userId,
+                        threadId: nil,
+                        message: message,
                         canAttemptRecovery: false
                     )
                 }

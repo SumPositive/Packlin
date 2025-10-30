@@ -285,6 +285,10 @@ enum AppStorageKey {
     static let weightDisplayInKg = "setting.weightDisplayInKg"
     // AI生成画面での要望テキスト（AppStorageで復元するためのキー）
     static let aiRequirementText = "aiCreate.requirementText"
+    // AI生成画面でのチャット履歴を保存するキー
+    static let aiChatHistory = "aiCreate.chatHistory"
+    // Assistants APIのスレッドIDを保持するためのキー
+    static let aiChatThreadId = "aiCreate.chatThreadId"
 }
 
 /// 新規追加する位置

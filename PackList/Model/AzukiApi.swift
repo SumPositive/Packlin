@@ -137,26 +137,52 @@ final class AzukiApi {
         self.deviceAuthenticator = deviceAuthenticator
     }
 
+    /// Assistants APIを利用したパック生成のレスポンス
+    struct AssistantChatResponse: Decodable {
+        /// OpenAI Threads APIで管理されるスレッドID
+        let threadId: String
+        /// 実際に読み込むパックDTO（従来と同じ構造）
+        let pack: PackJsonDTO
+    }
+
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID
-    ///   - requirement: ユーザーが入力した要件
-    /// - Returns: PackListへそのまま取り込めるDTO
-    func generatePack(userId: String, requirement: String) async throws -> PackJsonDTO {
+    ///   - threadId: OpenAIのスレッドID（初回はnilで新規作成）
+    ///   - message: 今回ユーザーが送信したチャット本文
+    /// - Returns: スレッド情報とパックDTOを含むレスポンス
+    func generatePack(userId: String, threadId: String?, message: String) async throws -> AssistantChatResponse {
         struct GenerateRequest: Encodable {
             let userId: String
-            let requirement: String
+            let threadId: String?
+            let message: String
+
+            enum CodingKeys: String, CodingKey {
+                case userId
+                case threadId
+                case message
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                try container.encode(userId, forKey: .userId)
+                if let threadId {
+                    try container.encode(threadId, forKey: .threadId)
+                }
+                try container.encode(message, forKey: .message)
+            }
         }
 
-        guard let url = makeURL(path: "/api/openai") else {
+        guard let url = makeURL(path: "/api/assistants/thread/run") else {
             throw AzukiAPIError.invalidURL
         }
-        // リクエスト パラメータ
+        // リクエスト パラメータ（差分送信のため、今回のユーザー発言のみを送る）
         let requestBody = GenerateRequest(userId: userId,
-                                          requirement: requirement)
+                                          threadId: threadId,
+                                          message: message)
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
-            return try decoder.decode(PackJsonDTO.self, from: data)
+            return try decoder.decode(AssistantChatResponse.self, from: data)
         } catch {
             throw AzukiAPIError.decoding
         }
