@@ -34,7 +34,7 @@ final class LocalNotificationManager: NSObject {
     /// AI生成が成功した際にローカル通知を発行する
     /// - Parameter packName: 生成したパックの名称
     func notifyPackGenerationSucceeded(packName: String) async {
-        let title = String(localized: "AI生成が完了しました")
+        let title = String(localized: "チャッピーの提案が届きました")
         let body = String(localized: "\(packName) を追加しました。アプリで内容を確認しましょう")
         await scheduleNotification(title: title, body: body, suffix: "success")
     }

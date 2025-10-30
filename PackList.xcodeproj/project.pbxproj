@@ -39,7 +39,6 @@
 		C367576C2E802B9B0098BB22 /* Exceptions for "PackList" folder in "PackList" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Common/Clipboard.swift,
 				Resources/Info.plist,
 			);
 			target = C3D2BB6B2E6A7967002B900A /* PackList */;

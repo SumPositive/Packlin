@@ -103,7 +103,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("下の欄に要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックの取り込みに成功するとAI利用券が1枚減ります")
+            Text("下の欄に要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックが届けばAI利用券が1枚減ります")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -162,7 +162,7 @@ struct AiCreateView: View {
             .disabled(isRequirementEmpty || isGenerating)
 
             if isGenerating {
-                Text("チャッピーが作ってます。もう少しお待ちください")
+                Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -371,7 +371,7 @@ struct AiCreateView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .success(message: String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧に戻って見てください"))
+                inlineGenerationFeedback = .success(message: String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧を見てください"))
             }
             return
         }
@@ -593,7 +593,7 @@ struct AiCreateView: View {
                     case .pending:
                         // ファミリー共有などで承認待ちになる場合
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです。まだ課金はされません。承認が完了すると自動で反映されます。"))
+                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです。まだ課金されません。承認が完了すると自動で反映されます。"))
                         }
                         
                     case .userCancelled:
@@ -822,7 +822,7 @@ struct AiCreateView: View {
         
         // verifyPurchaseに失敗し、購入中止したときのメッセージ
         let fallbackMessage = String(
-            localized: "購入の結果待ちです。まだ課金はされません。確認が完了すると自動で反映されます。")
+            localized: "購入の結果待ちです。まだ課金されません。確認が完了すると自動で反映されます。")
 
 
         do {
