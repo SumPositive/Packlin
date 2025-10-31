@@ -250,7 +250,7 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("チャッピー(AI)とパックを作ろう")
+                Text("チャッピー(AI)に手伝ってもらう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -258,15 +258,15 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("下の欄に要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックが届けばAI利用券が1枚減ります")
+            Text("下のチャットで相談すれば、チャッピーが要望に応じたパックを提案してくれます。その結果、パックの追加や修正が完了すればAI利用券が1枚減ります")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
             // チャット履歴を表示する領域
             VStack(alignment: .leading, spacing: 8) {
-                Text(String(localized: "AIとのチャット履歴"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+//                Text(String(localized: "AIとのチャット履歴"))
+//                    .font(.caption)
+//                    .foregroundStyle(.secondary)
 
                 ScrollViewReader { proxy in
                     ScrollView {

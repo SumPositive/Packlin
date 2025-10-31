@@ -43,6 +43,7 @@ struct AppMain: App {
             container.mainContext.undoManager = undoManager
             return container
         } catch {
+            // DB構造違いなどで発生　　アプリ削除して再インストールする
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()

@@ -83,26 +83,6 @@ struct PackEditView: View {
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
 
-                // AIに相談
-                Button {
-                    isPresentingAiSheet = true
-                    GALogger.log(.function(name: "pack_edit", option: "tap_ai"))
-                } label: {
-                    VStack {
-                        Image(systemName: "sparkles")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                        Text("チャッピーに相談")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-                .sheet(isPresented: $isPresentingAiSheet) {
-                    // 既存パックをAIとやり取りしながら上書きする
-                    AiCreateSheetView(pack: pack)
-                }
-
                 // 共有
                 Button {
                     exportPack()
@@ -143,6 +123,33 @@ struct PackEditView: View {
                 .padding(.horizontal, 8)
             }
             .padding(.bottom, 8)
+            
+            HStack {
+                // AIに相談
+                Button {
+                    isPresentingAiSheet = true
+                    GALogger.log(.function(name: "pack_edit", option: "tap_ai"))
+                } label: {
+                    HStack {
+                        Image(systemName: "sparkles")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                        Text("チャッピー(AI)に手伝ってもらう")
+                            .font(.body)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(COLOR_BACK_INPUT)
+                )
+                .sheet(isPresented: $isPresentingAiSheet) {
+                    // 既存パックをAIとやり取りしながら上書きする
+                    AiCreateSheetView(pack: pack)
+                }
+            }
             
             HStack {
                 Text("edit.name")
@@ -186,7 +193,7 @@ struct PackEditView: View {
                 .padding(.top, 4)
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 400)
+        .frame(width: 320, height: 450)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
