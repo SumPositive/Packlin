@@ -250,7 +250,7 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("チャッピー(AI)に手伝ってもらう")
+                Text("チャッピー(AI)に相談する")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -258,7 +258,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("下のチャットで相談すれば、チャッピーが要望に応じたパックを提案してくれます。その結果、パックの追加や修正が完了すればAI利用券が1枚減ります")
+            Text("チャットで相談しましょう。チャッピーが要望に応じたパックを提案してくれます。送信の都度AI利用券1枚が必要です")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -313,8 +313,10 @@ struct AiCreateView: View {
                 }
             }
 
+            // チャット入力欄
             chatInputSection
                 .id(chatInputAnchorId)
+                .padding(.top, -12)
 
             if isGenerating {
                 Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
@@ -433,14 +435,14 @@ struct AiCreateView: View {
 
     /// 履歴直下に配置するチャット入力欄（キーボードで隠れないようスクロール連動）
     private var chatInputSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .bottom, spacing: 8) {
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $requirementText)
                         .focused(requirementFocus)
-                        .frame(minHeight: 36, maxHeight: 160)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 10)
+                        .frame(minHeight: 24, maxHeight: 160)
+                        .padding(.vertical, 2)
+                        .padding(.horizontal, 4)
                         // TextEditorの枠線をなるべくシンプルにしつつ読みやすさを保つ
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -461,14 +463,14 @@ struct AiCreateView: View {
                             }
                         )
 
-                    if requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text(String(localized: "旅程や持ち物の希望を入力"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 14)
-                            .allowsHitTesting(false)
-                    }
+//                    if requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+//                        Text(String(localized: "旅程や持ち物の希望を入力"))
+//                            .font(.footnote)
+//                            .foregroundStyle(.secondary)
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal, 14)
+//                            .allowsHitTesting(false)
+//                    }
                 }
 
                 Button {

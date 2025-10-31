@@ -125,33 +125,6 @@ struct PackEditView: View {
             .padding(.bottom, 8)
             
             HStack {
-                // AIに相談
-                Button {
-                    isPresentingAiSheet = true
-                    GALogger.log(.function(name: "pack_edit", option: "tap_ai"))
-                } label: {
-                    HStack {
-                        Image(systemName: "sparkles")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                        Text("チャッピー(AI)に手伝ってもらう")
-                            .font(.body)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(COLOR_BACK_INPUT)
-                )
-                .sheet(isPresented: $isPresentingAiSheet) {
-                    // 既存パックをAIとやり取りしながら上書きする
-                    AiCreateSheetView(pack: pack)
-                }
-            }
-            
-            HStack {
                 Text("edit.name")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -168,6 +141,7 @@ struct PackEditView: View {
                 }
                 .focused($nameIsFocused) // フォーカス状態とバインド
                 .frame(height: 80)
+                .cornerRadius(8)
 
             HStack {
                 Text("edit.memo")
@@ -186,11 +160,38 @@ struct PackEditView: View {
                     }
                 }
                 .frame(height: 180)
+                .cornerRadius(8)
+                .padding(.bottom, 8)
 
-            Text("edit.info.swipeToDismiss")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .padding(.top, 4)
+            // AIに相談
+            Button {
+                isPresentingAiSheet = true
+                GALogger.log(.function(name: "pack_edit", option: "tap_ai"))
+            } label: {
+                HStack {
+                    Image(systemName: "sparkles")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical)
+                    Text("チャッピー(AI)に相談する")
+                        .font(.body)
+                }
+            }
+            .tint(.accentColor)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(COLOR_BACK_INPUT)
+            )
+            .sheet(isPresented: $isPresentingAiSheet) {
+                // 既存パックをAIとやり取りしながら上書きする
+                AiCreateSheetView(pack: pack)
+            }
+
+//            Text("edit.info.swipeToDismiss")
+//                .font(.caption2)
+//                .foregroundStyle(.secondary)
+//                .padding(.top, 4)
         }
         .padding(.horizontal, 8)
         .frame(width: 320, height: 450)
@@ -203,7 +204,7 @@ struct PackEditView: View {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
             if pack.name.isEmpty {
-                nameIsFocused = true
+//                nameIsFocused = true
             }
         }
         .onDisappear() {
