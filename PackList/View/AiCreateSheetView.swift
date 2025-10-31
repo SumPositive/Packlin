@@ -203,6 +203,8 @@ struct AiCreateView: View {
     @State private var inlineGenerationFeedback: GenerationFeedback?
     /// チャットメッセージ群（ユーザーとAIの往復を保持）
     @State private var chatMessages: [AiChatMessage] = []
+    /// 送信中のドラフトメッセージ。失敗時に入力欄へ戻すため保持する
+    @State private var pendingDraftMessage: String?
     /// 現在チャットで操作しているパック
     @State private var currentPack: M1Pack?
     /// AppStorageから履歴を復元済みかどうかのフラグ（多重読み込み防止）
@@ -552,6 +554,7 @@ struct AiCreateView: View {
             return
         }
         inlineGenerationFeedback = nil
+        pendingDraftMessage = trimmed
         appendUserMessage(trimmed)
         requirementText = ""
         requirementFocus.wrappedValue = false
@@ -622,6 +625,26 @@ struct AiCreateView: View {
         }
     }
 
+    /// 送信済みドラフトを取り消して入力欄へ戻す
+    @MainActor
+    private func rollbackPendingDraftMessage() {
+        guard let draft = pendingDraftMessage else {
+            return
+        }
+
+        if let last = chatMessages.last, last.role == .user, last.content == draft {
+            chatMessages.removeLast()
+        } else if let index = chatMessages.lastIndex(where: { message in
+            message.role == .user && message.content == draft
+        }) {
+            chatMessages.remove(at: index)
+        }
+
+        requirementText = draft
+        requirementFocus.wrappedValue = true
+        pendingDraftMessage = nil
+    }
+
     /// チャット履歴を対象パックへ書き戻す
     @MainActor
     private func persistChatHistory() {
@@ -669,6 +692,7 @@ struct AiCreateView: View {
                 Task {
                     await MainActor.run {
                         if shouldRestoreCredits {
+                            rollbackPendingDraftMessage()
                             creditStore.add(credits: cost)
                         }
                         isGenerating = false
@@ -679,6 +703,9 @@ struct AiCreateView: View {
             let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
             if hasEnoughCredits == false {
                 await presentCreditShortageFeedback()
+                await MainActor.run {
+                    rollbackPendingDraftMessage()
+                }
                 return
             }
 
@@ -689,6 +716,9 @@ struct AiCreateView: View {
                 }
             } catch {
                 await presentCreditShortageFeedback()
+                await MainActor.run {
+                    rollbackPendingDraftMessage()
+                }
                 return
             }
 
@@ -710,6 +740,9 @@ struct AiCreateView: View {
                     await presentGenerationSuccess(packName: result.name, isNewlyCreated: result.isNew)
                     let assistantReply = response.reply ?? response.pack.memo
                     await appendAssistantMessage(assistantReply)
+                    await MainActor.run {
+                        pendingDraftMessage = nil
+                    }
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -717,9 +750,15 @@ struct AiCreateView: View {
                     } else {
                         message = error.localizedDescription
                     }
+                    await MainActor.run {
+                        rollbackPendingDraftMessage()
+                    }
                     await presentGenerationFailure(message: message)
                 }
             } catch let apiError as AzukiAPIError {
+                await MainActor.run {
+                    rollbackPendingDraftMessage()
+                }
                 switch apiError {
                 case .insufficientCredits:
                     shouldRestoreCredits = false
@@ -735,9 +774,15 @@ struct AiCreateView: View {
                     await presentGenerationFailure(message: message)
                 }
             } catch let localized as LocalizedError {
+                await MainActor.run {
+                    rollbackPendingDraftMessage()
+                }
                 let message = localized.errorDescription ?? localized.localizedDescription
                 await presentGenerationFailure(message: message)
             } catch {
+                await MainActor.run {
+                    rollbackPendingDraftMessage()
+                }
                 await presentGenerationFailure(message:
                                                     String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください"))
             }
