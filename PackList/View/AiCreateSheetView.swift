@@ -25,21 +25,27 @@ struct AiCreateSheetView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                AiCreateView(pack: pack, requirementFocus: $isRequirementFocused)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    AiCreateView(
+                        pack: pack,
+                        requirementFocus: $isRequirementFocused,
+                        scrollProxy: proxy
+                    )
+                }
+                // 背景タップでキーボードを閉じるためのジェスチャ
+                .contentShape(Rectangle())
+                // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 24).onChanged { _ in
+                        // ScrollView本体でのドラッグだけに反応し、TextEditor内の操作ではフォーカスを保つ
+                        if isRequirementFocused {
+                            isRequirementFocused = false
+                        }
+                    },
+                    including: .gesture
+                )
             }
-            // 背景タップでキーボードを閉じるためのジェスチャ
-            .contentShape(Rectangle())
-            // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 24).onChanged { _ in
-                    // ScrollView本体でのドラッグだけに反応し、TextEditor内の操作ではフォーカスを保つ
-                    if isRequirementFocused {
-                        isRequirementFocused = false
-                    }
-                },
-                including: .gesture
-            )
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(Text("app.title"))
             .navigationBarTitleDisplayMode(.inline)
@@ -120,7 +126,7 @@ private struct AiChatMessageBubble: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(borderColor, lineWidth: 0.6)
+                    .stroke(borderColor, lineWidth: borderLineWidth)
             )
     }
 
@@ -129,7 +135,7 @@ private struct AiChatMessageBubble: View {
         if message.role.isUser {
             return Color.accentColor
         }
-        return Color(uiColor: .systemGray5)
+        return Color(uiColor: .systemGray6)
     }
 
     /// 文字色
@@ -145,7 +151,24 @@ private struct AiChatMessageBubble: View {
         if message.role.isUser {
             return Color.accentColor.opacity(0.6)
         }
-        return Color(uiColor: .separator).opacity(0.4)
+        return Color.accentColor.opacity(0.25)
+    }
+
+    /// 吹き出しの枠線の太さ
+    private var borderLineWidth: CGFloat {
+        if message.role.isUser {
+            return 0.6
+        }
+        return 1
+    }
+}
+
+/// TextEditorの高さ変化をPreferenceで受け渡すためのキー
+private struct TextEditorHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
@@ -157,15 +180,21 @@ struct AiCreateView: View {
     @EnvironmentObject private var creditStore: CreditStore
     /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
     private let requirementFocus: FocusState<Bool>.Binding
+    /// 外側のスクロールビューを制御して、入力欄がキーボードに隠れないよう調整するためのプロキシ
+    private let scrollProxy: ScrollViewProxy
     /// 保存するチャット履歴の最大件数（サーバーへ渡す文量を抑えるための安全弁）
     private let chatHistoryLimit = 30
     /// チャット開始時に案内として常に表示するアシスタントメッセージ
     private let initialAssistantMessage: AiChatMessage
     /// 初期表示時に紐付ける既存パック（nilなら新規作成モード）
     private let initialPack: M1Pack?
+    /// チャット入力欄へスクロールする際に利用するアンカーID
+    private let chatInputAnchorId = "aiChatInputAnchor"
 
     /// ユーザーからAIへの要望・要件テキスト。パックごとのドラフトはDBに残さずその場限りにする。
     @State private var requirementText: String = ""
+    /// キーボード高さを監視して、スクロール位置を調整するためのオブジェクト
+    @StateObject private var keyboardObserver = KeyboardObserver()
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -190,6 +219,8 @@ struct AiCreateView: View {
     @State private var notifiedTransactionIds: Set<String> = []
     /// ビューが画面上に表示されているかどうかを保持し、通知とアラートの出し分けに利用する
     @State private var isViewVisible = true
+    /// TextEditorの表示高さを保持し、行数増加時にスクロールを追従させる
+    @State private var textEditorHeight: CGFloat = 0
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -203,10 +234,11 @@ struct AiCreateView: View {
 
     /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
     /// - Parameter requirementFocus: TextEditorのフォーカスを外部で管理するためのバインディング
-    init(pack: M1Pack?, requirementFocus: FocusState<Bool>.Binding) {
+    init(pack: M1Pack?, requirementFocus: FocusState<Bool>.Binding, scrollProxy: ScrollViewProxy) {
         self.requirementFocus = requirementFocus
         self.initialPack = pack
         self._currentPack = State(initialValue: pack)
+        self.scrollProxy = scrollProxy
         // 利用者へ聞きたい内容をあらかじめ吹き出しで表示して案内する
         self.initialAssistantMessage = AiChatMessage(
             role: .assistant,
@@ -281,6 +313,9 @@ struct AiCreateView: View {
                 }
             }
 
+            chatInputSection
+                .id(chatInputAnchorId)
+
             if isGenerating {
                 Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
                     .font(.footnote)
@@ -323,6 +358,7 @@ struct AiCreateView: View {
             
         }
         .padding(16)
+        .padding(.bottom, keyboardObserver.height)
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             // SwiftDataに保存していたチャット履歴を復元
@@ -331,9 +367,21 @@ struct AiCreateView: View {
             isViewVisible = true
             // 古い結果メッセージが残っていると誤解を招くので表示のたびにリセットする
             inlineGenerationFeedback = nil
+            // 初期表示でも入力欄が見える位置に合わせておく
+            scrollToChatInput(animated: false)
         }
         .onChange(of: chatMessages) { _ in
             persistChatHistory()
+        }
+        .onChange(of: keyboardObserver.height) { _ in
+            // キーボードが出入りしたら入力欄へスクロールして視界に収める
+            scrollToChatInput(animated: true)
+        }
+        .onChange(of: requirementFocus.wrappedValue) { isFocused in
+            if isFocused {
+                // 利用者が入力欄をタップした瞬間にもスクロールしておく
+                scrollToChatInput(animated: true)
+            }
         }
         .task {
             // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
@@ -374,9 +422,6 @@ struct AiCreateView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.2), lineWidth: 0.5)
         )
-        .safeAreaInset(edge: .bottom) {
-            chatInputBar
-        }
         .alert(item: $alertState) { alert in
             Alert(
                 title: Text(alert.title),
@@ -386,8 +431,8 @@ struct AiCreateView: View {
         }
     }
 
-    /// キーボードの直上に貼り付くチャット入力欄
-    private var chatInputBar: some View {
+    /// 履歴直下に配置するチャット入力欄（キーボードで隠れないようスクロール連動）
+    private var chatInputSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             // ガイド文を常に小さく表示して利用者に動作を伝える
             Text(String(localized: "チャットにメッセージを送ってください"))
@@ -410,6 +455,15 @@ struct AiCreateView: View {
                                 .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                         )
                         .accessibilityLabel(Text("パックの要望入力"))
+                        .background(
+                            GeometryReader { geometry in
+                                Color.clear
+                                    .preference(
+                                        key: TextEditorHeightPreferenceKey.self,
+                                        value: geometry.size.height
+                                    )
+                            }
+                        )
 
                     if requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         Text(String(localized: "旅程や持ち物の希望を入力"))
@@ -446,15 +500,24 @@ struct AiCreateView: View {
                 .disabled(isSendButtonInactive)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
+        .padding(12)
         .background(
-            // キーボード上で浮かせず背面色と馴染ませる
-            Rectangle()
-                .fill(Color(uiColor: .systemGroupedBackground).opacity(0.95))
-                .ignoresSafeArea(edges: .bottom)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemBackground))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+        )
+        .onPreferenceChange(TextEditorHeightPreferenceKey.self) { newHeight in
+            // TextEditorが広がったら即座にスクロールし、キーボードに隠れない位置を保つ
+            if textEditorHeight + 0.5 < newHeight {
+                textEditorHeight = newHeight
+                scrollToChatInput(animated: true)
+            } else {
+                textEditorHeight = newHeight
+            }
+        }
     }
 
     /// 背景カラーをダーク／ライトに応じて出し分ける
@@ -464,6 +527,19 @@ struct AiCreateView: View {
         }
 
         return Color(uiColor: .systemGray6)
+    }
+
+    /// 入力欄が常に視界に入るよう、スクロール位置を最下部へ移動させる
+    private func scrollToChatInput(animated: Bool) {
+        DispatchQueue.main.async {
+            if animated {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    scrollProxy.scrollTo(chatInputAnchorId, anchor: .bottom)
+                }
+            } else {
+                scrollProxy.scrollTo(chatInputAnchorId, anchor: .bottom)
+            }
+        }
     }
 
     /// チャット入力欄のテキストを送信し、履歴へ追加してから生成処理を開始する
