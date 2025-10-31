@@ -154,15 +154,15 @@ final class AzukiApi {
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID
-    ///   - messages: ユーザーとアシスタントの履歴
+    ///   - messages: 双方のチャット履歴（currentPackを送らなくても履歴から推論できるはず）
     /// - Returns: 生成結果のパックと返信メッセージ
     func generatePack(userId: String, messages: [ChatMessagePayload]) async throws -> OpenAIChatResponse {
         struct GenerateRequest: Encodable {
             let userId: String
-            let messages: [ChatMessagePayload]
+            let messages: [ChatMessagePayload] //双方のチャット履歴（currentPackを送らなくても履歴から推論できるはず）
         }
 
-        guard let url = makeURL(path: "/api/openai") else {
+        guard let url = makeURL(path: "/api/openai/chat") else {
             throw AzukiAPIError.invalidURL
         }
         let requestBody = GenerateRequest(userId: userId,
