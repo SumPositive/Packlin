@@ -434,11 +434,6 @@ struct AiCreateView: View {
     /// 履歴直下に配置するチャット入力欄（キーボードで隠れないようスクロール連動）
     private var chatInputSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // ガイド文を常に小さく表示して利用者に動作を伝える
-            Text(String(localized: "チャットにメッセージを送ってください"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
             HStack(alignment: .bottom, spacing: 8) {
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $requirementText)
@@ -446,13 +441,14 @@ struct AiCreateView: View {
                         .frame(minHeight: 36, maxHeight: 160)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 10)
+                        // TextEditorの枠線をなるべくシンプルにしつつ読みやすさを保つ
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(Color(uiColor: .secondarySystemBackground))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .strokeBorder(Color.secondary.opacity(0.25), lineWidth: 1)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(Color(uiColor: .systemBackground))
+                                )
                         )
                         .accessibilityLabel(Text("パックの要望入力"))
                         .background(
@@ -503,11 +499,11 @@ struct AiCreateView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                .strokeBorder(Color.secondary.opacity(0.18), lineWidth: 1)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color(uiColor: .secondarySystemBackground))
+                )
         )
         .onPreferenceChange(TextEditorHeightPreferenceKey.self) { newHeight in
             // TextEditorが広がったら即座にスクロールし、キーボードに隠れない位置を保つ
