@@ -660,9 +660,8 @@ struct AiCreateView: View {
                     }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
                     await presentGenerationSuccess(packName: packName)
-                    if let chatReply = response.pack.memo {
-                        await appendAssistantMessage(chatReply)
-                    }
+                    // チャット返信文
+                    await appendAssistantMessage(response.pack.memo)
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {

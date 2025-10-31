@@ -39,8 +39,6 @@ struct PackJsonDTO: Codable {
     let order: Int?
     let name: String
     let memo: String
-    /// AIからの追加メッセージ（チャット形式での返信）
-    let chat: String?
     let createdAt: Date
     let groups: [Group]
 
@@ -53,7 +51,6 @@ struct PackJsonDTO: Codable {
         case order
         case name
         case memo
-        case chat
         case createdAt
         case groups
     }
@@ -69,7 +66,6 @@ extension M1Pack {
             order: nil, // 読み込み側で決定
             name: name,
             memo: memo,
-            chat: nil,
             createdAt: createdAt,
             groups: child
                 .sorted { $0.order < $1.order }
