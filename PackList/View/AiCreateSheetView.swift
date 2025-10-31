@@ -225,7 +225,7 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("チャッピー(AI)にパックを作ってもらおう")
+                Text("チャッピー(AI)とパックを作ろう")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -261,7 +261,7 @@ struct AiCreateView: View {
                         .padding(.horizontal, 4)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 260)
+                    .frame(minHeight: 100, maxHeight: 300)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(Color(uiColor: .secondarySystemBackground))
@@ -297,7 +297,7 @@ struct AiCreateView: View {
 
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $requirementText)
-                        .frame(height: 140)
+                        .frame(minHeight: 24, maxHeight: 200)
                         .padding(8)
                         .focused(requirementFocus)
                         .background(
@@ -309,21 +309,6 @@ struct AiCreateView: View {
                                 .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                         )
                         .accessibilityLabel(Text("パックの要望入力"))
-
-                    if isRequirementEmpty {
-                        Text("""
-                            （例）
-                            海外旅行5泊6日　イギリス、スペイン
-                            家族4人（大人2人、子ども2人）
-                            ＜日程、行程、アクティビティなども記入＞
-                            4人でスキューバダイビングに参加
-                            雨天も想定。救急用品も持参
-                            """)
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 16)
-                        .padding(.horizontal, 16)
-                        .allowsHitTesting(false)
-                    }
                 }
             }
 
