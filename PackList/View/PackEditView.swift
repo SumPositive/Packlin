@@ -23,6 +23,8 @@ struct PackEditView: View {
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
+    /// チャット生成シートの表示状態
+    @State private var isPresentingAiSheet = false
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
@@ -80,6 +82,26 @@ struct PackEditView: View {
                 }
                 .tint(.accentColor)
                 .padding(.horizontal, 8)
+
+                // AIに相談
+                Button {
+                    isPresentingAiSheet = true
+                    GALogger.log(.function(name: "pack_edit", option: "tap_ai"))
+                } label: {
+                    VStack {
+                        Image(systemName: "sparkles")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                        Text("チャッピーに相談")
+                            .font(.caption)
+                    }
+                }
+                .tint(.accentColor)
+                .padding(.horizontal, 8)
+                .sheet(isPresented: $isPresentingAiSheet) {
+                    // 既存パックをAIとやり取りしながら上書きする
+                    AiCreateSheetView(pack: pack)
+                }
 
                 // 共有
                 Button {

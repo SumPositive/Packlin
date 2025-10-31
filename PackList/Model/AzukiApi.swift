@@ -137,52 +137,39 @@ final class AzukiApi {
         self.deviceAuthenticator = deviceAuthenticator
     }
 
-    /// Assistants APIを利用したパック生成のレスポンス
-    struct AssistantChatResponse: Decodable {
-        /// OpenAI Threads APIで管理されるスレッドID
-        let threadId: String
-        /// 実際に読み込むパックDTO（従来と同じ構造）
+    /// OpenAIチャットの履歴として送信する1メッセージ分のDTO
+    struct ChatMessagePayload: Encodable {
+        let role: String
+        let content: String
+    }
+
+    /// OpenAI(azuki-api経由)にパック生成を依頼するレスポンス
+    struct OpenAIChatResponse: Decodable {
+        /// 実際に読み込むパックDTO
         let pack: PackJsonDTO
+        /// チャット欄に表示するアシスタントの返答（未提供ならnil）
+        let reply: String?
     }
 
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID
-    ///   - threadId: OpenAIのスレッドID（初回はnilで新規作成）
-    ///   - message: 今回ユーザーが送信したチャット本文
-    /// - Returns: スレッド情報とパックDTOを含むレスポンス
-    func generatePack(userId: String, threadId: String?, message: String) async throws -> AssistantChatResponse {
+    ///   - messages: ユーザーとアシスタントの履歴
+    /// - Returns: 生成結果のパックと返信メッセージ
+    func generatePack(userId: String, messages: [ChatMessagePayload]) async throws -> OpenAIChatResponse {
         struct GenerateRequest: Encodable {
             let userId: String
-            let threadId: String?
-            let message: String
-
-            enum CodingKeys: String, CodingKey {
-                case userId
-                case threadId
-                case message
-            }
-
-            func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                try container.encode(userId, forKey: .userId)
-                if let threadId {
-                    try container.encode(threadId, forKey: .threadId)
-                }
-                try container.encode(message, forKey: .message)
-            }
+            let messages: [ChatMessagePayload]
         }
 
-        guard let url = makeURL(path: "/api/assistants/thread/run") else {
+        guard let url = makeURL(path: "/api/openai") else {
             throw AzukiAPIError.invalidURL
         }
-        // リクエスト パラメータ（差分送信のため、今回のユーザー発言のみを送る）
         let requestBody = GenerateRequest(userId: userId,
-                                          threadId: threadId,
-                                          message: message)
+                                          messages: messages)
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
-            return try decoder.decode(AssistantChatResponse.self, from: data)
+            return try decoder.decode(OpenAIChatResponse.self, from: data)
         } catch {
             throw AzukiAPIError.decoding
         }

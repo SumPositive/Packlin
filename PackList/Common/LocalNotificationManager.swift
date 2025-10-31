@@ -39,6 +39,14 @@ final class LocalNotificationManager: NSObject {
         await scheduleNotification(title: title, body: body, suffix: "success")
     }
 
+    /// 既存パックを更新できた際のローカル通知を発行する
+    /// - Parameter packName: 更新したパックの名称
+    func notifyPackGenerationUpdated(packName: String) async {
+        let title = String(localized: "チャッピーがパックを更新しました")
+        let body = String(localized: "\(packName) を上書きしました。確認してみましょう")
+        await scheduleNotification(title: title, body: body, suffix: "update")
+    }
+
     /// AI生成が失敗した際にローカル通知を発行する
     /// - Parameter message: 利用者へ伝えたい失敗理由
     func notifyPackGenerationFailed(message: String) async {

@@ -16,11 +16,17 @@ struct AiCreateSheetView: View {
     @Environment(\.dismiss) private var dismiss
     /// TextEditorにフォーカスが当たっているかどうかを追跡するフォーカス状態
     @FocusState private var isRequirementFocused: Bool
+    /// 既存パックをチャット経由で更新する場合に対象となるパック
+    private let pack: M1Pack?
+
+    init(pack: M1Pack? = nil) {
+        self.pack = pack
+    }
 
     var body: some View {
         NavigationView {
             ScrollView {
-                AiCreateView(requirementFocus: $isRequirementFocused)
+                AiCreateView(pack: pack, requirementFocus: $isRequirementFocused)
             }
             // 背景タップでキーボードを閉じるためのジェスチャ
             .contentShape(Rectangle())
@@ -155,14 +161,11 @@ struct AiCreateView: View {
     private let chatHistoryLimit = 30
     /// チャット開始時に案内として常に表示するアシスタントメッセージ
     private let initialAssistantMessage: AiChatMessage
+    /// 初期表示時に紐付ける既存パック（nilなら新規作成モード）
+    private let initialPack: M1Pack?
 
-    /// ユーザーからAIへの要望・要件テキスト
-    /// AppStorageを利用してシートを閉じても入力内容を保持する
-    @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
-    /// チャット履歴をJSON化して永続化するためのAppStorage
-    @AppStorage(AppStorageKey.aiChatHistory) private var chatHistoryData: Data = Data()
-    /// OpenAI ThreadsのスレッドIDを保持して差分送信に活用する
-    @AppStorage(AppStorageKey.aiChatThreadId) private var chatThreadIdStorage: String = ""
+    /// ユーザーからAIへの要望・要件テキスト。パックごとのドラフトはDBに残さずその場限りにする。
+    @State private var requirementText: String = ""
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -171,12 +174,10 @@ struct AiCreateView: View {
     @State private var inlineGenerationFeedback: GenerationFeedback?
     /// チャットメッセージ群（ユーザーとAIの往復を保持）
     @State private var chatMessages: [AiChatMessage] = []
-    /// 現在進行中のOpenAIスレッドID（AppStorageと同期）
-    @State private var activeChatThreadId: String?
+    /// 現在チャットで操作しているパック
+    @State private var currentPack: M1Pack?
     /// AppStorageから履歴を復元済みかどうかのフラグ（多重読み込み防止）
     @State private var didLoadChatHistory = false
-    /// 復元中にAppStorageへ上書きしないためのフラグ
-    @State private var isRestoringChatSession = false
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
     @State private var processingProductId: String?
     /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
@@ -202,8 +203,10 @@ struct AiCreateView: View {
 
     /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
     /// - Parameter requirementFocus: TextEditorのフォーカスを外部で管理するためのバインディング
-    init(requirementFocus: FocusState<Bool>.Binding) {
+    init(pack: M1Pack?, requirementFocus: FocusState<Bool>.Binding) {
         self.requirementFocus = requirementFocus
+        self.initialPack = pack
+        self._currentPack = State(initialValue: pack)
         // 利用者へ聞きたい内容をあらかじめ吹き出しで表示して案内する
         self.initialAssistantMessage = AiChatMessage(
             role: .assistant,
@@ -322,24 +325,15 @@ struct AiCreateView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
-            // AppStorageに保存していたチャット履歴を復元
-            loadChatHistoryIfNeeded()
+            // SwiftDataに保存していたチャット履歴を復元
+            restoreChatHistoryIfNeeded()
             // シートが表示されたら画面内フィードバックを優先で伝えるためのフラグを立てる
             isViewVisible = true
             // 古い結果メッセージが残っていると誤解を招くので表示のたびにリセットする
             inlineGenerationFeedback = nil
         }
         .onChange(of: chatMessages) { _ in
-            if isRestoringChatSession {
-                return
-            }
-            persistChatSession()
-        }
-        .onChange(of: activeChatThreadId) { _ in
-            if isRestoringChatSession {
-                return
-            }
-            persistChatSession()
+            persistChatHistory()
         }
         .task {
             // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
@@ -522,32 +516,28 @@ struct AiCreateView: View {
         }
     }
 
-    /// AppStorageからチャット履歴を復元する
+    /// SwiftDataに保存したチャット履歴を読み戻す
     @MainActor
-    private func loadChatHistoryIfNeeded() {
+    private func restoreChatHistoryIfNeeded() {
         if didLoadChatHistory {
             return
         }
         didLoadChatHistory = true
-        isRestoringChatSession = true
-        defer {
-            isRestoringChatSession = false
-        }
 
-        // 保存済みのスレッドIDを復元して、次回から差分送信できるようにする
-        let trimmedThreadId = chatThreadIdStorage.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedThreadId.isEmpty {
-            setActiveThreadId(nil)
-        } else {
-            setActiveThreadId(trimmedThreadId)
+        let targetPack = currentPack ?? initialPack
+        guard let pack = targetPack else {
+            chatMessages = []
+            return
         }
+        currentPack = pack
 
-        if chatHistoryData.isEmpty {
+        let storedData = pack.aiChatHistoryData
+        if storedData.isEmpty {
             chatMessages = []
             return
         }
         do {
-            let restored = try JSONDecoder().decode([AiChatMessage].self, from: chatHistoryData)
+            let restored = try JSONDecoder().decode([AiChatMessage].self, from: storedData)
             if chatHistoryLimit < restored.count {
                 chatMessages = Array(restored.suffix(chatHistoryLimit))
             } else {
@@ -558,42 +548,30 @@ struct AiCreateView: View {
         }
     }
 
-    /// 現在のチャット履歴とスレッドIDをAppStorageへ保存する
+    /// チャット履歴を対象パックへ書き戻す
     @MainActor
-    private func persistChatSession() {
-        do {
-            let data = try JSONEncoder().encode(chatMessages)
-            chatHistoryData = data
-        } catch {
-            // 保存に失敗しても利用者への影響は軽微なのでログのみ残す
-            log(.error, "Failed to encode chat history: \(error.localizedDescription)")
-        }
-
-        // スレッドIDは空文字を避け、ユーザーに見えない内部状態だけを保存する
-        if let threadId = activeChatThreadId?.trimmingCharacters(in: .whitespacesAndNewlines), threadId.isEmpty == false {
-            chatThreadIdStorage = threadId
+    private func persistChatHistory() {
+        guard let pack = currentPack else {
             return
         }
-        chatThreadIdStorage = ""
-    }
-
-    /// OpenAIのスレッドIDをView状態とAppStorageへ反映する
-    @MainActor
-    private func setActiveThreadId(_ threadId: String?) {
-        if let threadId {
-            let trimmed = threadId.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.isEmpty == false {
-                activeChatThreadId = trimmed
-                return
-            }
+        do {
+            let data = try JSONEncoder().encode(chatMessages)
+            pack.aiChatHistoryData = data
+        } catch {
+            pack.aiChatHistoryData = Data()
         }
-        activeChatThreadId = nil
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("failed to save chat history: \(error)")
+            #endif
+        }
     }
 
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
         let currentMessages = chatMessages
-        // もっとも新しいユーザー発言だけを抽出し、Threads APIへ差分送信する
         let latestUserMessage = currentMessages.last { message in
             message.role == .user
         }?.content.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -602,18 +580,21 @@ struct AiCreateView: View {
             return
         }
 
+        let payload = buildChatPayload()
+        if payload.isEmpty {
+            inlineGenerationFeedback = .failure(message: String(localized: "チャット内容を送信できませんでした"))
+            return
+        }
+
         let userId = creditStore.userId
-        let currentThreadId = activeChatThreadId
         isGenerating = true
         Task {
-            // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
             defer {
                 Task {
                     await MainActor.run {
                         if shouldRestoreCredits {
-                            // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
                             creditStore.add(credits: cost)
                         }
                         isGenerating = false
@@ -621,7 +602,6 @@ struct AiCreateView: View {
                 }
             }
 
-            // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
             let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
             if hasEnoughCredits == false {
                 await presentCreditShortageFeedback()
@@ -641,27 +621,21 @@ struct AiCreateView: View {
             do {
                 let response = try await requestPackFromServer(
                     userId: userId,
-                    threadId: currentThreadId,
-                    message: trimmedMessage,
+                    messages: payload,
                     canAttemptRecovery: true
                 )
-                // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
-                await MainActor.run {
-                    setActiveThreadId(response.threadId)
-                }
                 do {
-                    let packName = try await MainActor.run { () -> String in
-                        let importedPack = try createPack(from: response.pack)
+                    let result = try await MainActor.run { () -> (name: String, isNew: Bool) in
+                        let applied = try applyPackResponse(from: response.pack)
 
                         GALogger.log(.packlin_request(userId: userId,
                                                       requirement: trimmedMessage))
-                        return importedPack.name
+                        return (applied.pack.name, applied.isNewlyCreated)
                     }
-                    // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
-                    await presentGenerationSuccess(packName: packName)
-                    // チャット返信文
-                    await appendAssistantMessage(response.pack.memo)
+                    await presentGenerationSuccess(packName: result.name, isNewlyCreated: result.isNew)
+                    let assistantReply = response.reply ?? response.pack.memo
+                    await appendAssistantMessage(assistantReply)
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -672,12 +646,9 @@ struct AiCreateView: View {
                     await presentGenerationFailure(message: message)
                 }
             } catch let apiError as AzukiAPIError {
-                // API起因のエラーは内容に応じて処理。ローカル残高はdeferで戻す。
                 switch apiError {
                 case .insufficientCredits:
-                    // サーバー側で不足判定となったのでローカルを戻さず、Keychain残高を最新状態で使い続ける
                     shouldRestoreCredits = false
-                    // サーバーの残高を参照してKeychainを最新化し、複数端末での消費にも追随させる
                     await refreshCreditBalanceFromServer(showAlertOnFailure: false)
                     await presentCreditShortageFeedback()
                 case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
@@ -700,16 +671,28 @@ struct AiCreateView: View {
     }
 
     /// 生成成功をユーザーへ伝える。画面表示中は画面内メッセージ、閉じていればローカル通知で知らせる
-    /// - Parameter packName: 生成に成功したパック名
-    private func presentGenerationSuccess(packName: String) async {
+    /// - Parameters:
+    ///   - packName: 生成に成功したパック名
+    ///   - isNewlyCreated: 新規作成ならtrue、既存更新ならfalse
+    private func presentGenerationSuccess(packName: String, isNewlyCreated: Bool) async {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .success(message: String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧を見てください"))
+                let message: String
+                if isNewlyCreated {
+                    message = String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧を見てください")
+                } else {
+                    message = String(localized: "『\(packName)』を更新しました。内容を確認してみましょう")
+                }
+                inlineGenerationFeedback = .success(message: message)
             }
             return
         }
-        await LocalNotificationManager.shared.notifyPackGenerationSucceeded(packName: packName)
+        if isNewlyCreated {
+            await LocalNotificationManager.shared.notifyPackGenerationSucceeded(packName: packName)
+        } else {
+            await LocalNotificationManager.shared.notifyPackGenerationUpdated(packName: packName)
+        }
     }
 
     /// 生成失敗をユーザーへ伝える。画面表示中は画面内メッセージ、閉じていればローカル通知で知らせる
@@ -740,42 +723,104 @@ struct AiCreateView: View {
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
     /// - Parameters:
     ///   - userId: サーバー側でクレジット消費対象となるユーザーID
-    ///   - threadId: 既存スレッドのID（nilならサーバー側で新規作成される）
-    ///   - message: 今回送るユーザーの発言本文
+    ///   - messages: ユーザーとアシスタントのチャット履歴
     ///   - canAttemptRecovery: トークン再取得を試行できるかどうか（再帰呼び出し抑制用）
-    /// - Returns: スレッド情報とパックDTOを含んだレスポンス
-    private func requestPackFromServer(userId: String, threadId: String?, message: String, canAttemptRecovery: Bool) async throws -> AzukiApi.AssistantChatResponse {
+    /// - Returns: パックDTOと返信本文を含んだレスポンス
+    private func requestPackFromServer(userId: String, messages: [AzukiApi.ChatMessagePayload], canAttemptRecovery: Bool) async throws -> AzukiApi.OpenAIChatResponse {
         do {
             return try await AzukiApi.shared.generatePack(userId: userId,
-                                                         threadId: threadId,
-                                                         message: message)
+                                                         messages: messages)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
                 if recovered {
                     return try await requestPackFromServer(
                         userId: userId,
-                        threadId: threadId,
-                        message: message,
-                        canAttemptRecovery: false
-                    )
-                }
-            }
-            if canAttemptRecovery {
-                if case .notFound = apiError, threadId != nil {
-                    // サーバー側でスレッドが破棄されていた場合はローカル状態をリセットしてから再試行
-                    await MainActor.run {
-                        setActiveThreadId(nil)
-                    }
-                    return try await requestPackFromServer(
-                        userId: userId,
-                        threadId: nil,
-                        message: message,
+                        messages: messages,
                         canAttemptRecovery: false
                     )
                 }
             }
             throw apiError
+        }
+    }
+
+    /// APIへ送信するチャット履歴を整形する
+    private func buildChatPayload() -> [AzukiApi.ChatMessagePayload] {
+        chatMessages.map { message in
+            AzukiApi.ChatMessagePayload(role: message.role.rawValue,
+                                        content: message.content)
+        }
+    }
+
+    /// サーバーから返ってきたパックDTOを現在のパックへ反映する
+    @MainActor
+    private func applyPackResponse(from dto: PackJsonDTO) throws -> (pack: M1Pack, isNewlyCreated: Bool) {
+        if let existing = currentPack {
+            try overwrite(pack: existing, with: dto)
+            persistChatHistory()
+            return (existing, false)
+        }
+
+        let importedPack = try createPack(from: dto)
+        currentPack = importedPack
+        persistChatHistory()
+        return (importedPack, true)
+    }
+
+    /// 既存パックの中身をDTOでまるごと差し替える
+    @MainActor
+    private func overwrite(pack: M1Pack, with dto: PackJsonDTO) throws {
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            modelContext.undoManager?.groupingEnd()
+        }
+
+        pack.name = dto.name
+        pack.memo = dto.memo
+
+        let existingGroups = pack.child
+        for group in existingGroups {
+            let items = group.child
+            for item in items {
+                modelContext.delete(item)
+            }
+            modelContext.delete(group)
+        }
+        pack.child.removeAll()
+
+        let groups = dto.groups.enumerated().sorted { left, right in
+            let leftOrder = left.element.order ?? left.offset * ORDER_SPARSE
+            let rightOrder = right.element.order ?? right.offset * ORDER_SPARSE
+            return leftOrder < rightOrder
+        }.map { $0.element }
+
+        for (groupIndex, groupDTO) in groups.enumerated() {
+            let group = M2Group(name: groupDTO.name,
+                                memo: groupDTO.memo,
+                                order: groupIndex * ORDER_SPARSE,
+                                parent: pack)
+            modelContext.insert(group)
+            pack.child.append(group)
+
+            let items = groupDTO.items.enumerated().sorted { left, right in
+                let leftOrder = left.element.order ?? left.offset * ORDER_SPARSE
+                let rightOrder = right.element.order ?? right.offset * ORDER_SPARSE
+                return leftOrder < rightOrder
+            }.map { $0.element }
+
+            for (itemIndex, itemDTO) in items.enumerated() {
+                let item = M3Item(name: itemDTO.name,
+                                  memo: itemDTO.memo,
+                                  check: itemDTO.check,
+                                  stock: itemDTO.stock ?? 0,
+                                  need: itemDTO.need,
+                                  weight: itemDTO.weight,
+                                  order: itemIndex * ORDER_SPARSE,
+                                  parent: group)
+                modelContext.insert(item)
+                group.child.append(item)
+            }
         }
     }
 

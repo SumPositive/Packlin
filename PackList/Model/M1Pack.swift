@@ -22,6 +22,9 @@ final class M1Pack {
 
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
 
+    /// AIチャットの履歴をJSONで保持する。エクスポート対象外の内部データ。
+    var aiChatHistoryData: Data
+
     var stock: Int { child.reduce(0) { $0 + $1.stock } }
     var need: Int { child.reduce(0) { $0 + $1.need } }
 
@@ -32,12 +35,14 @@ final class M1Pack {
          name: String,
          memo: String = "",
          createdAt: Date = Date(),
-         order: Int = 0) {
+         order: Int = 0,
+         aiChatHistoryData: Data = Data()) {
         self.id = id
         self.name = name
         self.memo = memo
         self.createdAt = createdAt
         self.order = order
+        self.aiChatHistoryData = aiChatHistoryData
     }
     
     /// 子グループの order を連番に整理する
