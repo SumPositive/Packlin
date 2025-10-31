@@ -441,7 +441,7 @@ struct AiCreateView: View {
             HStack(alignment: .bottom, spacing: 8) {
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $requirementText)
-                        .focused(requirementFocus)
+                        //.focused(requirementFocus)
                         .frame(minHeight: 24, maxHeight: 160)
                         .padding(.vertical, 2)
                         .padding(.horizontal, 4)
@@ -547,7 +547,8 @@ struct AiCreateView: View {
     private func sendDraftMessage() {
         let trimmed = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
-            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            inlineGenerationFeedback = .failure(message:
+                                        String(localized: "メッセージを入れてね"))
             return
         }
         if isGenerating {
@@ -558,6 +559,7 @@ struct AiCreateView: View {
         appendUserMessage(trimmed)
         requirementText = ""
         requirementFocus.wrappedValue = false
+        // azuki-api経由でOpenAIにパック生成を依頼する
         generatePackWithOpenAI()
     }
 
@@ -673,13 +675,13 @@ struct AiCreateView: View {
             message.role == .user
         }?.content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let trimmedMessage = latestUserMessage, trimmedMessage.isEmpty == false else {
-            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            inlineGenerationFeedback = .failure(message: String(localized: "メッセージを入れてね"))
             return
         }
 
         let payload = buildChatPayload()
         if payload.isEmpty {
-            inlineGenerationFeedback = .failure(message: String(localized: "チャット内容を送信できませんでした"))
+            inlineGenerationFeedback = .failure(message: String(localized: "メッセージを送信できませんでした"))
             return
         }
 
