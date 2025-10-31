@@ -143,28 +143,6 @@ private struct AiChatMessageBubble: View {
     }
 }
 
-/// チャット履歴が空のときに表示する案内ビュー
-private struct AiChatEmptyPlaceholder: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label {
-                Text(String(localized: "まだチャットはありません"))
-                    .font(.callout.weight(.semibold))
-            } icon: {
-                Image(systemName: "text.bubble")
-                    .imageScale(.medium)
-                    .symbolRenderingMode(.hierarchical)
-            }
-
-            Text(String(localized: "下の入力欄に旅程や希望を書くと、チャッピーが返事とパック案を提案してくれます。"))
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-
 /// AIで新しいパックを生成するためのビュー
 struct AiCreateView: View {
     @Environment(\.modelContext) private var modelContext
@@ -175,6 +153,8 @@ struct AiCreateView: View {
     private let requirementFocus: FocusState<Bool>.Binding
     /// 保存するチャット履歴の最大件数（サーバーへ渡す文量を抑えるための安全弁）
     private let chatHistoryLimit = 30
+    /// チャット開始時に案内として常に表示するアシスタントメッセージ
+    private let initialAssistantMessage: AiChatMessage
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
@@ -215,10 +195,20 @@ struct AiCreateView: View {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// 送信ボタンを無効化する条件の集約
+    private var isSendButtonInactive: Bool {
+        isRequirementEmpty || isGenerating
+    }
+
     /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
     /// - Parameter requirementFocus: TextEditorのフォーカスを外部で管理するためのバインディング
     init(requirementFocus: FocusState<Bool>.Binding) {
         self.requirementFocus = requirementFocus
+        // 利用者へ聞きたい内容をあらかじめ吹き出しで表示して案内する
+        self.initialAssistantMessage = AiChatMessage(
+            role: .assistant,
+            content: String(localized: "旅先や目的、行程、人数、季節、アクティビティなど教えて")
+        )
     }
 
     var body: some View {
@@ -246,15 +236,14 @@ struct AiCreateView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 12) {
-                            if chatMessages.isEmpty {
-                                AiChatEmptyPlaceholder()
-                                    .padding(.vertical, 16)
-                                    .padding(.horizontal, 12)
-                            } else {
-                                ForEach(chatMessages) { message in
-                                    AiChatMessageBubble(message: message)
-                                        .id(message.id)
-                                }
+                            // いつでも一番上にガイド用のメッセージを表示する
+                            AiChatMessageBubble(message: initialAssistantMessage)
+                                .id(initialAssistantMessage.id)
+                                .padding(.bottom, chatMessages.isEmpty ? 8 : 4)
+
+                            ForEach(chatMessages) { message in
+                                AiChatMessageBubble(message: message)
+                                    .id(message.id)
                             }
                         }
                         .padding(.vertical, 8)
@@ -288,45 +277,6 @@ struct AiCreateView: View {
                     }
                 }
             }
-
-            // チャット入力欄とプレースホルダー
-            VStack(alignment: .leading, spacing: 4) {
-                Text(String(localized: "チャットにメッセージを送ってください"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                ZStack(alignment: .topLeading) {
-                    TextEditor(text: $requirementText)
-                        .frame(minHeight: 24, maxHeight: 200)
-                        .padding(8)
-                        .focused(requirementFocus)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(Color(uiColor: .secondarySystemBackground))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                        )
-                        .accessibilityLabel(Text("パックの要望入力"))
-                }
-            }
-
-            Button {
-                sendDraftMessage()
-            } label: {
-                HStack {
-                    if isGenerating {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                    }
-                    Text(isGenerating ? "作ってます..." : "チャッピー！作って")
-                        .font(.callout.weight(.semibold))
-                        .padding(.horizontal, 16)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .disabled(isRequirementEmpty || isGenerating)
 
             if isGenerating {
                 Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
@@ -430,6 +380,9 @@ struct AiCreateView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.2), lineWidth: 0.5)
         )
+        .safeAreaInset(edge: .bottom) {
+            chatInputBar
+        }
         .alert(item: $alertState) { alert in
             Alert(
                 title: Text(alert.title),
@@ -437,6 +390,77 @@ struct AiCreateView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+    }
+
+    /// キーボードの直上に貼り付くチャット入力欄
+    private var chatInputBar: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // ガイド文を常に小さく表示して利用者に動作を伝える
+            Text(String(localized: "チャットにメッセージを送ってください"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(alignment: .bottom, spacing: 8) {
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $requirementText)
+                        .focused(requirementFocus)
+                        .frame(minHeight: 36, maxHeight: 160)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color(uiColor: .secondarySystemBackground))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                        .accessibilityLabel(Text("パックの要望入力"))
+
+                    if requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Text(String(localized: "旅程や持ち物の希望を入力"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 14)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+                Button {
+                    sendDraftMessage()
+                } label: {
+                    HStack(spacing: 6) {
+                        if isGenerating {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        } else {
+                            Image(systemName: "paperplane.fill")
+                                .imageScale(.medium)
+                        }
+                        Text(isGenerating ? String(localized: "送信中") : String(localized: "送信"))
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(isSendButtonInactive ? Color.gray.opacity(0.3) : Color.accentColor)
+                    )
+                    .foregroundStyle(isSendButtonInactive ? Color.white.opacity(0.7) : Color.white)
+                }
+                .disabled(isSendButtonInactive)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .background(
+            // キーボード上で浮かせず背面色と馴染ませる
+            Rectangle()
+                .fill(Color(uiColor: .systemGroupedBackground).opacity(0.95))
+                .ignoresSafeArea(edges: .bottom)
+        )
     }
 
     /// 背景カラーをダーク／ライトに応じて出し分ける
@@ -636,7 +660,7 @@ struct AiCreateView: View {
                     }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
                     await presentGenerationSuccess(packName: packName)
-                    if let chatReply = response.pack.chat {
+                    if let chatReply = response.pack.memo {
                         await appendAssistantMessage(chatReply)
                     }
                 } catch {
