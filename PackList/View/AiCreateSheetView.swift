@@ -733,14 +733,21 @@ struct AiCreateView: View {
                 shouldRestoreCredits = false
                 do {
                     let result = try await MainActor.run { () -> (name: String, isNew: Bool) in
-                        let applied = try applyPackResponse(from: response)
+                        // サーバーから返るパック本体のみを既存データへ反映する
+                        let applied = try applyPackResponse(from: response.pack)
 
                         GALogger.log(.packlin_request(userId: userId,
                                                       requirement: trimmedMessage))
                         return (applied.pack.name, applied.isNewlyCreated)
                     }
                     await presentGenerationSuccess(packName: result.name, isNewlyCreated: result.isNew)
-                    let assistantReply = response.memo
+                    // replay（AIからの返信本文）が優先。空の場合は従来通りmemoを使って履歴へ残す
+                    let assistantReply: String
+                    if let replay = response.replay?.trimmingCharacters(in: .whitespacesAndNewlines), replay.isEmpty == false {
+                        assistantReply = replay
+                    } else {
+                        assistantReply = response.pack.memo
+                    }
                     await MainActor.run {
                         // MainActor上で追記してチャット一覧の整合性を保つ
                         appendAssistantMessage(assistantReply)
@@ -850,7 +857,7 @@ struct AiCreateView: View {
     ///   - messages: ユーザーとアシスタントのチャット履歴
     ///   - canAttemptRecovery: トークン再取得を試行できるかどうか（再帰呼び出し抑制用）
     /// - Returns: パックDTOと返信本文を含んだレスポンス
-    private func requestPackFromServer(userId: String, messages: [AzukiApi.ChatMessagePayload], canAttemptRecovery: Bool) async throws -> PackJsonDTO {
+    private func requestPackFromServer(userId: String, messages: [AzukiApi.ChatMessagePayload], canAttemptRecovery: Bool) async throws -> AzukiApi.ChatGenerationResult {
         do {
             return try await AzukiApi.shared.generatePack(userId: userId,
                                                          messages: messages)
