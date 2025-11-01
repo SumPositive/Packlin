@@ -296,7 +296,7 @@ struct AiCreateView: View {
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
-                    .onChange(of: chatMessages) { messages in
+                    .onChange(of: chatMessages) { _, messages in
                         if let last = messages.last {
                             DispatchQueue.main.async {
                                 withAnimation {
@@ -374,14 +374,14 @@ struct AiCreateView: View {
             // 初期表示でも入力欄が見える位置に合わせておく
             scrollToChatInput(animated: false)
         }
-        .onChange(of: chatMessages) { _ in
+        .onChange(of: chatMessages) { _, _ in
             persistChatHistory()
         }
-        .onChange(of: keyboardObserver.height) { _ in
+        .onChange(of: keyboardObserver.height) { _, _ in
             // キーボードが出入りしたら入力欄へスクロールして視界に収める
             scrollToChatInput(animated: true)
         }
-        .onChange(of: requirementFocus.wrappedValue) { isFocused in
+        .onChange(of: requirementFocus.wrappedValue) { _, isFocused in
             if isFocused {
                 // 利用者が入力欄をタップした瞬間にもスクロールしておく
                 scrollToChatInput(animated: true)
@@ -741,7 +741,10 @@ struct AiCreateView: View {
                     }
                     await presentGenerationSuccess(packName: result.name, isNewlyCreated: result.isNew)
                     let assistantReply = response.memo
-                    await appendAssistantMessage(assistantReply)
+                    await MainActor.run {
+                        // MainActor上で追記してチャット一覧の整合性を保つ
+                        appendAssistantMessage(assistantReply)
+                    }
                     await MainActor.run {
                         pendingDraftMessage = nil
                     }
