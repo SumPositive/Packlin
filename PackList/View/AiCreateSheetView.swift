@@ -733,14 +733,14 @@ struct AiCreateView: View {
                 shouldRestoreCredits = false
                 do {
                     let result = try await MainActor.run { () -> (name: String, isNew: Bool) in
-                        let applied = try applyPackResponse(from: response.pack)
+                        let applied = try applyPackResponse(from: response)
 
                         GALogger.log(.packlin_request(userId: userId,
                                                       requirement: trimmedMessage))
                         return (applied.pack.name, applied.isNewlyCreated)
                     }
                     await presentGenerationSuccess(packName: result.name, isNewlyCreated: result.isNew)
-                    let assistantReply = response.reply ?? response.pack.memo
+                    let assistantReply = response.memo
                     await appendAssistantMessage(assistantReply)
                     await MainActor.run {
                         pendingDraftMessage = nil
@@ -847,7 +847,7 @@ struct AiCreateView: View {
     ///   - messages: ユーザーとアシスタントのチャット履歴
     ///   - canAttemptRecovery: トークン再取得を試行できるかどうか（再帰呼び出し抑制用）
     /// - Returns: パックDTOと返信本文を含んだレスポンス
-    private func requestPackFromServer(userId: String, messages: [AzukiApi.ChatMessagePayload], canAttemptRecovery: Bool) async throws -> AzukiApi.OpenAIChatResponse {
+    private func requestPackFromServer(userId: String, messages: [AzukiApi.ChatMessagePayload], canAttemptRecovery: Bool) async throws -> PackJsonDTO {
         do {
             return try await AzukiApi.shared.generatePack(userId: userId,
                                                          messages: messages)

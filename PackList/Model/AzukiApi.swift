@@ -143,20 +143,12 @@ final class AzukiApi {
         let content: String
     }
 
-    /// OpenAI(azuki-api経由)にパック生成を依頼するレスポンス
-    struct OpenAIChatResponse: Decodable {
-        /// 実際に読み込むパックDTO
-        let pack: PackJsonDTO
-        /// チャット欄に表示するアシスタントの返答（未提供ならnil）
-        let reply: String?
-    }
-
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID
     ///   - messages: 双方のチャット履歴（currentPackを送らなくても履歴から推論できるはず）
-    /// - Returns: 生成結果のパックと返信メッセージ
-    func generatePack(userId: String, messages: [ChatMessagePayload]) async throws -> OpenAIChatResponse {
+    /// - Returns: 生成結果のパックJSON
+    func generatePack(userId: String, messages: [ChatMessagePayload]) async throws -> PackJsonDTO {
         struct GenerateRequest: Encodable {
             let userId: String
             let messages: [ChatMessagePayload] //双方のチャット履歴（currentPackを送らなくても履歴から推論できるはず）
@@ -167,9 +159,11 @@ final class AzukiApi {
         }
         let requestBody = GenerateRequest(userId: userId,
                                           messages: messages)
+        log(.debug, "url: \(url)  requestBody: \(requestBody)")
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
-            return try decoder.decode(OpenAIChatResponse.self, from: data)
+            log(.debug, "data: \(data)")
+            return try decoder.decode(PackJsonDTO.self, from: data)
         } catch {
             throw AzukiAPIError.decoding
         }
