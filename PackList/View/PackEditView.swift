@@ -130,15 +130,6 @@ struct PackEditView: View {
             }
             .padding(.bottom, -7)
             ZStack(alignment: .topLeading) {
-                if pack.name.isEmpty {
-                    // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
-                    Text("新しいパックの名前を入れてください")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 10)
-                        .padding(.leading, 6)
-                        .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
-                }
-
                 TextEditor(text: $pack.name)
                     .font(FONT_EDIT)
                     .onChange(of: pack.name) { oldValue, newValue in
@@ -148,6 +139,15 @@ struct PackEditView: View {
                         }
                     }
                     .focused($nameIsFocused) // フォーカス状態とバインド
+
+                if pack.name.isEmpty {
+                    // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
+                    Text("新しいパックの名前を入れてください")
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 20)
+                        .padding(.horizontal, 16)
+                        .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
+                }
             }
             .frame(height: 80)
 
@@ -160,15 +160,6 @@ struct PackEditView: View {
             .padding(.top, 8)
             .padding(.bottom, -7)
             ZStack(alignment: .topLeading) {
-                if pack.memo.isEmpty {
-                    // メモ未入力時のガイド文を表示
-                    Text("下にあるボタンからAIに作ってもらうこともできますよ")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 10)
-                        .padding(.leading, 6)
-                        .allowsHitTesting(false)
-                }
-
                 TextEditor(text: $pack.memo)
                     .font(FONT_MEMO)
                     .onChange(of: pack.memo) { oldValue, newValue in
@@ -177,6 +168,15 @@ struct PackEditView: View {
                             pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                         }
                     }
+
+                if pack.memo.isEmpty {
+                    // メモ未入力時のガイド文を表示
+                    Text("下にあるボタンからAIに作ってもらうこともできますよ")
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 20)
+                        .padding(.horizontal, 16)
+                        .allowsHitTesting(false)
+                }
             }
             .frame(height: 180)
 
