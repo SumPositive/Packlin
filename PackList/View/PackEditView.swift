@@ -131,17 +131,29 @@ struct PackEditView: View {
                 Spacer()
             }
             .padding(.bottom, -7)
-            TextEditor(text: $pack.name)
-                .font(FONT_EDIT)
-                .onChange(of: pack.name) { oldValue, newValue in
-                    // 最大文字数制限
-                    if APP_MAX_NAME_LEN < newValue.count {
-                        pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                    }
+            ZStack(alignment: .topLeading) {
+                if pack.name.isEmpty {
+                    // プレースホルダー：新規作成時の迷いを減らす
+                    Text("新しいパックの名前を入れてください")
+                        .font(FONT_EDIT)
+                        .foregroundStyle(.tertiary)
+                        .padding(.top, 8)
+                        .padding(.leading, 4)
+                        .allowsHitTesting(false)
                 }
-                .focused($nameIsFocused) // フォーカス状態とバインド
-                .frame(height: 80)
-                .cornerRadius(8)
+
+                TextEditor(text: $pack.name)
+                    .font(FONT_EDIT)
+                    .onChange(of: pack.name) { oldValue, newValue in
+                        // 最大文字数制限を超えた場合は末尾を切り捨てる
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                        }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+            }
+            .frame(height: 80)
+            .cornerRadius(8)
 
             HStack {
                 Text("edit.memo")
@@ -151,17 +163,29 @@ struct PackEditView: View {
             }
             .padding(.top, 8)
             .padding(.bottom, -7)
-            TextEditor(text: $pack.memo)
-                .font(FONT_MEMO)
-                .onChange(of: pack.memo) { oldValue, newValue in
-                    // 最大文字数制限
-                    if APP_MAX_MEMO_LEN < newValue.count {
-                        pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                    }
+            ZStack(alignment: .topLeading) {
+                if pack.memo.isEmpty {
+                    // プレースホルダー：AI活用を案内する文言
+                    Text("下にあるボタンからAIに作ってもらうこともできますよ")
+                        .font(FONT_MEMO)
+                        .foregroundStyle(.tertiary)
+                        .padding(.top, 8)
+                        .padding(.leading, 4)
+                        .allowsHitTesting(false)
                 }
-                .frame(height: 180)
-                .cornerRadius(8)
-                .padding(.bottom, 8)
+
+                TextEditor(text: $pack.memo)
+                    .font(FONT_MEMO)
+                    .onChange(of: pack.memo) { oldValue, newValue in
+                        // 最大文字数制限を超えた場合は末尾を切り捨てる
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+            }
+            .frame(height: 180)
+            .cornerRadius(8)
+            .padding(.bottom, 8)
 
             // AIに相談
             Button {

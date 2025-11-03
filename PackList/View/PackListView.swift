@@ -258,6 +258,10 @@ struct PackListView: View {
         modelContext.insert(initialItem)
         initialGroup.child.append(initialItem)
 
+        // 新規作成直後に編集ポップアップを自動表示し、ユーザーがすぐに入力できるようにする
+        editingPack = newPack
+        popupAnchor = nil
+
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {
