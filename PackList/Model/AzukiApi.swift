@@ -142,10 +142,11 @@ final class AzukiApi {
     ///   - userId: クレジット消費対象となるユーザーID
     ///   - requirement: ユーザーが入力した要件
     /// - Returns: PackListへそのまま取り込めるDTO
-    func generatePack(userId: String, requirement: String) async throws -> PackJsonDTO {
+    func generatePack(userId: String, requirement: String, basePack: PackJsonDTO?) async throws -> PackJsonDTO {
         struct GenerateRequest: Encodable {
             let userId: String
             let requirement: String
+            let basePack: PackJsonDTO?
         }
 
         guard let url = makeURL(path: "/api/openai") else {
@@ -153,7 +154,8 @@ final class AzukiApi {
         }
         // リクエスト パラメータ
         let requestBody = GenerateRequest(userId: userId,
-                                          requirement: requirement)
+                                          requirement: requirement,
+                                          basePack: basePack)
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
             return try decoder.decode(PackJsonDTO.self, from: data)

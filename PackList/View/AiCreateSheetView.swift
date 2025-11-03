@@ -16,11 +16,19 @@ struct AiCreateSheetView: View {
     @Environment(\.dismiss) private var dismiss
     /// TextEditorにフォーカスが当たっているかどうかを追跡するフォーカス状態
     @FocusState private var isRequirementFocused: Bool
+    /// 編集中のパックを保持し、AIへ修正依頼するときの素材にする
+    private let basePack: M1Pack?
+
+    /// - Parameter basePack: 修正元としてAIへ渡したいパック（未指定なら新規作成として扱う）
+    init(basePack: M1Pack? = nil) {
+        self.basePack = basePack
+    }
 
     var body: some View {
         NavigationView {
             ScrollView {
-                AiCreateView(requirementFocus: $isRequirementFocused)
+                AiCreateView(requirementFocus: $isRequirementFocused,
+                             basePack: basePack)
             }
             // 背景タップでキーボードを閉じるためのジェスチャ
             .contentShape(Rectangle())
@@ -57,6 +65,8 @@ struct AiCreateView: View {
     @EnvironmentObject private var creditStore: CreditStore
     /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
     private let requirementFocus: FocusState<Bool>.Binding
+    /// AIへ渡す修正対象パック（nilならAIは新規提案モード）
+    private let basePack: M1Pack?
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
@@ -87,8 +97,10 @@ struct AiCreateView: View {
 
     /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
     /// - Parameter requirementFocus: TextEditorのフォーカスを外部で管理するためのバインディング
-    init(requirementFocus: FocusState<Bool>.Binding) {
+    init(requirementFocus: FocusState<Bool>.Binding,
+         basePack: M1Pack?) {
         self.requirementFocus = requirementFocus
+        self.basePack = basePack
     }
 
     var body: some View {
@@ -311,9 +323,11 @@ struct AiCreateView: View {
             }
 
             do {
+                let basePackDTO = await exportBasePackIfAvailable()
                 let dto = try await requestPackFromServer(
                     userId: userId,
                     requirement: trimmedRequirement,
+                    basePack: basePackDTO,
                     canAttemptRecovery: true
                 )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
@@ -409,9 +423,14 @@ struct AiCreateView: View {
     ///   - requirement: ユーザーが入力した要件
     ///   - canAttemptRecovery: トークン再取得を試行できるかどうか（再帰呼び出し抑制用）
     /// - Returns: サーバーが返したPack生成結果DTO
-    private func requestPackFromServer(userId: String, requirement: String, canAttemptRecovery: Bool) async throws -> PackJsonDTO {
+    private func requestPackFromServer(userId: String,
+                                       requirement: String,
+                                       basePack: PackJsonDTO?,
+                                       canAttemptRecovery: Bool) async throws -> PackJsonDTO {
         do {
-            return try await AzukiApi.shared.generatePack(userId: userId, requirement: requirement)
+            return try await AzukiApi.shared.generatePack(userId: userId,
+                                                          requirement: requirement,
+                                                          basePack: basePack)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
@@ -419,11 +438,23 @@ struct AiCreateView: View {
                     return try await requestPackFromServer(
                         userId: userId,
                         requirement: requirement,
+                        basePack: basePack,
                         canAttemptRecovery: false
                     )
                 }
             }
             throw apiError
+        }
+    }
+
+    /// 編集中のパックがあればDTOへ変換し、APIへ送る準備をする
+    private func exportBasePackIfAvailable() async -> PackJsonDTO? {
+        guard let basePack else {
+            return nil
+        }
+        return await MainActor.run {
+            // SwiftDataのモデルへアクセスするためMainActor上でJSON化する
+            basePack.exportRepresentation()
         }
     }
 

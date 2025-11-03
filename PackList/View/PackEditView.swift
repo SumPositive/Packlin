@@ -206,8 +206,8 @@ struct PackEditView: View {
             .tint(.accentColor)
             .padding(.vertical, 8)
             .sheet(isPresented: $showAiCreateSheet) {
-                // AI生成シート本体
-                AiCreateSheetView()
+                // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
+                AiCreateSheetView(basePack: pack)
             }
         }
         .padding(.horizontal, 8)
