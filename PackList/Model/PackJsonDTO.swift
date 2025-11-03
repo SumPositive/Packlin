@@ -39,6 +39,7 @@ struct PackJsonDTO: Codable {
     let order: Int?
     let name: String
     let memo: String
+    let replay: String? // チャット(assistant)応答文、DB保存しない
     let createdAt: Date
     let groups: [Group]
 
@@ -51,6 +52,7 @@ struct PackJsonDTO: Codable {
         case order
         case name
         case memo
+        case replay
         case createdAt
         case groups
     }
@@ -66,6 +68,7 @@ extension M1Pack {
             order: nil, // 読み込み側で決定
             name: name,
             memo: memo,
+            replay: nil,
             createdAt: createdAt,
             groups: child
                 .sorted { $0.order < $1.order }

@@ -740,13 +740,20 @@ struct AiCreateView: View {
                         return (applied.pack.name, applied.isNewlyCreated)
                     }
                     await presentGenerationSuccess(packName: result.name, isNewlyCreated: result.isNew)
-                    let assistantReply = response.memo
-                    await MainActor.run {
-                        // MainActor上で追記してチャット一覧の整合性を保つ
-                        appendAssistantMessage(assistantReply)
-                    }
-                    await MainActor.run {
-                        pendingDraftMessage = nil
+                    if let assistantReply = response.replay {
+                        await MainActor.run {
+                            // MainActor上で追記してチャット一覧の順序を保つ
+                            appendAssistantMessage(assistantReply)
+                        }
+                        await MainActor.run {
+                            pendingDraftMessage = nil
+                        }
+                    }else{
+                        await MainActor.run {
+                            // MainActor上で追記してチャット一覧の順序を保つ
+                            appendAssistantMessage(String(localized: "応答なし。利用券を返却します"))
+                        }
+                        throw AzukiAPIError.invalidResponse
                     }
                 } catch {
                     let message: String
