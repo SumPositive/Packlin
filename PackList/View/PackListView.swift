@@ -258,6 +258,11 @@ struct PackListView: View {
         modelContext.insert(initialItem)
         initialGroup.child.append(initialItem)
 
+        // 追加直後に編集ポップアップを開き、すぐに名前を入力してもらう
+        editingPack = newPack
+        popupAnchor = nil
+
+        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 
     private func movePack(from source: IndexSet, to destination: Int) {

@@ -129,16 +129,27 @@ struct PackEditView: View {
                 Spacer()
             }
             .padding(.bottom, -7)
-            TextEditor(text: $pack.name)
-                .font(FONT_EDIT)
-                .onChange(of: pack.name) { oldValue, newValue in
-                    // 最大文字数制限
-                    if APP_MAX_NAME_LEN < newValue.count {
-                        pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                    }
+            ZStack(alignment: .topLeading) {
+                if pack.name.isEmpty {
+                    // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
+                    Text("新しいパックの名前を入れてください")
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 10)
+                        .padding(.leading, 6)
+                        .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
                 }
-                .focused($nameIsFocused) // フォーカス状態とバインド
-                .frame(height: 80)
+
+                TextEditor(text: $pack.name)
+                    .font(FONT_EDIT)
+                    .onChange(of: pack.name) { oldValue, newValue in
+                        // 最大文字数制限（向きは < で統一）
+                        if APP_MAX_NAME_LEN < newValue.count {
+                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                        }
+                    }
+                    .focused($nameIsFocused) // フォーカス状態とバインド
+            }
+            .frame(height: 80)
 
             HStack {
                 Text("edit.memo")
@@ -148,15 +159,26 @@ struct PackEditView: View {
             }
             .padding(.top, 8)
             .padding(.bottom, -7)
-            TextEditor(text: $pack.memo)
-                .font(FONT_MEMO)
-                .onChange(of: pack.memo) { oldValue, newValue in
-                    // 最大文字数制限
-                    if APP_MAX_MEMO_LEN < newValue.count {
-                        pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                    }
+            ZStack(alignment: .topLeading) {
+                if pack.memo.isEmpty {
+                    // メモ未入力時のガイド文を表示
+                    Text("下にあるボタンからAIに作ってもらうこともできますよ")
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 10)
+                        .padding(.leading, 6)
+                        .allowsHitTesting(false)
                 }
-                .frame(height: 180)
+
+                TextEditor(text: $pack.memo)
+                    .font(FONT_MEMO)
+                    .onChange(of: pack.memo) { oldValue, newValue in
+                        // 最大文字数制限（こちらも < の形で統一）
+                        if APP_MAX_MEMO_LEN < newValue.count {
+                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                        }
+                    }
+            }
+            .frame(height: 180)
 
             Text("edit.info.swipeToDismiss")
                 .font(.caption2)
