@@ -303,6 +303,7 @@
       }
     },
     "edit.info.swipeToDismiss" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -181,12 +181,12 @@ struct PackEditView: View {
             }
             .frame(height: 180)
 
-            Text("edit.info.swipeToDismiss")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .padding(.top, 4)
-
-            Spacer()
+//            Text("edit.info.swipeToDismiss")
+//                .font(.caption2)
+//                .foregroundStyle(.secondary)
+//                .padding(.top, 4)
+//
+//            Spacer()
 
             Button {
                 // AI生成用シートを表示（設定画面から移動）
@@ -204,14 +204,14 @@ struct PackEditView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.accentColor)
-            .padding(.top, 12)
+            .padding(.vertical, 8)
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体
                 AiCreateSheetView()
             }
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 400)
+        .frame(width: 320, height: 440)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
