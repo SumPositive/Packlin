@@ -13,12 +13,15 @@ import StoreKit
 
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
-    @Environment(\.dismiss) private var dismiss
-    /// TextEditorにフォーカスが当たっているかどうかを追跡するフォーカス状態
-    @FocusState private var isRequirementFocused: Bool
     /// 編集中のパックを保持し、AIへ修正依頼するときの素材にする
     private let basePack: M1Pack?
 
+
+    @Environment(\.dismiss) private var dismiss
+    /// TextEditorにフォーカスが当たっているかどうかを追跡するフォーカス状態
+    @FocusState private var isRequirementFocused: Bool
+
+    
     /// - Parameter basePack: 修正元としてAIへ渡したいパック（未指定なら新規作成として扱う）
     init(basePack: M1Pack? = nil) {
         self.basePack = basePack
@@ -59,14 +62,16 @@ struct AiCreateSheetView: View {
 
 /// AIで新しいパックを生成するためのビュー
 struct AiCreateView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.locale) private var locale
-    @EnvironmentObject private var creditStore: CreditStore
     /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
     private let requirementFocus: FocusState<Bool>.Binding
     /// AIへ渡す修正対象パック（nilならAIは新規提案モード）
     private let basePack: M1Pack?
+
+    
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
+    @EnvironmentObject private var creditStore: CreditStore
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
