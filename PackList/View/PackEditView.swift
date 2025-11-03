@@ -194,13 +194,13 @@ struct PackEditView: View {
                 GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
             } label: {
                 Label {
-                    Text("チャッピー(AI)に作ってもらおう")
-                        .font(.body.weight(.bold))
+                    Text("チャッピー(AI)に依頼する")
+                        .font(.body.weight(.medium))
                 } icon: {
                     Image(systemName: "sparkles")
                         .symbolRenderingMode(.hierarchical)
                 }
-                .frame(maxWidth: .infinity)
+                //.frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .tint(.accentColor)

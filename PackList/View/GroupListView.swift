@@ -63,30 +63,6 @@ struct GroupListView: View {
                 }
                 // 並べ替え一覧
                 Section {
-                    Button {
-                        // AI修正シートを開いて、現在のパック内容を基にチャッピーへ依頼する
-                        showAiCreateSheet = true
-                        GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
-                    } label: {
-                        Label {
-                            // 太字テキストで「チャッピー(AI)に作ってもらおう」を表示し、操作の目的を明確化
-                            Text("チャッピー(AI)に作ってもらおう")
-                                .font(.body.weight(.bold))
-                                .multilineTextAlignment(.center)
-                        } icon: {
-                            // きらめきアイコンでAIアシストであることを視覚的に伝える
-                            Image(systemName: "sparkles")
-                                .symbolRenderingMode(.hierarchical)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.accentColor)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets())
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 8)
-
                     ForEach(ItemSortOption.allCases) { option in
                         NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
                             HStack {
@@ -112,8 +88,34 @@ struct GroupListView: View {
                     .padding(.horizontal, 16)
                 }
                 header: {
-                    // セクション2・ヘッダー
-                    Text("group.section.sort")
+                    VStack {
+                        Button {
+                            // AI修正シートを開いて、現在のパック内容を基にチャッピーへ依頼する
+                            showAiCreateSheet = true
+                            GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
+                        } label: {
+                            Label {
+                                // 太字テキストで「チャッピー(AI)に作ってもらおう」を表示し、操作の目的を明確化
+                                Text("チャッピー(AI)に依頼する")
+                                    .font(.body.weight(.medium))
+                                    .multilineTextAlignment(.center)
+                            } icon: {
+                                // きらめきアイコンでAIアシストであることを視覚的に伝える
+                                Image(systemName: "sparkles")
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.accentColor)
+                        .padding(.bottom, 12)
+                        // セクション2・ヘッダー タイトル
+                        HStack {
+                            Text("並べ替え一覧 & アイテム検索")
+                                .font(.body.weight(.bold))
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal, 30)
                 }
                 footer: {
                     if footerMessage {

@@ -112,7 +112,7 @@ struct AiCreateView: View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションタイトル
             Label {
-                Text("チャッピー(AI)にパックを作ってもらおう")
+                Text("チャッピー(AI)に依頼する")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -120,7 +120,7 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("下の欄に要望を入力して「チャッピー！作って」を押せば、チャッピーが要望に応じたパックを提案してくれます。それを修正して自由に使用することができます。提案されたパックが届けばAI利用券が1枚減ります")
+            Text("下の欄に要望を入力して「チャッピーに依頼する」を押せば、チャッピーが要望に応じたパックの新規作成や修正を提案してくれます。依頼にはAI利用券が1枚必要です")
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -146,12 +146,9 @@ struct AiCreateView: View {
                 if isRequirementEmpty {
                     // 入力例
                     Text("""
-                        （例）
-                        海外旅行5泊6日　イギリス、スペイン
-                        家族4人（大人2人、子ども2人）
-                        ＜日程、行程、アクティビティなども記入＞
-                        4人でスキューバダイビングに参加
-                        雨天も想定。救急用品も持参
+                        訪問先、日程、目的、人数、気候、アクティビティや要望を列記してください。
+                        修正時には要望だけでも
+                        （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
                         """)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 16)
