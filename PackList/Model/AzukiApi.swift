@@ -143,12 +143,20 @@ final class AzukiApi {
         let content: String
     }
 
+    /// OpenAIからの応答とパックJSONをまとめて扱うDTO
+    struct ChatGenerationResult {
+        /// OpenAIが返却した最新のパック構造
+        let pack: PackJsonDTO
+        /// 画面上に表示するためのAI返信本文（空文字列の場合もある）
+        let replay: String?
+    }
+
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID
     ///   - messages: 双方のチャット履歴（currentPackを送らなくても履歴から推論できるはず）
-    /// - Returns: 生成結果のパックJSON
-    func generatePack(userId: String, messages: [ChatMessagePayload]) async throws -> PackJsonDTO {
+    /// - Returns: 生成結果のパックJSONとチャット返信のペア
+    func generatePack(userId: String, messages: [ChatMessagePayload]) async throws -> ChatGenerationResult {
         struct GenerateRequest: Encodable {
             let userId: String
             let messages: [ChatMessagePayload] //双方のチャット履歴（currentPackを送らなくても履歴から推論できるはず）
@@ -163,7 +171,36 @@ final class AzukiApi {
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
             log(.debug, "data: \(data)")
-            return try decoder.decode(PackJsonDTO.self, from: data)
+            // サーバー側でreplayフィールドが追加されたため、一度JSONオブジェクトへ展開して再構築する
+            let jsonObject = try JSONSerialization.jsonObject(with: data)
+            guard var dictionary = jsonObject as? [String: Any] else {
+                // 期待と異なる構造ならデコード失敗として上位へ伝える
+                throw AzukiAPIError.decoding
+            }
+
+            // 返信本文はreplayキーに格納される。存在しないときもあるので優先的に取り出す
+            let replayMessage = dictionary["replay"] as? String
+            dictionary.removeValue(forKey: "replay")
+
+            // payloadキーが存在する場合は、そこに本来のパックJSONが退避されている
+            let packPayload: Any
+            if let payload = dictionary["payload"] {
+                packPayload = payload
+            } else {
+                // payloadが無ければ、残りのキー全体がパックJSONとみなせる
+                packPayload = dictionary
+            }
+
+            // JSONSerializationで再シリアライズする際に、許容外の型が混ざっていないかを先に検証する
+            guard JSONSerialization.isValidJSONObject(packPayload) else {
+                throw AzukiAPIError.decoding
+            }
+
+            let packData = try JSONSerialization.data(withJSONObject: packPayload)
+            let pack = try decoder.decode(PackJsonDTO.self, from: packData)
+            return ChatGenerationResult(pack: pack, replay: replayMessage)
+        } catch let error as AzukiAPIError {
+            throw error
         } catch {
             throw AzukiAPIError.decoding
         }
