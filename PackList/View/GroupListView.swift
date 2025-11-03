@@ -21,6 +21,7 @@ struct GroupListView: View {
     @State private var canRedo = false
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
+    @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
 
     private let rowHeight: CGFloat = 44
 
@@ -62,6 +63,30 @@ struct GroupListView: View {
                 }
                 // 並べ替え一覧
                 Section {
+                    Button {
+                        // AI修正シートを開いて、現在のパック内容を基にチャッピーへ依頼する
+                        showAiCreateSheet = true
+                        GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
+                    } label: {
+                        Label {
+                            // 太字テキストで「チャッピー(AI)に作ってもらおう」を表示し、操作の目的を明確化
+                            Text("チャッピー(AI)に作ってもらおう")
+                                .font(.body.weight(.bold))
+                                .multilineTextAlignment(.center)
+                        } icon: {
+                            // きらめきアイコンでAIアシストであることを視覚的に伝える
+                            Image(systemName: "sparkles")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets())
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 8)
+
                     ForEach(ItemSortOption.allCases) { option in
                         NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
                             HStack {
@@ -184,6 +209,10 @@ struct GroupListView: View {
                     dismiss()
                 }
         )
+        .sheet(isPresented: $showAiCreateSheet) {
+            // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
+            AiCreateSheetView(basePack: pack)
+        }
     }
     
     /// セクション2・フッター：操作説明、アイコン説明
