@@ -969,14 +969,23 @@ struct AiCreateView: View {
 
     /// DTOからPackを作成してSwiftDataへ保存
     private func createPack(from dto: PackJsonDTO) throws -> M1Pack {
-        let descriptor = FetchDescriptor<M1Pack>()
-        let packs = (try? modelContext.fetch(descriptor)) ?? []
-        let newOrder = M1Pack.nextPackOrder(packs)
-
+        // Undoグループでまとめて、失敗時にも綺麗に巻き戻せるようにする
         modelContext.undoManager?.groupingBegin()
         defer {
             modelContext.undoManager?.groupingEnd()
         }
+
+        if let basePack {
+            // 既存パックが指定されている場合は、新規追加せず中身を丸ごと差し替える
+            return PackImporter.overwrite(pack: basePack,
+                                          with: dto,
+                                          in: modelContext)
+        }
+
+        // 新規作成時は既存パックの並びを調べて、末尾に挿入するためのorderを決定
+        let descriptor = FetchDescriptor<M1Pack>()
+        let packs = (try? modelContext.fetch(descriptor)) ?? []
+        let newOrder = M1Pack.nextPackOrder(packs)
 
         return PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
     }
