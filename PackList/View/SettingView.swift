@@ -26,8 +26,6 @@ struct SettingView: View {
                 }
 
                 SettingSection {
-                    // ChatGPTに作ってもらう
-                    ChatGPTgenerateView()
                     // 保存パックを読み込む
                     ShareView()
                 }
@@ -144,34 +142,6 @@ struct SettingView: View {
         }
     }
 
-    /// AIにパックを作ってもらおう
-    struct ChatGPTgenerateView: View {
-        @State private var showChatGPTsheet = false
-        
-        var body: some View {
-            Button(action: {
-                // パックをChatGPTで生成
-                showChatGPTsheet = true
-                GALogger.log(.function(name: "settings", option: "tap_packlin"))
-            }) {
-                Label {
-                    Text("チャッピー(AI)に作ってもらおう")
-                        .font(.body.weight(.bold))
-                        .foregroundColor(.accentColor)
-                } icon: {
-                    Image(systemName: "sparkles")
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            .sheet(isPresented: $showChatGPTsheet) {
-                // パックをChatGPTで生成　シート
-                AiCreateSheetView()
-            }
-
-        }
-    }
     /// 共有
     struct ShareView: View {
         @Environment(\.modelContext) private var modelContext

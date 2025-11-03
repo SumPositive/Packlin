@@ -23,6 +23,7 @@ struct PackEditView: View {
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
+    @State private var showAiCreateSheet = false
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
@@ -184,6 +185,30 @@ struct PackEditView: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .padding(.top, 4)
+
+            Spacer()
+
+            Button {
+                // AI生成用シートを表示（設定画面から移動）
+                showAiCreateSheet = true
+                GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
+            } label: {
+                Label {
+                    Text("チャッピー(AI)に作ってもらおう")
+                        .font(.body.weight(.bold))
+                } icon: {
+                    Image(systemName: "sparkles")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.accentColor)
+            .padding(.top, 12)
+            .sheet(isPresented: $showAiCreateSheet) {
+                // AI生成シート本体
+                AiCreateSheetView()
+            }
         }
         .padding(.horizontal, 8)
         .frame(width: 320, height: 400)
