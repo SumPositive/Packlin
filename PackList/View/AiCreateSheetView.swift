@@ -162,11 +162,11 @@ struct AiCreateView: View {
             }
 
             HStack {
-                Spacer()
                 Text("AI利用券残り \(creditStore.credits) 枚")
                     .font(.body)
                     .foregroundStyle(.secondary)
-                    .padding(.trailing, 8)
+
+                Spacer()
 
                 Button {
                     // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
@@ -194,9 +194,9 @@ struct AiCreateView: View {
                 .disabled(isRequirementEmpty || isGenerating)
                 .buttonStyle(.borderedProminent)
                 .tint(.accentColor)
-                //.padding(.vertical, 8)
-                Spacer()
             }
+            .padding(.horizontal, 24)
+
             // Spacer で左右を挟むことでボタンが中央に寄る
             
             if isGenerating {
