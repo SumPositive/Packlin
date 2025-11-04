@@ -129,74 +129,98 @@ struct AiCreateView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 16)
             
-            // 入力欄とプレースホルダー
-            ZStack(alignment: .topLeading) {
-                // 入力欄
-                TextEditor(text: $requirementText)
-                    .frame(height: 160)
-                    .padding(8)
-                    // TextEditorにフォーカスを割り当て、親からの制御を受ける
-                    .focused(requirementFocus)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color(uiColor: .secondarySystemBackground))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                    )
-                    .accessibilityLabel(Text("パックの要望入力"))
+            VStack(alignment: .leading, spacing: 12) {
+                // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
+                HStack(spacing: 12) {
+                    Text("AI利用券残り \(creditStore.credits) 枚")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(
+                            Capsule(style: .continuous)
+                                .fill(Color.secondary.opacity(0.12))
+                        )
 
-                // プレースホルダー
-                if isRequirementEmpty {
-                    // 入力例
-                    Text("""
-                        訪問先、日程、目的、人数、気候、アクティビティや要望をたくさん列記してください。
+                    Spacer(minLength: 12)
 
-                        （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
-                        """)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 16)
-                    .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
-                }
-            }
+                    Button {
+                        // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
+                        inlineGenerationFeedback = nil
+                        // 新規リクエストを確実に送るため、既存の処理を呼び出す
+                        generatePackWithOpenAI()
+                    } label: {
+                        HStack(spacing: 6) {
+                            if isGenerating {
+                                // 読み込み中の様子をユーザーに知らせる
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                            }else{
+                                // 送信アイコン
+                                Image(systemName: "paperplane")
+                                    .symbolRenderingMode(.hierarchical)
+                            }
 
-            HStack {
-                Text("AI利用券残り \(creditStore.credits) 枚")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Button {
-                    // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
-                    inlineGenerationFeedback = nil
-                    // 新規リクエストを確実に送るため、既存の処理を呼び出す
-                    generatePackWithOpenAI()
-                } label: {
-                    HStack(alignment: .center, spacing: 0) {
-                        if isGenerating {
-                            // 読み込み中の様子をユーザーに知らせる
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                        }else{
-                            // 送信アイコン
-                            Image(systemName: "paperplane")
-                                .symbolRenderingMode(.hierarchical)
+                            Text(isGenerating ? "考え中" : "送信")
+                                .font(.callout.weight(.semibold))
                         }
-
-                        Text(isGenerating ? "考え中" : "送信")
-                            .font(.callout.weight(.semibold))
-                            .padding(.horizontal, 8)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 18)
+                        .frame(minHeight: 44)
                     }
-                    //.frame(maxWidth: .infinity)
+                    .disabled(isRequirementEmpty || isGenerating)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+                    .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
-                .disabled(isRequirementEmpty || isGenerating)
-                .buttonStyle(.borderedProminent)
-                .tint(.accentColor)
+
+                // 入力欄とプレースホルダーをカード調レイアウトに収める
+                ZStack(alignment: .topLeading) {
+                    // 入力欄。カード背景と馴染むよう余白のみを加える
+                    TextEditor(text: $requirementText)
+                        .frame(minHeight: 160)
+                        .padding(12)
+                        // TextEditorにフォーカスを割り当て、親からの制御を受ける
+                        .focused(requirementFocus)
+                        .background(Color.clear)
+                        .accessibilityLabel(Text("パックの要望入力"))
+
+                    // プレースホルダー
+                    if isRequirementEmpty {
+                        // 入力例。TextEditorの内側余白と揃えて配置
+                        Text("""
+                            訪問先、日程、目的、人数、気候、アクティビティや要望をたくさん列記してください。
+
+                            （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
+                            """)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 20)
+                        .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(
+                            Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemBackground)
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+                )
             }
-            .padding(.horizontal, 24)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(
+                        Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .secondarySystemGroupedBackground)
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+            )
 
             // Spacer で左右を挟むことでボタンが中央に寄る
             
