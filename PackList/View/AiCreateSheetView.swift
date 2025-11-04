@@ -123,10 +123,11 @@ struct AiCreateView: View {
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
                 要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じたパックの新規作成や修正を提案してくれます。
-                AI利用券は、依頼内容が少なくても多くても1枚消費します。通信障害などで提案が届かない時には消費しません
+                AI利用券は、1回の送信で1枚消費しますが、通信障害などで提案が届かなければ消費しません。
                 """)
                 .font(.body)
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, 16)
             
             // 入力欄とプレースホルダー
             ZStack(alignment: .topLeading) {
@@ -155,7 +156,7 @@ struct AiCreateView: View {
                         （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
                         """)
                     .foregroundStyle(.secondary)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
                 }
@@ -185,7 +186,7 @@ struct AiCreateView: View {
                                 .symbolRenderingMode(.hierarchical)
                         }
 
-                        Text(isGenerating ? "...考え中..." : "送信")
+                        Text(isGenerating ? "考え中" : "送信")
                             .font(.callout.weight(.semibold))
                             .padding(.horizontal, 8)
                     }
