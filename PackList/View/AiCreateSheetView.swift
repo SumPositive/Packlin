@@ -163,6 +163,11 @@ struct AiCreateView: View {
 
             HStack {
                 Spacer()
+                Text("AI利用券残り \(creditStore.credits) 枚")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .padding(.trailing, 8)
+
                 Button {
                     // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
                     inlineGenerationFeedback = nil
@@ -223,13 +228,13 @@ struct AiCreateView: View {
 
             //Divider() // 区切り線
             
-            HStack {
-                Spacer()
-                Text("AI利用券残り \(creditStore.credits) 枚")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
+//            HStack {
+//                Spacer()
+//                Text("AI利用券残り \(creditStore.credits) 枚")
+//                    .font(.body)
+//                    .foregroundStyle(.secondary)
+//                Spacer()
+//            }
 
             // AI利用券購入
             creditPurchaseMenu
