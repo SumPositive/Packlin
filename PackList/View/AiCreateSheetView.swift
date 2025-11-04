@@ -363,6 +363,8 @@ struct AiCreateView: View {
 
                         GALogger.log(.packlin_request(userId: userId,
                                                       requirement: trimmedRequirement))
+                        // 生成が成功しクレジット消費も確定したので、次回表示時に空欄から始められるよう保存済みの要望文を消す
+                        requirementText = ""
                         return importedPack.name
                     }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
