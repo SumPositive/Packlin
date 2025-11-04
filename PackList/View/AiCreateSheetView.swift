@@ -161,32 +161,39 @@ struct AiCreateView: View {
                 }
             }
 
-            Button {
-                // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
-                inlineGenerationFeedback = nil
-                generatePackWithOpenAI()
-            } label: {
-                HStack(alignment: .center, spacing: 0) {
-                    if isGenerating {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                    }else{
-                        // 送信アイコン
-                        Image(systemName: "paperplane")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-             
-                    Text(isGenerating ? "...考え中..." : "送信")
-                        .font(.callout.weight(.semibold))
-                        .padding(.horizontal, 8)
-                }
-                //.frame(maxWidth: .infinity)
-            }
-            .disabled(isRequirementEmpty || isGenerating)
-            .buttonStyle(.borderedProminent)
-            .tint(.accentColor)
-            //.padding(.vertical, 8)
+            HStack {
+                Spacer()
+                Button {
+                    // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
+                    inlineGenerationFeedback = nil
+                    // 新規リクエストを確実に送るため、既存の処理を呼び出す
+                    generatePackWithOpenAI()
+                } label: {
+                    HStack(alignment: .center, spacing: 0) {
+                        if isGenerating {
+                            // 読み込み中の様子をユーザーに知らせる
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        }else{
+                            // 送信アイコン
+                            Image(systemName: "paperplane")
+                                .symbolRenderingMode(.hierarchical)
+                        }
 
+                        Text(isGenerating ? "...考え中..." : "送信")
+                            .font(.callout.weight(.semibold))
+                            .padding(.horizontal, 8)
+                    }
+                    //.frame(maxWidth: .infinity)
+                }
+                .disabled(isRequirementEmpty || isGenerating)
+                .buttonStyle(.borderedProminent)
+                .tint(.accentColor)
+                //.padding(.vertical, 8)
+                Spacer()
+            }
+            // Spacer で左右を挟むことでボタンが中央に寄る
+            
             if isGenerating {
                 Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
                     .font(.footnote)
