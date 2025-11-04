@@ -28,6 +28,7 @@ struct AiCreateSheetView: View {
     }
 
     var body: some View {
+        //let title = (basePack?.name) ?? Text("app.title")
         NavigationView {
             ScrollView {
                 AiCreateView(requirementFocus: $isRequirementFocused,
@@ -46,7 +47,7 @@ struct AiCreateSheetView: View {
                 including: .gesture
             )
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("app.title"))
+            .navigationTitle(basePack?.name ?? String(localized:"新しいパック"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -109,7 +110,7 @@ struct AiCreateView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
             // セクションタイトル
             Label {
                 Text("チャッピー(AI)に依頼する")
@@ -120,7 +121,10 @@ struct AiCreateView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("下の欄に要望を入力して「チャッピーに依頼する」を押せば、チャッピーが要望に応じたパックの新規作成や修正を提案してくれます。依頼にはAI利用券が1枚必要です")
+            Text("""
+                要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じたパックの新規作成や修正を提案してくれます。
+                AI利用券は、依頼内容が少なくても多くても1枚消費します。通信障害などで提案が届かない時には消費しません
+                """)
                 .font(.body)
                 .foregroundStyle(.secondary)
             
@@ -128,7 +132,7 @@ struct AiCreateView: View {
             ZStack(alignment: .topLeading) {
                 // 入力欄
                 TextEditor(text: $requirementText)
-                    .frame(height: 200)
+                    .frame(height: 160)
                     .padding(8)
                     // TextEditorにフォーカスを割り当て、親からの制御を受ける
                     .focused(requirementFocus)
@@ -146,12 +150,12 @@ struct AiCreateView: View {
                 if isRequirementEmpty {
                     // 入力例
                     Text("""
-                        訪問先、日程、目的、人数、気候、アクティビティや要望を列記してください。
-                        修正時には要望だけでも
+                        訪問先、日程、目的、人数、気候、アクティビティや要望をたくさん列記してください。
+
                         （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
                         """)
                     .foregroundStyle(.secondary)
-                    .padding(.vertical, 16)
+                    .padding(.vertical, 4)
                     .padding(.horizontal, 16)
                     .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
                 }
@@ -162,18 +166,26 @@ struct AiCreateView: View {
                 inlineGenerationFeedback = nil
                 generatePackWithOpenAI()
             } label: {
-                HStack {
+                HStack(alignment: .center, spacing: 0) {
                     if isGenerating {
                         ProgressView()
                             .progressViewStyle(.circular)
+                    }else{
+                        // 送信アイコン
+                        Image(systemName: "paperplane")
+                            .symbolRenderingMode(.hierarchical)
                     }
-                    Text(isGenerating ? "作ってます..." : "チャッピー！作って")
+             
+                    Text(isGenerating ? "...考え中..." : "送信")
                         .font(.callout.weight(.semibold))
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 8)
                 }
-                .frame(maxWidth: .infinity)
+                //.frame(maxWidth: .infinity)
             }
             .disabled(isRequirementEmpty || isGenerating)
+            .buttonStyle(.borderedProminent)
+            .tint(.accentColor)
+            //.padding(.vertical, 8)
 
             if isGenerating {
                 Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
@@ -277,10 +289,9 @@ struct AiCreateView: View {
         if colorScheme == .dark {
             return Color(uiColor: .systemGray3)
         }
-
         return Color(uiColor: .systemGray6)
     }
-
+    
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
