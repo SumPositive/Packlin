@@ -25,8 +25,8 @@ struct PackListView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
     private let rowHeight: CGFloat = 44
-    // Popup表示中はナビバーボタンを非活性にするためのフラグ
-    private var isShowingPopup: Bool { editingPack != nil }
+    // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
+    private var isShowingEditSheet: Bool { editingPack != nil }
 
     var body: some View {
         ZStack {
@@ -35,6 +35,7 @@ struct PackListView: View {
                     ForEach(packs) { pack in
                         ZStack {
                             PackRowView(pack: pack) { selected, point in
+                                // Pack行のタップ位置はシートでは使用しないが、今後の拡張に備えて保持
                                 editingPack = selected
                                 popupAnchor = point
                             }
@@ -78,7 +79,7 @@ struct PackListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
                     }
-                    .disabled(isShowingPopup)
+                    .disabled(isShowingEditSheet)
                     .padding(.horizontal, 8)
                     
                     Button {
@@ -88,7 +89,7 @@ struct PackListView: View {
                         Image(systemName: "arrow.uturn.backward")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
-                    .disabled(!canUndo || isShowingPopup)
+                    .disabled(!canUndo || isShowingEditSheet)
                     .padding(.horizontal, 16)
 
                     Spacer()
@@ -102,7 +103,7 @@ struct PackListView: View {
                         Image(systemName: "arrow.uturn.forward")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
-                    .disabled(!canRedo || isShowingPopup)
+                    .disabled(!canRedo || isShowingEditSheet)
                     .padding(.horizontal, 16)
                     
                     Button {
@@ -113,7 +114,7 @@ struct PackListView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
-                    .disabled(isShowingPopup)
+                    .disabled(isShowingEditSheet)
                     .padding(.horizontal, 8)
                 }
                 .frame(height: rowHeight)
@@ -128,22 +129,7 @@ struct PackListView: View {
             }
 
             //----------------------------------
-            //(ZStack 1) Popupで表示
-            if let pack = editingPack {
-                PopupView(anchor: popupAnchor) {
-                    editingPack = nil
-                    popupAnchor = nil
-                } content: {
-                    PackEditView(pack: pack) {
-                        //.onClose：内から閉じる場合
-                        editingPack = nil
-                        popupAnchor = nil
-                    }
-                }
-                .zIndex(1)
-            }
-            //----------------------------------
-            //(ZStack 2) Popupで表示
+            //(ZStack) 設定用ポップアップを表示
             if isShowSetting {
                 PopupView(
                     anchor: popupAnchor,
@@ -155,6 +141,16 @@ struct PackListView: View {
                 }
                 .zIndex(2)
             }
+        }
+        // Pack編集はポップアップからシート表示へ移行
+        .sheet(item: $editingPack) { pack in
+            PackEditView(pack: pack) {
+                // onClose発火時にシートを閉じる
+                editingPack = nil
+                popupAnchor = nil
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 

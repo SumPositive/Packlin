@@ -31,7 +31,8 @@ struct PackEditView: View {
     }
 
     var body: some View {
-        VStack {
+        // シート化に伴い全体を縦方向に整理したVStackで構成
+        VStack(alignment: .leading, spacing: 12) {
             HStack {    // Actions
                 // チェックON/OFF
                 Button {
@@ -105,6 +106,8 @@ struct PackEditView: View {
                 Button {
                     // EditItemViewを閉じる
                     onClose()
+                    // シートを強制的に閉じてから削除処理へ進める
+                    dismiss()
                     // Itemを削除する
                     deletePack()
                 } label: {
@@ -198,13 +201,16 @@ struct PackEditView: View {
             .buttonStyle(.borderedProminent)
             .tint(.accentColor)
             .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
                 AiCreateSheetView(basePack: pack)
             }
         }
-        .padding(.horizontal, 8)
-        .frame(width: 320, height: 380)
+        // シート表示に合わせて左右と上下の余白を調整
+        .padding(.horizontal, 16)
+        .padding(.vertical, 20)
+        .frame(maxWidth: .infinity, alignment: .top)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
