@@ -432,11 +432,8 @@ final class AzukiApi {
 
             let firstRequest = buildRequest(body: firstPayload)
             let firstResult: (data: Data, response: URLResponse)
-            do {
-                firstResult = try await self.session.data(for: firstRequest)
-            } catch {
-                throw error
-            }
+            // URLSession.data(for:)はエラーをthrowする可能性があるため、そのまま伝播させる
+            firstResult = try await self.session.data(for: firstRequest)
 
             guard let firstHTTP = firstResult.response as? HTTPURLResponse else {
                 throw AzukiAPIError.invalidResponse

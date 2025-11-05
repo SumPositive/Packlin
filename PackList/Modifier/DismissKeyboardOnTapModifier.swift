@@ -59,9 +59,11 @@ private struct DismissKeyboardRepresentable: UIViewRepresentable {
             }
 
             // TextEditorがフォーカス中であれば、遅延実行でフォーカスを外してキーボードを閉じる
-            if requirementFocus.wrappedValue {
+            if self.requirementFocus.wrappedValue {
+                // selfを明示することでクロージャ内のキャプチャセマンティクスを分かりやすくする
+                let focusBinding = self.requirementFocus
                 DispatchQueue.main.async {
-                    requirementFocus.wrappedValue = false
+                    focusBinding.wrappedValue = false
                     // 第一レスポンダへresignFirstResponderを送信し、確実にキーボードを閉じる
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
