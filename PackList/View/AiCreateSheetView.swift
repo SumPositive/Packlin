@@ -49,16 +49,16 @@ struct AiCreateSheetView: View {
                 },
                 including: .subviews
             )
-            // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 24).onChanged { _ in
-                    // ScrollView本体でのドラッグだけに反応し、TextEditor内の操作ではフォーカスを保つ
-                    if isRequirementFocused {
-                        isRequirementFocused = false
-                    }
-                },
-                including: .gesture
-            )
+//            // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
+//            .simultaneousGesture(
+//                DragGesture(minimumDistance: 24).onChanged { _ in
+//                    // ScrollView本体でのドラッグだけに反応し、TextEditor内の操作ではフォーカスを保つ
+//                    if isRequirementFocused {
+//                        isRequirementFocused = false
+//                    }
+//                },
+//                including: .gesture
+//            )
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(basePack?.name ?? String(localized:"新しいパック"))
             .navigationBarTitleDisplayMode(.inline)
