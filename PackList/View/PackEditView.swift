@@ -201,6 +201,11 @@ struct PackEditView: View {
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
                 AiCreateSheetView(basePack: pack)
+                    // medium detentを優先することで、内容が収まる範囲では必要最小の高さでシートを表示する
+                    // largeも残しておくことで、利用者が必要に応じて全画面へ拡張できるようにする
+                    .presentationDetents([.medium, .large])
+                    // ドラッグインジケータを出して、スワイプで高さ調整できることを伝える
+                    .presentationDragIndicator(.visible)
             }
         }
         .padding(.horizontal, 8)
