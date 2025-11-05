@@ -214,11 +214,6 @@ struct GroupListView: View {
         .sheet(isPresented: $showAiCreateSheet) {
             // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
             AiCreateSheetView(basePack: pack)
-                // シートの高さが常に最大にならないように、中程度の高さを優先して表示する
-                // iOS標準のmedium detentは内容量が少ないときに最小限の高さで止まり、必要に応じてlargeまで広がる
-                .presentationDetents([.medium, .large])
-                // ユーザーが高さを変更できることを明示するため、ドラッグインジケータを表示する
-                .presentationDragIndicator(.visible)
         }
     }
     

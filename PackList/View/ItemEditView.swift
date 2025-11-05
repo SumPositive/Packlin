@@ -376,6 +376,8 @@ struct ItemEditView: View {
                 onConfirm: handleMoveConfirmation,
                 onCancel: { isShowingMoveSheet = false }
             )
+            .presentationDetents([.height(400), .medium]) // シートの高さ
+            .presentationDragIndicator(.visible) // ドラッグインジケータを表示
         }
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }
