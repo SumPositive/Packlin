@@ -143,7 +143,11 @@ struct AiCreateView: View {
 
                     Spacer(minLength: 12)
 
+                    // 送信
                     Button {
+                        // 送信ボタンを押した瞬間にフォーカスを解除し、キーボードを閉じる
+                        // TextEditorのバインディングフォーカスに直接アクセスして明示的に外す
+                        requirementFocus.wrappedValue = false
                         // ボタンタップ時点で前回のフィードバックをいったん消し、最新状態だけを残す
                         inlineGenerationFeedback = nil
                         // 新規リクエストを確実に送るため、既存の処理を呼び出す
@@ -164,8 +168,8 @@ struct AiCreateView: View {
                                 .font(.callout.weight(.semibold))
                         }
                         .padding(.vertical, 4)
-                        .padding(.horizontal, 18)
-                        .frame(minHeight: 24)
+                        .padding(.horizontal, 12)
+                        .frame(minHeight: 20)
                     }
                     .disabled(isRequirementEmpty || isGenerating)
                     .buttonStyle(.borderedProminent)
@@ -177,7 +181,7 @@ struct AiCreateView: View {
                 ZStack(alignment: .topLeading) {
                     // 入力欄。カード背景と馴染むよう余白のみを加える
                     TextEditor(text: $requirementText)
-                        .frame(height: 160)
+                        .frame(height: 170)
                         .padding(2)
                         .focused(requirementFocus)
                         .background(Color.clear)

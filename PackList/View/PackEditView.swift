@@ -179,14 +179,7 @@ struct PackEditView: View {
                         .allowsHitTesting(false)
                 }
             }
-            .frame(height: 180)
-
-//            Text("edit.info.swipeToDismiss")
-//                .font(.caption2)
-//                .foregroundStyle(.secondary)
-//                .padding(.top, 4)
-//
-//            Spacer()
+            .frame(height: 120)
 
             Button {
                 // AI生成用シートを表示（設定画面から移動）
@@ -211,7 +204,7 @@ struct PackEditView: View {
             }
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 440)
+        .frame(width: 320, height: 380)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 ActivityView(activityItems: [shareURL])
