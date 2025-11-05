@@ -181,17 +181,15 @@ struct AiCreateView: View {
                         .padding(2)
                         .focused(requirementFocus)
                         .background(Color.clear)
-                        //.background(backgroundColor)
-                        //.cornerRadius(16)
                         .accessibilityLabel(Text("パックの要望入力"))
-                        // 入力文字数を1000文字以内に抑えるための監視
-                        .onChange(of: requirementText) { newValue in
+                        // 入力文字数をAI_REQUIREMENT_MAX文字以内に抑えるための監視
+                        .onChange(of: requirementText) { newValue, _ in
                             // 文字数が上限以下ならそのまま利用する
-                            if newValue.count <= 1000 {
+                            if newValue.count <= AI_REQUIREMENT_MAX {
                                 return
                             }
-                            // 1000文字を超えた分は切り捨てて保存し直す
-                            let limitedText = String(newValue.prefix(1000))
+                            // 超えた分は切り捨てて保存し直す
+                            let limitedText = String(newValue.prefix(AI_REQUIREMENT_MAX))
                             requirementText = limitedText
                         }
 
@@ -209,31 +207,14 @@ struct AiCreateView: View {
                         .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
                     }
                 }
-//                .background(
-//                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-//                        .fill(backgroundColor
-////                            Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemFill)
-//                        )
-//                )
-//                .overlay(
-//                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-//                        .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
-//                )
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(
-//                        Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .secondarySystemGroupedBackground)
                         Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .systemGray3)
                     )
             )
-//            .overlay(
-//                RoundedRectangle(cornerRadius: 20, style: .continuous)
-//                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
-//            )
-
-            // Spacer で左右を挟むことでボタンが中央に寄る
             
             if isGenerating {
                 Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
@@ -261,16 +242,6 @@ struct AiCreateView: View {
                         .stroke(feedback.tintColor.opacity(0.3), lineWidth: 1)
                 )
             }
-
-            //Divider() // 区切り線
-            
-//            HStack {
-//                Spacer()
-//                Text("AI利用券残り \(creditStore.credits) 枚")
-//                    .font(.body)
-//                    .foregroundStyle(.secondary)
-//                Spacer()
-//            }
 
             // AI利用券購入
             creditPurchaseMenu
@@ -448,7 +419,7 @@ struct AiCreateView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .success(message: String(localized: "パック一覧に『\(packName)』を追加しました。パック一覧を見てください"))
+                inlineGenerationFeedback = .success(message: String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください"))
             }
             return
         }

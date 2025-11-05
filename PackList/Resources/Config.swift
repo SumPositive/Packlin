@@ -19,7 +19,10 @@ let DEBUG_SHOW_ORDER_ID = true
 //-------------------------------------- アルゴリズム定数
 let ORDER_SPARSE: Int = 1000 // スパース間隔（.orderをまばらにして挿入時に中間値を使い、全更新を減らす）
 
-//-------------------------------------- JSON関係
+//-------------------------------------- チャッピー(AI)
+let AI_REQUIREMENT_MAX: Int = 1000     // 要望の最大文字数
+
+//-------------------------------------- パックJSON関係
 let PACK_JSON_DTO_PRODUCT_NAME = "Packlin" // 生成ファイルの出自判定に利用
 let PACK_JSON_DTO_COPYRIGHT = "2025_sumpo@azukid.com" // 差異あれば読み込みエラー
 let PACK_JSON_DTO_VERSION   = "3.0" // マイグレーション用
