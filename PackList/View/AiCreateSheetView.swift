@@ -122,8 +122,7 @@ struct AiCreateView: View {
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じたパックの新規作成や修正を提案してくれます。
-                AI利用券は、1回の送信で1枚消費しますが、通信障害などで提案が届かなければ消費しません。
+                要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じてパックの新規作成や修正をしてくれます。AI利用券1枚で1回の送信ができます。
                 """)
                 .font(.body)
                 .foregroundStyle(.secondary)
@@ -139,7 +138,7 @@ struct AiCreateView: View {
                         .padding(.horizontal, 12)
                         .background(
                             Capsule(style: .continuous)
-                                .fill(Color.secondary.opacity(0.12))
+                                .fill(Color.secondary.opacity(0.3))
                         )
 
                     Spacer(minLength: 12)
@@ -164,9 +163,9 @@ struct AiCreateView: View {
                             Text(isGenerating ? "考え中" : "送信")
                                 .font(.callout.weight(.semibold))
                         }
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 4)
                         .padding(.horizontal, 18)
-                        .frame(minHeight: 44)
+                        .frame(minHeight: 24)
                     }
                     .disabled(isRequirementEmpty || isGenerating)
                     .buttonStyle(.borderedProminent)
@@ -178,11 +177,12 @@ struct AiCreateView: View {
                 ZStack(alignment: .topLeading) {
                     // 入力欄。カード背景と馴染むよう余白のみを加える
                     TextEditor(text: $requirementText)
-                        .frame(minHeight: 160)
-                        .padding(12)
-                        // TextEditorにフォーカスを割り当て、親からの制御を受ける
+                        .frame(height: 160)
+                        .padding(2)
                         .focused(requirementFocus)
                         .background(Color.clear)
+                        //.background(backgroundColor)
+                        //.cornerRadius(16)
                         .accessibilityLabel(Text("パックの要望入力"))
 
                     // プレースホルダー
@@ -199,28 +199,29 @@ struct AiCreateView: View {
                         .allowsHitTesting(false) // タップを奪わないようにヒットテストを無効化
                     }
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(
-                            Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemBackground)
-                        )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
-                )
+//                .background(
+//                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+//                        .fill(backgroundColor
+////                            Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemFill)
+//                        )
+//                )
+//                .overlay(
+//                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+//                        .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+//                )
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(
-                        Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .secondarySystemGroupedBackground)
+//                        Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .secondarySystemGroupedBackground)
+                        Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .systemGray3)
                     )
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
-            )
+//            .overlay(
+//                RoundedRectangle(cornerRadius: 20, style: .continuous)
+//                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+//            )
 
             // Spacer で左右を挟むことでボタンが中央に寄る
             
