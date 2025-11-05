@@ -138,9 +138,8 @@ struct PackListView: View {
         // 設定画面もシート表示へ変更
         .sheet(isPresented: $isShowSetting) {
             SettingView()
-                // 高さをある程度固定してポップアップ時と同じ印象を維持
-                .presentationDetents([.height(560)])
-                .presentationDragIndicator(.hidden)
+                .presentationDetents([.height(650), .large])
+                .presentationDragIndicator(.visible)
         }
     }
 

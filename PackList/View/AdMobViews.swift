@@ -67,8 +67,12 @@ struct AdMobBannerContainerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "閉じる")) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
             }
@@ -170,8 +174,12 @@ struct AdMobRewardedScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "閉じる")) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
             }

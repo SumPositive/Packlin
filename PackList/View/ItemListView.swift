@@ -128,7 +128,7 @@ struct ItemListView: View {
             popupAnchor = nil
         }) { group in
             GroupEditView(group: group)
-                .presentationDetents([.height(420)])
+                .presentationDetents([.height(580)])
                 .presentationDragIndicator(.hidden)
         }
     }

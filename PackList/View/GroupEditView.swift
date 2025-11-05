@@ -23,117 +23,117 @@ struct GroupEditView: View {
     }
 
     var body: some View {
-        VStack {
-            HStack {    // Actions
-                // チェックON/OFF
-                Button {
-                    // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-                    checkToggle()
-                } label: {
-                    VStack {
-                        if allItemsChecked {
-                            Image(systemName: "checkmark.square")
+        NavigationStack {
+            Form {
+                Section(group.name) {
+                    HStack {    // Actions
+                        // チェックON/OFF
+                        Button {
+                            // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+                            checkToggle()
+                        } label: {
+                            VStack {
+                                if allItemsChecked {
+                                    Image(systemName: "square")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                    
+                                    Text("全チェックOFF")
+                                        .font(.caption)
+                                }else{
+                                    Image(systemName: "checkmark.square")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                    
+                                    Text("全チェックON")
+                                        .font(.caption)
+                                }
+                            }
+                        }
+                        .frame(width: 88) // on/off変化時に幅が変わらないように
+                        .tint(.purple)
+                        .padding(.horizontal, 8)
+                        
+                        // 複製
+                        Button {
+                            duplicateGroup()
+                        } label: {
+                            VStack {
+                                Image(systemName: "plus.square.on.square")
+                                    .imageScale(.large)
+                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                
+                                Text("複製")
+                                    .font(.caption)
+                            }
+                        }
+                        .tint(.accentColor)
+                        .padding(.horizontal, 8)
+                        
+                        Spacer()
+                        
+                        // 削除
+                        Button {
+                            // シートを閉じてから削除処理を行う
+                            dismiss()
+                            deleteGroup()
+                        } label: {
+                            VStack {
+                                Image(systemName: "trash")
+                                    .imageScale(.large)
+                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                
+                                Text("削除")
+                                    .font(.caption)
+                            }
+                        }
+                        .tint(.red)
+                        .padding(.horizontal, 8)
+                    }
+                }
+                Section("グループ名") {
+                    TextEditor(text: $group.name)
+                        .font(FONT_EDIT)
+                        .onChange(of: group.name) { oldValue, newValue in
+                            // 最大文字数制限
+                            if APP_MAX_NAME_LEN < newValue.count {
+                                group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                            }
+                        }
+                        .focused($nameIsFocused) // フォーカス状態とバインド
+                        .frame(height: 80)
+                }
+                Section("メモ") {
+                    TextEditor(text: $group.memo)
+                        .font(FONT_MEMO)
+                        .onChange(of: group.memo) { oldValue, newValue in
+                            // 最大文字数制限
+                            if APP_MAX_MEMO_LEN < newValue.count {
+                                group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                            }
+                        }
+                        .frame(height: 140)
+                }
+                .padding(.top, -20)
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "xmark")
                                 .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                            Text("action.check.off")
-                                .font(.caption)
-                        }else{
-                            Image(systemName: "square")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                            Text("action.check.on")
-                                .font(.caption)
+                                .symbolRenderingMode(.hierarchical)
                         }
                     }
                 }
-                .frame(width: 88) // on/off変化時に幅が変わらないように
-                .tint(.purple)
-                .padding(.horizontal, 8)
-                
-                // 複製
-                Button {
-                    duplicateGroup()
-                } label: {
-                    VStack {
-                        Image(systemName: "plus.square.on.square")
-                            .imageScale(.large)
-                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                        Text("action.duplicate")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-                
-                Spacer()
-
-                // 削除
-                Button {
-                    // シートを閉じてから削除処理を行う
-                    dismiss()
-                    deleteGroup()
-                } label: {
-                    VStack {
-                        Image(systemName: "trash")
-                            .imageScale(.large)
-                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                        
-                        Text("action.delete")
-                            .font(.caption)
-                    }
-                }
-                .tint(.red)
-                .padding(.horizontal, 8)
             }
-            .padding(.bottom, 8)
-
-            HStack {
-                Text("edit.name")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .padding(.bottom, -7)
-            TextEditor(text: $group.name)
-                .font(FONT_EDIT)
-                .onChange(of: group.name) { oldValue, newValue in
-                    // 最大文字数制限
-                    if APP_MAX_NAME_LEN < newValue.count {
-                        group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                    }
-                }
-                .focused($nameIsFocused) // フォーカス状態とバインド
-                .frame(height: 80)
-
-            HStack {
-                Text("edit.memo")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .padding(.top, 8)
-            .padding(.bottom, -7)
-            TextEditor(text: $group.memo)
-                .font(FONT_MEMO)
-                .onChange(of: group.memo) { oldValue, newValue in
-                    // 最大文字数制限
-                    if APP_MAX_MEMO_LEN < newValue.count {
-                        group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                    }
-                }
-                .frame(height: 180)
         }
-        .padding(.horizontal, 8)
-        // シート幅いっぱいに広がるように調整し、高さもコンテンツに合わせて伸縮
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()

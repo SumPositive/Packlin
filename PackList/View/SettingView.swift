@@ -13,56 +13,85 @@ import Foundation
 
 /// 設定画面：以前はPopup表示だったが、PackEditViewと揃えてシート表示に対応
 struct SettingView: View {
+    
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-
+    
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-
-                SettingSection {
-                    // 情報
-                    InformationView()
+        NavigationStack {
+            VStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        
+                        SettingSection {
+                            // 情報
+                            InformationView()
+                        }
+                        
+                        SettingSection {
+                            // 保存パックを読み込む
+                            ShareView()
+                        }
+                        
+                        SettingSection {
+                            // カスタム設定
+                            CustomSetView()
+                        }
+                        
+                        SettingSection {
+                            // 応援・寄付
+                            DonationView()
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                SettingSection {
-                    // 保存パックを読み込む
-                    ShareView()
-                }
-
-                SettingSection {
-                    // カスタム設定
-                    CustomSetView()
-                }
-
-                SettingSection {
-                    // 応援・寄付
-                    DonationView()
+                .scrollIndicators(.never)
+                // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.top, -20)
+            }
+            .navigationTitle(Text("設定"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 20)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .scrollIndicators(.never)
-        // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
-    private var header: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "gearshape")
-                .symbolRenderingMode(.hierarchical)
-                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
-
-            Text("設定")
-                .font(.title3.weight(.regular))
-                .foregroundStyle(.primary)
-
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
+    
+//    private var header: some View {
+//        HStack(spacing: 12) {
+//            Image(systemName: "gearshape")
+//                .symbolRenderingMode(.hierarchical)
+//                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
+//            Text("設定")
+//                .font(.title3.weight(.regular))
+//                .foregroundStyle(.primary)
+//
+//            Spacer()
+//            
+//            Button {
+//                // シートを強制的に閉じてから削除処理へ進める
+//                dismiss()
+//            } label: {
+//                HStack {
+//                    Image(systemName: "xmark")
+//                        .imageScale(.large)
+//                        .symbolRenderingMode(.hierarchical)
+//                }
+//            }
+//        }
+//        .frame(maxWidth: .infinity, alignment: .leading)
+//    }
 
     private struct SettingSection<Content: View>: View {
         @Environment(\.colorScheme) private var colorScheme

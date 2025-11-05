@@ -32,9 +32,7 @@ struct PackEditView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    // シート化に伴い全体を縦方向に整理したVStackで構成
-                    //                VStack(alignment: .leading, spacing: 0) {
+                Section(pack.name) {
                     HStack {    // Actions
                         // チェックON/OFF
                         Button {
@@ -169,9 +167,8 @@ struct PackEditView: View {
                                 .allowsHitTesting(false)
                         }
                     }
-                    .frame(height: 120)
+                    .frame(height: 140)
                 }
-                // シート表示に合わせて左右と上下の余白を調整
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -179,16 +176,13 @@ struct PackEditView: View {
                         // シートを強制的に閉じてから削除処理へ進める
                         dismiss()
                     } label: {
-                        HStack {
-                            Image(systemName: "xmark")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                        }
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
-                        dismiss()
                         // AI生成用シートを表示（設定画面から移動）
                         showAiCreateSheet = true
                         GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
@@ -208,6 +202,8 @@ struct PackEditView: View {
                     .sheet(isPresented: $showAiCreateSheet) {
                         // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
                         AiCreateSheetView(basePack: pack)
+                            .presentationDetents([.height(640), .large])
+                            .presentationDragIndicator(.visible)
                     }
                 }
             }

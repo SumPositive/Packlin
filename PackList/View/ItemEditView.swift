@@ -839,7 +839,13 @@ private struct ItemMoveSheetView: View {
             //.listSectionSpacing(.compact)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("action.cancel", action: onCancel)
+                    Button {
+                        onCancel()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(keepOriginal ? "action.duplicate" : "action.move", action: onConfirm)
