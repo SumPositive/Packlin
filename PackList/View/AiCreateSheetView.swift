@@ -184,6 +184,16 @@ struct AiCreateView: View {
                         //.background(backgroundColor)
                         //.cornerRadius(16)
                         .accessibilityLabel(Text("パックの要望入力"))
+                        // 入力文字数を1000文字以内に抑えるための監視
+                        .onChange(of: requirementText) { newValue in
+                            // 文字数が上限以下ならそのまま利用する
+                            if newValue.count <= 1000 {
+                                return
+                            }
+                            // 1000文字を超えた分は切り捨てて保存し直す
+                            let limitedText = String(newValue.prefix(1000))
+                            requirementText = limitedText
+                        }
 
                     // プレースホルダー
                     if isRequirementEmpty {
