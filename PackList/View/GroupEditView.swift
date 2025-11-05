@@ -10,7 +10,6 @@ import SwiftData
 
 struct GroupEditView: View {
     @Bindable var group: M2Group
-    let onClose: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -76,9 +75,8 @@ struct GroupEditView: View {
 
                 // 削除
                 Button {
-                    // EditItemViewを閉じる
-                    onClose()
-                    // Itemを削除する
+                    // シートを閉じてから削除処理を行う
+                    dismiss()
                     deleteGroup()
                 } label: {
                     VStack {
@@ -133,7 +131,9 @@ struct GroupEditView: View {
                 .frame(height: 180)
         }
         .padding(.horizontal, 8)
-        .frame(width: 320, height: 380)
+        // シート幅いっぱいに広がるように調整し、高さもコンテンツに合わせて伸縮
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()

@@ -29,7 +29,8 @@ struct GroupListView: View {
         pack.child.sorted { $0.order < $1.order }
     }
     
-    // Popup表示中はナビバーボタンを非活性にするためのフラグ
+    // Group編集はシート表示へ移行したため、Popupは利用しない
+    // それでも編集中はツールバー操作を抑制したいので、フラグ名は流用
     private var isShowingPopup: Bool { editingGroup != nil }
 
     
@@ -39,9 +40,10 @@ struct GroupListView: View {
                 Section {
                     ForEach(sortedGroups) { group in
                         ZStack {
-                            GroupRowView(group: group, isHeader: false) { selected, point in
+                            GroupRowView(group: group, isHeader: false) { selected, _ in
                                 editingGroup = selected
-                                popupAnchor = point
+                                // シート表示では座標が不要なためリセット
+                                popupAnchor = nil
                             }
 
                             GeometryReader { geo in
@@ -177,21 +179,6 @@ struct GroupListView: View {
                 updateUndoRedo()
             }
 
-            //----------------------------------
-            //(ZStack 1) Popupで表示
-            if let group = editingGroup {
-                PopupView(anchor: popupAnchor) {
-                    editingGroup = nil
-                    popupAnchor = nil
-                } content: {
-                    GroupEditView(group: group) {
-                        //.onClose：内から閉じる場合
-                        editingGroup = nil
-                        popupAnchor = nil
-                    }
-                }
-                .zIndex(1)
-            }
         }
         .contentShape(Rectangle())
         .simultaneousGesture(
@@ -211,6 +198,14 @@ struct GroupListView: View {
                     dismiss()
                 }
         )
+        // Group編集用のシートを追加
+        .sheet(item: $editingGroup, onDismiss: {
+            popupAnchor = nil
+        }) { group in
+            GroupEditView(group: group)
+                .presentationDetents([.height(420)])
+                .presentationDragIndicator(.hidden)
+        }
         .sheet(isPresented: $showAiCreateSheet) {
             // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
             AiCreateSheetView(basePack: pack)

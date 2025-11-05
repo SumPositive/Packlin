@@ -128,24 +128,18 @@ struct PackListView: View {
                 updateUndoRedo()
             }
 
-            //----------------------------------
-            //(ZStack) 設定用ポップアップを表示
-            if isShowSetting {
-                PopupView(
-                    anchor: popupAnchor,
-                    onDismiss: {
-                        isShowSetting = false
-                    }
-                ) {
-                    SettingView()
-                }
-                .zIndex(2)
-            }
         }
         // Pack編集はポップアップからシート表示へ移行
         .sheet(item: $editingPack) { pack in
             PackEditView(pack: pack)
                 .presentationDetents([.height(580)])
+                .presentationDragIndicator(.hidden)
+        }
+        // 設定画面もシート表示へ変更
+        .sheet(isPresented: $isShowSetting) {
+            SettingView()
+                // 高さをある程度固定してポップアップ時と同じ印象を維持
+                .presentationDetents([.height(560)])
                 .presentationDragIndicator(.hidden)
         }
     }

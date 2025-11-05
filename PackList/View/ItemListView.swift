@@ -29,7 +29,8 @@ struct ItemListView: View {
         group.child.sorted { $0.order < $1.order }
     }
 
-    // Popup表示中はナビバーボタンを非活性にするためのフラグ
+    // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用
+    // そのため、どちらかが表示されている間はナビバーボタンを非活性にする
     private var isShowingPopup: Bool { editingGroup != nil || editingItem != nil }
 
     var body: some View {
@@ -56,9 +57,10 @@ struct ItemListView: View {
                     }
                     .onMove(perform: moveItem)
                 } header: {
-                    GroupRowView(group: group, isHeader: true) { selected, point in
+                    GroupRowView(group: group, isHeader: true) { selected, _ in
                         editingGroup = selected
-                        popupAnchor = point
+                        // Groupシートでは座標を使わないため、その都度リセットする
+                        popupAnchor = nil
                     }
                     .background(COLOR_ROW_GROUP)
                     //.padding(.top, -20) // 上余白を無くすため、GroupRowで＋20、ここでー20
@@ -88,19 +90,6 @@ struct ItemListView: View {
 
             //----------------------------------
             //(ZStack 1) Popupで表示
-            if let group = editingGroup {
-                PopupView(anchor: popupAnchor) {
-                    editingGroup = nil
-                    popupAnchor = nil
-                } content: {
-                    GroupEditView(group: group) {
-                        //.onClose：内から閉じる場合
-                        editingGroup = nil
-                        popupAnchor = nil
-                    }
-                }
-                .zIndex(1)
-            }
             //----------------------------------
             //(ZStack 1) Popupで表示
             if let item = editingItem {
@@ -133,6 +122,15 @@ struct ItemListView: View {
                     dismiss()
                 }
         )
+        // Group編集用のシートを追加
+        .sheet(item: $editingGroup, onDismiss: {
+            // onDismissで座標情報をリセットしておく
+            popupAnchor = nil
+        }) { group in
+            GroupEditView(group: group)
+                .presentationDetents([.height(420)])
+                .presentationDragIndicator(.hidden)
+        }
     }
 
     @ToolbarContentBuilder

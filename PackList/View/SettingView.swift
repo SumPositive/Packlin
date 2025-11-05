@@ -11,7 +11,7 @@ import SwiftData
 import UniformTypeIdentifiers
 import Foundation
 
-/// 設定画面：Popupで表示する
+/// 設定画面：以前はPopup表示だったが、PackEditViewと揃えてシート表示に対応
 struct SettingView: View {
     @Environment(\.colorScheme) private var colorScheme
 
@@ -45,7 +45,8 @@ struct SettingView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollIndicators(.never)
-        .frame(width: 340, height: 540)
+        // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var header: some View {
