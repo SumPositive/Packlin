@@ -144,13 +144,9 @@ struct PackListView: View {
         }
         // Pack編集はポップアップからシート表示へ移行
         .sheet(item: $editingPack) { pack in
-            PackEditView(pack: pack) {
-                // onClose発火時にシートを閉じる
-                editingPack = nil
-                popupAnchor = nil
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            PackEditView(pack: pack)
+                .presentationDetents([.height(580)])
+                .presentationDragIndicator(.hidden)
         }
     }
 

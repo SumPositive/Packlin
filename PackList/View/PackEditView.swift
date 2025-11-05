@@ -12,7 +12,6 @@ import UIKit
 
 struct PackEditView: View {
     @Bindable var pack: M1Pack
-    let onClose: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -31,197 +30,200 @@ struct PackEditView: View {
     }
 
     var body: some View {
-        // シート化に伴い全体を縦方向に整理したVStackで構成
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {    // Actions
-                // チェックON/OFF
-                Button {
-                    // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-                    checkToggle()
-                } label: {
-                    VStack {
-                        ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                            if allItemsChecked {
-                                Image(systemName: "checkmark")
-                                    .imageScale(.small)
-                                    //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                    .padding(.top, 4)
+        NavigationStack {
+            Form {
+                Section {
+                    // シート化に伴い全体を縦方向に整理したVStackで構成
+                    //                VStack(alignment: .leading, spacing: 0) {
+                    HStack {    // Actions
+                        // チェックON/OFF
+                        Button {
+                            // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+                            checkToggle()
+                        } label: {
+                            VStack {
+                                ZStack {
+                                    Image(systemName: "case")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                    
+                                    if !allItemsChecked {
+                                        Image(systemName: "checkmark")
+                                            .imageScale(.small)
+                                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                            .padding(.top, 4)
+                                    }
+                                }
+                                if allItemsChecked {
+                                    Text("全チェックOFF")
+                                        .font(.caption)
+                                }else{
+                                    Text("全チェックON")
+                                        .font(.caption)
+                                }
                             }
                         }
-                        if allItemsChecked {
-                            Text("action.check.off")
-                                .font(.caption)
-                        }else{
-                            Text("action.check.on")
-                                .font(.caption)
+                        .frame(width: 88) // on/off変化時に幅が変わらないように
+                        .tint(.purple)
+                        .padding(.horizontal, 8)
+                        
+                        // 複製
+                        Button {
+                            duplicatePack()
+                        } label: {
+                            VStack {
+                                Image(systemName: "plus.square.on.square")
+                                    .imageScale(.large)
+                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                
+                                Text("複製")
+                                    .font(.caption)
+                            }
+                        }
+                        .tint(.accentColor)
+                        .padding(.horizontal, 8)
+                        
+                        // 共有
+                        Button {
+                            exportPack()
+                        } label: {
+                            VStack {
+                                Image(systemName: "square.and.arrow.up")
+                                    .imageScale(.large)
+                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                
+                                Text("保存")
+                                    .font(.caption)
+                            }
+                        }
+                        .tint(.accentColor)
+                        .padding(.leading, 16)
+                        
+                        Spacer()
+                        
+                        // 削除
+                        Button {
+                            // シートを強制的に閉じてから削除処理へ進める
+                            dismiss()
+                            // Itemを削除する
+                            deletePack()
+                        } label: {
+                            VStack {
+                                Image(systemName: "trash")
+                                    .imageScale(.large)
+                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                
+                                Text("削除")
+                                    .font(.caption)
+                            }
+                        }
+                        .tint(.red)
+                        .padding(.horizontal, 8)
+                    }
+                }
+
+                Section("パック名") {
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $pack.name)
+                            .font(FONT_EDIT)
+                            .onChange(of: pack.name) { oldValue, newValue in
+                                // 最大文字数制限（向きは < で統一）
+                                if APP_MAX_NAME_LEN < newValue.count {
+                                    pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                                }
+                            }
+                            .focused($nameIsFocused) // フォーカス状態とバインド
+                        
+                        if pack.name.isEmpty {
+                            // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
+                            Text("新しいパックの名前を入れてください")
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 20)
+                                .padding(.horizontal, 16)
+                                .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
+                        }
+                    }
+                    .frame(height: 80)
+                }
+                Section("メモ") {
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $pack.memo)
+                            .font(FONT_MEMO)
+                            .onChange(of: pack.memo) { oldValue, newValue in
+                                // 最大文字数制限（こちらも < の形で統一）
+                                if APP_MAX_MEMO_LEN < newValue.count {
+                                    pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                                }
+                            }
+                        
+                        if pack.memo.isEmpty {
+                            // メモ未入力時のガイド文を表示
+                            Text("下にあるボタンからAIに作ってもらうこともできますよ")
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 20)
+                                .padding(.horizontal, 16)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .frame(height: 120)
+                }
+                // シート表示に合わせて左右と上下の余白を調整
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        // シートを強制的に閉じてから削除処理へ進める
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "xmark")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
                         }
                     }
                 }
-                .frame(width: 88) // on/off変化時に幅が変わらないように
-                .tint(.purple)
-                .padding(.horizontal, 8)
-
-                // 複製
-                Button {
-                    duplicatePack()
-                } label: {
-                    VStack {
-                        Image(systemName: "plus.square.on.square")
-                            .imageScale(.large)
-                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                        Text("action.duplicate")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.horizontal, 8)
-
-                // 共有
-                Button {
-                    exportPack()
-                } label: {
-                    VStack {
-                        Image(systemName: "square.and.arrow.up")
-                            .imageScale(.large)
-                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                        Text("action.pack.upload")
-                            .font(.caption)
-                    }
-                }
-                .tint(.accentColor)
-                .padding(.leading, 16)
-                
-                Spacer()
-
-                // 削除
-                Button {
-                    // EditItemViewを閉じる
-                    onClose()
-                    // シートを強制的に閉じてから削除処理へ進める
-                    dismiss()
-                    // Itemを削除する
-                    deletePack()
-                } label: {
-                    VStack {
-                        Image(systemName: "trash")
-                            .imageScale(.large)
-                            //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-
-                        Text("action.delete")
-                            .font(.caption)
-                    }
-                }
-                .tint(.red)
-                .padding(.horizontal, 8)
-            }
-            .padding(.bottom, 8)
-            
-            HStack {
-                Text("edit.name")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .padding(.bottom, -7)
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $pack.name)
-                    .font(FONT_EDIT)
-                    .onChange(of: pack.name) { oldValue, newValue in
-                        // 最大文字数制限（向きは < で統一）
-                        if APP_MAX_NAME_LEN < newValue.count {
-                            pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        dismiss()
+                        // AI生成用シートを表示（設定画面から移動）
+                        showAiCreateSheet = true
+                        GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
+                    } label: {
+                        HStack {
+                            Image(systemName: "sparkles")
+                                //.imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                            Text("チャッピー(AI)に依頼する")
+                                .font(.body.weight(.regular))
                         }
                     }
-                    .focused($nameIsFocused) // フォーカス状態とバインド
-
-                if pack.name.isEmpty {
-                    // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
-                    Text("新しいパックの名前を入れてください")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 20)
-                        .padding(.horizontal, 16)
-                        .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
-                }
-            }
-            .frame(height: 80)
-
-            HStack {
-                Text("edit.memo")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .padding(.top, 8)
-            .padding(.bottom, -7)
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $pack.memo)
-                    .font(FONT_MEMO)
-                    .onChange(of: pack.memo) { oldValue, newValue in
-                        // 最大文字数制限（こちらも < の形で統一）
-                        if APP_MAX_MEMO_LEN < newValue.count {
-                            pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                        }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+                    //.padding(.vertical, 4)
+                    //.frame(maxWidth: .infinity)
+                    .sheet(isPresented: $showAiCreateSheet) {
+                        // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
+                        AiCreateSheetView(basePack: pack)
                     }
-
-                if pack.memo.isEmpty {
-                    // メモ未入力時のガイド文を表示
-                    Text("下にあるボタンからAIに作ってもらうこともできますよ")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 20)
-                        .padding(.horizontal, 16)
-                        .allowsHitTesting(false)
                 }
-            }
-            .frame(height: 120)
-
-            Button {
-                // AI生成用シートを表示（設定画面から移動）
-                showAiCreateSheet = true
-                GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
-            } label: {
-                Label {
-                    Text("チャッピー(AI)に依頼する")
-                        .font(.body.weight(.medium))
-                } icon: {
-                    Image(systemName: "sparkles")
-                        .symbolRenderingMode(.hierarchical)
-                }
-                //.frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.accentColor)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .sheet(isPresented: $showAiCreateSheet) {
-                // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
-                AiCreateSheetView(basePack: pack)
             }
         }
-        // シート表示に合わせて左右と上下の余白を調整
-        .padding(.horizontal, 16)
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity, alignment: .top)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
+                // 共有　パック保存
                 ActivityView(activityItems: [shareURL])
             }
         }
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
-            if pack.name.isEmpty {
-                nameIsFocused = true
-            }
+//            if pack.name.isEmpty {
+//                nameIsFocused = true
+//            }
         }
         .onDisappear() {
             // 末尾のスペースと改行を除去
