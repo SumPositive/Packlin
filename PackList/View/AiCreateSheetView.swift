@@ -36,6 +36,19 @@ struct AiCreateSheetView: View {
             }
             // 背景タップでキーボードを閉じるためのジェスチャ
             .contentShape(Rectangle())
+            // スクロール外周をタップしたときにTextEditorのフォーカスを明示的に解除し、キーボードを閉じる
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    // TextEditor以外の領域でタップされたときのみフォーカスを外す
+                    if isRequirementFocused {
+                        // DispatchQueue経由で実行し、他のフォーカス更新処理よりも後に反映させる
+                        DispatchQueue.main.async {
+                            isRequirementFocused = false
+                        }
+                    }
+                },
+                including: .subviews
+            )
             // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
             .simultaneousGesture(
                 DragGesture(minimumDistance: 24).onChanged { _ in
