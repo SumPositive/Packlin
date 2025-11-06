@@ -635,12 +635,11 @@ struct AiCreateView: View {
         let currentLocale = locale
         let productId = option.productId(for: currentLocale)
         Task {
-            // 端末に保管できる上限を超えないか事前にチェックする
-            let limit = AZUKI_CREDIT_BALANCE_LIMIT
+            // 日本語コメント：残高が1枚以上残っている場合は購入処理を遮断する
             let currentCredits = await MainActor.run { creditStore.credits }
-            if limit <= currentCredits || limit < currentCredits + option.tickets {
+            if 0 < currentCredits {
                 await MainActor.run {
-                    alertState = .purchaseLimitReached(max: limit)
+                    alertState = .purchaseBlockedByRemaining
                     processingProductId = nil
                 }
                 return
@@ -762,7 +761,7 @@ struct AiCreateView: View {
             }
             .padding(.horizontal, 40)
 
-            if let warningMessage = purchaseLimitWarning {
+            if let warningMessage = purchaseRestrictionWarning {
                 Text(warningMessage)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -783,29 +782,22 @@ struct AiCreateView: View {
     }
 
     /// 購入オプションが上限に達して利用できないかどうかを判定する
-    private func isPurchaseUnavailable(for option: AzukiCreditPurchaseOption) -> Bool {
+    private func isPurchaseUnavailable(for _: AzukiCreditPurchaseOption) -> Bool {
         // 画面表示中はMainActor上なので直接残高を参照してよい
-        let limit = AZUKI_CREDIT_BALANCE_LIMIT
         let currentCredits = creditStore.credits
-        if limit <= currentCredits {
+        if 0 < currentCredits {
+            // 日本語コメント：残高があれば即座に購入ボタンを無効化する
             return true
         }
-        return limit < currentCredits + option.tickets
+        return false
     }
 
-    /// 現在の残高と上限に応じて注意書きを表示するための文言を返す
-    private var purchaseLimitWarning: String? {
-        let limit = AZUKI_CREDIT_BALANCE_LIMIT
+    /// 現在の残高から購入制限メッセージを導出する
+    private var purchaseRestrictionWarning: String? {
         let currentCredits = creditStore.credits
-        if limit <= currentCredits {
-            return String(localized: "AI利用券は最大\(limit)枚まで保管できます。今ある券を利用してからご購入ください。")
-        }
-        let remainingCapacity = limit - currentCredits
-        let hasDisabledOption = AZUKI_CREDIT_PURCHASE_OPTIONS.contains { option in
-            limit < currentCredits + option.tickets
-        }
-        if hasDisabledOption {
-            return String(localized: "あと\(remainingCapacity)枚まで購入できます。上限を超える購入はできません。")
+        if 0 < currentCredits {
+            // 日本語コメント：購入は残高ゼロ時のみ許可する旨をユーザーへ伝える
+            return String(localized: "AI利用券が残っている間は購入できません。残りが0枚になってから再度お試しください。")
         }
         return nil
     }
@@ -1104,8 +1096,8 @@ struct AiCreateView: View {
         case purchaseAlreadyProcessed
         /// クレジット購入が失敗した場合
         case purchaseFailure(message: String)
-        /// クレジット保管上限に達している場合
-        case purchaseLimitReached(max: Int)
+        /// 残高が残っているため購入できない場合
+        case purchaseBlockedByRemaining
 
         var id: String {
             switch self {
@@ -1115,8 +1107,8 @@ struct AiCreateView: View {
                 return "ai-purchaseAlreadyProcessed"
             case .purchaseFailure(let message):
                 return "ai-purchaseFailure-\(message)"
-            case .purchaseLimitReached(let max):
-                return "ai-purchaseLimitReached-\(max)"
+            case .purchaseBlockedByRemaining:
+                return "ai-purchaseBlockedByRemaining"
             }
         }
 
@@ -1128,8 +1120,8 @@ struct AiCreateView: View {
                 return String(localized: "購入履歴が確認できました")
             case .purchaseFailure:
                 return String(localized: "購入状況")
-            case .purchaseLimitReached:
-                return String(localized: "これ以上追加購入できません")
+            case .purchaseBlockedByRemaining:
+                return String(localized: "購入状況")
             }
         }
 
@@ -1141,8 +1133,8 @@ struct AiCreateView: View {
                 return String(localized: "この購入はすでに完了しています。枚数を更新しました。")
             case .purchaseFailure(let message):
                 return message
-            case .purchaseLimitReached(let max):
-                return String(localized: "AI利用券は最大\(max)枚まで保管できます。既存の券を利用してから再度お試しください。")
+            case .purchaseBlockedByRemaining:
+                return String(localized: "AI利用券が残っている間は購入できません。残りが0枚になってから再度お試しください。")
             }
         }
     }

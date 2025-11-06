@@ -219,6 +219,16 @@
     "AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。" : {
 
     },
+    "AI利用券が残っている間は購入できません。残りが0枚になってから再度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can purchase more AI tickets once you run out. Please use your remaining tickets first."
+          }
+        }
+      }
+    },
     "AI利用券を%lld枚追加しました。" : {
       "localizations" : {
         "en" : {

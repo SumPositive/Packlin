@@ -48,17 +48,9 @@ final class CreditStore: ObservableObject {
         if amount < 1 {
             return
         }
-        // 端末で保管できる最大回数を超えないように調整
-        let limit = AZUKI_CREDIT_BALANCE_LIMIT
-        if limit <= credits {
-            return
-        }
-        let availableRoom = limit - credits
-        let increment = min(amount, availableRoom)
-        if increment < 1 {
-            return
-        }
-        credits += increment
+        // アプリ仕様：保有枚数が0枚の状態でのみ購入処理が通るため、ここでは単純に加算する
+        // （サーバー同期で多めに返ってきた場合も想定し、正の数であればそのまま足し込む）
+        credits += amount
         persist()
     }
 
@@ -78,14 +70,11 @@ final class CreditStore: ObservableObject {
     /// - Parameter amount: サーバーが返した最新残高
     func overwrite(credits amount: Int) {
         if amount < 0 {
+            // 日本語コメント：負の値が来た場合は安全側として0枚に矯正する
             credits = 0
         } else {
-            let limit = AZUKI_CREDIT_BALANCE_LIMIT
-            if amount <= limit {
-                credits = amount
-            } else {
-                credits = limit
-            }
+            // 日本語コメント：上限を撤廃したため、サーバー値をそのまま反映する
+            credits = amount
         }
         persist()
     }
