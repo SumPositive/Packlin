@@ -150,7 +150,9 @@ struct SettingView: View {
     /// 共有
     struct ShareView: View {
         @Environment(\.modelContext) private var modelContext
-     
+
+        /// 設定画面で指定された挿入位置を共有インポートにも適用するためのAppStorage
+        @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @State private var isPresentingImporter = false
         @State private var importAlert: ImportAlert?
         
@@ -230,7 +232,21 @@ struct SettingView: View {
         private func createPack(from dto: PackJsonDTO) throws -> M1Pack {
             let descriptor = FetchDescriptor<M1Pack>()
             let packs = (try? modelContext.fetch(descriptor)) ?? []
-            let newOrder = M1Pack.nextPackOrder(packs)
+            let orderedPacks = packs.sorted { $0.order < $1.order }
+            let insertionIndex: Int = {
+                switch insertionPosition {
+                case .head:
+                    // 日本語コメント：先頭挿入を選択している場合は index 0 を採用
+                    return 0
+                case .tail:
+                    // 日本語コメント：末尾へ追加する設定なら既存数と同じ位置に挿入
+                    return orderedPacks.count
+                }
+            }()
+            let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
+                // 日本語コメント：挿入余白が尽きた際には正規化して順位を維持
+                normalizeSparseOrders(orderedPacks)
+            }
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
             defer {

@@ -85,6 +85,8 @@ struct AiCreateView: View {
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
     @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
+    /// 設定画面で選択した「新規パックの追加位置」を参照し、インポート時にも統一した挙動にする
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -1023,10 +1025,25 @@ struct AiCreateView: View {
                                           in: modelContext)
         }
 
-        // 新規作成時は既存パックの並びを調べて、末尾に挿入するためのorderを決定
+        // 新規作成時は既存パックの並びと設定で指定された挿入位置を考慮して order を決定する
+        // 日本語コメント：AppStorageの設定値を反映することでAI生成も通常追加と同じ位置に並ぶ
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
-        let newOrder = M1Pack.nextPackOrder(packs)
+        let orderedPacks = packs.sorted { $0.order < $1.order }
+        let insertionIndex: Int = {
+            switch insertionPosition {
+            case .head:
+                // 日本語コメント：先頭に追加する場合は index 0
+                return 0
+            case .tail:
+                // 日本語コメント：末尾へ追加する場合は要素数と同じ位置に挿入
+                return orderedPacks.count
+            }
+        }()
+        let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
+            // 日本語コメント：隙間が足りない場合は正規化して order の整合性を保つ
+            normalizeSparseOrders(orderedPacks)
+        }
 
         return PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
     }
