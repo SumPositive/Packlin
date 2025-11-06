@@ -608,7 +608,7 @@ struct AiCreateView: View {
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {
                 let message = apiError.errorDescription
-                ?? String(localized: "AI利用券の枚数が確認できません。時間をおいて再度お試しください。")
+                ?? String(localized: "AI利用券の枚数が確認できません。通信環境をご確認ください")
                 await MainActor.run {
                     inlineGenerationFeedback = .failure(message: message)
                 }
@@ -619,7 +619,7 @@ struct AiCreateView: View {
         } catch {
             if showAlertOnFailure {
                 await MainActor.run {
-                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用券の枚数が確認できません。通信環境をご確認ください。"))
+                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用券の枚数が確認できません。通信環境をご確認ください"))
                 }
             }
             #if DEBUG
@@ -650,7 +650,7 @@ struct AiCreateView: View {
                 processingProductId = productId
             }
 
-            let msgPurchaseCancel = String(localized: "購入を中止しました。課金されません。再度お試しください。")
+            let msgPurchaseCancel = String(localized: "購入を中止しました。課金されません")
             
             do {
                 // 実機（Sandbox Apple ID）での挙動確認を前提とし、StoreKit 本番フローをそのまま利用する
@@ -671,7 +671,7 @@ struct AiCreateView: View {
                     case .pending:
                         // ファミリー共有などで承認待ちになる場合
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです。まだ課金されません。承認が完了すると自動で反映されます。"))
+                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです。まだ課金されません。承認が完了すると自動で反映されます"))
                         }
                         
                     case .userCancelled:
@@ -682,13 +682,13 @@ struct AiCreateView: View {
                         
                     @unknown default:
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "想定外の購入結果が返りました。時間をおいて再度お試しください。"))
+                            alertState = .purchaseFailure(message: String(localized: "想定外の結果が返りました。課金されません。時間をおいて再度お試しください"))
                         }
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
                     let message = flowError.errorDescription
-                        ?? String(localized: "AI利用券の購入に失敗しました。")
+                        ?? String(localized: "AI利用券が購入できませんでした。課金されません")
                     alertState = .purchaseFailure(message: message)
                 }
             } catch StoreKitError.userCancelled {
@@ -715,7 +715,7 @@ struct AiCreateView: View {
                 }
             } catch {
                 await MainActor.run {
-                    alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中にエラーが発生しました。通信環境をご確認ください。"))
+                    alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中に問題が発生しました。課金されません。通信環境をご確認ください。"))
                 }
             }
 
@@ -797,7 +797,7 @@ struct AiCreateView: View {
         let currentCredits = creditStore.credits
         if 0 < currentCredits {
             // 日本語コメント：購入は残高ゼロ時のみ許可する旨をユーザーへ伝える
-            return String(localized: "AI利用券が残っている間は購入できません。残りが0枚になってから再度お試しください。")
+            return String(localized: "AI利用券が残っている間は購入できません。残りが0枚になってからご購入ください")
         }
         return nil
     }
@@ -893,7 +893,7 @@ struct AiCreateView: View {
         
         // verifyPurchaseに失敗し、購入中止したときのメッセージ
         let fallbackMessage = String(
-            localized: "購入の結果待ちです。まだ課金されません。確認が完了すると自動で反映されます。")
+            localized: "購入の結果待ちです。まだ課金されません。確認が完了すると自動で反映されます")
 
 
         do {
@@ -1114,27 +1114,27 @@ struct AiCreateView: View {
 
         var title: String {
             switch self {
-            case .purchaseSuccess:
-                return String(localized: "購入が完了しました")
-            case .purchaseAlreadyProcessed:
-                return String(localized: "購入履歴が確認できました")
-            case .purchaseFailure:
-                return String(localized: "購入状況")
-            case .purchaseBlockedByRemaining:
-                return String(localized: "購入状況")
+                case .purchaseSuccess:
+                    return String(localized: "購入が完了しました")
+                case .purchaseAlreadyProcessed:
+                    return String(localized: "購入履歴が確認できました")
+                case .purchaseFailure:
+                    return String(localized: "購入状況")
+                case .purchaseBlockedByRemaining:
+                    return String(localized: "購入状況")
             }
         }
 
         var message: String {
             switch self {
-            case .purchaseSuccess(let added, _):
-                return String(localized: "AI利用券を\(added)枚追加しました。")
-            case .purchaseAlreadyProcessed:
-                return String(localized: "この購入はすでに完了しています。枚数を更新しました。")
-            case .purchaseFailure(let message):
-                return message
-            case .purchaseBlockedByRemaining:
-                return String(localized: "AI利用券が残っている間は購入できません。残りが0枚になってから再度お試しください。")
+                case .purchaseSuccess(let added, _):
+                    return String(localized: "AI利用券を\(added)枚追加しました")
+                case .purchaseAlreadyProcessed:
+                    return String(localized: "この購入はすでに完了しています。枚数を更新しました")
+                case .purchaseFailure(let message):
+                    return message
+                case .purchaseBlockedByRemaining:
+                    return String(localized: "AI利用券が残っている間は購入できません。残りが0枚になってからご購入ください")
             }
         }
     }

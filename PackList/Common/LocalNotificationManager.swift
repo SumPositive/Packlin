@@ -42,7 +42,7 @@ final class LocalNotificationManager: NSObject {
     /// AI生成が失敗した際にローカル通知を発行する
     /// - Parameter message: 利用者へ伝えたい失敗理由
     func notifyPackGenerationFailed(message: String) async {
-        let title = String(localized: "AI生成に失敗しました")
+        let title = String(localized: "チャッピーからの応答がありません")
         // 失敗理由はダイアログより長くなる場合があるので、通知では要点だけ伝える
         let body = message
         await scheduleNotification(title: title, body: body, suffix: "failure")
