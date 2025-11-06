@@ -199,7 +199,7 @@ struct SettingView: View {
                 )
             }
         }
-        /// URLより.packファイルをPackExportDTO形式で読み取る
+        /// URLより.packlinファイルをPackExportDTO形式で読み取る
         private func importPack(from url: URL) throws -> M1Pack {
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
             defer {

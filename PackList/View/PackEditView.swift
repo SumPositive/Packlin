@@ -112,6 +112,12 @@ struct PackEditView: View {
                         .tint(.red)
                         .padding(.horizontal, 8)
                     }
+                    // Form配下ではセル全体にボタン用のハイライトプレートが載り、
+                    // そのままだと各Buttonが同じ行に並んでいてもセル全体が同一の大きなボタンのように扱われてしまう。
+                    // これが原因で一度のタップが複数のButtonへ伝播し、同時にアクションが実行される状態になっていた。
+                    // BorderlessButtonStyleを適用するとセル全体のボタン化が解除され、
+                    // それぞれのButtonが独立したタップ領域として機能するようになる。
+                    .buttonStyle(BorderlessButtonStyle())
                 }
 
                 Section("パック名") {
@@ -256,8 +262,6 @@ struct PackEditView: View {
         defer {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
-            // Undo/Redoボタンの状態を更新させる（シート表示でも即時反映させる）
-            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
         // createdAtは現在時刻とし、シート表示からの複製でもID重複や順序入れ替わりを避ける
         let newPack = M1Pack(name: pack.name,
@@ -268,6 +272,11 @@ struct PackEditView: View {
         // Pack配下のGroupを複製する
         for group in pack.child {
             copyGroup(group, to: newPack)
+        }
+        // ReOrder
+        let descriptor = FetchDescriptor<M1Pack>()
+        if let packs = try? modelContext.fetch(descriptor) {
+            M1Pack.normalizePackOrder(packs)
         }
     }
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
@@ -302,6 +311,7 @@ struct PackEditView: View {
         }
         // Packを削除
         modelContext.delete(pack)
+        // ReOrder
         let descriptor = FetchDescriptor<M1Pack>()
         if let packs = try? modelContext.fetch(descriptor) {
             M1Pack.normalizePackOrder(packs)
@@ -309,14 +319,11 @@ struct PackEditView: View {
     }
     /// groupとその配下を削除
     private func deleteGroup(_ group: M2Group) {
+        // 配下のItemを削除
         for item in group.child {
             modelContext.delete(item)
         }
-        if let parent = group.parent,
-           let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-            parent.child.remove(at: index)
-            parent.normalizeGroupOrder()
-        }
+        // Groupを削除
         modelContext.delete(group)
     }
 
