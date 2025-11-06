@@ -268,14 +268,39 @@ struct PackEditView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        let descriptor = FetchDescriptor<M1Pack>()
-        let packs = (try? modelContext.fetch(descriptor)) ?? []
-        let newOrder = M1Pack.nextPackOrder(packs)
-        let newTitle = M1Pack(name: pack.name, memo: pack.memo, createdAt: pack.createdAt.addingTimeInterval(-0.001), order: newOrder)
-        modelContext.insert(newTitle)
-        for group in pack.child {
-            copyGroup(group, to: newTitle)
+        // 現在の並び順を保ちながら、複製元のすぐ下へ新しいPackを挿入するために並び替え済みの配列を取得する
+        let descriptor = FetchDescriptor<M1Pack>(sortBy: [SortDescriptor(\M1Pack.order)])
+        let orderedPacks = (try? modelContext.fetch(descriptor)) ?? []
+
+        // 挿入位置：同じPackが見つかればその直後、見つからなければ末尾
+        let insertionIndex: Int = {
+            if let index = orderedPacks.firstIndex(where: { $0.id == pack.id }) {
+                return index + 1
+            }
+            return orderedPacks.count
+        }()
+
+        // スパースorderを利用して既存の順序を崩さずに新しいorderを割り当てる
+        let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
+            // gapが足りなくなった場合は既存要素のorderだけを再配置する
+            normalizeSparseOrders(orderedPacks)
         }
+
+        // createdAtは現在時刻とし、シート表示からの複製でもID重複や順序入れ替わりを避ける
+        let newPack = M1Pack(name: pack.name,
+                             memo: pack.memo,
+                             createdAt: Date(),
+                             order: newOrder)
+        modelContext.insert(newPack)
+
+        // グループはorder順で複製して元の構成を忠実に再現する
+        let sourceGroups = pack.child.sorted { $0.order < $1.order }
+        for group in sourceGroups {
+            copyGroup(group, to: newPack)
+        }
+
+        // Undo/Redoボタンの状態を更新させる（シート表示でも即時反映させる）
+        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
     private func copyGroup(_ group: M2Group, to parent: M1Pack) {
         let orderedGroups = parent.child.sorted { $0.order < $1.order }
