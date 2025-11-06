@@ -11,6 +11,9 @@ import SwiftData
 struct GroupListView: View {
     let pack: M1Pack
 
+    // Query を追加して親パック配下のグループをリアルタイムに監視する
+    @Query private var groups: [M2Group]
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -26,14 +29,15 @@ struct GroupListView: View {
     private let rowHeight: CGFloat = 44
 
     private var sortedGroups: [M2Group] {
-        pack.child.sorted { $0.order < $1.order }
+        // クエリ側で order 昇順にソートしているため、そのまま返せば即座に List が更新される
+        groups
     }
     
     // Group編集はシート表示へ移行したため、Popupは利用しない
     // それでも編集中はツールバー操作を抑制したいので、フラグ名は流用
     private var isShowingPopup: Bool { editingGroup != nil }
 
-    
+
     var body: some View {
         ZStack {
             List {
@@ -332,7 +336,32 @@ struct GroupListView: View {
     }
 }
 
+extension GroupListView {
+    init(pack: M1Pack) {
+        self.pack = pack
+        // シート表示へ移行したことで pack.child の変更通知が伝搬しなくなったため、
+        // 親IDでフィルタしたクエリを持たせて即時にリストへ反映させる
+        _groups = Query(
+            filter: #Predicate<M2Group> { candidate in
+                candidate.parent?.id == pack.id
+            },
+            sort: [SortDescriptor(\M2Group.order)]
+        )
+    }
+}
+
 
 #Preview {
-    GroupListView(pack: M1Pack(name: "", order: 0))
+    do {
+        // プレビュー用にインメモリのモックデータベースを構築する
+        let container = try ModelContainer(for: M1Pack.self, M2Group.self, M3Item.self,
+                                           configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let pack = M1Pack(name: "", order: 0)
+        container.mainContext.insert(pack)
+        return GroupListView(pack: pack)
+            .modelContainer(container)
+    } catch {
+        // 失敗時はエラー内容を可視化してデバッグしやすくする
+        return Text("Preview Error: \(error.localizedDescription)")
+    }
 }
