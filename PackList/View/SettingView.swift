@@ -11,6 +11,35 @@ import SwiftData
 import UniformTypeIdentifiers
 import Foundation
 
+/// 新規追加する位置
+enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
+    // 選択肢
+    case head // 先頭
+    case tail // 末尾
+    // 初期値
+    static let `default`: InsertionPosition = .head
+    
+    var id: String { rawValue }
+    
+    var localizedKey: LocalizedStringKey {
+        switch self {
+            case .head:
+                return "setting.insertion.head"
+            case .tail:
+                return "setting.insertion.tail"
+        }
+    }
+    
+    var iconSFname: String {
+        switch self {
+            case .head:
+                return "text.line.first.and.arrowtriangle.forward"
+            case .tail:
+                return "text.line.last.and.arrowtriangle.forward"
+        }
+    }
+}
+
 /// 設定画面：以前はPopup表示だったが、PackEditViewと揃えてシート表示に対応
 struct SettingView: View {
     
