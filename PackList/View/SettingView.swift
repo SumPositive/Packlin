@@ -55,11 +55,11 @@ struct SettingView: View {
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
@@ -68,31 +68,6 @@ struct SettingView: View {
         }
     }
     
-//    private var header: some View {
-//        HStack(spacing: 12) {
-//            Image(systemName: "gearshape")
-//                .symbolRenderingMode(.hierarchical)
-//                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 1.0))) // 回転
-//            Text("設定")
-//                .font(.title3.weight(.regular))
-//                .foregroundStyle(.primary)
-//
-//            Spacer()
-//            
-//            Button {
-//                // シートを強制的に閉じてから削除処理へ進める
-//                dismiss()
-//            } label: {
-//                HStack {
-//                    Image(systemName: "xmark")
-//                        .imageScale(.large)
-//                        .symbolRenderingMode(.hierarchical)
-//                }
-//            }
-//        }
-//        .frame(maxWidth: .infinity, alignment: .leading)
-//    }
-
     private struct SettingSection<Content: View>: View {
         @Environment(\.colorScheme) private var colorScheme
         private let content: Content

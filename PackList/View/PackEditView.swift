@@ -32,7 +32,7 @@ struct PackEditView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(pack.name) {
+                Section(pack.name.isEmpty ? String(localized:"新しいパック") : pack.name) {
                     HStack {    // Actions
                         // チェックON/OFF
                         Button {
@@ -183,9 +183,6 @@ struct PackEditView: View {
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
-//            if pack.name.isEmpty {
-//                nameIsFocused = true
-//            }
         }
         .onDisappear() {
             // 末尾のスペースと改行を除去
@@ -198,17 +195,17 @@ struct PackEditView: View {
 
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) { //右上
+        ToolbarItem(placement: .navigationBarLeading) {
             Button {
                 // 閉じる
                 dismiss()
             } label: {
-                Image(systemName: "xmark")
+                Image(systemName: "chevron.down")
                     .imageScale(.large)
                     .symbolRenderingMode(.hierarchical)
             }
         }
-        ToolbarItem(placement: .navigationBarLeading) { //左上
+        ToolbarItem(placement: .navigationBarTrailing) {
             Button {
                 // AI生成用シートを表示（設定画面から移動）
                 showAiCreateSheet = true
@@ -218,7 +215,7 @@ struct PackEditView: View {
                     Image(systemName: "sparkles")
                     //.imageScale(.large)
                         .symbolRenderingMode(.hierarchical)
-                    Text("チャッピー(AI)に依頼する")
+                    Text("チャッピー(AI)に作成を依頼")
                         .font(.body.weight(.regular))
                 }
             }

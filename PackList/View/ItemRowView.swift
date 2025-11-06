@@ -82,7 +82,7 @@ struct ItemRowView: View {
                     .padding(.leading, 0)
                     .padding(.trailing, 8)
                     // 名称
-                    item.name.placeholderText("placeholder.item.new")
+                    item.name.placeholderText("新しいアイテム")
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)

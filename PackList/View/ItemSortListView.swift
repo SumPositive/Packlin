@@ -93,7 +93,8 @@ struct ItemSortListView: View {
                 Toggle(isOn: $autoItemReorder) {
                     HStack(spacing: 0) {
                         Spacer()
-                        Image(systemName: "mount")
+                        Image(systemName: "arrow.up.and.down.and.sparkles")
+                            .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             .padding(8)
 
@@ -269,16 +270,16 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     // Row.ID
     var id: String { rawValue }
     // Row.タイトル
-    var title: LocalizedStringKey {
+    var title: String {
         switch self {
-            case .lackCount:
-                return "item.sort.title.lackCount" //"不足個数順"
-            case .lackWeight:
-                return "item.sort.title.lackWeight" //"不足重量順"
-            case .stockWeight:
-                return "item.sort.title.stockWeight" //"在庫重量順"
             case .unchecked:
-                return "item.sort.title.unchecked" //"未チェック順"
+                return String(localized: "未チェック順")
+            case .lackCount:
+                return String(localized: "不足個数順")
+            case .lackWeight:
+                return String(localized: "不足重量順")
+            case .stockWeight:
+                return String(localized: "在庫重量順")
         }
     }
     

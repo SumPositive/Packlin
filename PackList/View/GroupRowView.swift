@@ -73,7 +73,7 @@ struct GroupRowView: View {
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     // 名称
-                    group.name.placeholderText("placeholder.group.new")
+                    group.name.placeholderText("新しいグループ")
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)

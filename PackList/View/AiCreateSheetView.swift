@@ -28,7 +28,10 @@ struct AiCreateSheetView: View {
     }
 
     var body: some View {
-        //let title = (basePack?.name) ?? Text("app.title")
+        let title = (basePack == nil || basePack!.name.isEmpty)
+                    ? String(localized:"新しいパック")
+                    : basePack?.name ?? String(localized:"新しいパック")
+
         NavigationView {
             ScrollView {
                 AiCreateView(requirementFocus: $isRequirementFocused,
@@ -47,15 +50,15 @@ struct AiCreateSheetView: View {
                 including: .gesture
             )
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(basePack?.name ?? String(localized:"新しいパック"))
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         // 閉じる
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
@@ -127,11 +130,11 @@ struct AiCreateView: View {
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じてパックの新規作成や修正をしてくれます。AI利用券1枚で1回の送信ができます。
+                要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じてパックの新規作成や修正を依頼できます。AI利用券1枚で1回の送信が可能です。
                 """)
-                .font(.body)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 24)
             
             VStack(alignment: .leading, spacing: 12) {
                 // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
@@ -226,9 +229,9 @@ struct AiCreateView: View {
             )
             
             if isGenerating {
-                Text("チャッピーが考えてます。できあがれば通知しますので、他の操作をしてお楽しみください")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                Text("チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください")
+                    .font(.body.weight(.bold))
+                    .foregroundStyle(.blue)
             }
 
             if let feedback = inlineGenerationFeedback {
@@ -238,7 +241,7 @@ struct AiCreateView: View {
                         .foregroundStyle(feedback.tintColor)
                         .accessibilityHidden(true)
                     Text(feedback.message)
-                        .font(.footnote)
+                        .font(.body.weight(.medium))
                         .foregroundStyle(feedback.tintColor)
                 }
                 .padding(12)
@@ -766,7 +769,7 @@ struct AiCreateView: View {
 
             Label {
                 Text("AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。")
-                    .font(.caption)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
             } icon: {
                 Image(systemName: "exclamationmark.triangle")

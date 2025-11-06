@@ -66,12 +66,12 @@ struct AdMobBannerContainerView: View {
             .navigationTitle(Text("タップして広告をご覧ください"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         // 閉じる
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
@@ -174,12 +174,12 @@ struct AdMobRewardedScreen: View {
             .navigationTitle(Text("動画広告"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         // 閉じる
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
@@ -411,13 +411,13 @@ struct LegacyVideoAdView: View {
             .navigationTitle(Text("動画広告"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         player.pause()
                         // 閉じる
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }

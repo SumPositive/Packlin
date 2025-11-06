@@ -85,7 +85,7 @@ struct PackRowView: View {
                     }
                     .buttonStyle(BorderlessButtonStyle())
                     // 名称
-                    pack.name.placeholderText("placeholder.pack.new")
+                    pack.name.placeholderText("新しいパック")
                         .lineLimit(3)
                         .font(FONT_NAME)
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)

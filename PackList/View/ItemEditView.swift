@@ -94,11 +94,11 @@ struct ItemEditView: View {
                 //    // 見出し
                 //    VStack(alignment: .leading, spacing: 4) {
                 //        // パック名 表示
-                //        pack.name.placeholderText("placeholder.pack.new")
+                //        pack.name.placeholderText("新しいパック")
                 //            .font(.caption)
                 //            .foregroundStyle(.secondary)
                 //        // グループ名 表示
-                //        group.name.placeholderText("placeholder.group.new")
+                //        group.name.placeholderText("新しいグループ")
                 //            .font(.headline)
                 //    }
                 // 操作
@@ -211,7 +211,7 @@ struct ItemEditView: View {
                 }
                 // 名称
                 EditorSection(title: "edit.name") {
-                    TextField("", text: $item.name, prompt: Text("placeholder.item.new"), axis: .vertical)
+                    TextField("", text: $item.name, prompt: Text("新しいアイテム"), axis: .vertical)
                         .font(FONT_EDIT)
                         .focused($focusedField, equals: .name)
                         .textInputAutocapitalization(.sentences)
@@ -292,7 +292,7 @@ struct ItemEditView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .background(COLOR_ROW_GROUP)
-        .navigationTitle(item.name.placeholderText("placeholder.item.new"))
+        .navigationTitle(item.name.placeholderText("新しいアイテム"))
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -640,7 +640,7 @@ struct ItemQuickEditView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // アイテム名称表示
-            item.name.placeholderText("placeholder.item.new")
+            item.name.placeholderText("新しいアイテム")
                 .font(FONT_NAME)
                 .foregroundStyle(item.name.isEmpty ? COLOR_NAME_EMPTY : COLOR_NAME)
                 .lineLimit(2)
@@ -801,7 +801,7 @@ private struct ItemMoveSheetView: View {
                     Picker(selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
                             pack.name.truncTail(20)
-                                .placeholderText("placeholder.pack.new")
+                                .placeholderText("新しいパック")
                                 .tag(pack.id)
                         }
                     } label: {
@@ -815,7 +815,7 @@ private struct ItemMoveSheetView: View {
                     Picker(selection: $selectedGroupID) {
                         ForEach(availableGroups, id: \.id) { group in
                             group.name.truncTail(20)
-                                .placeholderText("placeholder.group.new")
+                                .placeholderText("新しいグループ")
                                 .tag(group.id)
                         }
                     } label: {
@@ -843,18 +843,18 @@ private struct ItemMoveSheetView: View {
             }
             //.listSectionSpacing(.compact)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         // 閉じる
                         //dismiss()
                         onCancel()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                ToolbarItem(placement: .navigationBarLeading) { //左上
+                ToolbarItem(placement: .navigationBarTrailing) {
                     // 移動 or 複写
                     Button(keepOriginal ? "複製する" : "移動する", action: onConfirm)
                         .disabled(disableConfirm)

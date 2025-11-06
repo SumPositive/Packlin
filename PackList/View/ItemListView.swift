@@ -76,7 +76,7 @@ struct ItemListView: View {
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .padding(.leading, 0)
             .padding(.trailing, 8)
-            .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
+            .navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 navigationToolbar

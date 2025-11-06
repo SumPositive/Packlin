@@ -25,7 +25,7 @@ struct GroupEditView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(group.name) {
+                Section(group.name.isEmpty ? String(localized:"新しいグループ") : group.name) {
                     HStack {    // Actions
                         // チェックON/OFF
                         Button {
@@ -121,12 +121,12 @@ struct GroupEditView: View {
                 .padding(.top, -20)
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         // 閉じる
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "chevron.down")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }

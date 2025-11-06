@@ -91,28 +91,28 @@ struct GroupListView: View {
                 }
                 header: {
                     VStack {
-                        Button {
-                            // AI修正シートを開いて、現在のパック内容を基にチャッピーへ依頼する
-                            showAiCreateSheet = true
-                            GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
-                        } label: {
-                            Label {
-                                // 太字テキストで「チャッピー(AI)に作ってもらおう」を表示し、操作の目的を明確化
-                                Text("チャッピー(AI)に依頼する")
-                                    .font(.body.weight(.medium))
-                                    .multilineTextAlignment(.center)
-                            } icon: {
-                                // きらめきアイコンでAIアシストであることを視覚的に伝える
-                                Image(systemName: "sparkles")
-                                    .symbolRenderingMode(.hierarchical)
+                        HStack {
+                            Spacer()
+                            Button {
+                                // AI修正シートを開いて、現在のパック内容を基にチャッピーへ依頼する
+                                showAiCreateSheet = true
+                                GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
+                            } label: {
+                                Label {
+                                    Text("チャッピー(AI)に修正を依頼")
+                                        .font(.footnote.weight(.regular))
+                                } icon: {
+                                    Image(systemName: "sparkles")
+                                        .symbolRenderingMode(.hierarchical)
+                                }
                             }
+                            .buttonStyle(.bordered)
+                            //.tint(.accentColor)
+                            .padding(.bottom, 12)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.accentColor)
-                        .padding(.bottom, 12)
                         // セクション2・ヘッダー タイトル
                         HStack {
-                            Text("並べ替え一覧 & アイテム検索")
+                            Text("全体の並べ替えとアイテム検索")
                                 .font(.body.weight(.bold))
                             Spacer()
                         }
@@ -130,7 +130,7 @@ struct GroupListView: View {
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 0)
-            .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
+            .navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 navigationToolbar
@@ -233,7 +233,7 @@ struct GroupListView: View {
                         Image(systemName: "checkmark.square")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("groupList.footer.checked")
+                        Text("グループ内の必要なアイテムが全てチェック済み")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -241,7 +241,7 @@ struct GroupListView: View {
                         Image(systemName: "circle.square")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("groupList.footer.inStock")
+                        Text("充足（必要数を満たしている、十分な在庫あり）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -249,7 +249,7 @@ struct GroupListView: View {
                         Image(systemName: "square")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("groupList.footer.outOfStock")
+                        Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
