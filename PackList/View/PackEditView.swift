@@ -37,7 +37,7 @@ struct PackEditView: View {
                         // チェックON/OFF
                         Button {
                             // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-//                            checkToggle()
+                            checkToggle()
                         } label: {
                             VStack {
                                 ZStack {
@@ -81,7 +81,7 @@ struct PackEditView: View {
                         
                         // 共有
                         Button {
-//                            exportPack()
+                            exportPack()
                         } label: {
                             VStack {
                                 Image(systemName: "square.and.arrow.up")
@@ -98,9 +98,9 @@ struct PackEditView: View {
                         // 削除
                         Button {
                             // シートを強制的に閉じてから削除処理へ進める
-//                            dismiss()
-//                            // Itemを削除する
-//                            deletePack()
+                            dismiss()
+                            // Itemを削除する
+                            deletePack()
                         } label: {
                             VStack {
                                 Image(systemName: "trash")
