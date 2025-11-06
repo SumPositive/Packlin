@@ -37,7 +37,18 @@ struct GroupListView: View {
     // それでも編集中はツールバー操作を抑制したいので、フラグ名は流用
     private var isShowingPopup: Bool { editingGroup != nil }
 
-
+    init(pack: M1Pack) {
+        self.pack = pack
+        // シート表示へ移行したことで pack.child の変更通知が伝搬しなくなったため、
+        // 親IDでフィルタしたクエリを持たせて即時にリストへ反映させる
+        _groups = Query(
+            filter: #Predicate<M2Group> { candidate in
+                candidate.parent?.id == pack.id
+            },
+            sort: [SortDescriptor(\M2Group.order)]
+        )
+    }
+    
     var body: some View {
         ZStack {
             List {
@@ -333,20 +344,6 @@ struct GroupListView: View {
             }
         }
         // order を更新したので、List では order に基づいて並び替えられる
-    }
-}
-
-extension GroupListView {
-    init(pack: M1Pack) {
-        self.pack = pack
-        // シート表示へ移行したことで pack.child の変更通知が伝搬しなくなったため、
-        // 親IDでフィルタしたクエリを持たせて即時にリストへ反映させる
-        _groups = Query(
-            filter: #Predicate<M2Group> { candidate in
-                candidate.parent?.id == pack.id
-            },
-            sort: [SortDescriptor(\M2Group.order)]
-        )
     }
 }
 
