@@ -1,10 +1,10 @@
 {
-  "ProductName": "PackList_モチメモ",
+  "ProductName": "Packlin",
   "copyright": "2025_sumpo@azukid.com",
   "version": "3.0",
-  "name": "出張（1泊）",
-  "memo": "出張1泊、PC・衣類・充電類を最小構成",
-  "createdAt": 1758719028.6339796,
+  "name": "出張（2泊）",
+  "memo": "2泊出張、衣類を2セットに増量",
+  "createdAt": 1758719028.63422,
   "groups": [
     {
       "name": "必須品",
@@ -60,7 +60,7 @@
         {
           "check": false,
           "weight": 400,
-          "need": 1,
+          "need": 2,
           "name": "ワイシャツ",
           "memo": ""
         },

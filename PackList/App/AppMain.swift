@@ -130,7 +130,7 @@ struct AppMain: App {
             // M1Packが空でない
             return
         }
-        // Bundle サンプル.pack ファイル
+        // Bundle サンプル.packlin ファイル
         let sampleFileNames = [
             "Pack_Trip_1N",
             "Pack_Trip_2N",
