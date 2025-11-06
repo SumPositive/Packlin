@@ -41,9 +41,12 @@ struct GroupListView: View {
         self.pack = pack
         // シート表示へ移行したことで pack.child の変更通知が伝搬しなくなったため、
         // 親IDでフィルタしたクエリを持たせて即時にリストへ反映させる
+        let parentID = pack.id
         _groups = Query(
             filter: #Predicate<M2Group> { candidate in
-                candidate.parent?.id == pack.id
+                // 親パックIDが一致するグループのみ抽出する。
+                // Optional のままだと Predicate が複雑化してエラーになるため、nil なら空文字として比較している。
+                (candidate.parent?.id ?? "") == parentID
             },
             sort: [SortDescriptor(\M2Group.order)]
         )
@@ -165,13 +168,15 @@ struct GroupListView: View {
                     let vertical = value.translation.height
 
                     if isShowingPopup {
-                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
+                        // ある程度ドラッグされたときのみポップアップ状態を解除する
+                        guard 80 < abs(horizontal) || 80 < abs(vertical) else { return }
                         editingGroup = nil
                         popupAnchor = nil
                         return
                     }
 
-                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    // 戻る操作は右方向へのスワイプを基準にしている
+                    guard 80 < horizontal, abs(vertical) < 50 else { return }
                     dismiss()
                 }
         )
