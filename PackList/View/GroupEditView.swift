@@ -121,15 +121,14 @@ struct GroupEditView: View {
                 .padding(.top, -20)
             }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
                     Button {
+                        // 閉じる
                         dismiss()
                     } label: {
-                        HStack {
-                            Image(systemName: "xmark")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                        }
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
             }

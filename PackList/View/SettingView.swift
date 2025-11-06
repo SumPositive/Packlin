@@ -55,7 +55,7 @@ struct SettingView: View {
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
                     Button {
                         dismiss()
                     } label: {

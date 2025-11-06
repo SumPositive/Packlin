@@ -133,44 +133,7 @@ struct GroupListView: View {
             .navigationTitle(pack.name.placeholderText("placeholder.pack.new"))
             .navigationBarBackButtonHidden(true)
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.backward")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    }
-                    .disabled(isShowingPopup)
-                    .padding(.trailing, 8)
-
-                    Button {
-                        canUndo = false
-                        modelContext.undoManager?.performUndo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    }
-                    .disabled(!canUndo || isShowingPopup)
-                }
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button {
-                        canRedo = false
-                        modelContext.undoManager?.performRedo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.forward")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    }
-                    .disabled(!canRedo || isShowingPopup)
-                    .padding(.trailing, 8)
-
-                    Button(action: addGroup) {
-                        Image(systemName: "plus.square")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    }
-                    .disabled(isShowingPopup)
-                }
+                navigationToolbar
             }
             .onAppear {
                 updateUndoRedo()
@@ -214,6 +177,48 @@ struct GroupListView: View {
         }
     }
     
+    @ToolbarContentBuilder
+    private var navigationToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigationBarLeading) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.backward")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .disabled(isShowingPopup)
+            .padding(.trailing, 8)
+            
+            Button {
+                canUndo = false
+                modelContext.undoManager?.performUndo()
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .disabled(!canUndo || isShowingPopup)
+        }
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+            Button {
+                canRedo = false
+                modelContext.undoManager?.performRedo()
+            } label: {
+                Image(systemName: "arrow.uturn.forward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .disabled(!canRedo || isShowingPopup)
+            .padding(.trailing, 8)
+            
+            Button(action: addGroup) {
+                Image(systemName: "plus.square")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .disabled(isShowingPopup)
+        }
+    }
+
     /// セクション2・フッター：操作説明、アイコン説明
     struct Section2FooterView: View {
         var body: some View {

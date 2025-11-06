@@ -50,8 +50,9 @@ struct AiCreateSheetView: View {
             .navigationTitle(basePack?.name ?? String(localized:"新しいパック"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
                     Button {
+                        // 閉じる
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")

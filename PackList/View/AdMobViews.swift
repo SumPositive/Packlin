@@ -66,8 +66,9 @@ struct AdMobBannerContainerView: View {
             .navigationTitle(Text("タップして広告をご覧ください"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
                     Button {
+                        // 閉じる
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -173,8 +174,9 @@ struct AdMobRewardedScreen: View {
             .navigationTitle(Text("動画広告"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
                     Button {
+                        // 閉じる
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -409,10 +411,15 @@ struct LegacyVideoAdView: View {
             .navigationTitle(Text("動画広告"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "閉じる")) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
+                    Button {
                         player.pause()
+                        // 閉じる
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
             }

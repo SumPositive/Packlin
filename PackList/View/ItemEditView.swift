@@ -296,37 +296,7 @@ struct ItemEditView: View {
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarLeading) {
-                Button {
-                    onDismiss()
-                } label: {
-                    Image(systemName: "chevron.backward")
-                        .imageScale(.large)
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-                .padding(.trailing, 8)
-
-                Button {
-                    canUndo = false
-                    modelContext.undoManager?.performUndo()
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-                .disabled(!canUndo)
-            }
-
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button {
-                    canRedo = false
-                    modelContext.undoManager?.performRedo()
-                } label: {
-                    Image(systemName: "arrow.uturn.forward")
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-                .disabled(!canRedo)
-                //.padding(.trailing, 8)
-            }
+            navigationToolbar
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
@@ -385,6 +355,41 @@ struct ItemEditView: View {
         }
     }
 
+    @ToolbarContentBuilder
+    private var navigationToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigationBarLeading) {
+            Button {
+                onDismiss()
+            } label: {
+                Image(systemName: "chevron.backward")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .padding(.trailing, 8)
+            
+            Button {
+                canUndo = false
+                modelContext.undoManager?.performUndo()
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .disabled(!canUndo)
+        }
+        
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+            Button {
+                canRedo = false
+                modelContext.undoManager?.performRedo()
+            } label: {
+                Image(systemName: "arrow.uturn.forward")
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+            }
+            .disabled(!canRedo)
+            //.padding(.trailing, 8)
+        }
+    }
+    
     /// アイテム削除
     private func deleteItem() {
         // Undo grouping BEGIN
@@ -838,8 +843,10 @@ private struct ItemMoveSheetView: View {
             }
             //.listSectionSpacing(.compact)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) { //右上
                     Button {
+                        // 閉じる
+                        //dismiss()
                         onCancel()
                     } label: {
                         Image(systemName: "xmark")
@@ -847,9 +854,13 @@ private struct ItemMoveSheetView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(keepOriginal ? "action.duplicate" : "action.move", action: onConfirm)
+                ToolbarItem(placement: .navigationBarLeading) { //左上
+                    // 移動 or 複写
+                    Button(keepOriginal ? "複製する" : "移動する", action: onConfirm)
                         .disabled(disableConfirm)
+                        .buttonStyle(.borderedProminent)
+                        .tint(.accentColor)
+                        .padding(.horizontal, 16)
                 }
             }
         }

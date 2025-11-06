@@ -171,41 +171,7 @@ struct PackEditView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        // シートを強制的に閉じてから削除処理へ進める
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        // AI生成用シートを表示（設定画面から移動）
-                        showAiCreateSheet = true
-                        GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
-                    } label: {
-                        HStack {
-                            Image(systemName: "sparkles")
-                                //.imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                            Text("チャッピー(AI)に依頼する")
-                                .font(.body.weight(.regular))
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.accentColor)
-                    //.padding(.vertical, 4)
-                    //.frame(maxWidth: .infinity)
-                    .sheet(isPresented: $showAiCreateSheet) {
-                        // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
-                        AiCreateSheetView(basePack: pack)
-                            .presentationDetents([.height(640), .large])
-                            .presentationDragIndicator(.visible)
-                    }
-                }
+                navigationToolbar
             }
         }
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
@@ -230,6 +196,45 @@ struct PackEditView: View {
         }
     }
 
+    @ToolbarContentBuilder
+    private var navigationToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) { //右上
+            Button {
+                // 閉じる
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical)
+            }
+        }
+        ToolbarItem(placement: .navigationBarLeading) { //左上
+            Button {
+                // AI生成用シートを表示（設定画面から移動）
+                showAiCreateSheet = true
+                GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
+            } label: {
+                HStack {
+                    Image(systemName: "sparkles")
+                    //.imageScale(.large)
+                        .symbolRenderingMode(.hierarchical)
+                    Text("チャッピー(AI)に依頼する")
+                        .font(.body.weight(.regular))
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.accentColor)
+            //.padding(.vertical, 4)
+            //.frame(maxWidth: .infinity)
+            .sheet(isPresented: $showAiCreateSheet) {
+                // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
+                AiCreateSheetView(basePack: pack)
+                    .presentationDetents([.height(640), .large])
+                    .presentationDragIndicator(.visible)
+            }
+        }
+    }
+    
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
     private func checkToggle() {
         // Undo grouping BEGIN
