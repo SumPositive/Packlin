@@ -58,7 +58,7 @@ struct GroupEditView: View {
                         
                         // 複製
                         Button {
-                            duplicateGroup()
+                            group.duplicate()
                         } label: {
                             VStack {
                                 Image(systemName: "plus.square.on.square")
@@ -76,7 +76,7 @@ struct GroupEditView: View {
                         Button {
                             // シートを閉じてから削除処理を行う
                             dismiss()
-                            deleteGroup()
+                            group.delete()
                         } label: {
                             VStack {
                                 Image(systemName: "trash")
@@ -91,6 +91,13 @@ struct GroupEditView: View {
                         .tint(.red)
                         .padding(.horizontal, 8)
                     }
+                    // Form配下ではセル全体にボタン用のハイライトプレートが載り、
+                    // そのままだと各Buttonが同じ行に並んでいてもセル全体が同一の大きなボタンのように扱われてしまう。
+                    // これが原因で一度のタップが複数のButtonへ伝播し、同時にアクションが実行される状態になっていた。
+                    // BorderlessButtonStyleを適用するとセル全体のボタン化が解除され、
+                    // それぞれのButtonが独立したタップ領域として機能するようになる。
+                    .buttonStyle(BorderlessButtonStyle())
+
                 }
                 Section("グループ名") {
                     TextEditor(text: $group.name)
@@ -173,71 +180,6 @@ struct GroupEditView: View {
                 }
             }
         }
-    }
-
-    /// 現在のGroupを複製して現在行に追加する
-    private func duplicateGroup() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        guard let parent = group.parent else { return }
-        let orderedGroups = parent.child.sorted { $0.order < $1.order }
-        let insertIndex: Int
-        if let index = orderedGroups.firstIndex(where: { $0.id == group.id }) {
-            insertIndex = index + 1
-        } else {
-            insertIndex = orderedGroups.count
-        }
-
-        let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertIndex) {
-            // child を並び替えずに order のみを整える
-            normalizeSparseOrders(orderedGroups)
-        }
-
-        let newGroup = M2Group(name: group.name, memo: group.memo,
-                               order: newOrder,
-                               parent: parent)
-        modelContext.insert(newGroup)
-        for item in group.child {
-            copyItem(item, to: newGroup)
-        }
-    }
-    private func copyItem(_ item: M3Item, to parent: M2Group) {
-        let orderedItems = parent.child.sorted { $0.order < $1.order }
-        let insertIndex = orderedItems.count
-        let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertIndex) {
-            // order だけに手を入れ child 配列は触らない
-            normalizeSparseOrders(orderedItems)
-        }
-
-        let newItem = M3Item(name: item.name, memo: item.memo,
-                             stock: item.stock, need: item.need, weight: item.weight,
-                             order: newOrder, parent: parent)
-        modelContext.insert(newItem)
-    }
-
-    /// 現在のGroupを削除する
-    private func deleteGroup() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        // groupの配下を削除
-        for item in group.child {
-            modelContext.delete(item)
-        }
-        // groupを削除：pack側から削除して整列する
-        if let parent = group.parent,
-           let index = parent.child.firstIndex(where: { $0.id == group.id }) {
-            parent.child.remove(at: index)
-            parent.normalizeGroupOrder()
-        }
-        modelContext.delete(group)
     }
 
 }

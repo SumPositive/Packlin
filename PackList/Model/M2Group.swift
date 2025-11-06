@@ -61,5 +61,61 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
             normalizeSparseOrders(ordered)
         }
     }
+    
+    /// 現在のGroupを削除する
+    func delete() {
+        guard let mc = modelContext else {return}
+        // Undo grouping BEGIN
+        mc.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            mc.undoManager?.groupingEnd()
+        }
+        // groupの配下を削除
+        for item in self.child {
+            mc.delete(item)
+        }
+        // groupを削除：pack側から削除して整列する
+        if let pack = self.parent {
+//           let index = pack.child.firstIndex(where: { $0.id == self.id }) {
+//            pack.child.remove(at: index)
+            // ReOrder
+            pack.normalizeGroupOrder()
+        }
+        mc.delete(self)
+    }
+
+    /// 現在のGroupを複製して現在行下に追加する
+    func duplicate() {
+        guard let mc = modelContext else {return}
+        // Undo grouping BEGIN
+        mc.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            mc.undoManager?.groupingEnd()
+        }
+        guard let parent = self.parent else { return }
+        // Groupを生成して追加する
+        let newGroup = M2Group(name: self.name,
+                               memo: self.memo,
+                               order: self.order + 1,
+                               parent: parent)
+        mc.insert(newGroup)
+        // Group配下のItemを複製する
+        for item in self.child {
+            // Itemを生成して追加する
+            let newItem = M3Item(name: item.name,
+                                 memo: item.memo,
+                                 stock: item.stock,
+                                 need: item.need,
+                                 weight: item.weight,
+                                 order: item.order,
+                                 parent: newGroup)
+            mc.insert(newItem)
+        }
+        // ReOrder
+        parent.normalizeGroupOrder()
+    }
+
 }
 

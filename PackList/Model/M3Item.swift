@@ -45,5 +45,49 @@ final class M3Item {
         self.order = order
         self.parent = parent
     }
+    
+
+    /// アイテム削除
+    func delete() {
+        guard let mc = modelContext else {return}
+        // Undo grouping BEGIN
+        mc.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            mc.undoManager?.groupingEnd()
+        }
+        
+        if let group = self.parent {
+//           let index = group.child.firstIndex(where: { $0.id == self.id }) {
+//            group.child.remove(at: index)
+            // ReOrder
+            group.normalizeItemOrder()
+        }
+        mc.delete(self)
+    }
+
+    /// アイテム複製
+    func duplicate() {
+        guard let mc = modelContext else {return}
+        // Undo grouping BEGIN
+        mc.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            mc.undoManager?.groupingEnd()
+        }
+        guard let parent = self.parent else { return }
+        let newItem = M3Item(name: self.name,
+                             memo: self.memo,
+                             stock: self.stock,
+                             need: self.need,
+                             weight: self.weight,
+                             order: self.order + 1,
+                             parent: parent)
+        // DB追加
+        mc.insert(newItem)
+        // ReOrder
+        parent.normalizeItemOrder()
+    }
+
 }
 

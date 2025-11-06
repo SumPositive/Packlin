@@ -300,6 +300,7 @@ struct GroupListView: View {
         // child 配列はそのまま。表示時に order ソートされる
     }
 
+    /// Drag-Drop-Move
     private func moveGroup(from source: IndexSet, to destination: Int) {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()

@@ -250,6 +250,7 @@ struct PackListView: View {
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 
+    /// Drag-Drop-Move
     private func movePack(from source: IndexSet, to destination: Int) {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()

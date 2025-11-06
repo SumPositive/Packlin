@@ -159,7 +159,7 @@ struct ItemRowView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ
             // アイテム削除
             Button {
-                deleteItem()
+                item.delete()
             } label: {
                 Label("削除", systemImage: "trash")
             }
@@ -167,52 +167,11 @@ struct ItemRowView: View {
             .disabled(item.parent == nil)
             // アイテム複製
             Button {
-                duplicateItem()
+                item.duplicate()
             } label: {
                 Label("複製", systemImage: "plus.square.on.square")
             }
             .tint(.blue)
-        }
-    }
-
-    /// アイテム削除
-    private func deleteItem() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        
-        if let group = item.parent,
-           let index = group.child.firstIndex(where: { $0.id == item.id }) {
-            withAnimation {
-                group.child.remove(at: index)
-                group.normalizeItemOrder()
-            }
-        }
-        modelContext.delete(item)
-    }
-
-    /// アイテム複製
-    private func duplicateItem() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        guard let parent = item.parent else { return }
-        let newItem = M3Item(name: item.name, memo: item.memo,
-                             stock: item.stock, need: item.need, weight: item.weight,
-                             order: item.order,
-                             parent: parent)
-        modelContext.insert(newItem)
-        withAnimation {
-            if let index = parent.child.firstIndex(where: { $0.id == item.id }) {
-                parent.child.insert(newItem, at: index + 1)
-            }
-            parent.normalizeItemOrder()
         }
     }
 

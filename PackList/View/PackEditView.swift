@@ -67,7 +67,7 @@ struct PackEditView: View {
                         
                         // 複製
                         Button {
-                            duplicatePack()
+                            pack.duplicate()
                         } label: {
                             VStack {
                                 Image(systemName: "plus.square.on.square")
@@ -99,8 +99,8 @@ struct PackEditView: View {
                         Button {
                             // シートを強制的に閉じてから削除処理へ進める
                             dismiss()
-                            // Itemを削除する
-                            deletePack()
+                            // Packを削除する
+                            pack.delete()
                         } label: {
                             VStack {
                                 Image(systemName: "trash")
@@ -255,78 +255,6 @@ struct PackEditView: View {
         }
     }
     
-    /// 現在のPackを複製して現在行に追加する
-    private func duplicatePack() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        // createdAtは現在時刻とし、シート表示からの複製でもID重複や順序入れ替わりを避ける
-        let newPack = M1Pack(name: pack.name,
-                             memo: pack.memo,
-                             createdAt: Date(),
-                             order: pack.order + 1)
-        modelContext.insert(newPack)
-        // Pack配下のGroupを複製する
-        for group in pack.child {
-            copyGroup(group, to: newPack)
-        }
-        // ReOrder
-        let descriptor = FetchDescriptor<M1Pack>()
-        if let packs = try? modelContext.fetch(descriptor) {
-            M1Pack.normalizePackOrder(packs)
-        }
-    }
-    private func copyGroup(_ group: M2Group, to parent: M1Pack) {
-        // Groupを生成して追加する
-        let newGroup = M2Group(name: group.name, memo: group.memo,
-                               order: group.order, parent: parent)
-        modelContext.insert(newGroup)
-        // Group配下のItemを複製する
-        for item in group.child {
-            copyItem(item, to: newGroup)
-        }
-    }
-    private func copyItem(_ item: M3Item, to parent: M2Group) {
-        // Itemを生成して追加する
-        let newItem = M3Item(name: item.name, memo: item.memo,
-                             stock: item.stock, need: item.need, weight: item.weight,
-                             order: item.order, parent: parent)
-        modelContext.insert(newItem)
-    }
-    
-    /// 現在のPackを削除する
-    private func deletePack() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        // groupとその配下を削除
-        for group in pack.child {
-            deleteGroup(group)
-        }
-        // Packを削除
-        modelContext.delete(pack)
-        // ReOrder
-        let descriptor = FetchDescriptor<M1Pack>()
-        if let packs = try? modelContext.fetch(descriptor) {
-            M1Pack.normalizePackOrder(packs)
-        }
-    }
-    /// groupとその配下を削除
-    private func deleteGroup(_ group: M2Group) {
-        // 配下のItemを削除
-        for item in group.child {
-            modelContext.delete(item)
-        }
-        // Groupを削除
-        modelContext.delete(group)
-    }
-
     /// Packを.packファイルにして共有(Export)する
     private func exportPack() {
         do {
