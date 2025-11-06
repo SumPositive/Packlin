@@ -219,10 +219,7 @@ struct PackEditView: View {
                         .font(.body.weight(.regular))
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.accentColor)
-            //.padding(.vertical, 4)
-            //.frame(maxWidth: .infinity)
+            .buttonStyle(.bordered)
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
                 AiCreateSheetView(basePack: pack)

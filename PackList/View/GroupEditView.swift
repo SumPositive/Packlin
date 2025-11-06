@@ -63,9 +63,6 @@ struct GroupEditView: View {
                             VStack {
                                 Image(systemName: "plus.square.on.square")
                                     .imageScale(.large)
-                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                
                                 Text("複製")
                                     .font(.caption)
                             }

@@ -107,7 +107,6 @@ struct GroupListView: View {
                                 }
                             }
                             .buttonStyle(.bordered)
-                            //.tint(.accentColor)
                             .padding(.bottom, 12)
                         }
                         // セクション2・ヘッダー タイトル
