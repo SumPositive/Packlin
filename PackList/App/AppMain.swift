@@ -28,7 +28,7 @@ struct AppMain: App {
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
     #if canImport(GoogleMobileAds)
-    /// UIテスト中などAdMob初期化を避けたい状況を見分けるフラグ
+    /// UIテストやシミュレータ・プレビューではAdMob初期化を抑止するフラグ
     private let isAdMobEnabled: Bool
     #endif
 
@@ -54,9 +54,21 @@ struct AppMain: App {
 
     init() {
         #if canImport(GoogleMobileAds)
+        // 日本語コメント：環境変数を参照しAdMob初期化を安全に行える状況か判定する
+        let environment = ProcessInfo.processInfo.environment
         // 日本語コメント：UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発するためAdMob初期化を抑止する
-        let isRunningForUITest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-        self.isAdMobEnabled = isRunningForUITest == false
+        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
+        // 日本語コメント：Xcode Previewsでも通信系サービスが無効なためAdMob初期化を行わない
+        let isRunningForPreview = ProcessInfo.processInfo.arguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
+        #if targetEnvironment(simulator)
+        // 日本語コメント：シミュレータではCoreTelephonyが未実装でエラーが出るため抑止
+        let isSimulator = true
+        #else
+        // 日本語コメント：targetEnvironmentで検出できないケース（例：SwiftUIプレビュー用ホストアプリ）も環境変数で補完
+        let isSimulator = environment["SIMULATOR_UDID"] != nil
+        #endif
+        // 日本語コメント：上記いずれかに該当する場合はAdMob初期化を行わない
+        self.isAdMobEnabled = (isRunningForUITest || isRunningForPreview || isSimulator) == false
         #endif
         // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
 #if canImport(FirebaseCore)
