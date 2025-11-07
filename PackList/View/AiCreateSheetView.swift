@@ -1156,13 +1156,16 @@ private extension VerificationResult where SignedType == StoreKit.Transaction {
         if #available(iOS 18.0, *) {
             // iOS 18 以降では signedData から直接 JWS 文字列が取得できる場合と、Base64 文字列の Data が返る場合がある
             // そのためまずは UTF-8 文字列へ復元を試み、ピリオドが含まれて正常なJWS形式であればそのまま返す
-//            if let directString = String(data: self.signedData, encoding: .utf8), directString.contains(".") {
-//                return directString
-//            }
+            if let directString = String(data: self.signedData, encoding: .utf8), directString.contains(".") {
+                // ここではすでに "header.payload.signature" 形式の完全なJWS文字列が得られているケースを最優先で返す
+                // iOS 18 での挙動変更により Data 型で受け取っても中身がプレーン文字列のことがあるため、この早期リターンが重要
+                return directString
+            }
             // directString が取得できない場合は Base64 デコードを試し、復号後に UTF-8 文字列化してサーバーへ送る
             if let decodedData = Data(base64Encoded: self.signedData),
                let decodedString = String(data: decodedData, encoding: .utf8),
                decodedString.contains(".") {
+                // Base64 文字列だった場合も UTF-8 テキストに復号したあとにJWS構造かを判定し、正規化したものを返す
                 return decodedString
             }
         }
