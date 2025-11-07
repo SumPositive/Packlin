@@ -2,73 +2,73 @@
   "ProductName": "Packlin",
   "copyright": "2025_sumpo@azukid.com",
   "version": "3.0",
-  "name": "Business Trip (1 Night)",
-  "memo": "One-night business trip with a minimal set of PC gear, clothing, and chargers.",
+  "name": "出張（1泊）",
+  "memo": "出張1泊、PC・衣類・充電類を最小構成",
   "createdAt": 1758719028.6339796,
   "groups": [
     {
-      "name": "Essentials",
-      "memo": "Valuables",
+      "name": "必須品",
+      "memo": "貴重品",
       "items": [
         {
           "check": false,
           "weight": 200,
           "need": 1,
-          "name": "Wallet & ID",
+          "name": "財布・身分証",
           "memo": ""
         },
         {
           "check": false,
           "weight": 50,
           "need": 1,
-          "name": "Business card holder",
+          "name": "名刺入れ",
           "memo": ""
         }
       ]
     },
     {
-      "name": "Electronics",
+      "name": "電子機器",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 1200,
           "need": 1,
-          "name": "Laptop",
+          "name": "ノートPC",
           "memo": ""
         },
         {
           "check": false,
           "weight": 300,
           "need": 1,
-          "name": "AC adapter",
+          "name": "ACアダプタ",
           "memo": ""
         },
         {
           "check": false,
           "weight": 250,
           "need": 1,
-          "name": "Portable battery",
+          "name": "モバイルバッテリー",
           "memo": ""
         }
       ]
     },
     {
-      "name": "Clothing",
+      "name": "衣類",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 400,
           "need": 1,
-          "name": "Dress shirt",
+          "name": "ワイシャツ",
           "memo": ""
         },
         {
           "check": false,
           "weight": 150,
           "need": 1,
-          "name": "Underwear & socks",
+          "name": "下着・靴下",
           "memo": ""
         }
       ]
