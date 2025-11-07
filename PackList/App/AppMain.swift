@@ -191,6 +191,7 @@ struct AppMain: App {
             return
         }
         // Bundle サンプル.packlin ファイル
+        // 日本語コメント：英語をデフォルト言語にしたため、ja.lproj側に日本語サンプルを格納している
         let sampleFileNames = [
             "Pack_Trip_1N",
            // "Pack_Trip_2N",
