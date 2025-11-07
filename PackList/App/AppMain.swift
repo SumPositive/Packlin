@@ -84,7 +84,8 @@ struct AppMain: App {
             // 日本語コメント：通信制限環境ではログを最小限に抑えつつ自動送信を禁止
             FirebaseConfiguration.shared.setLoggerLevel(.min)
         }
-        FirebaseConfiguration.shared.isDataCollectionDefaultEnabled = self.isFirebaseEnabled
+        // 日本語コメント：isDataCollectionDefaultEnabledプロパティはFirebaseCoreのバージョン差異で存在しない場合がある
+        // 日本語コメント：代わりに個別モジュール側で明示的に収集可否を制御する（Analytics等）
         #endif
         #if canImport(GoogleMobileAds)
         // 日本語コメント：通信制限環境ではAdMob初期化をスキップする
