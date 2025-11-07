@@ -27,6 +27,10 @@ struct AppMain: App {
     @State private var navigationPath = NavigationPath()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
+    #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
+    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
+    private let isFirebaseEnabled: Bool
+    #endif
     #if canImport(GoogleMobileAds)
     /// UIテストやシミュレータ・プレビューではAdMob初期化を抑止するフラグ
     private let isAdMobEnabled: Bool
@@ -53,26 +57,33 @@ struct AppMain: App {
     }()
 
     init() {
-        #if canImport(GoogleMobileAds)
-        // 日本語コメント：環境変数を参照しAdMob初期化を安全に行える状況か判定する
+        // 日本語コメント：環境変数を参照し通信系SDK初期化を安全に行える状況か判定する
         let environment = ProcessInfo.processInfo.environment
-        // 日本語コメント：UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発するためAdMob初期化を抑止する
+        let processArguments = ProcessInfo.processInfo.arguments
+        // 日本語コメント：UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発する
         let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
-        // 日本語コメント：Xcode Previewsでも通信系サービスが無効なためAdMob初期化を行わない
-        let isRunningForPreview = ProcessInfo.processInfo.arguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
+        // 日本語コメント：Xcode Previewsではバックエンド接続が無効なケースが多い
+        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
         #if targetEnvironment(simulator)
-        // 日本語コメント：シミュレータではCoreTelephonyが未実装でエラーが出るため抑止
+        // 日本語コメント：シミュレータではCoreTelephonyが未実装でエラーが出る
         let isSimulator = true
         #else
         // 日本語コメント：targetEnvironmentで検出できないケース（例：SwiftUIプレビュー用ホストアプリ）も環境変数で補完
         let isSimulator = environment["SIMULATOR_UDID"] != nil
         #endif
-        // 日本語コメント：上記いずれかに該当する場合はAdMob初期化を行わない
-        self.isAdMobEnabled = (isRunningForUITest || isRunningForPreview || isSimulator) == false
+        // 日本語コメント：通信系SDKを利用できない環境かを総合判定する
+        let hasConnectivityLimitation = isRunningForUITest || isRunningForPreview || isSimulator
+        #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
+        // 日本語コメント：通信制限環境ではFirebase初期化をスキップしログ出力を抑止する
+        self.isFirebaseEnabled = hasConnectivityLimitation == false
+        #endif
+        #if canImport(GoogleMobileAds)
+        // 日本語コメント：通信制限環境ではAdMob初期化をスキップする
+        self.isAdMobEnabled = hasConnectivityLimitation == false
         #endif
         // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
 #if canImport(FirebaseCore)
-        if FirebaseApp.app() == nil {
+        if isFirebaseEnabled && FirebaseApp.app() == nil {
             // 日本語コメント：初回起動時のみFirebaseAppを構成する
             FirebaseApp.configure()
         }
@@ -80,10 +91,12 @@ struct AppMain: App {
 
         // Analytics：アプリ起動イベントを記録する
 #if canImport(FirebaseAnalytics)
-        // 日本語コメント：AnalyticsEventAppOpenでアプリ起動を追跡
-        Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
+        if isFirebaseEnabled {
+            // 日本語コメント：AnalyticsEventAppOpenでアプリ起動を追跡
+            Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
 
-        GALogger.log(.app_launch)
+            GALogger.log(.app_launch)
+        }
 #endif
 
         // Migrate： V2-CoreData --> V3-SwiftData
@@ -184,8 +197,10 @@ struct AppMain: App {
             } catch {
                 debugPrint("Failed to load sample pack \(fileName): \(error)")
 #if canImport(FirebaseCrashlytics)
-                // 日本語コメント：サンプル読み込み失敗をCrashlyticsへ送信
-                Crashlytics.crashlytics().record(error: error)
+                if isFirebaseEnabled {
+                    // 日本語コメント：サンプル読み込み失敗をCrashlyticsへ送信
+                    Crashlytics.crashlytics().record(error: error)
+                }
 #endif
             }
         }
@@ -200,8 +215,10 @@ struct AppMain: App {
             } catch {
                 debugPrint("Failed to save sample packs: \(error)")
 #if canImport(FirebaseCrashlytics)
-                // 日本語コメント：DB保存失敗をCrashlyticsへ送信
-                Crashlytics.crashlytics().record(error: error)
+                if isFirebaseEnabled {
+                    // 日本語コメント：DB保存失敗をCrashlyticsへ送信
+                    Crashlytics.crashlytics().record(error: error)
+                }
 #endif
             }
         }
