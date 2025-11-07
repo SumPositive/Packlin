@@ -2,107 +2,107 @@
   "ProductName": "Packlin",
   "copyright": "2025_sumpo@azukid.com",
   "version": "3.0",
-  "name": "Baby Trip (1 Night, 2 Days)",
-  "memo": "Packing list for traveling with a baby. Includes 10 diapers, 2 bottles, and more.",
+  "name": "赤ちゃん連れ旅行（1泊2日）",
+  "memo": "赤ちゃん連れを想定。オムツ10枚、哺乳瓶2本など。",
   "createdAt": 1758720438.3882663,
   "groups": [
     {
-      "name": "💳 Essentials",
+      "name": "💳 必須品",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 150,
           "need": 1,
-          "name": "Wallet & ID",
+          "name": "財布・身分証",
           "memo": ""
         },
         {
           "check": false,
           "weight": 50,
           "need": 1,
-          "name": "Maternal and child health handbook",
+          "name": "母子手帳",
           "memo": ""
         }
       ]
     },
     {
-      "name": "👶 Baby Supplies",
+      "name": "👶 ベビー用品",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 60,
           "need": 10,
-          "name": "Diapers",
+          "name": "オムツ",
           "memo": ""
         },
         {
           "check": false,
           "weight": 300,
           "need": 1,
-          "name": "Baby wipes",
+          "name": "おしりふき",
           "memo": ""
         },
         {
           "check": false,
           "weight": 150,
           "need": 2,
-          "name": "Baby bottle",
+          "name": "哺乳瓶",
           "memo": ""
         },
         {
           "check": false,
           "weight": 400,
           "need": 1,
-          "name": "Infant formula can",
+          "name": "粉ミルク缶",
           "memo": ""
         },
         {
           "check": false,
           "weight": 200,
           "need": 2,
-          "name": "Baby clothes (change)",
+          "name": "着替え(ベビー)",
           "memo": ""
         },
         {
           "check": false,
           "weight": 500,
           "need": 1,
-          "name": "Baby blanket",
+          "name": "ベビー毛布",
           "memo": ""
         }
       ]
     },
     {
-      "name": "🚼 Travel Gear",
+      "name": "🚼 移動用品",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 6000,
           "need": 1,
-          "name": "Stroller",
+          "name": "ベビーカー",
           "memo": ""
         },
         {
           "check": false,
           "weight": 800,
           "need": 1,
-          "name": "Baby carrier",
+          "name": "抱っこ紐",
           "memo": ""
         }
       ]
     },
     {
-      "name": "🧴 Sanitary",
+      "name": "🧴 サニタリー",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 100,
           "need": 2,
-          "name": "Towels",
+          "name": "タオル",
           "memo": ""
         }
       ]

@@ -143,6 +143,7 @@ struct AppMain: App {
             return
         }
         // Bundle サンプル.packlin ファイル
+        // 日本語コメント：英語がBaseリソース、ja.lprojが日本語リソース
         let sampleFileNames = [
             "Pack_Trip_1N",
            // "Pack_Trip_2N",
@@ -152,10 +153,35 @@ struct AppMain: App {
             "Pack_BabyTrip_1N2D",
         ]
 
+        // 日本語コメント：ユーザーの優先言語と開発言語を優先順位として保持
+        var localizationCandidates: [String] = Bundle.main.preferredLocalizations
+        if let developmentLocalization = Bundle.main.developmentLocalization {
+            // 日本語コメント：重複を避けながら開発言語（Base言語）を末尾に追加
+            if localizationCandidates.contains(developmentLocalization) == false {
+                localizationCandidates.append(developmentLocalization)
+            }
+        }
+
         var nextOrder = existingPacks.map { $0.order }.max() ?? -ORDER_SPARSE
         for fileName in sampleFileNames {
             do {
-                guard let url = Bundle.main.url(forResource: fileName, withExtension: PACK_FILE_EXTENSION) else { continue }
+                // 日本語コメント：優先言語から順番に該当ローカライズのファイルを探索
+                var resourceURL: URL?
+                for localization in localizationCandidates {
+                    if let localizedURL = Bundle.main.url(forResource: fileName,
+                                                           withExtension: PACK_FILE_EXTENSION,
+                                                           subdirectory: nil,
+                                                           localization: localization) {
+                        resourceURL = localizedURL
+                        break
+                    }
+                }
+                // 日本語コメント：ローカライズが見つからない場合はBaseリソースを使用
+                if resourceURL == nil {
+                    resourceURL = Bundle.main.url(forResource: fileName, withExtension: PACK_FILE_EXTENSION)
+                }
+
+                guard let url = resourceURL else { continue }
                 let data = try Data(contentsOf: url)
                 let decoder = JSONDecoder()
                 let dto = try decoder.decode(PackJsonDTO.self, from: data)

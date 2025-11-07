@@ -2,100 +2,100 @@
   "ProductName": "Packlin",
   "copyright": "2025_sumpo@azukid.com",
   "version": "3.0",
-  "name": "Day Hike",
-  "memo": "Day-hike essentials with 2L of water, trail snacks, and mandatory rainwear.",
+  "name": "登山（デイハイク）",
+  "memo": "日帰り登山装備。水2L、行動食、雨具必携。",
   "createdAt": 1758720438.3879426,
   "groups": [
     {
-      "name": "💳 Essentials",
+      "name": "💳 必須品",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 150,
           "need": 1,
-          "name": "Wallet & ID",
+          "name": "財布・身分証",
           "memo": ""
         },
         {
           "check": false,
           "weight": 30,
           "need": 1,
-          "name": "Map",
+          "name": "地図",
           "memo": ""
         },
         {
           "check": false,
           "weight": 40,
           "need": 1,
-          "name": "Compass",
+          "name": "コンパス",
           "memo": ""
         }
       ]
     },
     {
-      "name": "🥾 Hiking Gear",
+      "name": "🥾 登山装備",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 800,
           "need": 1,
-          "name": "Day pack",
+          "name": "デイパック",
           "memo": ""
         },
         {
           "check": false,
           "weight": 500,
           "need": 2,
-          "name": "Trekking poles",
+          "name": "トレッキングポール",
           "memo": ""
         },
         {
           "check": false,
           "weight": 600,
           "need": 1,
-          "name": "Rainwear (jacket & pants)",
+          "name": "雨具(上下)",
           "memo": ""
         }
       ]
     },
     {
-      "name": "💧 Food & Water",
+      "name": "💧 食料・水",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 1000,
           "need": 2,
-          "name": "Water bottle 1L",
+          "name": "水ボトル1L",
           "memo": ""
         },
         {
           "check": false,
           "weight": 300,
           "need": 2,
-          "name": "Trail snacks (nuts/bars)",
+          "name": "行動食(ナッツ/バー)",
           "memo": ""
         }
       ]
     },
     {
-      "name": "⛑️ First Aid & Safety",
+      "name": "⛑️ 救急・安全",
       "memo": "",
       "items": [
         {
           "check": false,
           "weight": 120,
           "need": 1,
-          "name": "First-aid kit",
+          "name": "ファーストエイド",
           "memo": ""
         },
         {
           "check": false,
           "weight": 100,
           "need": 1,
-          "name": "Headlamp",
+          "name": "ヘッドライト",
           "memo": ""
         }
       ]
