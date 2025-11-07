@@ -641,7 +641,7 @@ struct AiCreateView: View {
         let currentLocale = locale
         let productId = option.productId(for: currentLocale)
         Task {
-            // 日本語コメント：残高が1枚以上残っている場合は購入処理を遮断する
+            // 残高が1枚以上残っている場合は購入処理を遮断する
             let currentCredits = await MainActor.run { creditStore.credits }
             if 0 < currentCredits {
                 await MainActor.run {
@@ -792,7 +792,7 @@ struct AiCreateView: View {
         // 画面表示中はMainActor上なので直接残高を参照してよい
         let currentCredits = creditStore.credits
         if 0 < currentCredits {
-            // 日本語コメント：残高があれば即座に購入ボタンを無効化する
+            // 残高があれば即座に購入ボタンを無効化する
             return true
         }
         return false
@@ -802,7 +802,7 @@ struct AiCreateView: View {
     private var purchaseRestrictionWarning: String? {
         let currentCredits = creditStore.credits
         if 0 < currentCredits {
-            // 日本語コメント：購入は残高ゼロ時のみ許可する旨をユーザーへ伝える
+            // 購入は残高ゼロ時のみ許可する旨をユーザーへ伝える
             return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください。")
         }
         return nil
@@ -1024,22 +1024,22 @@ struct AiCreateView: View {
         }
 
         // 新規作成時は既存パックの並びと設定で指定された挿入位置を考慮して order を決定する
-        // 日本語コメント：AppStorageの設定値を反映することでAI生成も通常追加と同じ位置に並ぶ
+        // AppStorageの設定値を反映することでAI生成も通常追加と同じ位置に並ぶ
         let descriptor = FetchDescriptor<M1Pack>()
         let packs = (try? modelContext.fetch(descriptor)) ?? []
         let orderedPacks = packs.sorted { $0.order < $1.order }
         let insertionIndex: Int = {
             switch insertionPosition {
             case .head:
-                // 日本語コメント：先頭に追加する場合は index 0
+                // 先頭に追加する場合は index 0
                 return 0
             case .tail:
-                // 日本語コメント：末尾へ追加する場合は要素数と同じ位置に挿入
+                // 末尾へ追加する場合は要素数と同じ位置に挿入
                 return orderedPacks.count
             }
         }()
         let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
-            // 日本語コメント：隙間が足りない場合は正規化して order の整合性を保つ
+            // 隙間が足りない場合は正規化して order の整合性を保つ
             normalizeSparseOrders(orderedPacks)
         }
 

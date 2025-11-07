@@ -70,10 +70,10 @@ final class CreditStore: ObservableObject {
     /// - Parameter amount: サーバーが返した最新残高
     func overwrite(credits amount: Int) {
         if amount < 0 {
-            // 日本語コメント：負の値が来た場合は安全側として0枚に矯正する
+            // 負の値が来た場合は安全側として0枚に矯正する
             credits = 0
         } else {
-            // 日本語コメント：上限を撤廃したため、サーバー値をそのまま反映する
+            // 上限を撤廃したため、サーバー値をそのまま反映する
             credits = amount
         }
         persist()

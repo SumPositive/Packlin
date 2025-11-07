@@ -57,53 +57,53 @@ struct AppMain: App {
     }()
 
     init() {
-        // 日本語コメント：環境変数を参照し通信系SDK初期化を安全に行える状況か判定する
+        // 環境変数を参照し通信系SDK初期化を安全に行える状況か判定する
         let environment = ProcessInfo.processInfo.environment
         let processArguments = ProcessInfo.processInfo.arguments
-        // 日本語コメント：UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発する
+        // UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発する
         let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
-        // 日本語コメント：Xcode Previewsではバックエンド接続が無効なケースが多い
+        // Xcode Previewsではバックエンド接続が無効なケースが多い
         let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
         #if targetEnvironment(simulator)
-        // 日本語コメント：シミュレータではCoreTelephonyが未実装でエラーが出る
+        // シミュレータではCoreTelephonyが未実装でエラーが出る
         let isSimulator = true
         #else
-        // 日本語コメント：targetEnvironmentで検出できないケース（例：SwiftUIプレビュー用ホストアプリ）も環境変数で補完
+        // targetEnvironmentで検出できないケース（例：SwiftUIプレビュー用ホストアプリ）も環境変数で補完
         let isSimulator = environment["SIMULATOR_UDID"] != nil
         #endif
-        // 日本語コメント：通信系SDKを利用できない環境かを総合判定する
+        // 通信系SDKを利用できない環境かを総合判定する
         let hasConnectivityLimitation = isRunningForUITest || isRunningForPreview || isSimulator
         #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
-        // 日本語コメント：通信制限環境ではFirebase初期化をスキップしログ出力を抑止する
+        // 通信制限環境ではFirebase初期化をスキップしログ出力を抑止する
         self.isFirebaseEnabled = hasConnectivityLimitation == false
-        // 日本語コメント：Firebaseのデフォルトデータ収集フラグを切り替え、自動初期化による通信も止める
+        // Firebaseのデフォルトデータ収集フラグを切り替え、自動初期化による通信も止める
         if self.isFirebaseEnabled {
-            // 日本語コメント：本番時は通常ログレベルを維持
+            // 本番時は通常ログレベルを維持
             FirebaseConfiguration.shared.setLoggerLevel(.notice)
         } else {
-            // 日本語コメント：通信制限環境ではログを最小限に抑えつつ自動送信を禁止
+            // 通信制限環境ではログを最小限に抑えつつ自動送信を禁止
             FirebaseConfiguration.shared.setLoggerLevel(.min)
         }
-        // 日本語コメント：isDataCollectionDefaultEnabledプロパティはFirebaseCoreのバージョン差異で存在しない場合がある
-        // 日本語コメント：代わりに個別モジュール側で明示的に収集可否を制御する（Analytics等）
+        // isDataCollectionDefaultEnabledプロパティはFirebaseCoreのバージョン差異で存在しない場合がある
+        // 代わりに個別モジュール側で明示的に収集可否を制御する（Analytics等）
         #endif
         #if canImport(GoogleMobileAds)
-        // 日本語コメント：通信制限環境ではAdMob初期化をスキップする
+        // 通信制限環境ではAdMob初期化をスキップする
         self.isAdMobEnabled = hasConnectivityLimitation == false
         #endif
         #if canImport(FirebaseCrashlytics)
         if self.isFirebaseEnabled {
-            // 日本語コメント：通信可能な環境では通常通りCrashlyticsを有効化
+            // 通信可能な環境では通常通りCrashlyticsを有効化
             Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
         } else {
-            // 日本語コメント：Crashlyticsの自動送信を事前に停止
+            // Crashlyticsの自動送信を事前に停止
             Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
         }
         #endif
         // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
 #if canImport(FirebaseCore)
         if isFirebaseEnabled && FirebaseApp.app() == nil {
-            // 日本語コメント：初回起動時のみFirebaseAppを構成する
+            // 初回起動時のみFirebaseAppを構成する
             FirebaseApp.configure()
         }
 #endif
@@ -111,13 +111,13 @@ struct AppMain: App {
         // Analytics：アプリ起動イベントを記録する
 #if canImport(FirebaseAnalytics)
         if isFirebaseEnabled {
-            // 日本語コメント：AnalyticsEventAppOpenでアプリ起動を追跡
+            // AnalyticsEventAppOpenでアプリ起動を追跡
             Analytics.setAnalyticsCollectionEnabled(true)
             Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
 
             GALogger.log(.app_launch)
         } else {
-            // 日本語コメント：自動収集が無効化されていることを明示的に保証
+            // 自動収集が無効化されていることを明示的に保証
             Analytics.setAnalyticsCollectionEnabled(false)
         }
 #endif
@@ -131,7 +131,7 @@ struct AppMain: App {
         // AdMob
 #if canImport(GoogleMobileAds)
         if isAdMobEnabled {
-            // 日本語コメント：UIテスト外でのみAdMob SDKを初期化する
+            // UIテスト外でのみAdMob SDKを初期化する
             MobileAds.shared.start()
             // Test mode
             let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
@@ -191,20 +191,17 @@ struct AppMain: App {
             return
         }
         // Bundle サンプル.packlin ファイル
-        // 日本語コメント：英語がBaseリソース、ja.lprojが日本語リソース
+        // 英語がBaseリソース、ja.lprojが日本語リソース
         let sampleFileNames = [
             "Pack_Trip_1N",
-           // "Pack_Trip_2N",
-           // "Pack_Fuji_1N",
-           // "Pack_Travel_1week",
             "Pack_DayHike",
             "Pack_BabyTrip_1N2D",
         ]
 
-        // 日本語コメント：ユーザーの優先言語と開発言語を優先順位として保持
+        // ユーザーの優先言語と開発言語を優先順位として保持
         var localizationCandidates: [String] = Bundle.main.preferredLocalizations
         if let developmentLocalization = Bundle.main.developmentLocalization {
-            // 日本語コメント：重複を避けながら開発言語（Base言語）を末尾に追加
+            // 重複を避けながら開発言語（Base言語）を末尾に追加
             if localizationCandidates.contains(developmentLocalization) == false {
                 localizationCandidates.append(developmentLocalization)
             }
@@ -213,7 +210,7 @@ struct AppMain: App {
         var nextOrder = existingPacks.map { $0.order }.max() ?? -ORDER_SPARSE
         for fileName in sampleFileNames {
             do {
-                // 日本語コメント：優先言語から順番に該当ローカライズのファイルを探索
+                // 優先言語から順番に該当ローカライズのファイルを探索
                 var resourceURL: URL?
                 for localization in localizationCandidates {
                     if let localizedURL = Bundle.main.url(forResource: fileName,
@@ -224,7 +221,7 @@ struct AppMain: App {
                         break
                     }
                 }
-                // 日本語コメント：ローカライズが見つからない場合はBaseリソースを使用
+                // ローカライズが見つからない場合はBaseリソースを使用
                 if resourceURL == nil {
                     resourceURL = Bundle.main.url(forResource: fileName, withExtension: PACK_FILE_EXTENSION)
                 }
@@ -247,7 +244,7 @@ struct AppMain: App {
                 debugPrint("Failed to load sample pack \(fileName): \(error)")
 #if canImport(FirebaseCrashlytics)
                 if isFirebaseEnabled {
-                    // 日本語コメント：サンプル読み込み失敗をCrashlyticsへ送信
+                    // サンプル読み込み失敗をCrashlyticsへ送信
                     Crashlytics.crashlytics().record(error: error)
                 }
 #endif
@@ -265,7 +262,7 @@ struct AppMain: App {
                 debugPrint("Failed to save sample packs: \(error)")
 #if canImport(FirebaseCrashlytics)
                 if isFirebaseEnabled {
-                    // 日本語コメント：DB保存失敗をCrashlyticsへ送信
+                    // DB保存失敗をCrashlyticsへ送信
                     Crashlytics.crashlytics().record(error: error)
                 }
 #endif

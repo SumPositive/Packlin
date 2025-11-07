@@ -265,15 +265,15 @@ struct SettingView: View {
             let insertionIndex: Int = {
                 switch insertionPosition {
                 case .head:
-                    // 日本語コメント：先頭挿入を選択している場合は index 0 を採用
+                    // 先頭挿入を選択している場合は index 0 を採用
                     return 0
                 case .tail:
-                    // 日本語コメント：末尾へ追加する設定なら既存数と同じ位置に挿入
+                    // 末尾へ追加する設定なら既存数と同じ位置に挿入
                     return orderedPacks.count
                 }
             }()
             let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
-                // 日本語コメント：挿入余白が尽きた際には正規化して順位を維持
+                // 挿入余白が尽きた際には正規化して順位を維持
                 normalizeSparseOrders(orderedPacks)
             }
             // Undo grouping BEGIN
