@@ -65,9 +65,9 @@ struct ItemEditView: View {
         var titleKey: LocalizedStringKey {
             switch self {
             case .start:
-                return "item.move.position.start"
+                return "グループの先頭"
             case .end:
-                return "item.move.position.end"
+                return "グループの末尾"
             }
         }
     }
@@ -102,7 +102,7 @@ struct ItemEditView: View {
                 //            .font(.headline)
                 //    }
                 // 操作
-                EditorSection(title: "edit.actions") {
+                EditorSection(title: "操作") {
                     VStack {
                         HStack(spacing: 20) {
                             // 上・前へ
@@ -110,7 +110,7 @@ struct ItemEditView: View {
                                 // (-1) 1つ前のアイテムを編集対象に切り替える
                                 selectAdjacentItem(by: -1)
                             } label: {
-                                Label("action.item.line.up", systemImage: "arrow.up.circle")
+                                Label("前へ", systemImage: "arrow.up.circle")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
@@ -119,7 +119,7 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(Text("action.item.line.up"))
+                            .accessibilityLabel(Text("前へ"))
                             .disabled(!canSelectPreviousItem)
                             
                             // 複製
@@ -127,7 +127,7 @@ struct ItemEditView: View {
                                 item.duplicate()
                                 onDismiss()
                             } label: {
-                                Label("action.duplicate", systemImage: "plus.square.on.square")
+                                Label("複製", systemImage: "plus.square.on.square")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
@@ -136,7 +136,7 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(Text("action.duplicate"))
+                            .accessibilityLabel(Text("複製"))
                             
                             Spacer()
                             // 削除
@@ -144,7 +144,7 @@ struct ItemEditView: View {
                                 item.delete()
                                 onDismiss()
                             } label: {
-                                Label("action.delete", systemImage: "trash")
+                                Label("削除", systemImage: "trash")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
@@ -153,7 +153,7 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(Text("action.delete"))
+                            .accessibilityLabel(Text("削除"))
                         }
                         // 2段目
                         HStack(spacing: 20) {
@@ -162,7 +162,7 @@ struct ItemEditView: View {
                                 // (+1) 1つ次のアイテムを編集対象に切り替える
                                 selectAdjacentItem(by: 1)
                             } label: {
-                                Label("action.item.line.down", systemImage: "arrow.down.circle")
+                                Label("次へ", systemImage: "arrow.down.circle")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
@@ -171,7 +171,7 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(Text("action.item.line.down"))
+                            .accessibilityLabel(Text("次へ"))
                             .disabled(!canSelectNextItem)
 
                             // 移動
@@ -179,7 +179,7 @@ struct ItemEditView: View {
                                 prepareMoveSheet()
                                 isShowingMoveSheet = true
                             } label: {
-                                Label("action.move", systemImage: "hand.point.up.left.and.text")
+                                Label("移動", systemImage: "hand.point.up.left.and.text")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
@@ -188,7 +188,7 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(Text("action.duplicate"))
+                            .accessibilityLabel(Text("移動"))
 
                             Spacer()
                             // 消す
@@ -196,7 +196,7 @@ struct ItemEditView: View {
                                 // アイテムを初期値にリセット
                                 resetItemToInitialState()
                             } label: {
-                                Label("action.item.erase", systemImage: "eraser")
+                                Label("消す", systemImage: "eraser")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
@@ -205,12 +205,12 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(Text("action.item.erase"))
+                            .accessibilityLabel(Text("消す"))
                         }
                     }
                 }
                 // 名称
-                EditorSection(title: "edit.name") {
+                EditorSection(title: "名称") {
                     TextField("", text: $item.name, prompt: Text("新しいアイテム"), axis: .vertical)
                         .font(FONT_EDIT)
                         .focused($focusedField, equals: .name)
@@ -228,7 +228,7 @@ struct ItemEditView: View {
                         }
                 }
                 // メモ
-                EditorSection(title: "edit.memo") {
+                EditorSection(title: "メモ") {
                     TextEditor(text: $item.memo)
                         .font(FONT_MEMO)
                         .focused($focusedField, equals: .memo)
@@ -248,7 +248,7 @@ struct ItemEditView: View {
                 // 数量
                 EditorSection {
                     // 数量
-                    Text("item.section.quantity")
+                    Text("数量")
                         .font(.footnote)
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
@@ -643,13 +643,13 @@ private struct ItemQuantityEditor: View {
     private var fields: [FieldConfig] {
         [
             // 個重量
-            FieldConfig(title: "item.field.weight", unit: "unit.gram",
+            FieldConfig(title: "個重量", unit: "g",
                         maxValue: APP_MAX_WEIGHT_NUM, binding: weightBinding),
             // 在庫数
-            FieldConfig(title: "item.field.stock", unit: "unit.piece",
+            FieldConfig(title: "在庫数", unit: "個",
                         maxValue: APP_MAX_STOCK_NUM, binding: stockBinding),
             // 必要数
-            FieldConfig(title: "item.field.need", unit: "unit.piece",
+            FieldConfig(title: "必要数", unit: "個",
                         maxValue: APP_MAX_NEED_NUM, binding: needBinding)
         ]
     }
@@ -755,7 +755,7 @@ private struct ItemMoveSheetView: View {
         NavigationStack {
             Form {
                 // 移動先
-                Section("item.move.destination") {
+                Section("移動先") {
                     // 移動先のPack
                     Picker(selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
@@ -785,7 +785,7 @@ private struct ItemMoveSheetView: View {
                     .disabled(availableGroups.isEmpty)
 
                     // 移動先は先頭か末尾か
-                    Picker("item.move.position", selection: $insertPosition) {
+                    Picker("挿入位置", selection: $insertPosition) {
                         ForEach(ItemEditView.MoveInsertPosition.allCases) { position in
                             Text(position.titleKey)
                                 .tag(position)
@@ -795,9 +795,9 @@ private struct ItemMoveSheetView: View {
                 }
 
                 // 移動元
-                Section("item.move.original") {
+                Section("移動元") {
                     // コピーを作成する
-                    Toggle("item.move.keepOriginal", isOn: $keepOriginal)
+                    Toggle("コピーを作成する（複製）", isOn: $keepOriginal)
                 }
             }
             //.listSectionSpacing(.compact)

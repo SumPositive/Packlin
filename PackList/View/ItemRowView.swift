@@ -21,7 +21,7 @@ struct ItemRowView: View {
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
-    private var weightUnit: String { String(localized: "unit.gram") }
+    private var weightUnit: String { String(localized: "g") }
 
     init(item: M3Item,
          onEdit: @escaping (M3Item, CGPoint) -> Void) {

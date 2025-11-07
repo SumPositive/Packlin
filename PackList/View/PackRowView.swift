@@ -21,7 +21,7 @@ struct PackRowView: View {
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { pack.name.isEmpty }
     private var weightUnit: String {
-        weightDisplayInKg ? String(localized: "unit.kilogram") : String(localized: "unit.gram")
+        weightDisplayInKg ? String(localized: "kg") : String(localized: "g")
     }
 
     private var weightLabelText: String? {

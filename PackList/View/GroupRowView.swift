@@ -24,7 +24,7 @@ struct GroupRowView: View {
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { group.name.isEmpty }
     private var weightUnit: String {
-        weightDisplayInKg ? String(localized: "unit.kilogram") : String(localized: "unit.gram")
+        weightDisplayInKg ? String(localized: "kg") : String(localized: "g")
     }
 
     private var weightLabelText: String? {

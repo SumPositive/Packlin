@@ -162,7 +162,7 @@ struct ItemSortListView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
 
-                TextField(LocalizedStringKey("item.sort.search.placeholder"), text: $searchText)
+                TextField(LocalizedStringKey("アイテムを検索"), text: $searchText)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
@@ -175,7 +175,7 @@ struct ItemSortListView: View {
                             .foregroundStyle(.tertiary)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(LocalizedStringKey("action.clear"))
+                    .accessibilityLabel(LocalizedStringKey("クリア"))
                 }
             }
             .padding(.horizontal, 12)

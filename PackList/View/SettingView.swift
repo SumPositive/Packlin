@@ -24,9 +24,9 @@ enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
     var localizedKey: LocalizedStringKey {
         switch self {
             case .head:
-                return "setting.insertion.head"
+                return "先頭"
             case .tail:
-                return "setting.insertion.tail"
+                return "末尾"
         }
     }
     

@@ -199,28 +199,28 @@ struct ItemListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("itemList.footer.checkmark.circle")
+                        Text("チェック済み")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.circle")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("itemList.footer.inStock")
+                        Text("充足（必要数を満たしている、十分な在庫あり）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("itemList.footer.outOfStock")
+                        Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.fill")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("itemList.footer.circle.fill")
+                        Text("不要（必要なし）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

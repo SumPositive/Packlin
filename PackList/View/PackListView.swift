@@ -163,7 +163,7 @@ struct PackListView: View {
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
-                        Text("packList.footer.checked")
+                        Text("パック内の必要なアイテムが全てチェック済み")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -177,7 +177,7 @@ struct PackListView: View {
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
-                        Text("packList.footer.inStock")
+                        Text("充足（必要数を満たしている、十分な在庫あり）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -185,7 +185,7 @@ struct PackListView: View {
                         Image(systemName: "case")
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        Text("packList.footer.outOfStock")
+                        Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

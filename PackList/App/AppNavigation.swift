@@ -92,7 +92,7 @@ struct GroupListScene: View {
         if let pack = packs.first {
             GroupListView(pack: pack)
         } else {
-            Text("navigation.packNotFound")
+            Text("パックが見つかりません")
         }
     }
 }
@@ -115,7 +115,7 @@ struct ItemListScene: View {
         if let pack = packs.first, let group = groups.first {
             ItemListView(pack: pack, group: group)
         } else {
-            Text("navigation.groupNotFound")
+            Text("グループが見つかりません")
         }
     }
 }
@@ -164,7 +164,7 @@ struct ItemEditScene: View {
                 }
             }
         } else {
-            Text("navigation.itemNotFound")
+            Text("アイテムが見つかりません")
         }
     }
 
@@ -213,7 +213,7 @@ struct ItemSortListScene: View {
         if let pack = packs.first {
             ItemSortListView(pack: pack, sortOption: sort)
         } else {
-            Text("navigation.packNotFound")
+            Text("パックが見つかりません")
         }
     }
 }
