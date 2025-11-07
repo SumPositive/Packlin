@@ -76,10 +76,28 @@ struct AppMain: App {
         #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
         // 日本語コメント：通信制限環境ではFirebase初期化をスキップしログ出力を抑止する
         self.isFirebaseEnabled = hasConnectivityLimitation == false
+        // 日本語コメント：Firebaseのデフォルトデータ収集フラグを切り替え、自動初期化による通信も止める
+        if self.isFirebaseEnabled {
+            // 日本語コメント：本番時は通常ログレベルを維持
+            FirebaseConfiguration.shared.setLoggerLevel(.notice)
+        } else {
+            // 日本語コメント：通信制限環境ではログを最小限に抑えつつ自動送信を禁止
+            FirebaseConfiguration.shared.setLoggerLevel(.min)
+        }
+        FirebaseConfiguration.shared.isDataCollectionDefaultEnabled = self.isFirebaseEnabled
         #endif
         #if canImport(GoogleMobileAds)
         // 日本語コメント：通信制限環境ではAdMob初期化をスキップする
         self.isAdMobEnabled = hasConnectivityLimitation == false
+        #endif
+        #if canImport(FirebaseCrashlytics)
+        if self.isFirebaseEnabled {
+            // 日本語コメント：通信可能な環境では通常通りCrashlyticsを有効化
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+        } else {
+            // 日本語コメント：Crashlyticsの自動送信を事前に停止
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
+        }
         #endif
         // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
 #if canImport(FirebaseCore)
@@ -93,9 +111,13 @@ struct AppMain: App {
 #if canImport(FirebaseAnalytics)
         if isFirebaseEnabled {
             // 日本語コメント：AnalyticsEventAppOpenでアプリ起動を追跡
+            Analytics.setAnalyticsCollectionEnabled(true)
             Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
 
             GALogger.log(.app_launch)
+        } else {
+            // 日本語コメント：自動収集が無効化されていることを明示的に保証
+            Analytics.setAnalyticsCollectionEnabled(false)
         }
 #endif
 
