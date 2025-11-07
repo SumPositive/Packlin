@@ -460,11 +460,9 @@ final class AzukiApi {
             }
 
             func handleSuccess(data: Data) throws -> String {
-                let decoded: RefreshResponse
-                do {
-                    // トークン払い出し成功時は新しいトークン群をKeychainへ即座に保存する
-                    decoded = try self.decoder.decode(RefreshResponse.self, from: data)
-                } catch {
+                // デコード処理が失敗した場合に備えて、try? で明示的に失敗を検出する
+                guard let decoded = try? self.decoder.decode(RefreshResponse.self, from: data) else {
+                    // 期待したレスポンス形式と異なる場合はデコードエラーとして扱う
                     throw AzukiAPIError.decoding
                 }
                 self.storeTokensIfProvided(
