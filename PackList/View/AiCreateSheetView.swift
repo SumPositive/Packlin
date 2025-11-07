@@ -132,7 +132,7 @@ struct AiCreateView: View {
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じてパックの新規作成や修正を依頼できます。AI利用券1枚で1回の送信が可能です。
+                要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。AI利用券1枚で1回の送信が可能です。
                 """)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -174,7 +174,7 @@ struct AiCreateView: View {
                                     .symbolRenderingMode(.hierarchical)
                             }
 
-                            Text(isGenerating ? "考え中" : "送信")
+                            Text(isGenerating ? "提案を考え中" : "送信")
                                 .font(.callout.weight(.semibold))
                         }
                         .padding(.vertical, 4)
@@ -211,7 +211,7 @@ struct AiCreateView: View {
                     if isRequirementEmpty {
                         // 入力例。TextEditorの内側余白と揃えて配置
                         Text("""
-                            訪問先、日程、目的、人数、気候、アクティビティや要望をたくさん列記してください。
+                            訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください。
 
                             （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
                             """)
