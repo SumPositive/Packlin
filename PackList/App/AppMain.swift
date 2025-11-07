@@ -133,9 +133,9 @@ struct AppMain: App {
         // Bundle サンプル.packlin ファイル
         let sampleFileNames = [
             "Pack_Trip_1N",
-            "Pack_Trip_2N",
-            "Pack_Fuji_1N",
-            "Pack_Travel_1week",
+           // "Pack_Trip_2N",
+           // "Pack_Fuji_1N",
+           // "Pack_Travel_1week",
             "Pack_DayHike",
             "Pack_BabyTrip_1N2D",
         ]

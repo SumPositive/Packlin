@@ -327,14 +327,20 @@ struct AiCreateView: View {
     
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
+        // 進行中の生成リクエストがあれば新しい処理を開始せず、送信ボタンの連打を抑止する
+        if isGenerating {
+            return
+        }
+        isGenerating = true
+
         let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
             inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            isGenerating = false
             return
         }
 
         let userId = creditStore.userId
-        isGenerating = true
         Task {
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
