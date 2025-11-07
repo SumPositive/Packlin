@@ -899,7 +899,7 @@ struct AiCreateView: View {
         
         // verifyPurchaseに失敗し、購入中止したときのメッセージ
         let fallbackMessage = String(
-            localized: "購入の結果待ちです。まだ課金されません。確認が完了すると自動で反映されます")
+            localized: "購入を中止しました。課金されません")
 
 
         do {
@@ -1121,7 +1121,7 @@ struct AiCreateView: View {
         var title: String {
             switch self {
                 case .purchaseSuccess:
-                    return String(localized: "購入が完了しました")
+                    return String(localized: "購入手続きを開始しました")
                 case .purchaseAlreadyProcessed:
                     return String(localized: "購入履歴が確認できました")
                 case .purchaseFailure:
