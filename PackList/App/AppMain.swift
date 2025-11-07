@@ -27,6 +27,11 @@ struct AppMain: App {
     @State private var navigationPath = NavigationPath()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
+    #if canImport(GoogleMobileAds)
+    /// UIテスト中などAdMob初期化を避けたい状況を見分けるフラグ
+    private let isAdMobEnabled: Bool
+    #endif
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             M1Pack.self,
@@ -48,6 +53,11 @@ struct AppMain: App {
     }()
 
     init() {
+        #if canImport(GoogleMobileAds)
+        // 日本語コメント：UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発するためAdMob初期化を抑止する
+        let isRunningForUITest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        self.isAdMobEnabled = isRunningForUITest == false
+        #endif
         // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
 #if canImport(FirebaseCore)
         if FirebaseApp.app() == nil {
@@ -72,11 +82,13 @@ struct AppMain: App {
 
         // AdMob
 #if canImport(GoogleMobileAds)
-        // Initialize the Google Mobile Ads SDK.
-        MobileAds.shared.start()
-        // Test mode
-        let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
-        MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
+        if isAdMobEnabled {
+            // 日本語コメント：UIテスト外でのみAdMob SDKを初期化する
+            MobileAds.shared.start()
+            // Test mode
+            let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
+            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
+        }
 #endif
     }
 
