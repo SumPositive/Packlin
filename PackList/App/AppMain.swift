@@ -8,6 +8,9 @@
 import Foundation
 import SwiftUI
 import SwiftData
+#if canImport(UIKit)
+import UIKit
+#endif
 #if canImport(FirebaseCore)
 import FirebaseCore
 #endif
@@ -23,6 +26,10 @@ import GoogleMobileAds
 
 @main
 struct AppMain: App {
+#if canImport(UIKit)
+    /// UIKitライフサイクル連携用のAppDelegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+#endif
     @Environment(\.scenePhase) private var scenePhase
     @State private var navigationPath = NavigationPath()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
@@ -60,22 +67,11 @@ struct AppMain: App {
         // 環境変数を参照し通信系SDK初期化を安全に行える状況か判定する
         let environment = ProcessInfo.processInfo.environment
         let processArguments = ProcessInfo.processInfo.arguments
-        // UIテスト実行中はCoreTelephonyサービスが利用できずエラーが多発する
-        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
-        // Xcode Previewsではバックエンド接続が無効なケースが多い
-        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
-        #if targetEnvironment(simulator)
-        // シミュレータではCoreTelephonyが未実装でエラーが出る
-        let isSimulator = true
-        #else
-        // targetEnvironmentで検出できないケース（例：SwiftUIプレビュー用ホストアプリ）も環境変数で補完
-        let isSimulator = environment["SIMULATOR_UDID"] != nil
-        #endif
-        // 通信系SDKを利用できない環境かを総合判定する
-        let hasConnectivityLimitation = isRunningForUITest || isRunningForPreview || isSimulator
+        // ネットワーク系SDKを許可できる環境かをまとめて判定する
+        let allowsNetworkSDKs = AppMain.shouldEnableFirebase(environment: environment, processArguments: processArguments)
         #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
         // 通信制限環境ではFirebase初期化をスキップしログ出力を抑止する
-        self.isFirebaseEnabled = hasConnectivityLimitation == false
+        self.isFirebaseEnabled = allowsNetworkSDKs
         // Firebaseのデフォルトデータ収集フラグを切り替え、自動初期化による通信も止める
         if self.isFirebaseEnabled {
             // 本番時は通常ログレベルを維持
@@ -89,7 +85,7 @@ struct AppMain: App {
         #endif
         #if canImport(GoogleMobileAds)
         // 通信制限環境ではAdMob初期化をスキップする
-        self.isAdMobEnabled = hasConnectivityLimitation == false
+        self.isAdMobEnabled = allowsNetworkSDKs
         #endif
         #if canImport(FirebaseCrashlytics)
         if self.isFirebaseEnabled {
@@ -100,14 +96,6 @@ struct AppMain: App {
             Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
         }
         #endif
-        // Firebase初期化：GoogleService-Info.plistが存在しない場合でも安全に実行する
-#if canImport(FirebaseCore)
-        if isFirebaseEnabled && FirebaseApp.app() == nil {
-            // 初回起動時のみFirebaseAppを構成する
-            FirebaseApp.configure()
-        }
-#endif
-
         // Analytics：アプリ起動イベントを記録する
 #if canImport(FirebaseAnalytics)
         if isFirebaseEnabled {
@@ -270,5 +258,24 @@ struct AppMain: App {
         }
     }
 
+}
+
+extension AppMain {
+    /// Firebaseなどの通信系SDKを安全に初期化できるか判定するヘルパー
+    static func shouldEnableFirebase(environment: [String: String], processArguments: [String]) -> Bool {
+        // UIテスト中は通信系SDKを抑止する
+        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
+        // Xcode Previewsはネットワークを伴う処理が利用できないことが多い
+        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
+        #if targetEnvironment(simulator)
+        // シミュレータでは未実装APIが多くエラーを誘発するため無効化
+        let isSimulator = true
+        #else
+        let isSimulator = environment["SIMULATOR_UDID"] != nil
+        #endif
+        // いずれかの制限がある場合は初期化を避ける
+        let hasLimitation = isRunningForUITest || isRunningForPreview || isSimulator
+        return hasLimitation == false
+    }
 }
 
