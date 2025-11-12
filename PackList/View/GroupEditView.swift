@@ -194,6 +194,7 @@ struct GroupEditView: View {
                 }
             }
         }
+        .navigationTitle("グループ")
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
@@ -216,7 +217,7 @@ struct GroupEditView: View {
                                disableConfirm: selectedPack == nil,
                                onConfirm: handleMoveConfirmation,
                                onCancel: { isShowingMoveSheet = false })
-                .presentationDetents([.height(260), .fraction(1)])
+                .presentationDetents([.height(330)])
         }
     }
 
