@@ -35,4 +35,11 @@ extension String {
         isEmpty ? Text(placeholderKey) : Text(verbatim: self)
     }
 
+    /// 空文字列の場合にローカライズ済みのプレースホルダを返す
+    /// - Parameter placeholder: 置き換えに使用する `LocalizedStringResource`
+    /// - Returns: 空文字列ならローカライズ文字列、そうでなければ元の文字列を `String` として返す
+    func placeholder(_ placeholder: LocalizedStringResource) -> String {
+        isEmpty ? String(localized: placeholder) : self
+    }
+
 }

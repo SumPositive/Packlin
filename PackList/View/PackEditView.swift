@@ -32,7 +32,7 @@ struct PackEditView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(pack.name.isEmpty ? String(localized:"新しいパック") : pack.name) {
+                Section("パック編集") {
                     HStack {    // Actions
                         // チェックON/OFF
                         Button {
@@ -143,6 +143,7 @@ struct PackEditView: View {
                     }
                     .frame(height: 80)
                 }
+                
                 Section("メモ") {
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $pack.memo)
@@ -169,8 +170,6 @@ struct PackEditView: View {
             .toolbar {
                 navigationToolbar
             }
-            // 編集画面であることがひと目で分かるように明示的なタイトルを設定
-            .navigationTitle(String(localized: "パック編集"))
         }
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {

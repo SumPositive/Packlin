@@ -292,7 +292,7 @@ struct ItemEditView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .background(COLOR_ROW_GROUP)
-        .navigationTitle(item.name.placeholderText("新しいアイテム"))
+        .navigationTitle("アイテム編集")
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -338,6 +338,7 @@ struct ItemEditView: View {
             // 移動 設定シート
             ItemMoveSheetView(
                 packs: sortedPacks,
+                itemName: item.name,
                 selectedPackID: $selectedPackID,
                 selectedGroupID: $selectedGroupID,
                 keepOriginal: $keepSourceItem,
@@ -346,8 +347,7 @@ struct ItemEditView: View {
                 onConfirm: handleMoveConfirmation,
                 onCancel: { isShowingMoveSheet = false }
             )
-            .presentationDetents([.height(400), .medium]) // シートの高さ
-            .presentationDragIndicator(.visible) // ドラッグインジケータを表示
+            .presentationDetents([.height(400)]) // シートの高さ
         }
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }
@@ -730,6 +730,7 @@ private struct ItemQuantityEditor: View {
 /// アイテム移動 設定シート
 private struct ItemMoveSheetView: View {
     let packs: [M1Pack]
+    let itemName: String
     @Binding var selectedPackID: String
     @Binding var selectedGroupID: String
     @Binding var keepOriginal: Bool
@@ -802,7 +803,7 @@ private struct ItemMoveSheetView: View {
             }
             //.listSectionSpacing(.compact)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         // 閉じる
                         //dismiss()
@@ -813,7 +814,7 @@ private struct ItemMoveSheetView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     // 移動 or 複写
                     Button(keepOriginal ? "複製する" : "移動する", action: onConfirm)
                         .disabled(disableConfirm)
@@ -822,8 +823,9 @@ private struct ItemMoveSheetView: View {
                         .padding(.horizontal, 16)
                 }
             }
+            .navigationTitle(itemName.placeholder("新しいアイテム"))
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .presentationDetents([.height(340), .fraction(1)])
     }
 }
 

@@ -67,7 +67,7 @@ struct GroupEditView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(group.name.isEmpty ? String(localized:"新しいグループ") : group.name) {
+                Section("グループ編集") {
                     HStack {    // Actions
                         // チェックON/OFF
                         Button {
@@ -194,7 +194,6 @@ struct GroupEditView: View {
                 }
             }
         }
-        .navigationTitle("グループ")
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
@@ -408,8 +407,8 @@ private struct GroupMoveSheetView: View {
                         .padding(.horizontal, 16)
                 }
             }
-            // タイトルには移動対象のグループ名をそのまま表示し、空の場合は汎用文言を出す
-            .navigationTitle(groupName.isEmpty ? String(localized: "グループを移動") : groupName)
+            .navigationTitle(groupName.placeholder("新しいグループ"))
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
