@@ -286,7 +286,13 @@ struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        // SwiftUIの.sheet上でUIActivityViewControllerを表示すると背景が透過してしまうため、ここで背景色を明示的に塗りつぶす
+        // systemBackgroundを指定することでダークモード・ライトモード双方で自然な色になる
+        controller.view.backgroundColor = UIColor.systemBackground
+        // isModalInPresentationをfalseにしておき、ユーザーが上スワイプで閉じられる通常動作を維持する
+        controller.isModalInPresentation = false
+        return controller
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
