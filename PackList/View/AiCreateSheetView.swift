@@ -11,6 +11,8 @@ import Foundation
 import StoreKit
 
 
+let AiCreateSheetView_HEIGHT: CGFloat = 680.0 // シート表示時の高さ指定
+
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
     /// 編集中のパックを保持し、AIへ修正依頼するときの素材にする
@@ -132,7 +134,7 @@ struct AiCreateView: View {
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。AI利用券1枚で1回の送信が可能です。
+                要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。ただし、結果の正しさは保証できませんので参考にしながら修正してお使いください。AI利用券1枚で1回の送信が可能です。
                 """)
                 .font(.footnote)
                 .foregroundStyle(.secondary)

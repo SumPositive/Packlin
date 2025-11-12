@@ -219,7 +219,7 @@ struct PackEditView: View {
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
                 AiCreateSheetView(basePack: pack)
-                    .presentationDetents([.height(640), .large])
+                    .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
                     .presentationDragIndicator(.visible)
             }
         }

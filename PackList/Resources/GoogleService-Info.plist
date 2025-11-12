@@ -3,29 +3,29 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyB5yQmsj-CFjnMm-_D5Rm9_zVF7CHurfOU</string>
+	<string>AIzaSyCgaDyYdCr6j0AUm40Tge5ux8fTCLw1b3k</string>
 	<key>GCM_SENDER_ID</key>
-	<string>895232993835</string>
+	<string>946038675575</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.azukid.AzPackList5</string>
 	<key>PROJECT_ID</key>
-	<string>packlist-v3</string>
+	<string>packlistv3</string>
 	<key>STORAGE_BUCKET</key>
-	<string>packlist-v3.firebasestorage.app</string>
+	<string>packlistv3.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:895232993835:ios:8dadf6748c3212cf8d986e</string>
+	<string>1:946038675575:ios:0884e394cadd5561f10e72</string>
 	<key>ADMOB_APP_ID</key>
 	<string>ca-app-pub-7576639777972199~3753311359</string>
 </dict>

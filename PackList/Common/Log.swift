@@ -45,7 +45,19 @@ func log(_ level: LogLevel,
     guard currentLogLevel <= level else { return }
     
     let fileName = (file as NSString).lastPathComponent
-    print("\(fileName)(\(line)) \(function) \(level.prefix) \(message)")
+    let printOut = "\(fileName)(\(line)) \(function) \(level.prefix) \(message)"
+    print(printOut)
+    
+    switch level {
+        case .error, .fatal:
+            Analytics.logEvent("error_occured", parameters: [
+                "error_domain": function,
+                "error_code": -1,
+                "error_message": printOut
+            ])
+        default:
+            break
+    }
 }
 
 

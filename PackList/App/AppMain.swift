@@ -8,40 +8,26 @@
 import Foundation
 import SwiftUI
 import SwiftData
-#if canImport(UIKit)
 import UIKit
-#endif
-#if canImport(FirebaseCore)
+
 import FirebaseCore
-#endif
-#if canImport(FirebaseAnalytics)
 import FirebaseAnalytics
-#endif
-#if canImport(FirebaseCrashlytics)
 import FirebaseCrashlytics
-#endif
-#if canImport(GoogleMobileAds)
 import GoogleMobileAds
-#endif
+
 
 @main
 struct AppMain: App {
-#if canImport(UIKit)
-    /// UIKitライフサイクル連携用のAppDelegate
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-#endif
+
     @Environment(\.scenePhase) private var scenePhase
     @State private var navigationPath = NavigationPath()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
-    #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
-    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
-    private let isFirebaseEnabled: Bool
-    #endif
-    #if canImport(GoogleMobileAds)
-    /// UIテストやシミュレータ・プレビューではAdMob初期化を抑止するフラグ
-    private let isAdMobEnabled: Bool
-    #endif
+
+//    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
+//    private let isFirebaseEnabled: Bool
+//    /// UIテストやシミュレータ・プレビューではAdMob初期化を抑止するフラグ
+//    private let isAdMobEnabled: Bool
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -49,8 +35,8 @@ struct AppMain: App {
             M2Group.self,
             M3Item.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        let modelConfiguration = ModelConfiguration(schema: schema,
+                                                    isStoredInMemoryOnly: false)
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
             // Undo/Redo のために UndoManager を設定
@@ -64,51 +50,16 @@ struct AppMain: App {
     }()
 
     init() {
-        // 環境変数を参照し通信系SDK初期化を安全に行える状況か判定する
-        let environment = ProcessInfo.processInfo.environment
-        let processArguments = ProcessInfo.processInfo.arguments
-        // ネットワーク系SDKを許可できる環境かをまとめて判定する
-        let allowsNetworkSDKs = AppMain.shouldEnableFirebase(environment: environment, processArguments: processArguments)
-        #if canImport(FirebaseCore) || canImport(FirebaseAnalytics) || canImport(FirebaseCrashlytics)
-        // 通信制限環境ではFirebase初期化をスキップしログ出力を抑止する
-        self.isFirebaseEnabled = allowsNetworkSDKs
-        // Firebaseのデフォルトデータ収集フラグを切り替え、自動初期化による通信も止める
-        if self.isFirebaseEnabled {
-            // 本番時は通常ログレベルを維持
-            FirebaseConfiguration.shared.setLoggerLevel(.notice)
-        } else {
-            // 通信制限環境ではログを最小限に抑えつつ自動送信を禁止
-            FirebaseConfiguration.shared.setLoggerLevel(.min)
-        }
-        // isDataCollectionDefaultEnabledプロパティはFirebaseCoreのバージョン差異で存在しない場合がある
-        // 代わりに個別モジュール側で明示的に収集可否を制御する（Analytics等）
-        #endif
-        #if canImport(GoogleMobileAds)
-        // 通信制限環境ではAdMob初期化をスキップする
-        self.isAdMobEnabled = allowsNetworkSDKs
-        #endif
-        #if canImport(FirebaseCrashlytics)
-        if self.isFirebaseEnabled {
-            // 通信可能な環境では通常通りCrashlyticsを有効化
-            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
-        } else {
-            // Crashlyticsの自動送信を事前に停止
-            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
-        }
-        #endif
-        // Analytics：アプリ起動イベントを記録する
-#if canImport(FirebaseAnalytics)
-        if isFirebaseEnabled {
-            // AnalyticsEventAppOpenでアプリ起動を追跡
-            Analytics.setAnalyticsCollectionEnabled(true)
-            Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
-
-            GALogger.log(.app_launch)
-        } else {
-            // 自動収集が無効化されていることを明示的に保証
-            Analytics.setAnalyticsCollectionEnabled(false)
-        }
-#endif
+        // Firebase初期化
+        FirebaseApp.configure()
+        // 通常ログレベル
+        FirebaseConfiguration.shared.setLoggerLevel(.notice)
+        // Crashlyticsを有効化
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+        // AnalyticsEventAppOpenでアプリ起動を追跡
+        Analytics.setAnalyticsCollectionEnabled(true)
+        Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
+        GALogger.log(.app_launch)
 
         // Migrate： V2-CoreData --> V3-SwiftData
         MigratingFromV2toV3().migrateIfNeeded(modelContainer: sharedModelContainer)
@@ -116,16 +67,11 @@ struct AppMain: App {
         // M1Packが空ならばサンプルを読み込む
         loadSamplePacksIfNeeded()
 
-        // AdMob
-#if canImport(GoogleMobileAds)
-        if isAdMobEnabled {
-            // UIテスト外でのみAdMob SDKを初期化する
-            MobileAds.shared.start()
-            // Test mode
-            let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
-            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
-        }
-#endif
+        // AdMob SDKを初期化する
+        MobileAds.shared.start()
+        // Test mode
+        let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
+        MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
     }
 
     var body: some Scene {
@@ -230,12 +176,8 @@ struct AppMain: App {
                 PackImporter.insertPack(from: dto, into: context, order: nextOrder)
             } catch {
                 debugPrint("Failed to load sample pack \(fileName): \(error)")
-#if canImport(FirebaseCrashlytics)
-                if isFirebaseEnabled {
-                    // サンプル読み込み失敗をCrashlyticsへ送信
-                    Crashlytics.crashlytics().record(error: error)
-                }
-#endif
+                // サンプル読み込み失敗をCrashlyticsへ送信
+                Crashlytics.crashlytics().record(error: error)
             }
         }
 
@@ -248,34 +190,30 @@ struct AppMain: App {
                 context.undoManager?.removeAllActions()
             } catch {
                 debugPrint("Failed to save sample packs: \(error)")
-#if canImport(FirebaseCrashlytics)
-                if isFirebaseEnabled {
-                    // DB保存失敗をCrashlyticsへ送信
-                    Crashlytics.crashlytics().record(error: error)
-                }
-#endif
+                // DB保存失敗をCrashlyticsへ送信
+                Crashlytics.crashlytics().record(error: error)
             }
         }
     }
 
 }
 
-extension AppMain {
-    /// Firebaseなどの通信系SDKを安全に初期化できるか判定するヘルパー
-    static func shouldEnableFirebase(environment: [String: String], processArguments: [String]) -> Bool {
-        // UIテスト中は通信系SDKを抑止する
-        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
-        // Xcode Previewsはネットワークを伴う処理が利用できないことが多い
-        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
-        #if targetEnvironment(simulator)
-        // シミュレータでは未実装APIが多くエラーを誘発するため無効化
-        let isSimulator = true
-        #else
-        let isSimulator = environment["SIMULATOR_UDID"] != nil
-        #endif
-        // いずれかの制限がある場合は初期化を避ける
-        let hasLimitation = isRunningForUITest || isRunningForPreview || isSimulator
-        return hasLimitation == false
-    }
-}
+//extension AppMain {
+//    /// Firebaseなどの通信系SDKを安全に初期化できるか判定するヘルパー
+//    static func shouldEnableFirebase(environment: [String: String], processArguments: [String]) -> Bool {
+//        // UIテスト中は通信系SDKを抑止する
+//        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
+//        // Xcode Previewsはネットワークを伴う処理が利用できないことが多い
+//        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
+//        #if targetEnvironment(simulator)
+//        // シミュレータでは未実装APIが多くエラーを誘発するため無効化
+//        let isSimulator = true
+//        #else
+//        let isSimulator = environment["SIMULATOR_UDID"] != nil
+//        #endif
+//        // いずれかの制限がある場合は初期化を避ける
+//        let hasLimitation = isRunningForUITest || isRunningForPreview || isSimulator
+//        return hasLimitation == false
+//    }
+//}
 

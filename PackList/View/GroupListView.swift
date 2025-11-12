@@ -171,7 +171,7 @@ struct GroupListView: View {
         .sheet(isPresented: $showAiCreateSheet) {
             // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
             AiCreateSheetView(basePack: pack)
-                .presentationDetents([.height(640), .large])
+                .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
     }

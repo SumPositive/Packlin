@@ -324,9 +324,10 @@ struct SettingView: View {
     struct CustomSetView: View {
         @Environment(\.modelContext) private var modelContext
 
+        // 不揮発保存、初期値
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
-        @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = false
+        @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = true
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
         @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
         
