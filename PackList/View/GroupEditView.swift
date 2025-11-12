@@ -15,11 +15,53 @@ struct GroupEditView: View {
     @Environment(\.modelContext) private var modelContext
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    // 不揮発保存：移動シート用の最終選択状態
+    @AppStorage("groupEdit.move.lastPackID") private var lastMovePackID: String = ""
+    @AppStorage("groupEdit.move.lastInsertPosition") private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
+    @AppStorage("groupEdit.move.lastKeepOriginal") private var lastMoveKeepOriginal: Bool = false
 
     @FocusState private var nameIsFocused: Bool
+    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
+
+    @State private var isShowingMoveSheet = false
+    @State private var selectedPackID: String
+    @State private var keepSourceGroup = false
+    @State private var moveInsertPosition: MoveInsertPosition = .end
 
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
+    }
+
+    private var sortedPacks: [M1Pack] {
+        // orderを唯一の真実とするため、毎回並べ替えてから扱う
+        packs.sorted { $0.order < $1.order }
+    }
+
+    private var selectedPack: M1Pack? {
+        // 現在の選択IDに一致するPackを取得
+        sortedPacks.first(where: { $0.id == selectedPackID })
+    }
+
+    enum MoveInsertPosition: String, CaseIterable, Identifiable {
+        case start
+        case end
+
+        var id: String { rawValue }
+
+        var titleKey: LocalizedStringKey {
+            switch self {
+            case .start:
+                return "パックの先頭"
+            case .end:
+                return "パックの末尾"
+            }
+        }
+    }
+
+    init(group: M2Group) {
+        self._group = Bindable(group)
+        // グループが属しているPackを初期選択として保持する
+        self._selectedPackID = State(initialValue: group.parent?.id ?? "")
     }
 
     var body: some View {
@@ -69,9 +111,24 @@ struct GroupEditView: View {
                         }
                         .tint(.accentColor)
                         .padding(.horizontal, 8)
-                        
+
+                        // 移動（他パックへの移動や複製先を決める）
+                        Button {
+                            prepareMoveSheet()
+                            isShowingMoveSheet = true
+                        } label: {
+                            VStack {
+                                Image(systemName: "hand.point.up.left.and.text")
+                                    .imageScale(.large)
+                                Text("移動")
+                                    .font(.caption)
+                            }
+                        }
+                        .tint(.blue)
+                        .padding(.horizontal, 8)
+
                         Spacer()
-                        
+
                         // 削除
                         Button {
                             // シートを閉じてから削除処理を行う
@@ -151,6 +208,16 @@ struct GroupEditView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
+        .sheet(isPresented: $isShowingMoveSheet) {
+            GroupMoveSheetView(packs: sortedPacks,
+                               selectedPackID: $selectedPackID,
+                               keepOriginal: $keepSourceGroup,
+                               insertPosition: $moveInsertPosition,
+                               disableConfirm: selectedPack == nil,
+                               onConfirm: handleMoveConfirmation,
+                               onCancel: { isShowingMoveSheet = false })
+                .presentationDetents([.height(260), .fraction(1)])
+        }
     }
 
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
@@ -171,7 +238,7 @@ struct GroupEditView: View {
                 if linkCheckWithStock {
                     item.stock = 0
                 }
-            }else{
+            } else {
                 // OFF --> ON
                 item.check = (0 < item.need)
                 // チェックと在庫数を連動させる
@@ -182,5 +249,163 @@ struct GroupEditView: View {
         }
     }
 
+    /// 移動シートを表示する前に前回の選択内容を同期する
+    private func prepareMoveSheet() {
+        keepSourceGroup = lastMoveKeepOriginal
+        if let storedInsertPosition = MoveInsertPosition(rawValue: lastMoveInsertPositionRawValue) {
+            moveInsertPosition = storedInsertPosition
+        } else {
+            moveInsertPosition = .end
+        }
+
+        // 前回選択したPackが存在すれば再利用する。無ければ現在所属Packを使う
+        if let storedPack = sortedPacks.first(where: { $0.id == lastMovePackID }) {
+            selectedPackID = storedPack.id
+        } else if let currentPackID = group.parent?.id,
+                  sortedPacks.contains(where: { $0.id == currentPackID }) {
+            selectedPackID = currentPackID
+        } else if let firstPack = sortedPacks.first {
+            selectedPackID = firstPack.id
+        } else {
+            selectedPackID = ""
+        }
+    }
+
+    /// 移動確定時の処理
+    private func handleMoveConfirmation() {
+        guard let destinationPack = selectedPack else { return }
+
+        performMoveOrCopy(to: destinationPack, copy: keepSourceGroup)
+        lastMovePackID = destinationPack.id
+        lastMoveInsertPositionRawValue = moveInsertPosition.rawValue
+        lastMoveKeepOriginal = keepSourceGroup
+        isShowingMoveSheet = false
+        dismiss()
+    }
+
+    /// Groupを移動または複製する
+    private func performMoveOrCopy(to destinationPack: M1Pack, copy: Bool) {
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+
+        let destinationGroups = destinationPack.child.sorted { $0.order < $1.order }
+        let insertIndex: Int
+        switch moveInsertPosition {
+        case .start:
+            insertIndex = 0
+        case .end:
+            insertIndex = destinationGroups.count
+        }
+        let clampedIndex = max(0, min(insertIndex, destinationGroups.count))
+
+        let newOrder = sparseOrderForInsertion(items: destinationGroups, index: clampedIndex) {
+            // child配列は触らずorderのみ補正
+            normalizeSparseOrders(destinationGroups)
+        }
+
+        if copy {
+            // グループ本体を複製して新しいPackへ追加する
+            let newGroup = M2Group(name: group.name,
+                                   memo: group.memo,
+                                   order: newOrder,
+                                   parent: destinationPack)
+            modelContext.insert(newGroup)
+
+            // アイテムも順番を保ったまま複製する
+            let orderedItems = group.child.sorted { lhs, rhs in
+                if lhs.order != rhs.order {
+                    return lhs.order < rhs.order
+                }
+                return lhs.id < rhs.id
+            }
+            for item in orderedItems {
+                let newItem = M3Item(name: item.name,
+                                     memo: item.memo,
+                                     stock: item.stock,
+                                     need: item.need,
+                                     weight: item.weight,
+                                     order: item.order,
+                                     parent: newGroup)
+                modelContext.insert(newItem)
+            }
+        } else {
+            // グループを別Packへ移動し、orderを更新する
+            group.parent = destinationPack
+            group.order = newOrder
+        }
+    }
+}
+
+/// グループ移動用のシート
+private struct GroupMoveSheetView: View {
+    let packs: [M1Pack]
+    @Binding var selectedPackID: String
+    @Binding var keepOriginal: Bool
+    @Binding var insertPosition: GroupEditView.MoveInsertPosition
+    let disableConfirm: Bool
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    private var sortedPacks: [M1Pack] {
+        // パック一覧もorder順で扱う
+        packs.sorted { $0.order < $1.order }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("移動先") {
+                    // 送り先のパック選択
+                    Picker(selection: $selectedPackID) {
+                        ForEach(sortedPacks, id: \.id) { pack in
+                            pack.name.truncTail(20)
+                                .placeholderText("新しいパック")
+                                .tag(pack.id)
+                        }
+                    } label: {
+                        Label("", systemImage: "case")
+                            .foregroundStyle(.secondary)
+                    }
+                    .pickerStyle(.menu)
+
+                    // 挿入位置（先頭 or 末尾）
+                    Picker("挿入位置", selection: $insertPosition) {
+                        ForEach(GroupEditView.MoveInsertPosition.allCases) { position in
+                            Text(position.titleKey)
+                                .tag(position)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                Section("移動元") {
+                    // 元のグループを残す（複製）かどうか
+                    Toggle("コピーを作成する（複製）", isOn: $keepOriginal)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        onCancel()
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(keepOriginal ? "複製する" : "移動する", action: onConfirm)
+                        .disabled(disableConfirm)
+                        .buttonStyle(.borderedProminent)
+                        .tint(.accentColor)
+                        .padding(.horizontal, 16)
+                }
+            }
+        }
+    }
 }
 
