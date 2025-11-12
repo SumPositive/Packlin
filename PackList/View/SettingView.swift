@@ -81,6 +81,14 @@ struct SettingView: View {
                 // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)
+                if let versionLineText {
+                    Text(versionLineText)
+                        .font(.footnote.monospaced())
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 12)
+                        // 画面最下部でアプリバージョンとサポート用IDを一緒に表示する
+                        // サポート担当者との会話で同じ識別子を参照できるようにする
+                }
             }
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
@@ -156,6 +164,26 @@ struct SettingView: View {
             return SFSafariViewController(url: url)
         }
         func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    }
+
+    private var versionLineText: String? {
+        // Info.plistからアプリバージョンを取得する
+        guard let appVersion else {
+            return nil
+        }
+        // サポート用IDが取得できなければ表示を行わない
+        guard let supportId = supportUserId else {
+            return nil
+        }
+        return "Version \(appVersion) - \(supportId)"
+    }
+
+    private var appVersion: String? {
+        // ユーザー向けに表示するため短縮バージョン文字列を参照する
+        guard let bundleVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+            return nil
+        }
+        return bundleVersion
     }
 
     private var supportUserId: String? {
