@@ -211,6 +211,7 @@ struct GroupEditView: View {
         }
         .sheet(isPresented: $isShowingMoveSheet) {
             GroupMoveSheetView(packs: sortedPacks,
+                               groupName: group.name,
                                selectedPackID: $selectedPackID,
                                keepOriginal: $keepSourceGroup,
                                insertPosition: $moveInsertPosition,
@@ -344,6 +345,7 @@ struct GroupEditView: View {
 /// グループ移動用のシート
 private struct GroupMoveSheetView: View {
     let packs: [M1Pack]
+    let groupName: String
     @Binding var selectedPackID: String
     @Binding var keepOriginal: Bool
     @Binding var insertPosition: GroupEditView.MoveInsertPosition
@@ -406,6 +408,8 @@ private struct GroupMoveSheetView: View {
                         .padding(.horizontal, 16)
                 }
             }
+            // タイトルには移動対象のグループ名をそのまま表示し、空の場合は汎用文言を出す
+            .navigationTitle(groupName.isEmpty ? String(localized: "グループを移動") : groupName)
         }
     }
 }

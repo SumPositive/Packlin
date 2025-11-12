@@ -169,6 +169,8 @@ struct PackEditView: View {
             .toolbar {
                 navigationToolbar
             }
+            // 編集画面であることがひと目で分かるように明示的なタイトルを設定
+            .navigationTitle(String(localized: "パック編集"))
         }
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
