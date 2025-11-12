@@ -42,10 +42,11 @@ enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
 
 /// 設定画面：以前はPopup表示だったが、PackEditViewと揃えてシート表示に対応
 struct SettingView: View {
-    
+
+    @EnvironmentObject private var creditStore: CreditStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-    
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -80,6 +81,19 @@ struct SettingView: View {
                 // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)
+            }
+            if let supportUserId {
+                VStack(spacing: 4) {
+                    Text("サポート用ID")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(supportUserId)
+                        .font(.footnote.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 12)
+                // クレジットの購入情報から取得したユーザー識別子を表示する
+                // 端末サポート時に利用者と運用側で同じ値を参照できるようにする
             }
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
@@ -142,6 +156,20 @@ struct SettingView: View {
             return SFSafariViewController(url: url)
         }
         func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    }
+
+    private var supportUserId: String? {
+        // userIdは通信周りで生成されるため、空文字の場合は表示しない
+        let rawId = creditStore.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if rawId.isEmpty {
+            return nil
+        }
+        // 先頭8文字だけを抜き出してサポート用識別子に使う
+        if rawId.count < 8 {
+            return rawId
+        }
+        let endIndex = rawId.index(rawId.startIndex, offsetBy: 8)
+        return String(rawId[rawId.startIndex..<endIndex])
     }
 
     /// アプリの紹介・取扱説明
@@ -516,4 +544,5 @@ struct SettingView: View {
 
 #Preview {
     SettingView()
+        .environmentObject(CreditStore())
 }
