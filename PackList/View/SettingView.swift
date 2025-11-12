@@ -82,19 +82,6 @@ struct SettingView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)
             }
-            if let supportUserId {
-                VStack(spacing: 4) {
-                    Text("サポート用ID")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(supportUserId)
-                        .font(.footnote.monospaced())
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.bottom, 12)
-                // クレジットの購入情報から取得したユーザー識別子を表示する
-                // 端末サポート時に利用者と運用側で同じ値を参照できるようにする
-            }
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -107,6 +94,19 @@ struct SettingView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
+            }
+            if let supportUserId {
+                VStack(spacing: 4) {
+                    Text("サポート用ID")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(supportUserId)
+                        .font(.footnote.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 12)
+                // クレジットの購入情報から取得したユーザー識別子を表示する
+                // 端末サポート時に利用者と運用側で同じ値を参照できるようにする
             }
         }
     }
