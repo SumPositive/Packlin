@@ -375,9 +375,6 @@
         }
       }
     },
-    "サポート用ID" : {
-
-    },
     "タップして広告をご覧ください" : {
       "localizations" : {
         "en" : {
@@ -1083,17 +1080,6 @@
         }
       }
     },
-    "考え中" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thinking"
-          }
-        }
-      }
-    },
     "複製" : {
       "localizations" : {
         "en" : {
@@ -1114,33 +1100,11 @@
         }
       }
     },
-    "要望を入力して「送信」ボタンを押せば、チャッピーが要望に応じてパックの新規作成や修正を依頼できます。AI利用券1枚で1回の送信が可能です。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter your request and tap Send to have Chappy create or update a pack for you. Each send uses one AI ticket."
-          }
-        }
-      }
-    },
     "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。ただし、結果の正しさは保証できませんので参考にしながら修正してお使いください。AI利用券1枚で1回の送信が可能です。" : {
 
     },
     "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください。\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
 
-    },
-    "訪問先、日程、目的、人数、気候、アクティビティや要望をたくさん列記してください。\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "List details like destination, schedule, purpose, group size, weather, activities, and any other requests.\n\n(Example) 6-day overseas trip, Italy and Spain, family of four, plan for rain, bring first-aid supplies."
-          }
-        }
-      }
     },
     "設定" : {
       "localizations" : {

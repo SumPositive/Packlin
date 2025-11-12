@@ -72,6 +72,19 @@ struct SettingView: View {
                             // 応援・寄付
                             DonationView()
                         }
+
+                        // Version - SupportID
+                        if let versionLineText {
+                            HStack {
+                                Spacer()
+                                // 画面最下部でアプリバージョンとサポート用ID(userIdの先頭8桁)を一緒に表示する
+                                Text(versionLineText)
+                                    .font(.footnote.monospaced())
+                                    .foregroundStyle(.secondary)
+                                    .padding(.bottom, 12)
+                                Spacer()
+                            }
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 20)
@@ -81,14 +94,6 @@ struct SettingView: View {
                 // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)
-                if let versionLineText {
-                    Text(versionLineText)
-                        .font(.footnote.monospaced())
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 12)
-                        // 画面最下部でアプリバージョンとサポート用IDを一緒に表示する
-                        // サポート担当者との会話で同じ識別子を参照できるようにする
-                }
             }
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
@@ -102,19 +107,6 @@ struct SettingView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-            }
-            if let supportUserId {
-                VStack(spacing: 4) {
-                    Text("サポート用ID")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(supportUserId)
-                        .font(.footnote.monospaced())
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.bottom, 12)
-                // クレジットの購入情報から取得したユーザー識別子を表示する
-                // 端末サポート時に利用者と運用側で同じ値を参照できるようにする
             }
         }
     }
@@ -173,7 +165,7 @@ struct SettingView: View {
         }
         // サポート用IDが取得できなければ表示を行わない
         guard let supportId = supportUserId else {
-            return nil
+            return "Version \(appVersion)"
         }
         return "Version \(appVersion) - \(supportId)"
     }
