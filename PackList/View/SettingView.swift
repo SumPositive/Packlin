@@ -42,10 +42,11 @@ enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
 
 /// 設定画面：以前はPopup表示だったが、PackEditViewと揃えてシート表示に対応
 struct SettingView: View {
-    
+
+    @EnvironmentObject private var creditStore: CreditStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-    
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -80,6 +81,14 @@ struct SettingView: View {
                 // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)
+                if let versionLineText {
+                    Text(versionLineText)
+                        .font(.footnote.monospaced())
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 12)
+                        // 画面最下部でアプリバージョンとサポート用IDを一緒に表示する
+                        // サポート担当者との会話で同じ識別子を参照できるようにする
+                }
             }
             .navigationTitle(Text("設定"))
             .navigationBarTitleDisplayMode(.inline)
@@ -142,6 +151,40 @@ struct SettingView: View {
             return SFSafariViewController(url: url)
         }
         func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    }
+
+    private var versionLineText: String? {
+        // Info.plistからアプリバージョンを取得する
+        guard let appVersion else {
+            return nil
+        }
+        // サポート用IDが取得できなければ表示を行わない
+        guard let supportId = supportUserId else {
+            return nil
+        }
+        return "Version \(appVersion) - \(supportId)"
+    }
+
+    private var appVersion: String? {
+        // ユーザー向けに表示するため短縮バージョン文字列を参照する
+        guard let bundleVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+            return nil
+        }
+        return bundleVersion
+    }
+
+    private var supportUserId: String? {
+        // userIdは通信周りで生成されるため、空文字の場合は表示しない
+        let rawId = creditStore.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if rawId.isEmpty {
+            return nil
+        }
+        // 先頭8文字だけを抜き出してサポート用識別子に使う
+        if rawId.count < 8 {
+            return rawId
+        }
+        let endIndex = rawId.index(rawId.startIndex, offsetBy: 8)
+        return String(rawId[rawId.startIndex..<endIndex])
     }
 
     /// アプリの紹介・取扱説明
@@ -515,4 +558,5 @@ struct SettingView: View {
 
 #Preview {
     SettingView()
+        .environmentObject(CreditStore())
 }
