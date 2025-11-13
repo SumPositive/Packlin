@@ -71,16 +71,16 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
             // Undo grouping END
             mc.undoManager?.groupingEnd()
         }
+        // 親Packは削除後に順序調整するため、ここで一度退避しておく
+        let parentPack = self.parent
         // groupの配下を削除
         for item in self.child {
             mc.delete(item)
         }
-        // groupを削除：pack側から削除して整列する
-        if let pack = self.parent {
-            // ReOrder
-            pack.normalizeGroupOrder()
-        }
+        // 自身を削除したあとで親側のorderを整理する
         mc.delete(self)
+        // child配列からこのグループが消えた状態でorderを再計算させる
+        parentPack?.normalizeGroupOrder()
     }
 
     /// 現在のGroupを複製して現在行下に追加する

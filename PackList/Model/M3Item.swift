@@ -57,11 +57,11 @@ final class M3Item {
             mc.undoManager?.groupingEnd()
         }
         
-        if let group = self.parent {
-            // ReOrder
-            group.normalizeItemOrder()
-        }
+        // 削除後に順序調整できるよう、親グループを退避する
+        let parentGroup = self.parent
         mc.delete(self)
+        // 実際にchild配列から取り除かれた状態でorderを整理する
+        parentGroup?.normalizeItemOrder()
     }
 
     /// アイテム複製
