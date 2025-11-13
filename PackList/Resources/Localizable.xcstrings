@@ -193,6 +193,7 @@
       }
     },
     "itemList.footer.description" : {
+      "comment" : "このようなケースでだけ ja を使用する",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -250,6 +251,7 @@
       }
     },
     "packList.footer.description" : {
+      "comment" : "このようなケースでだけ ja を使用する",
       "localizations" : {
         "en" : {
           "stringUnit" : {
