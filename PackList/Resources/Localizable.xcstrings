@@ -286,7 +286,14 @@
       }
     },
     "アイテム編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit item"
+          }
+        }
+      }
     },
     "アプリの紹介・取扱説明" : {
       "localizations" : {
@@ -359,7 +366,14 @@
       }
     },
     "グループ編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit group"
+          }
+        }
+      }
     },
     "この購入はすでに完了しています、枚数を更新しました。" : {
       "localizations" : {
@@ -502,10 +516,24 @@
       }
     },
     "パックの先頭" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to top"
+          }
+        }
+      }
     },
     "パックの末尾" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to bottom"
+          }
+        }
+      }
     },
     "パックの要望入力" : {
       "localizations" : {
@@ -558,7 +586,14 @@
       }
     },
     "パック編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit pack"
+          }
+        }
+      }
     },
     "フッターの説明文" : {
       "localizations" : {
@@ -701,7 +736,14 @@
       }
     },
     "共有・保存" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share or Save"
+          }
+        }
+      }
     },
     "再読み込み" : {
       "localizations" : {
@@ -926,7 +968,14 @@
       }
     },
     "提案を考え中" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thinking up ideas..."
+          }
+        }
+      }
     },
     "操作" : {
       "localizations" : {
@@ -1109,10 +1158,24 @@
       }
     },
     "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。ただし、結果の正しさは保証できませんので参考にしながら修正してお使いください。AI利用券1枚で1回の送信が可能です。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell Chappy what you need and tap \"Send\" to have a pack made or updated. Please double-check the result before using it. Each AI ticket covers one request."
+          }
+        }
+      }
     },
     "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください。\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share details like destination, schedule, purpose, group size, weather, and activities.\n\nExample: 6-day family trip to Italy and Spain, four people, expect rain, pack a first-aid kit."
+          }
+        }
+      }
     },
     "設定" : {
       "localizations" : {
