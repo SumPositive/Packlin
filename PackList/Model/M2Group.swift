@@ -77,8 +77,6 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
         }
         // groupを削除：pack側から削除して整列する
         if let pack = self.parent {
-//           let index = pack.child.firstIndex(where: { $0.id == self.id }) {
-//            pack.child.remove(at: index)
             // ReOrder
             pack.normalizeGroupOrder()
         }
@@ -106,7 +104,8 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
             // Itemを生成して追加する
             let newItem = M3Item(name: item.name,
                                  memo: item.memo,
-                                 stock: item.stock,
+                                 check: false,
+                                 stock: 0,
                                  need: item.need,
                                  weight: item.weight,
                                  order: item.order,

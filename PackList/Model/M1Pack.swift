@@ -129,7 +129,8 @@ final class M1Pack {
                 // Itemを生成して追加する
                 let newItem = M3Item(name: item.name,
                                      memo: item.memo,
-                                     stock: item.stock,
+                                     check: false,
+                                     stock: 0,
                                      need: item.need,
                                      weight: item.weight,
                                      order: item.order,

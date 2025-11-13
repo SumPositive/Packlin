@@ -45,7 +45,7 @@ final class M3Item {
         self.order = order
         self.parent = parent
     }
-    
+
 
     /// アイテム削除
     func delete() {
@@ -58,8 +58,6 @@ final class M3Item {
         }
         
         if let group = self.parent {
-//           let index = group.child.firstIndex(where: { $0.id == self.id }) {
-//            group.child.remove(at: index)
             // ReOrder
             group.normalizeItemOrder()
         }
@@ -78,7 +76,8 @@ final class M3Item {
         guard let parent = self.parent else { return }
         let newItem = M3Item(name: self.name,
                              memo: self.memo,
-                             stock: self.stock,
+                             check: false,
+                             stock: 0,
                              need: self.need,
                              weight: self.weight,
                              order: self.order + 1,
