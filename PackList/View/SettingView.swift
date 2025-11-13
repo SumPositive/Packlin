@@ -287,7 +287,40 @@ struct SettingView: View {
                 }
             }
 
-            let data = try Data(contentsOf: url)
+            // 外部ストレージ上の実体が未ダウンロードでも確実に読み取れるよう、一時ファイルへコピーしてから読み込む
+            let fileManager = FileManager.default
+            let temporaryURL = fileManager.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("packlin")
+            // 読み込み後に一時ファイルを削除してクリーンアップする
+            defer {
+                try? fileManager.removeItem(at: temporaryURL)
+            }
+
+            var coordinatorError: NSError?
+            var copyError: Error?
+            let coordinator = NSFileCoordinator()
+            coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatorError) { readingURL in
+                do {
+                    // 一時ファイルが残っていた場合は削除し、安全にコピーできる状態にする
+                    if fileManager.fileExists(atPath: temporaryURL.path) {
+                        try fileManager.removeItem(at: temporaryURL)
+                    }
+                    // ファイルプロバイダに存在する実体をダウンロードしながら一時ディレクトリへコピーする
+                    try fileManager.copyItem(at: readingURL, to: temporaryURL)
+                } catch {
+                    copyError = error
+                }
+            }
+
+            if let coordinatorError {
+                throw coordinatorError
+            }
+            if let copyError {
+                throw copyError
+            }
+
+            let data = try Data(contentsOf: temporaryURL)
             let decoder = JSONDecoder()
             let dto = try decoder.decode(PackJsonDTO.self, from: data)
 
