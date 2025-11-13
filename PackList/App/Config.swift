@@ -144,7 +144,7 @@ let AI_REQUIREMENT_MAX: Int = 1000     // 要望の最大文字数
 let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")!
 #else
 // 本番 Deploy server
-let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.workers.dev")!
+let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.com")!
 #endif
 /// 消費型クレジットの商品ID群（azuki-api側の環境変数：IAP_PRODUCT_CREDIT_MAP と一致させる）
 /// - Note: 配信地域ごとにIDが異なるため、日本向けとその他地域向けで定数を分けて管理する
@@ -251,21 +251,22 @@ struct AzukiCreditPurchaseOption: Hashable {
     }
 }
 
-/// UIで使い回すための購入オプション定義
+/// 購入オプション定義      productIdは、App Store Connect アプリ内課金の「製品ID」
+///   IDを変更や追加した場合、azuki-api側（.dev.vars と 
 let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
     AzukiCreditPurchaseOption(
-        productIdJapan:  "AiCredit_5_JPY", // 日本：¥50 / +5枚
-        productIdGlobal: "AiCredit_5_USD", // 他地域：$0.49 / +5tickets
+        productIdJapan:  "AiTickets_1_JPY", // 日本：¥50 / +1枚
+        productIdGlobal: "AiTickets_1_USD", // 他地域：$0.49 / +1tickets
         priceYen: 50,
         priceUsd: 0.49,
-        tickets: 5
+        tickets: 1
     ),
     AzukiCreditPurchaseOption(
-        productIdJapan:  "AiCredit_11_JPY", // 日本：¥100 / +11枚
-        productIdGlobal: "AiCredit_11_USD", // 他地域：$0.99 / +11tickets
-        priceYen: 100,
-        priceUsd: 0.99,
-        tickets: 11
+        productIdJapan:  "AiTickets_5_JPY", // 日本：¥150 / +5枚
+        productIdGlobal: "AiTickets_5_USD", // 他地域：$1.49 / +5tickets
+        priceYen: 150,
+        priceUsd: 1.49,
+        tickets: 5
     ),
 ]
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
