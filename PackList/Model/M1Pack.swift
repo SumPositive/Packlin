@@ -204,18 +204,18 @@ private func sparseOrderValue(
 
 /// ドラッグ移動などで連続した範囲に新しい order を割り振る
 func assignSparseOrders<T: SparseOrderable>(
-    items: [T],
+    nodes: [T],
     range: ClosedRange<Int>,
     normalize: () -> Void
 ) {
-    guard !items.isEmpty else { return }
+    guard !nodes.isEmpty else { return }
     let lower = max(range.lowerBound, 0)
-    let upper = min(range.upperBound, items.count - 1)
+    let upper = min(range.upperBound, nodes.count - 1)
     guard lower <= upper else { return }
 
     let count = upper - lower + 1
-    let previousOrder = 0 < lower ? items[lower - 1].order : nil
-    let nextOrder = upper + 1 < items.count ? items[upper + 1].order : nil
+    let previousOrder = 0 < lower ? nodes[lower - 1].order : nil
+    let nextOrder = upper + 1 < nodes.count ? nodes[upper + 1].order : nil
 
     if let previous = previousOrder, let next = nextOrder {
         let gap = next - previous
@@ -229,24 +229,24 @@ func assignSparseOrders<T: SparseOrderable>(
         var current = previous
         for offset in 0..<count {
             current += step
-            items[lower + offset].order = current
+            nodes[lower + offset].order = current
         }
     } else if let previous = previousOrder {
         var current = previous
         for index in lower...upper {
             current += ORDER_SPARSE
-            items[index].order = current
+            nodes[index].order = current
         }
     } else if let next = nextOrder {
         var current = next
         for index in stride(from: upper, through: lower, by: -1) {
             current -= ORDER_SPARSE
-            items[index].order = current
+            nodes[index].order = current
         }
     } else {
         var current = 0
         for index in lower...upper {
-            items[index].order = current
+            nodes[index].order = current
             current += ORDER_SPARSE
         }
     }

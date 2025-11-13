@@ -22,7 +22,7 @@ struct PackListView: View {
     @State private var popupAnchor: CGPoint?
     @State private var isShowSetting: Bool = false
 
-    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
+    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var sortedPacks: [M1Pack]
 
     private let rowHeight: CGFloat = 44
     // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
@@ -32,7 +32,7 @@ struct PackListView: View {
         ZStack {
             List {
                 Section {
-                    ForEach(packs) { pack in
+                    ForEach(sortedPacks) { pack in
                         ZStack {
                             PackRowView(pack: pack) { selected, point in
                                 // Pack行のタップ位置はシートでは使用しないが、今後の拡張に備えて保持
@@ -217,7 +217,7 @@ struct PackListView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        let orderedPacks = Array(packs)
+        let orderedPacks = Array(sortedPacks)
         let insertionIndex: Int = {
             switch insertionPosition {
             case .head:
@@ -259,19 +259,19 @@ struct PackListView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        var items = Array(packs)
-        let movedIDs = Set(source.map { packs[$0].id })
-        items.move(fromOffsets: source, toOffset: destination)
+        var packs = Array(sortedPacks)
+        let movedIDs = Set(source.map { sortedPacks[$0].id })
+        packs.move(fromOffsets: source, toOffset: destination)
 
         var index = 0
-        while index < items.count {
-            if movedIDs.contains(items[index].id) {
+        while index < packs.count {
+            if movedIDs.contains(packs[index].id) {
                 var end = index
-                while end + 1 < items.count, movedIDs.contains(items[end + 1].id) {
+                while end + 1 < packs.count, movedIDs.contains(packs[end + 1].id) {
                     end += 1
                 }
-                assignSparseOrders(items: items, range: index...end) {
-                    normalizeSparseOrders(items)
+                assignSparseOrders(nodes: packs, range: index...end) {
+                    normalizeSparseOrders(packs)
                 }
                 index = end + 1
             } else {

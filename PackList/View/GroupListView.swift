@@ -320,7 +320,7 @@ struct GroupListView: View {
                 while end + 1 < groups.count, movedIDs.contains(groups[end + 1].id) {
                     end += 1
                 }
-                assignSparseOrders(items: groups, range: index...end) {
+                assignSparseOrders(nodes: groups, range: index...end) {
                     // order の再配分だけを行い、pack.child は触れない
                     normalizeSparseOrders(groups)
                 }

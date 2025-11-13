@@ -252,7 +252,7 @@ struct AzukiCreditPurchaseOption: Hashable {
 }
 
 /// 購入オプション定義      productIdは、App Store Connect アプリ内課金の「製品ID」
-///   IDを変更や追加した場合、azuki-api側（.dev.vars と 
+///  IDを変更や追加した場合、azuki-api側の環境変数 IAP_PRODUCT_CREDIT_MAP を更新すること
 let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
     AzukiCreditPurchaseOption(
         productIdJapan:  "AiTickets_1_JPY", // 日本：¥50 / +1枚

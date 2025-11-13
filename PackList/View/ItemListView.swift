@@ -293,7 +293,7 @@ struct ItemListView: View {
                 while end + 1 < items.count, movedIDs.contains(items[end + 1].id) {
                     end += 1
                 }
-                assignSparseOrders(items: items, range: index...end) {
+                assignSparseOrders(nodes: items, range: index...end) {
                     // order の整合性を保つだけで child を並べ替えない
                     normalizeSparseOrders(items)
                 }
