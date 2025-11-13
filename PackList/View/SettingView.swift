@@ -224,7 +224,7 @@ struct SettingView: View {
         }
     }
 
-    /// 共有
+    /// *.packlin 読み込み
     struct ShareView: View {
         @Environment(\.modelContext) private var modelContext
 
@@ -234,7 +234,7 @@ struct SettingView: View {
         @State private var importAlert: ImportAlert?
         
         var body: some View {
-            // 共有 Pack_*.pack を読み込む
+            // 共有 *.packlin を読み込む
             Button(action: {
                 isPresentingImporter = true
                 GALogger.log(.function(name: "settings", option: "tap_import"))

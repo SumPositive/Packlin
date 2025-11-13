@@ -630,16 +630,6 @@
         }
       }
     },
-    "保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        }
-      }
-    },
     "個" : {
       "localizations" : {
         "en" : {
@@ -709,6 +699,9 @@
           }
         }
       }
+    },
+    "共有・保存" : {
+
     },
     "再読み込み" : {
       "localizations" : {

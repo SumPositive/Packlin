@@ -86,7 +86,7 @@ struct PackEditView: View {
                             VStack {
                                 Image(systemName: "square.and.arrow.up")
                                     .imageScale(.large)
-                                Text("保存")
+                                Text("共有・保存")
                                     .font(.caption)
                             }
                         }
@@ -256,7 +256,7 @@ struct PackEditView: View {
         }
     }
     
-    /// Packを.packファイルにして共有(Export)する
+    /// Packを.packlinファイルにして共有(Export)する
     private func exportPack() {
         do {
             cleanupShareResource()
