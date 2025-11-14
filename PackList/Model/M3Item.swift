@@ -51,11 +51,22 @@ final class M3Item {
     func delete() {
         guard let mc = modelContext else {return}
 
-        // 削除後に順序調整できるよう、親グループを退避する
-        let parentGroup = self.parent
+        // 削除後に順序調整できるよう、親グループの識別子を退避する
+        let parentGroupID = self.parent?.persistentModelID
+
         mc.delete(self)
-        // 実際にchild配列から取り除かれた状態でorderを整理する
-        parentGroup?.normalizeItemOrder()
+
+        // 再フェッチしてchild配列から除かれた状態の親グループでorderを整理する
+        if let parentGroupID {
+            let descriptor = FetchDescriptor<M2Group>(
+                predicate: #Predicate { element in
+                    element.persistentModelID == parentGroupID
+                }
+            )
+            if let reloadedParent = try? mc.fetch(descriptor).first {
+                reloadedParent.normalizeItemOrder()
+            }
+        }
     }
 
     /// アイテム複製
