@@ -110,8 +110,16 @@ public extension UndoManager {
 
     /// Redo
     func performRedo() {
-        // 全てのグルーピングを閉じる（閉じずにRedoするとクラッシュ）
+        // 先に全てのグルーピングを閉じ、SwiftDataの内部状態を正常化する
+        // 　※ closeAllUndoGroups() 実行後にcanRedoの結果が変化するケースがあるため、先に必ず呼び出しておく
         closeAllUndoGroups()
+        // グルーピングを閉じる過程でRedoスタックが失われることがあり、redo()呼び出しがクラッシュを引き起こす
+        // 　そのため、改めてcanRedoを確認し、Redo不可能ならUI更新のみ行って処理を終了する
+        guard canRedo else {
+            // Redoができない場合でもUI表示の同期は必要なので通知を出す
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+            return
+        }
         withAnimation {
             redo()
         }
