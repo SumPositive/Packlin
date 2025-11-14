@@ -69,6 +69,7 @@ struct PackListView: View {
             .padding(.horizontal, 0)
             .safeAreaInset(edge: .top) {
                 HStack {
+                    // 設定
                     Button {
                         // Setting
                         popupAnchor = nil // 中央
@@ -82,6 +83,7 @@ struct PackListView: View {
                     .disabled(isShowingEditSheet)
                     .padding(.horizontal, 8)
                     
+                    // Undo
                     Button {
                         canUndo = false
                         modelContext.undoManager?.performUndo()
@@ -96,6 +98,7 @@ struct PackListView: View {
                     Text("app.title")
                     Spacer()
                     
+                    // Redo
                     Button {
                         canRedo = false
                         modelContext.undoManager?.performRedo()
@@ -106,17 +109,25 @@ struct PackListView: View {
                     .disabled(!canRedo || isShowingEditSheet)
                     .padding(.horizontal, 16)
                     
+                    // 新しいパック追加
                     Button {
                         addPack()
                     }
                     label: {
-                        Image(systemName: "cross.case")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            Image(systemName: "plus")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical)
+                                .padding(.top, 4)
+                        }
                     }
                     .disabled(isShowingEditSheet)
                     .padding(.horizontal, 8)
                 }
+                .tint(.primary) // ヘッダ部は.accentColorにしない
                 .frame(height: rowHeight)
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)

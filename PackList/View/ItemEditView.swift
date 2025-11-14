@@ -358,6 +358,7 @@ struct ItemEditView: View {
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigationBarLeading) {
+            // 戻る
             Button {
                 onDismiss()
             } label: {
@@ -365,8 +366,10 @@ struct ItemEditView: View {
                     .imageScale(.large)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .padding(.trailing, 8)
             
+            // Undo
             Button {
                 canUndo = false
                 modelContext.undoManager?.performUndo()
@@ -374,10 +377,12 @@ struct ItemEditView: View {
                 Image(systemName: "arrow.uturn.backward")
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(!canUndo)
         }
         
         ToolbarItemGroup(placement: .navigationBarTrailing) {
+            // Redo
             Button {
                 canRedo = false
                 modelContext.undoManager?.performRedo()
@@ -385,8 +390,8 @@ struct ItemEditView: View {
                 Image(systemName: "arrow.uturn.forward")
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(!canRedo)
-            //.padding(.trailing, 8)
         }
     }
 

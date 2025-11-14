@@ -136,6 +136,7 @@ struct ItemListView: View {
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigationBarLeading) {
+            // 戻る
             Button(action: {
                 dismiss()
                 // GroupListView.onAppearで.save()が呼ばれる
@@ -147,6 +148,7 @@ struct ItemListView: View {
                     //Text("Group")
                 }
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .padding(.trailing, 8)
             .disabled(isShowingPopup)
 
@@ -158,14 +160,11 @@ struct ItemListView: View {
                 Image(systemName: "arrow.uturn.backward")
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(!canUndo || isShowingPopup)
         }
 
         ToolbarItemGroup(placement: .navigationBarTrailing) {
-            //EditButton()
-            //    .disabled(isShowingPopup)
-            //    .padding(.trailing, 8)
-
             // Redo
             Button {
                 canRedo = false
@@ -174,14 +173,17 @@ struct ItemListView: View {
                 Image(systemName: "arrow.uturn.forward")
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(!canRedo || isShowingPopup)
             .padding(.trailing, 8)
-            // アイテム追加ボタン
+            
+            // 新しいアイテム追加ボタン
             Button(action: addItem) {
                 Image(systemName: "plus.circle")
                     .imageScale(.large)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
+            .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(isShowingPopup)
         }
     }
