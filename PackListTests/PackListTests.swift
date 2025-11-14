@@ -6,6 +6,7 @@
 //
 
 import Testing
+import SwiftData
 @testable import PackList
 
 struct PackListTests {
@@ -51,4 +52,64 @@ struct PackListTests {
         }
     }
 
+    @Test("PackImporter.insertPack は order が衝突しても JSON 順を維持する")
+    @MainActor
+    func insertPackPreservesJsonOrderOnDuplicateOrders() throws {
+        // In-MemoryのSwiftDataコンテナを用意し、JSON読み込み時の挙動を再現する
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: M1Pack.self, M2Group.self, M3Item.self, configurations: configuration)
+        let context = container.mainContext
+
+        // orderが同値なグループとアイテムをあえて用意し、並びがJSON順になることを検証する
+        let dto = PackJsonDTO(
+            productName: "Test",
+            copyright: "Test",
+            version: "1",
+            id: nil,
+            order: nil,
+            name: "Sample",
+            memo: "",
+            createdAt: Date(),
+            groups: [
+                .init(
+                    id: nil,
+                    order: 100,
+                    name: "GroupA",
+                    memo: "",
+                    items: [
+                        .init(id: nil, order: 50, name: "ItemA1", memo: "", check: false, stock: nil, need: 1, weight: 0),
+                        .init(id: nil, order: 50, name: "ItemA2", memo: "", check: false, stock: nil, need: 1, weight: 0)
+                    ]
+                ),
+                .init(
+                    id: nil,
+                    order: 100,
+                    name: "GroupB",
+                    memo: "",
+                    items: [
+                        .init(id: nil, order: 0, name: "ItemB1", memo: "", check: false, stock: nil, need: 1, weight: 0)
+                    ]
+                ),
+                .init(
+                    id: nil,
+                    order: 100,
+                    name: "GroupC",
+                    memo: "",
+                    items: [
+                        .init(id: nil, order: nil, name: "ItemC1", memo: "", check: false, stock: nil, need: 1, weight: 0)
+                    ]
+                )
+            ]
+        )
+
+        let pack = PackImporter.insertPack(from: dto, into: context, order: 0)
+
+        // order採番後でもJSON順が保たれているかチェックする
+        let groupNames = pack.child.sorted { $0.order < $1.order }.map { $0.name }
+        #expect(groupNames == ["GroupA", "GroupB", "GroupC"])
+
+        let firstGroupItems = pack.child.first?.child.sorted { $0.order < $1.order }.map { $0.name } ?? []
+        #expect(firstGroupItems == ["ItemA1", "ItemA2"])
+    }
 }
+
