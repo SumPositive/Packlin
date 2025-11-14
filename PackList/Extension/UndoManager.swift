@@ -13,30 +13,31 @@ import SwiftUI
 /// 　自動イベントグルーピング有効：undoManager.groupsByEvent = false (default)
 public extension UndoManager {
 
-    /// 独自グルーピング・カウンタ
-    ///　　自動イベントグルーピングに干渉しないように独自にカウントする必要がある
+    /// 独自グルーピングを開始した時点のgroupingLevelを積み上げるスタック
+    /// 　SwiftData内部でネストされたUndoグループが追加されるケースがあるため、
+    /// 　終了時は「開始時のレベルまで確実に戻す」必要がある。
     private struct AssociatedKeys {
-        static var manualGroupingCount: UInt8 = 0
+        static var manualGroupingStack: UInt8 = 0
     }
-    /// 　extensionでは、単純なインスタンス変数として保持できないため、
-    /// 　Objective-C の objc_getAssociatedObject を利用して保持させる
-    private var manualGroupingCount: Int {
+    /// 　extensionでは単純なインスタンス変数を保持できないため、Objective-Cランタイムを利用して配列を保持する
+    private var manualGroupingStack: [Int] {
         get {
-            (objc_getAssociatedObject(self, &AssociatedKeys.manualGroupingCount) as? NSNumber)?.intValue ?? 0
+            (objc_getAssociatedObject(self, &AssociatedKeys.manualGroupingStack) as? [Int]) ?? []
         }
         set {
-            let value = max(newValue, 0)
             objc_setAssociatedObject(self,
-                                     &AssociatedKeys.manualGroupingCount,
-                                     NSNumber(value: value),
+                                     &AssociatedKeys.manualGroupingStack,
+                                     newValue,
                                      .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
 
     /// Undo grouping BEGIN
     func groupingBegin() {
-        // 独自グルーピング・カウンタ+1
-        manualGroupingCount += 1
+        // 現在のgroupingLevelをスタックに積む（これ以降にネストが増えても終了時に巻き戻せる）
+        var stack = manualGroupingStack
+        stack.append(groupingLevel)
+        manualGroupingStack = stack
         beginUndoGrouping()
         // 各画面にあるUndo/Redoアイコンを更新する
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
@@ -44,39 +45,31 @@ public extension UndoManager {
 
     /// Undo grouping END
     func groupingEnd() {
-        guard 0 < manualGroupingCount else {
-            // groupingLevelに残りがある場合、それは自動イベントグルーピングであるから閉じない
+        // スタックから開始時のgroupingLevelを取り出す。無ければ独自Beginは未実行。
+        var stack = manualGroupingStack
+        guard let baselineLevel = stack.popLast() else {
             // 各画面にあるUndo/Redoアイコンを更新する
             NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
             return
         }
-        // 独自グルーピング・カウンタ-1
-        manualGroupingCount -= 1
-        // End
-        if 0 < groupingLevel {
-            // 独自グルーピングだけを閉じる
-            endUndoGrouping()
-        }
+        manualGroupingStack = stack
+        // Begin時点までgroupingLevelを巻き戻す。SwiftData側でネストされたグループが生成される場合があるため、
+        // whileループで安全に閉じていく。
+        closeUndoGroups(until: baselineLevel)
         // 各画面にあるUndo/Redoアイコンを更新する
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 
     /// 全てのグルーピングを閉じる
     func closeAllUndoGroups() {
-        guard 0 < manualGroupingCount else {
-            // 独自グルーピング・カウ・クリア
-            manualGroupingCount = 0
-            // groupingLevelに残りがある場合、それは自動イベントグルーピングであるから閉じない
-            return
+        // スタックに積まれている分だけ順番に巻き戻す
+        var stack = manualGroupingStack
+        while let baselineLevel = stack.popLast() {
+            closeUndoGroups(until: baselineLevel)
         }
-        while 0 < groupingLevel && 0 < manualGroupingCount {
-            // 独自グルーピング・カウンタ-1
-            manualGroupingCount -= 1
-            // 独自グルーピングだけを閉じる
-            endUndoGrouping()
-        }
-        // 独自グルーピング・カウ・クリア
-        manualGroupingCount = 0
+        manualGroupingStack = []
+        // 念のため、内部に残ってしまったグループがあればすべて閉じて整合性を保つ
+        closeUndoGroups(until: 0)
     }
 
     /// Undo
@@ -100,5 +93,24 @@ public extension UndoManager {
         // 各画面にあるUndo/Redoアイコンを更新する
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
-    
+
+}
+
+private extension UndoManager {
+    /// groupingLevel が targetLevel 以下になるまで endUndoGrouping() を繰り返す
+    /// 　targetLevel は groupingBegin() 呼び出し前の状態を示す。
+    func closeUndoGroups(until targetLevel: Int) {
+        guard groupingLevel > targetLevel else {
+            return
+        }
+        var previousLevel = groupingLevel
+        while groupingLevel > targetLevel {
+            endUndoGrouping()
+            // 想定外の理由でlevelが変化しない場合は無限ループを避ける
+            if groupingLevel == previousLevel {
+                break
+            }
+            previousLevel = groupingLevel
+        }
+    }
 }
