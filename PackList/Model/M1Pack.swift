@@ -82,12 +82,6 @@ final class M1Pack {
     /// 現在のPackを削除する
     func delete() {
         guard let mc = modelContext else {return}
-        // Undo grouping BEGIN
-        mc.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            mc.undoManager?.groupingEnd()
-        }
         // groupとその配下を削除
         for group in self.child {
             group.delete()
@@ -104,12 +98,6 @@ final class M1Pack {
     /// 現在のPackを複製して現在行下に追加する
     func duplicate() {
         guard let mc = modelContext else {return}
-        // Undo grouping BEGIN
-        mc.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            mc.undoManager?.groupingEnd()
-        }
         // createdAtは現在時刻とし、シート表示からの複製でもID重複や順序入れ替わりを避ける
         let newPack = M1Pack(name: self.name,
                              memo: self.memo,
