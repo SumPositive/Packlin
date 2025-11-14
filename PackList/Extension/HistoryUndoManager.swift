@@ -24,6 +24,8 @@ final class HistoryUndoManager: UndoManager {
 
     override func beginUndoGrouping() {
         guard let history else { return }
+        // 親クラスの状態も同期しておかないとUndoスタックの階層管理が破綻するため、必ずsuperを呼び出す
+        super.beginUndoGrouping()
         // begin が呼ばれたタイミングでスナップショットを保存する
         history.beginTransaction(context: context)
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
@@ -31,6 +33,8 @@ final class HistoryUndoManager: UndoManager {
 
     override func endUndoGrouping() {
         guard let history else { return }
+        // beginでsuperを呼んだ場合はendでも対応するsuper呼び出しを行わないと整合性が崩れる
+        super.endUndoGrouping()
         // end では差分があれば履歴スタックへ積む
         history.commitTransaction(context: context)
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
@@ -61,6 +65,8 @@ final class HistoryUndoManager: UndoManager {
     override func removeAllActions() {
         // SwiftUIの各画面と連携してボタン状態をリセットする
         history?.reset()
+        // 履歴サービス側で状態をクリアしてもUndoManager本体のスタックが残っていると再度クラッシュするためsuperも呼ぶ
+        super.removeAllActions()
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 }
