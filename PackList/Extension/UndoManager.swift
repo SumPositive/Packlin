@@ -156,7 +156,7 @@ private extension UndoManager {
     /// - Parameter snapshot: groupingBegin() 時に記録した情報
     /// - Returns: 正常に閉じられた場合はtrue
     @discardableResult
-    func closeManualUndoGroup(using snapshot: UndoManager.ManualGroupingSnapshot) -> Bool {
+    private func closeManualUndoGroup(using snapshot: UndoManager.ManualGroupingSnapshot) -> Bool {
         guard snapshot.manualLevel <= groupingLevel else {
             // 既に閉じられているとみなし成功扱いにする
             return true
