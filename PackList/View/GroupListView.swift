@@ -13,7 +13,7 @@ struct GroupListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var history: HistoryService
+    @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true

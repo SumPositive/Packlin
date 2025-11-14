@@ -12,7 +12,7 @@ import UIKit
 
 struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var history: HistoryService
+    @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true

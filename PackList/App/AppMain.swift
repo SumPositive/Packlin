@@ -24,7 +24,7 @@ struct AppMain: App {
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
     /// Undo/Redo を自前で管理する履歴サービス
-    @StateObject private var historyService = HistoryService()
+    @StateObject private var historyService = UndoStackService()
 
 //    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
 //    private let isFirebaseEnabled: Bool
@@ -92,10 +92,10 @@ struct AppMain: App {
             .onAppear {
                 // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる
                 let context = sharedModelContainer.mainContext
-                if let existing = context.undoManager as? HistoryUndoManager {
+                if let existing = context.undoManager as? UndoStackManager {
                     existing.history = historyService
                 } else {
-                    context.undoManager = HistoryUndoManager(context: context, history: historyService)
+                    context.undoManager = UndoStackManager(context: context, history: historyService)
                 }
             }
         }

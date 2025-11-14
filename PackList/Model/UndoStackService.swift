@@ -1,12 +1,12 @@
 //
-//  HistoryService.swift
+//  UndoStackService.swift
 //  PackList
 //
 //  Created by sumpo on 2025/11/14.
 //
 //  SwiftDataのUndoは不透明・不安定であるため利用せず、自前の履歴レイヤを構築することにした
-//  - HistoryServiceでパック全体のスナップショットを更新前後で保持し、履歴スタックと UI 更新通知を統合管理する
-//  - SwiftDataのUndoManagerを差し替えるためHistoryUndoManagerを用意し、AppMainから履歴サービスを環境へ注入
+//  - UndoStackServiceでパック全体のスナップショットを更新前後で保持し、履歴スタックと UI 更新通知を統合管理する
+//  - SwiftDataのUndoManagerを差し替えるためUndoStackManagerを用意し、AppMainから履歴サービスを環境へ注入
 //  - 最大スタック件数を指定し、Undo/Redoや新規履歴追加のたびにスタック上限を超過した古いレコードを切り捨て履歴の肥大化を抑えるようにした
 //
 
@@ -15,7 +15,7 @@ import SwiftData
 import SwiftUI
 
 @MainActor
-final class HistoryService: ObservableObject {
+final class UndoStackService: ObservableObject {
     // ユーザー操作前後の状態を完全に保持するためのスナップショット構造体
     struct Snapshot: Equatable {
         struct Pack: Equatable {
@@ -66,7 +66,7 @@ final class HistoryService: ObservableObject {
     private var transactionBefore: Snapshot?
     private var isRestoring: Bool = false
 
-    init(maxStackSize: Int = 100) { // 最大スタック件数を指定する
+    init(maxStackSize: Int = 10) { // 最大スタック件数を指定する
         // 1件未満だと履歴が成立しないため、必ず1件以上にする
         if maxStackSize < 1 {
             self.maxStackSize = 1

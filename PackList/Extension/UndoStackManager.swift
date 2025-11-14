@@ -1,22 +1,22 @@
 //
-//  HistoryUndoManager.swift
+//  UndoStackManager.swift
 //  PackList
 //
 //  Created by sumpo on 2025/11/14.
 //
 //  SwiftDataのUndoは不透明・不安定であるため利用せず、自前の履歴レイヤを構築することにした
-//  - SwiftDataのUndoManagerを差し替えるためHistoryUndoManagerを用意し、AppMainから履歴サービスを環境へ注入
+//  - SwiftDataのUndoManagerを差し替えるためUndoStackManagerを用意し、AppMainから履歴サービスを環境へ注入
 //
 
 import Foundation
 import SwiftData
 
-final class HistoryUndoManager: UndoManager {
+final class UndoStackManager: UndoManager {
     // SwiftData の ModelContext と履歴サービスを橋渡しするためのクラス
     private unowned let context: ModelContext
-    weak var history: HistoryService?
+    weak var history: UndoStackService?
 
-    init(context: ModelContext, history: HistoryService) {
+    init(context: ModelContext, history: UndoStackService) {
         self.context = context
         self.history = history
         super.init()
