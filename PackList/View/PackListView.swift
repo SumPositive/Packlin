@@ -88,6 +88,7 @@ struct PackListView: View {
                         history.undo(context: modelContext)
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.small)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!history.canUndo || isShowingEditSheet)
@@ -103,6 +104,7 @@ struct PackListView: View {
                         history.redo(context: modelContext)
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.small)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
                     .disabled(!history.canRedo || isShowingEditSheet)

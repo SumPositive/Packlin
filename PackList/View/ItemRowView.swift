@@ -45,7 +45,7 @@ struct ItemRowView: View {
         HStack(spacing: 0) {
             // グループ縦線
             Rectangle()
-                .fill(COLOR_ROW_GROUP)
+                .fill(.clear)
                 .frame(width: 12)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)

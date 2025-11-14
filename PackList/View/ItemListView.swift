@@ -158,6 +158,7 @@ struct ItemListView: View {
                 modelContext.undoManager?.performUndo()
             } label: {
                 Image(systemName: "arrow.uturn.backward")
+                    .imageScale(.small)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .tint(.primary) // ヘッダ部は.accentColorにしない
@@ -171,6 +172,7 @@ struct ItemListView: View {
                 modelContext.undoManager?.performRedo()
             } label: {
                 Image(systemName: "arrow.uturn.forward")
+                    .imageScale(.small)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .tint(.primary) // ヘッダ部は.accentColorにしない

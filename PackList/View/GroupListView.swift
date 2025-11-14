@@ -170,7 +170,7 @@ struct GroupListView: View {
     
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigationBarLeading) {
+        ToolbarItemGroup(placement: .topBarLeading) {
             // 戻る
             Button {
                 dismiss()
@@ -182,32 +182,35 @@ struct GroupListView: View {
             .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(isShowingPopup)
             .padding(.trailing, 8)
-            
+
             // Undo
             Button {
                 // 履歴サービスを介して一括で巻き戻す
                 history.undo(context: modelContext)
             } label: {
                 Image(systemName: "arrow.uturn.backward")
+                    .imageScale(.small)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(!history.canUndo || isShowingPopup)
         }
 
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
+        ToolbarItemGroup(placement: .topBarTrailing) {
             // Redo
             Button {
                 // Undoで戻した内容を再適用する
                 history.redo(context: modelContext)
             } label: {
                 Image(systemName: "arrow.uturn.forward")
+                    .imageScale(.small)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .tint(.primary) // ヘッダ部は.accentColorにしない
             .disabled(!history.canRedo || isShowingPopup)
             .padding(.trailing, 8)
-            
+        }
+        ToolbarItemGroup(placement: .topBarTrailing) {
             // 新しいグループ追加
             Button(action: addGroup) {
                 Image(systemName: "plus.square")
