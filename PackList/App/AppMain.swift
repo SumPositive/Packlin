@@ -89,19 +89,20 @@ struct AppMain: App {
                         }
                     }
             }
+            .onAppear {
+                // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる。SceneではonAppearが使えないため、
+                // WindowGroup配下のNavigationStackで初期化処理を行う。
+                let context = sharedModelContainer.mainContext
+                if let existing = context.undoManager as? HistoryUndoManager {
+                    existing.history = historyService
+                } else {
+                    context.undoManager = HistoryUndoManager(context: context, history: historyService)
+                }
+            }
         }
         .modelContainer(sharedModelContainer)
         .environmentObject(creditStore)
         .environmentObject(historyService)
-        .onAppear {
-            // ModelContext に履歴ベースのUndoManagerを差し込む
-            let context = sharedModelContainer.mainContext
-            if let existing = context.undoManager as? HistoryUndoManager {
-                existing.history = historyService
-            } else {
-                context.undoManager = HistoryUndoManager(context: context, history: historyService)
-            }
-        }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .background else { return }
             // バックグラウンドへ遷移するタイミングでのみ保存処理を試みる
