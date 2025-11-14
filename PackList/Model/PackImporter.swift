@@ -23,6 +23,10 @@ struct PackImporter {
         let groups = dto.groups.enumerated().sorted { left, right in
             let leftOrder = left.element.order ?? left.offset * ORDER_SPARSE
             let rightOrder = right.element.order ?? right.offset * ORDER_SPARSE
+            if leftOrder == rightOrder {
+                // 同一orderが付与されているとsorted(by:)は安定ではないので、元の並び順(index)で優先順位を決める
+                return left.offset < right.offset
+            }
             return leftOrder < rightOrder
         }.map { $0.element }
 
@@ -39,6 +43,10 @@ struct PackImporter {
             let items = groupDTO.items.enumerated().sorted { left, right in
                 let leftOrder = left.element.order ?? left.offset * ORDER_SPARSE
                 let rightOrder = right.element.order ?? right.offset * ORDER_SPARSE
+                if leftOrder == rightOrder {
+                    // JSONの順番を信用して復元するため、orderが同値なら入力順(index)を優先する
+                    return left.offset < right.offset
+                }
                 return leftOrder < rightOrder
             }.map { $0.element }
 
@@ -79,6 +87,10 @@ struct PackImporter {
         let groups = dto.groups.enumerated().sorted { left, right in
             let leftOrder = left.element.order ?? left.offset * ORDER_SPARSE
             let rightOrder = right.element.order ?? right.offset * ORDER_SPARSE
+            if leftOrder == rightOrder {
+                // 上書き時も入力JSONの順番を崩さないよう、indexでタイブレークする
+                return left.offset < right.offset
+            }
             return leftOrder < rightOrder
         }.map { $0.element }
 
@@ -95,6 +107,10 @@ struct PackImporter {
             let items = groupDTO.items.enumerated().sorted { left, right in
                 let leftOrder = left.element.order ?? left.offset * ORDER_SPARSE
                 let rightOrder = right.element.order ?? right.offset * ORDER_SPARSE
+                if leftOrder == rightOrder {
+                    // タイブレークでindexを採用し、エクスポート時の並びをそのまま復元する
+                    return left.offset < right.offset
+                }
                 return leftOrder < rightOrder
             }.map { $0.element }
 
