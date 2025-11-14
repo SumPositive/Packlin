@@ -1159,19 +1159,15 @@
         }
       }
     },
-    "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。ただし、結果の正しさは保証できませんので参考にしながら修正してお使いください。AI利用券1枚で1回の送信が可能です。" : {
-      "extractionState" : "stale",
+    "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。要望に沿った叩き台を手早く作ってくれる感じです。参考にして修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tell Chappy what you need and tap \"Send\" to have a pack made or updated. Please double-check the result before using it. Each AI ticket covers one request."
+            "value" : "Type your request and hit “Send” — Chappy will help you make or edit a pack! You’ll get a quick draft based on your idea, so feel free to tweak and have fun with it. One AI ticket lets you send one request."
           }
         }
       }
-    },
-    "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。要望に沿った叩き台を手早く作ってくれる感じです。参考にして修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。" : {
-
     },
     "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください。\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
       "localizations" : {
