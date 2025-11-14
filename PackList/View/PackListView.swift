@@ -12,12 +12,11 @@ import UIKit
 
 struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var history: HistoryService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
-    @State private var canUndo = false
-    @State private var canRedo = false
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
     @State private var isShowSetting: Bool = false
@@ -85,13 +84,13 @@ struct PackListView: View {
                     
                     // Undo
                     Button {
-                        canUndo = false
-                        modelContext.undoManager?.performUndo()
+                        // 履歴サービスへ委譲して巻き戻す
+                        history.undo(context: modelContext)
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
-                    .disabled(!canUndo || isShowingEditSheet)
+                    .disabled(!history.canUndo || isShowingEditSheet)
                     .padding(.horizontal, 16)
 
                     Spacer()
@@ -100,13 +99,13 @@ struct PackListView: View {
                     
                     // Redo
                     Button {
-                        canRedo = false
-                        modelContext.undoManager?.performRedo()
+                        // 履歴サービスを用いて直前のUndoをやり直す
+                        history.redo(context: modelContext)
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
-                    .disabled(!canRedo || isShowingEditSheet)
+                    .disabled(!history.canRedo || isShowingEditSheet)
                     .padding(.horizontal, 16)
                     
                     // 新しいパック追加
@@ -132,13 +131,6 @@ struct PackListView: View {
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }
-            .onAppear {
-                updateUndoRedo()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                updateUndoRedo()
-            }
-
         }
         // Pack編集はポップアップからシート表示へ移行
         .sheet(item: $editingPack) { pack in
@@ -210,83 +202,64 @@ struct PackListView: View {
         }
     }
 
-    private func updateUndoRedo() {
-        if let um = modelContext.undoManager {
-            canUndo = um.canUndo && modelContext.hasChanges // && 編集なければ非活性
-            canRedo = um.canRedo
-        } else {
-            canUndo = false
-            canRedo = false
-        }
-    }
-
     private func addPack() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
+        // 履歴サービスを利用して新規作成を1アクションとして記録する
+        history.perform(context: modelContext) {
+            let orderedPacks = Array(sortedPacks)
+            let insertionIndex: Int = {
+                switch insertionPosition {
+                case .head:
+                    return 0
+                case .tail:
+                    return orderedPacks.count
+                }
+            }()
 
-        let orderedPacks = Array(sortedPacks)
-        let insertionIndex: Int = {
-            switch insertionPosition {
-            case .head:
-                return 0
-            case .tail:
-                return orderedPacks.count
+            let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
+                normalizeSparseOrders(orderedPacks)
             }
-        }()
 
-        let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
-            normalizeSparseOrders(orderedPacks)
+            let newPack = M1Pack(name: "", order: newOrder)
+            modelContext.insert(newPack)
+
+            // 新規モチメモ作成時に初期グループとアイテムを1つずつ追加する
+            let initialGroup = M2Group(name: "", order: 0, parent: newPack)
+            modelContext.insert(initialGroup)
+            newPack.child.append(initialGroup)
+
+            let initialItem = M3Item(name: "", order: 0, parent: initialGroup)
+            modelContext.insert(initialItem)
+            initialGroup.child.append(initialItem)
+
+            // 追加直後に編集ポップアップを開き、すぐに名前を入力してもらう
+            editingPack = newPack
+            popupAnchor = nil
         }
 
-        let newPack = M1Pack(name: "", order: newOrder)
-        modelContext.insert(newPack)
-
-        // 新規モチメモ作成時に初期グループとアイテムを1つずつ追加する
-        let initialGroup = M2Group(name: "", order: 0, parent: newPack)
-        modelContext.insert(initialGroup)
-        newPack.child.append(initialGroup)
-
-        let initialItem = M3Item(name: "", order: 0, parent: initialGroup)
-        modelContext.insert(initialItem)
-        initialGroup.child.append(initialItem)
-
-        // 追加直後に編集ポップアップを開き、すぐに名前を入力してもらう
-        editingPack = newPack
-        popupAnchor = nil
-
-        NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 
     /// Drag-Drop-Move
     private func movePack(from source: IndexSet, to destination: Int) {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
+        // 並べ替えも1アクションにまとめる
+        history.perform(context: modelContext) {
+            var packs = Array(sortedPacks)
+            let movedIDs = Set(source.map { sortedPacks[$0].id })
+            packs.move(fromOffsets: source, toOffset: destination)
 
-        var packs = Array(sortedPacks)
-        let movedIDs = Set(source.map { sortedPacks[$0].id })
-        packs.move(fromOffsets: source, toOffset: destination)
-
-        var index = 0
-        while index < packs.count {
-            if movedIDs.contains(packs[index].id) {
-                var end = index
-                while end + 1 < packs.count, movedIDs.contains(packs[end + 1].id) {
-                    end += 1
+            var index = 0
+            while index < packs.count {
+                if movedIDs.contains(packs[index].id) {
+                    var end = index
+                    while end + 1 < packs.count, movedIDs.contains(packs[end + 1].id) {
+                        end += 1
+                    }
+                    assignSparseOrders(nodes: packs, range: index...end) {
+                        normalizeSparseOrders(packs)
+                    }
+                    index = end + 1
+                } else {
+                    index += 1
                 }
-                assignSparseOrders(nodes: packs, range: index...end) {
-                    normalizeSparseOrders(packs)
-                }
-                index = end + 1
-            } else {
-                index += 1
             }
         }
     }

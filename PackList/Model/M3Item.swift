@@ -50,13 +50,7 @@ final class M3Item {
     /// アイテム削除
     func delete() {
         guard let mc = modelContext else {return}
-        // Undo grouping BEGIN
-        mc.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            mc.undoManager?.groupingEnd()
-        }
-        
+
         // 削除後に順序調整できるよう、親グループを退避する
         let parentGroup = self.parent
         mc.delete(self)
@@ -67,12 +61,6 @@ final class M3Item {
     /// アイテム複製
     func duplicate() {
         guard let mc = modelContext else {return}
-        // Undo grouping BEGIN
-        mc.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            mc.undoManager?.groupingEnd()
-        }
         guard let parent = self.parent else { return }
         let newItem = M3Item(name: self.name,
                              memo: self.memo,

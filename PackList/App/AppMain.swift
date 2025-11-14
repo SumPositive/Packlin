@@ -23,6 +23,8 @@ struct AppMain: App {
     @State private var navigationPath = NavigationPath()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
+    /// Undo/Redo を自前で管理する履歴サービス
+    @StateObject private var historyService = HistoryService()
 
 //    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
 //    private let isFirebaseEnabled: Bool
@@ -39,10 +41,6 @@ struct AppMain: App {
                                                     isStoredInMemoryOnly: false)
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
-            // Undo/Redo のために UndoManager を設定
-            let undoManager = UndoManager()
-            undoManager.groupsByEvent = false // 自動イベントグルーピングを無効化する。独自にBegin/Endするため
-            container.mainContext.undoManager = undoManager
             return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
@@ -94,24 +92,29 @@ struct AppMain: App {
         }
         .modelContainer(sharedModelContainer)
         .environmentObject(creditStore)
-        .onChange(of: scenePhase) { oldPhase, newPhase in
-            guard oldPhase == .inactive, newPhase == .background else { return }
-            // バックになる前
+        .environmentObject(historyService)
+        .onAppear {
+            // ModelContext に履歴ベースのUndoManagerを差し込む
             let context = sharedModelContainer.mainContext
-            //if context.hasChanges {
-                do {
-                    // 変更があればDB保存
+            if let existing = context.undoManager as? HistoryUndoManager {
+                existing.history = historyService
+            } else {
+                context.undoManager = HistoryUndoManager(context: context, history: historyService)
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .background else { return }
+            // バックグラウンドへ遷移するタイミングでのみ保存処理を試みる
+            let context = sharedModelContainer.mainContext
+            do {
+                // アプリ終了に備えて未保存の差分を反映しておく
+                if context.hasChanges {
                     try context.save()
-                    // Undoクリア
-                    context.undoManager?.closeAllUndoGroups()
-                    context.undoManager?.removeAllActions()
-                    // Undo/Redoボタン更新
-                    NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
                 }
-                catch {
-                    debugPrint("Failed to context.save: \(error)")
-                }
-            //}
+            }
+            catch {
+                debugPrint("Failed to context.save: \(error)")
+            }
         }
 
     }

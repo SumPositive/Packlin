@@ -13,12 +13,11 @@ struct GroupListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var history: HistoryService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
 
-    @State private var canUndo = false
-    @State private var canRedo = false
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
@@ -134,13 +133,6 @@ struct GroupListView: View {
             .toolbar {
                 navigationToolbar
             }
-            .onAppear {
-                updateUndoRedo()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
-                updateUndoRedo()
-            }
-
         }
         .contentShape(Rectangle())
         .simultaneousGesture(
@@ -193,27 +185,27 @@ struct GroupListView: View {
             
             // Undo
             Button {
-                canUndo = false
-                modelContext.undoManager?.performUndo()
+                // 履歴サービスを介して一括で巻き戻す
+                history.undo(context: modelContext)
             } label: {
                 Image(systemName: "arrow.uturn.backward")
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!canUndo || isShowingPopup)
+            .disabled(!history.canUndo || isShowingPopup)
         }
 
         ToolbarItemGroup(placement: .navigationBarTrailing) {
             // Redo
             Button {
-                canRedo = false
-                modelContext.undoManager?.performRedo()
+                // Undoで戻した内容を再適用する
+                history.redo(context: modelContext)
             } label: {
                 Image(systemName: "arrow.uturn.forward")
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
             }
             .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!canRedo || isShowingPopup)
+            .disabled(!history.canRedo || isShowingPopup)
             .padding(.trailing, 8)
             
             // 新しいグループ追加
@@ -271,74 +263,56 @@ struct GroupListView: View {
         }
     }
 
-
-    private func updateUndoRedo() {
-        if let um = modelContext.undoManager {
-            canUndo = um.canUndo && modelContext.hasChanges // && 編集なければ非活性
-            canRedo = um.canRedo
-        } else {
-            canUndo = false
-            canRedo = false
-        }
-    }
-
     private func addGroup() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        let orderedGroups = sortedGroups
-        let insertionIndex: Int = {
-            switch insertionPosition {
-            case .head:
-                return 0
-            case .tail:
-                return orderedGroups.count
+        // 新しいグループ追加を1操作として履歴化する
+        history.perform(context: modelContext) {
+            let orderedGroups = sortedGroups
+            let insertionIndex: Int = {
+                switch insertionPosition {
+                case .head:
+                    return 0
+                case .tail:
+                    return orderedGroups.count
+                }
+            }()
+
+            let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertionIndex) {
+                // order だけを整理して child 配列には手を出さない
+                normalizeSparseOrders(orderedGroups)
             }
-        }()
 
-        let newOrder = sparseOrderForInsertion(items: orderedGroups, index: insertionIndex) {
-            // order だけを整理して child 配列には手を出さない
-            normalizeSparseOrders(orderedGroups)
+            let newGroup = M2Group(name: "", order: newOrder, parent: pack)
+            modelContext.insert(newGroup)
+            // child 配列はそのまま。表示時に order ソートされる
         }
-
-        let newGroup = M2Group(name: "", order: newOrder, parent: pack)
-        modelContext.insert(newGroup)
-        // child 配列はそのまま。表示時に order ソートされる
     }
 
     /// Drag-Drop-Move
     private func moveGroup(from source: IndexSet, to destination: Int) {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
+        // 並べ替え操作もまとめて記録する
+        history.perform(context: modelContext) {
+            var groups = sortedGroups
+            let movedIDs = Set(source.map { sortedGroups[$0].id })
+            groups.move(fromOffsets: source, toOffset: destination)
 
-        var groups = sortedGroups
-        let movedIDs = Set(source.map { sortedGroups[$0].id })
-        groups.move(fromOffsets: source, toOffset: destination)
-
-        var index = 0
-        while index < groups.count {
-            if movedIDs.contains(groups[index].id) {
-                var end = index
-                while end + 1 < groups.count, movedIDs.contains(groups[end + 1].id) {
-                    end += 1
+            var index = 0
+            while index < groups.count {
+                if movedIDs.contains(groups[index].id) {
+                    var end = index
+                    while end + 1 < groups.count, movedIDs.contains(groups[end + 1].id) {
+                        end += 1
+                    }
+                    assignSparseOrders(nodes: groups, range: index...end) {
+                        // order の再配分だけを行い、pack.child は触れない
+                        normalizeSparseOrders(groups)
+                    }
+                    index = end + 1
+                } else {
+                    index += 1
                 }
-                assignSparseOrders(nodes: groups, range: index...end) {
-                    // order の再配分だけを行い、pack.child は触れない
-                    normalizeSparseOrders(groups)
-                }
-                index = end + 1
-            } else {
-                index += 1
             }
+            // order を更新したので、List では order に基づいて並び替えられる
         }
-        // order を更新したので、List では order に基づいて並び替えられる
     }
 }
 

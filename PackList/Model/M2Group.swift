@@ -65,12 +65,6 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     /// 現在のGroupを削除する
     func delete() {
         guard let mc = modelContext else {return}
-        // Undo grouping BEGIN
-        mc.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            mc.undoManager?.groupingEnd()
-        }
         // 親Packは削除後に順序調整するため、ここで一度退避しておく
         let parentPack = self.parent
         // groupの配下を削除
@@ -86,12 +80,6 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     /// 現在のGroupを複製して現在行下に追加する
     func duplicate() {
         guard let mc = modelContext else {return}
-        // Undo grouping BEGIN
-        mc.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            mc.undoManager?.groupingEnd()
-        }
         guard let parent = self.parent else { return }
         // Groupを生成して追加する
         let newGroup = M2Group(name: self.name,
