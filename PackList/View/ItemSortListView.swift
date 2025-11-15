@@ -53,6 +53,8 @@ struct ItemSortListView: View {
 
     private var isShowingPopup: Bool { editingItem != nil }
 
+    private let headerHeight: CGFloat = 44
+
     var body: some View {
         ZStack {
             VStack {
@@ -107,8 +109,55 @@ struct ItemSortListView: View {
             }
             .navigationTitle(sortOption.title)
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                navigationToolbar
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top) {
+                // 並べ替え画面用のカスタムヘッダー
+                HStack(spacing: 0) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.backward")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    Button {
+                        canUndo = false
+                        modelContext.undoManager?.performUndo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canUndo || isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    Spacer(minLength: 0)
+
+                    Text(sortOption.title)
+                        .font(.headline)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    Button {
+                        canRedo = false
+                        modelContext.undoManager?.performRedo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canRedo || isShowingPopup)
+                    .padding(.horizontal, 12)
+                }
+                .tint(.primary)
+                .frame(height: headerHeight)
+                .padding(.horizontal, 4)
+                .background(.thinMaterial)
             }
             .onAppear {
                 updateUndoRedo()
@@ -143,13 +192,13 @@ struct ItemSortListView: View {
                     let vertical = value.translation.height
 
                     if isShowingPopup {
-                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
+                        if abs(horizontal) <= 80 && abs(vertical) <= 80 { return }
                         editingItem = nil
                         popupAnchor = nil
                         return
                     }
 
-                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    if horizontal <= 80 || abs(vertical) >= 50 { return }
                     dismiss()
                 }
         )
@@ -187,43 +236,6 @@ struct ItemSortListView: View {
         }
         .padding(.horizontal, 50)
         .padding(.bottom, 4)
-    }
-
-    @ToolbarContentBuilder
-    private var navigationToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigationBarLeading) {
-            Button(action: {
-                dismiss()
-            }) {
-                HStack(spacing: 0) {
-                    Image(systemName: "chevron.backward")
-                        .imageScale(.large)
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-            }
-            .padding(.trailing, 8)
-            .disabled(isShowingPopup)
-
-            Button {
-                canUndo = false
-                modelContext.undoManager?.performUndo()
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .disabled(!canUndo || isShowingPopup)
-        }
-
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-            Button {
-                canRedo = false
-                modelContext.undoManager?.performRedo()
-            } label: {
-                Image(systemName: "arrow.uturn.forward")
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .disabled(!canRedo || isShowingPopup)
-        }
     }
 
     private func updateUndoRedo() {

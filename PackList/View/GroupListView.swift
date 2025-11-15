@@ -130,8 +130,70 @@ struct GroupListView: View {
             .padding(.horizontal, 0)
             .navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                navigationToolbar
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top) {
+                // PackListViewと同じレイアウトで、戻るやUndoなどを上部に集約する
+                HStack(spacing: 0) {
+                    // 戻る
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.backward")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    // Undo
+                    Button {
+                        // 履歴サービスを介して一括で巻き戻す
+                        history.undo(context: modelContext)
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.small)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!history.canUndo || isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    Spacer(minLength: 0)
+
+                    Text(pack.name.placeholderText("新しいパック"))
+                        .font(.headline)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    // Redo
+                    Button {
+                        // Undoで戻した内容を再適用する
+                        history.redo(context: modelContext)
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.small)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!history.canRedo || isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    // 新しいグループ追加
+                    Button(action: addGroup) {
+                        Image(systemName: "plus.square")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isShowingPopup)
+                    .padding(.horizontal, 12)
+                }
+                .tint(.primary)
+                .frame(height: rowHeight)
+                .padding(.horizontal, 4)
+                .background(.thinMaterial)
             }
         }
         .contentShape(Rectangle())
@@ -142,13 +204,13 @@ struct GroupListView: View {
                     let vertical = value.translation.height
 
                     if isShowingPopup {
-                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
+                        if abs(horizontal) <= 80 && abs(vertical) <= 80 { return }
                         editingGroup = nil
                         popupAnchor = nil
                         return
                     }
 
-                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    if horizontal <= 80 || abs(vertical) >= 50 { return }
                     dismiss()
                 }
         )
@@ -168,64 +230,6 @@ struct GroupListView: View {
         }
     }
     
-    @ToolbarContentBuilder
-    private var navigationToolbar: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
-            HStack(spacing: 12) {
-                // 戻る
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.backward")
-                        .imageScale(.large)
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-                .buttonStyle(.plain) // 個別のボタンとして表示するため背景を外す
-                .tint(.primary) // ヘッダ部は.accentColorにしない
-                .disabled(isShowingPopup)
-                .padding(.trailing, 8)
-                
-                // Undo
-                Button {
-                    // 履歴サービスを介して一括で巻き戻す
-                    history.undo(context: modelContext)
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                        .imageScale(.small)
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                }
-                .buttonStyle(.plain) // 個別のボタンとして表示するため背景を外す
-                .tint(.primary) // ヘッダ部は.accentColorにしない
-                .disabled(!history.canUndo || isShowingPopup)
-            }
-        }
-
-        ToolbarItemGroup(placement: .topBarTrailing) {
-            // Redo
-            Button {
-                // Undoで戻した内容を再適用する
-                history.redo(context: modelContext)
-            } label: {
-                Image(systemName: "arrow.uturn.forward")
-                    .imageScale(.small)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!history.canRedo || isShowingPopup)
-            .padding(.trailing, 8)
-        }
-        ToolbarItemGroup(placement: .topBarTrailing) {
-            // 新しいグループ追加
-            Button(action: addGroup) {
-                Image(systemName: "plus.square")
-                    .imageScale(.large)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(isShowingPopup)
-        }
-    }
-
     /// セクション2・フッター：操作説明、アイコン説明
     struct Section2FooterView: View {
         var body: some View {

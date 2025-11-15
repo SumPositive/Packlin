@@ -38,6 +38,7 @@ struct ItemEditView: View {
     @State private var moveInsertPosition: MoveInsertPosition = .end
 
     private let sectionCornerRadius: CGFloat = 12
+    private let headerHeight: CGFloat = 44
 
     private var nameFieldMinHeight: CGFloat {
         UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
@@ -295,16 +296,64 @@ struct ItemEditView: View {
         .navigationTitle("アイテム編集")
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            navigationToolbar
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top) {
+            // 編集画面でもPackListView風のヘッダーを共通化
+            HStack(spacing: 0) {
+                Button {
+                    onDismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 12)
+
+                Button {
+                    canUndo = false
+                    modelContext.undoManager?.performUndo()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                        .imageScale(.small)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canUndo)
+                .padding(.horizontal, 12)
+
+                Spacer(minLength: 0)
+
+                Text(item.name.placeholderText("アイテム編集"))
+                    .font(.headline)
+                    .lineLimit(1)
+
+                Spacer(minLength: 0)
+
+                Button {
+                    canRedo = false
+                    modelContext.undoManager?.performRedo()
+                } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                        .imageScale(.small)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canRedo)
+                .padding(.horizontal, 12)
+            }
+            .tint(.primary)
+            .frame(height: headerHeight)
+            .padding(.horizontal, 4)
+            .background(.thinMaterial)
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
                 .onEnded { value in
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
-                    if 80 < horizontal, abs(vertical) < abs(horizontal) {
-                        // 右へスワイプ時、閉じる
+                    if !(horizontal <= 80 || abs(vertical) >= abs(horizontal)) {
+                        // 右へ大きくスワイプしたときに閉じる
                         onDismiss()
                     }
                     else if vertical < -20, abs(horizontal) < abs(vertical) {
@@ -352,48 +401,6 @@ struct ItemEditView: View {
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }
             syncGroupSelection(useStoredPreference: false)
-        }
-    }
-
-    @ToolbarContentBuilder
-    private var navigationToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigationBarLeading) {
-            // 戻る
-            Button {
-                onDismiss()
-            } label: {
-                Image(systemName: "chevron.backward")
-                    .imageScale(.large)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .padding(.trailing, 8)
-            
-            // Undo
-            Button {
-                canUndo = false
-                modelContext.undoManager?.performUndo()
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .imageScale(.small)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!canUndo)
-        }
-        
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-            // Redo
-            Button {
-                canRedo = false
-                modelContext.undoManager?.performRedo()
-            } label: {
-                Image(systemName: "arrow.uturn.forward")
-                    .imageScale(.small)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!canRedo)
         }
     }
 

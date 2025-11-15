@@ -29,6 +29,8 @@ struct ItemListView: View {
         group.child.sorted { $0.order < $1.order }
     }
 
+    private let rowHeight: CGFloat = 44
+
     // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用
     // そのため、どちらかが表示されている間はナビバーボタンを非活性にする
     private var isShowingPopup: Bool { editingGroup != nil || editingItem != nil }
@@ -78,8 +80,71 @@ struct ItemListView: View {
             .padding(.trailing, 8)
             .navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                navigationToolbar
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top) {
+                // PackListViewと同じようにカスタムヘッダーへボタンを移設する
+                HStack(spacing: 0) {
+                    // 戻る
+                    Button {
+                        dismiss()
+                        // GroupListView.onAppearで.save()が呼ばれる
+                    } label: {
+                        Image(systemName: "chevron.backward")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    // Undo
+                    Button {
+                        canUndo = false
+                        modelContext.undoManager?.performUndo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.small)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canUndo || isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    Spacer(minLength: 0)
+
+                    Text(group.name.placeholderText("新しいグループ"))
+                        .font(.headline)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    // Redo
+                    Button {
+                        canRedo = false
+                        modelContext.undoManager?.performRedo()
+                    } label: {
+                        Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.small)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canRedo || isShowingPopup)
+                    .padding(.horizontal, 12)
+
+                    // 新しいアイテム追加ボタン
+                    Button(action: addItem) {
+                        Image(systemName: "plus.circle")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isShowingPopup)
+                    .padding(.horizontal, 12)
+                }
+                .tint(.primary)
+                .frame(height: rowHeight)
+                .padding(.horizontal, 4)
+                .background(.thinMaterial)
             }
             .onAppear {
                 updateUndoRedo()
@@ -111,14 +176,14 @@ struct ItemListView: View {
                     let vertical = value.translation.height
 
                     if isShowingPopup {
-                        guard abs(horizontal) > 80 || abs(vertical) > 80 else { return }
+                        if abs(horizontal) <= 80 && abs(vertical) <= 80 { return }
                         editingGroup = nil
                         editingItem = nil
                         popupAnchor = nil
                         return
                     }
 
-                    guard horizontal > 80, abs(vertical) < 50 else { return }
+                    if horizontal <= 80 || abs(vertical) >= 50 { return }
                     dismiss()
                 }
         )
@@ -130,63 +195,6 @@ struct ItemListView: View {
             GroupEditView(group: group)
                 .presentationDetents([.height(580)])
                 .presentationDragIndicator(.hidden)
-        }
-    }
-
-    @ToolbarContentBuilder
-    private var navigationToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigationBarLeading) {
-            // 戻る
-            Button(action: {
-                dismiss()
-                // GroupListView.onAppearで.save()が呼ばれる
-            }) {
-                HStack(spacing: 0) {
-                    Image(systemName: "chevron.backward")
-                        .imageScale(.large)
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    //Text("Group")
-                }
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .padding(.trailing, 8)
-            .disabled(isShowingPopup)
-
-            // Undo
-            Button {
-                canUndo = false
-                modelContext.undoManager?.performUndo()
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .imageScale(.small)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!canUndo || isShowingPopup)
-        }
-
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-            // Redo
-            Button {
-                canRedo = false
-                modelContext.undoManager?.performRedo()
-            } label: {
-                Image(systemName: "arrow.uturn.forward")
-                    .imageScale(.small)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!canRedo || isShowingPopup)
-            .padding(.trailing, 8)
-            
-            // 新しいアイテム追加ボタン
-            Button(action: addItem) {
-                Image(systemName: "plus.circle")
-                    .imageScale(.large)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(isShowingPopup)
         }
     }
 
