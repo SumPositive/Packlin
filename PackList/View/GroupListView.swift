@@ -170,30 +170,34 @@ struct GroupListView: View {
     
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .topBarLeading) {
-            // 戻る
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.backward")
-                    .imageScale(.large)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+        ToolbarItem(placement: .navigationBarLeading) {
+            HStack(spacing: 12) {
+                // 戻る
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.backward")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                }
+                .buttonStyle(.plain) // 個別のボタンとして表示するため背景を外す
+                .tint(.primary) // ヘッダ部は.accentColorにしない
+                .disabled(isShowingPopup)
+                .padding(.trailing, 8)
+                
+                // Undo
+                Button {
+                    // 履歴サービスを介して一括で巻き戻す
+                    history.undo(context: modelContext)
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                        .imageScale(.small)
+                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                }
+                .buttonStyle(.plain) // 個別のボタンとして表示するため背景を外す
+                .tint(.primary) // ヘッダ部は.accentColorにしない
+                .disabled(!history.canUndo || isShowingPopup)
             }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(isShowingPopup)
-            .padding(.trailing, 8)
-
-            // Undo
-            Button {
-                // 履歴サービスを介して一括で巻き戻す
-                history.undo(context: modelContext)
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .imageScale(.small)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!history.canUndo || isShowingPopup)
         }
 
         ToolbarItemGroup(placement: .topBarTrailing) {
