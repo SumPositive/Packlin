@@ -287,16 +287,6 @@
         }
       }
     },
-    "アイテム編集" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit item"
-          }
-        }
-      }
-    },
     "アプリの紹介・取扱説明" : {
       "localizations" : {
         "en" : {

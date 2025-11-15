@@ -131,9 +131,8 @@ struct GroupListView: View {
             //.navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
             //.toolbar(.hidden, for: .navigationBar)
-            .safeAreaInset(edge: .top) {
-                // PackListViewと同じレイアウトで、戻るやUndoなどを上部に集約する
-                HStack(spacing: 0) {
+            .safeAreaInset(edge: .top) { // ヘッダ部
+                HStack {
                     // 戻る
                     Button {
                         dismiss()

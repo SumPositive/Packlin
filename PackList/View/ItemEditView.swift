@@ -330,7 +330,7 @@ struct ItemEditView: View {
 
                 Spacer(minLength: 0)
 
-                Text("アイテム編集")
+                Text(pack.name.placeholder("新しいパック"))
                     .font(.headline)
                     .lineLimit(1)
 

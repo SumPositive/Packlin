@@ -66,7 +66,7 @@ struct PackListView: View {
             .listRowSeparator(.hidden)
             // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 0)
-            .safeAreaInset(edge: .top) {
+            .safeAreaInset(edge: .top) { // ヘッダ部
                 HStack {
                     // 設定
                     Button {

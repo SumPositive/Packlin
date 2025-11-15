@@ -113,7 +113,7 @@ struct ItemListView: View {
 
                     Spacer(minLength: 0)
 
-                    Text(group.name.placeholder("新しいグループ"))
+                    Text(pack.name.placeholder("新しいパック"))
                         .font(.headline)
                         .lineLimit(1)
 
