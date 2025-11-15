@@ -79,7 +79,7 @@ final class M3Item {
                              stock: 0,
                              need: self.need,
                              weight: self.weight,
-                             order: self.order + 1,
+                             order: self.order + 1, // 次(下)に追加
                              parent: parent)
         // DB追加
         mc.insert(newItem)

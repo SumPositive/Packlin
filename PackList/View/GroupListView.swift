@@ -128,9 +128,9 @@ struct GroupListView: View {
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 0)
-            .navigationTitle(pack.name.placeholderText("新しいパック"))
+            //.navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
-            .toolbar(.hidden, for: .navigationBar)
+            //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じレイアウトで、戻るやUndoなどを上部に集約する
                 HStack(spacing: 0) {
@@ -142,7 +142,7 @@ struct GroupListView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 12)
 
@@ -155,13 +155,13 @@ struct GroupListView: View {
                             .imageScale(.small)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(!history.canUndo || isShowingPopup)
                     .padding(.horizontal, 12)
 
                     Spacer(minLength: 0)
 
-                    Text(pack.name.placeholderText("新しいパック"))
+                    Text(pack.name.placeholder("新しいパック"))
                         .font(.headline)
                         .lineLimit(1)
 
@@ -176,7 +176,7 @@ struct GroupListView: View {
                             .imageScale(.small)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(!history.canRedo || isShowingPopup)
                     .padding(.horizontal, 12)
 
@@ -186,13 +186,13 @@ struct GroupListView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 12)
                 }
                 .tint(.primary)
                 .frame(height: rowHeight)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }
         }

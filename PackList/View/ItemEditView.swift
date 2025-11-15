@@ -19,9 +19,12 @@ struct ItemEditView: View {
     let adjacentItemProvider: ((M3Item, Int) -> M3Item?)?
 
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var history: UndoStackService
+
     @FocusState private var focusedField: Field?
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
-    // 不揮発保存：チェックと在庫数を連動させる
+    // 不揮発保存
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
     // 不揮発保存：itemEdit.move用
     @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
@@ -206,6 +209,7 @@ struct ItemEditView: View {
                                             .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                                     )
                             }
+                            .accentColor(Color(.systemPink))
                             .accessibilityLabel(Text("消す"))
                         }
                     }
@@ -293,13 +297,14 @@ struct ItemEditView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .background(COLOR_ROW_GROUP)
-        .navigationTitle("アイテム編集")
+        //.navigationTitle("アイテム編集")
         .navigationBarBackButtonHidden(true)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .navigationBar)
+        //.navigationBarTitleDisplayMode(.inline)
+        //.toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .top) {
             // 編集画面でもPackListView風のヘッダーを共通化
             HStack(spacing: 0) {
+                // 戻る
                 Button {
                     onDismiss()
                 } label: {
@@ -307,9 +312,10 @@ struct ItemEditView: View {
                         .imageScale(.large)
                         .symbolRenderingMode(.hierarchical)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
                 .padding(.horizontal, 12)
 
+                // Undo
                 Button {
                     canUndo = false
                     modelContext.undoManager?.performUndo()
@@ -318,18 +324,19 @@ struct ItemEditView: View {
                         .imageScale(.small)
                         .symbolRenderingMode(.hierarchical)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
                 .disabled(!canUndo)
                 .padding(.horizontal, 12)
 
                 Spacer(minLength: 0)
 
-                Text(item.name.placeholderText("アイテム編集"))
+                Text("アイテム編集")
                     .font(.headline)
                     .lineLimit(1)
 
                 Spacer(minLength: 0)
 
+                // Redo
                 Button {
                     canRedo = false
                     modelContext.undoManager?.performRedo()
@@ -338,13 +345,24 @@ struct ItemEditView: View {
                         .imageScale(.small)
                         .symbolRenderingMode(.hierarchical)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
                 .disabled(!canRedo)
+                .padding(.horizontal, 12)
+
+                // 新しいアイテム追加ボタン
+                Button {
+                    addItemEdit()
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.borderless)
                 .padding(.horizontal, 12)
             }
             .tint(.primary)
             .frame(height: headerHeight)
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 8)
             .background(.thinMaterial)
         }
         .simultaneousGesture(
@@ -404,6 +422,39 @@ struct ItemEditView: View {
         }
     }
 
+    /// アイテム追加し、そのアイテムを編集状態にする
+    private func addItemEdit() {
+        // 履歴サービスを利用して新規追加を1つのアクションとして記録する
+        history.perform(context: modelContext) {
+            let items = group.child.sorted { $0.order < $1.order }
+            let insertionIndex: Int = {
+                switch insertionPosition {
+                    case .head:
+                        return 0
+                    case .tail:
+                        return items.count
+                }
+            }()
+            
+            let newOrder = sparseOrderForInsertion(items: items, index: insertionIndex) {
+                // order のみを整え、child 配列を並べ替えない
+                normalizeSparseOrders(items)
+            }
+            // 新しいアイテム
+            let newItem = M3Item(name: "",
+                                 order: newOrder,
+                                 parent: group)
+            // DB追加
+            modelContext.insert(newItem)
+            // ReOrder 不要
+            
+            // 新しいアイテムを編集対象にする
+            withAnimation {
+                onSelectItem(newItem)
+            }
+        }
+    }
+    
     /// 現在のアイテムを初期値にリセットする
     private func resetItemToInitialState() {
         // Undo grouping BEGIN

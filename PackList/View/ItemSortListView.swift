@@ -113,6 +113,7 @@ struct ItemSortListView: View {
             .safeAreaInset(edge: .top) {
                 // 並べ替え画面用のカスタムヘッダー
                 HStack(spacing: 0) {
+                    // 閉じる
                     Button {
                         dismiss()
                     } label: {
@@ -120,18 +121,20 @@ struct ItemSortListView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 12)
 
+                    // Undo
                     Button {
                         canUndo = false
                         modelContext.undoManager?.performUndo()
                     } label: {
                         Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.small)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(!canUndo || isShowingPopup)
                     .padding(.horizontal, 12)
 
@@ -143,20 +146,28 @@ struct ItemSortListView: View {
 
                     Spacer(minLength: 0)
 
+                    // Redo
                     Button {
                         canRedo = false
                         modelContext.undoManager?.performRedo()
                     } label: {
                         Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.small)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(!canRedo || isShowingPopup)
                     .padding(.horizontal, 12)
+
+                    // スペース
+                    Rectangle()
+                        .fill(.clear)
+                        .frame(width: 24)
+                        .padding(.horizontal, 12)
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }
             .onAppear {

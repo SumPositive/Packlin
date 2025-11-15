@@ -79,8 +79,9 @@ struct PackListView: View {
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
                     }
+                    .buttonStyle(.borderless)
                     .disabled(isShowingEditSheet)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 12)
                     
                     // Undo
                     Button {
@@ -91,11 +92,16 @@ struct PackListView: View {
                             .imageScale(.small)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
+                    .buttonStyle(.borderless)
                     .disabled(!history.canUndo || isShowingEditSheet)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 12)
 
                     Spacer()
+
                     Text("app.title")
+                        .font(.headline)
+                        .lineLimit(1)
+
                     Spacer()
                     
                     // Redo
@@ -107,8 +113,9 @@ struct PackListView: View {
                             .imageScale(.small)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                     }
+                    .buttonStyle(.borderless)
                     .disabled(!history.canRedo || isShowingEditSheet)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 12)
                     
                     // 新しいパック追加
                     Button {
@@ -125,8 +132,9 @@ struct PackListView: View {
                                 .padding(.top, 4)
                         }
                     }
+                    .buttonStyle(.borderless)
                     .disabled(isShowingEditSheet)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 12)
                 }
                 .tint(.primary) // ヘッダ部は.accentColorにしない
                 .frame(height: rowHeight)

@@ -14,6 +14,7 @@ struct ItemListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
@@ -78,9 +79,9 @@ struct ItemListView: View {
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .padding(.leading, 0)
             .padding(.trailing, 8)
-            .navigationTitle(pack.name.placeholderText("新しいパック"))
+            //.navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
-            .toolbar(.hidden, for: .navigationBar)
+            //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設する
                 HStack(spacing: 0) {
@@ -93,7 +94,7 @@ struct ItemListView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 12)
 
@@ -106,13 +107,13 @@ struct ItemListView: View {
                             .imageScale(.small)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(!canUndo || isShowingPopup)
                     .padding(.horizontal, 12)
 
                     Spacer(minLength: 0)
 
-                    Text(group.name.placeholderText("新しいグループ"))
+                    Text(group.name.placeholder("新しいグループ"))
                         .font(.headline)
                         .lineLimit(1)
 
@@ -127,7 +128,7 @@ struct ItemListView: View {
                             .imageScale(.small)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(!canRedo || isShowingPopup)
                     .padding(.horizontal, 12)
 
@@ -137,13 +138,13 @@ struct ItemListView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.borderless)
                     .disabled(isShowingPopup)
                     .padding(.horizontal, 12)
                 }
                 .tint(.primary)
                 .frame(height: rowHeight)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }
             .onAppear {
@@ -248,31 +249,31 @@ struct ItemListView: View {
     
     
     /// アイテム追加
-    private func addItem() {
-        // Undo grouping BEGIN
-        modelContext.undoManager?.groupingBegin()
-        defer {
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
-        }
-        let orderedItems = sortedItems
-        let insertionIndex: Int = {
-            switch insertionPosition {
-            case .head:
-                return 0
-            case .tail:
-                return orderedItems.count
+    func addItem() {
+        // 履歴サービスを利用して新規追加を1つのアクションとして記録する
+        history.perform(context: modelContext) {
+            let items = sortedItems
+            let insertionIndex: Int = {
+                switch insertionPosition {
+                    case .head:
+                        return 0
+                    case .tail:
+                        return items.count
+                }
+            }()
+            
+            let newOrder = sparseOrderForInsertion(items: items, index: insertionIndex) {
+                // order のみを整え、child 配列を並べ替えない
+                normalizeSparseOrders(items)
             }
-        }()
-
-        let newOrder = sparseOrderForInsertion(items: orderedItems, index: insertionIndex) {
-            // order のみを整え、child 配列を並べ替えない
-            normalizeSparseOrders(orderedItems)
+            // 新しいアイテム
+            let newItem = M3Item(name: "",
+                                 order: newOrder,
+                                 parent: group)
+            // DB追加
+            modelContext.insert(newItem)
+            // child 配列はそのままにしておき、表示側で order ソートする
         }
-
-        let newItem = M3Item(name: "", order: newOrder, parent: group)
-        modelContext.insert(newItem)
-        // child 配列はそのままにしておき、表示側で order ソートする
     }
 
     private func updateUndoRedo() {
