@@ -170,29 +170,30 @@ struct GroupListView: View {
     
     @ToolbarContentBuilder
     private var navigationToolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigationBarLeading) {
-            // 戻る
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.backward")
-                    .imageScale(.large)
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+        ToolbarItem(placement: .navigationBarLeading) {
+            // デフォルトのToolbarButtonスタイルを避け、完全に透過な見た目にするためのカスタム描画
+            HStack(spacing: 12) {
+                ToolbarGlyphButton(
+                    systemName: "chevron.backward",
+                    accessibilityLabelKey: "戻る",
+                    isEnabled: isShowingPopup == false, // ポップアップ表示中は操作を無効化
+                    action: {
+                        // 画面を閉じて直前のスタックに戻る
+                        dismiss()
+                    }
+                )
+
+                ToolbarGlyphButton(
+                    systemName: "arrow.uturn.backward",
+                    accessibilityLabelKey: "操作を一段階戻す",
+                    isEnabled: history.canUndo && isShowingPopup == false, // Undo可能かつポップアップが無いときのみタップ可能
+                    action: {
+                        // 履歴サービスを介して一括で巻き戻す
+                        history.undo(context: modelContext)
+                    }
+                )
             }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(isShowingPopup)
-            .padding(.trailing, 8)
-            
-            // Undo
-            Button {
-                // 履歴サービスを介して一括で巻き戻す
-                history.undo(context: modelContext)
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-            }
-            .tint(.primary) // ヘッダ部は.accentColorにしない
-            .disabled(!history.canUndo || isShowingPopup)
+            .padding(.trailing, 4) // ナビゲーションバーの端に貼り付き過ぎないように余白を残す
         }
 
         ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -260,6 +261,35 @@ struct GroupListView: View {
             .padding(.top, 20)
             .padding(.leading, 30)
             .padding(.trailing, 8)
+        }
+    }
+
+    /// ナビゲーションバー用のアイコンボタン
+    private struct ToolbarGlyphButton: View {
+        let systemName: String
+        let accessibilityLabelKey: LocalizedStringKey
+        let isEnabled: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Image(systemName: systemName)
+                .imageScale(.large)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.primary)
+                .opacity(isEnabled ? 1.0 : 0.35) // 無効状態では淡く表示する
+                .padding(.vertical, 6) // タップ領域を確保しつつ余計な背景を追加しない
+                .padding(.horizontal, 2)
+                .contentShape(Rectangle()) // アイコン外周もタップ範囲に含める
+                .allowsHitTesting(isEnabled) // 無効状態のときはタップを受け付けない
+                .onTapGesture {
+                    if isEnabled {
+                        action()
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(accessibilityLabelKey)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isEnabled ? "" : "現在は使用できません")
         }
     }
 
