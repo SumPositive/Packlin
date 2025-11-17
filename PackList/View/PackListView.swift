@@ -59,6 +59,7 @@ struct PackListView: View {
                     if footerMessage {
                         // フッター：操作説明、アイコン説明
                         FooterView()
+                            .listRowSeparator(.hidden) // 下線なし
                     }
                 }
             }
