@@ -150,8 +150,7 @@ struct PackRowView: View {
                     .ignoresSafeArea(edges: .horizontal)
                     .padding(.horizontal, 50)
             }
-            // 左スワイプで削除／複製を操作できるようにする
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
                 // パック削除
                 Button {
                     pack.delete()

@@ -156,7 +156,7 @@ struct ItemRowView: View {
                 .padding(.leading, 50)
                 .padding(.trailing, 30)
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
             // アイテム削除
             Button {
                 item.delete()

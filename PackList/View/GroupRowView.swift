@@ -124,8 +124,7 @@ struct GroupRowView: View {
             //.padding(.top, isHeader ? 20 : 0) // セクションヘッダになる場合＋20
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
-            // 行全体をタップ可能領域にしてスワイプ判定を取りこぼさないようにする
-            .contentShape(Rectangle())
+            //.contentShape(Rectangle()) // 行全体をタップ可能領域にする
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
             .background(
                 // Row本体に置くとRowサイズが固定化されてしまうため
@@ -147,8 +146,7 @@ struct GroupRowView: View {
                         .padding(.horizontal, 50)
                 }
             }
-            // 左スワイプで削除／複製を操作できるようにする
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
                 // グループ削除
                 Button {
                     group.delete()
