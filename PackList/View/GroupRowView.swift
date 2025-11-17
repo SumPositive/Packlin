@@ -146,24 +146,6 @@ struct GroupRowView: View {
                         .padding(.horizontal, 50)
                 }
             }
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
-                // グループ削除
-                Button {
-                    group.delete()
-                } label: {
-                    Label("削除", systemImage: "trash")
-                }
-                .tint(.orange)
-                .disabled(group.parent == nil)
-
-                // グループ複製
-                Button {
-                    group.duplicate()
-                } label: {
-                    Label("複製", systemImage: "plus.square.on.square")
-                }
-                .tint(.blue)
-            }
         }
     }
 
