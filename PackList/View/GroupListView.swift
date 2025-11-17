@@ -56,8 +56,11 @@ struct GroupListView: View {
                                 }
                             }
                         }
+                        .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         // 行のトップレベルでスワイプ操作を受け付けるようにする
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
                             // グループ削除（行コンテナで定義してスワイプ無効化を防ぐ）
                             Button {
                                 group.delete()
@@ -66,7 +69,7 @@ struct GroupListView: View {
                             }
                             .tint(.orange)
                             .disabled(group.parent == nil)
-
+                            
                             // グループ複製
                             Button {
                                 group.duplicate()
@@ -75,9 +78,6 @@ struct GroupListView: View {
                             }
                             .tint(.blue)
                         }
-                        .buttonStyle(.plain)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                     }
                     .onMove(perform: moveGroup)
                 }
