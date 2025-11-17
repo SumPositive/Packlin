@@ -124,6 +124,8 @@ struct GroupRowView: View {
             //.padding(.top, isHeader ? 20 : 0) // セクションヘッダになる場合＋20
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
+            // 行全体をタップ可能領域にしてスワイプ判定を取りこぼさないようにする
+            .contentShape(Rectangle())
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
             .background(
                 // Row本体に置くとRowサイズが固定化されてしまうため
