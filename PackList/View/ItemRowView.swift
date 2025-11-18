@@ -134,9 +134,9 @@ struct ItemRowView: View {
         .frame(minHeight: rowHeight)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
         .padding(.leading, 0)
-        .background(COLOR_ROW_BACK)
         .transition(.move(edge: .top).combined(with: .opacity))
-        .contentShape(Rectangle())
+        //.contentShape(Rectangle()) // 全体をタップ可能領域にする
+        .background(COLOR_ROW_BACK)
         .background(
             // Row本体に置くとRowサイズが固定化されてしまうため
             GeometryReader { geo in

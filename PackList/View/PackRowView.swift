@@ -130,6 +130,7 @@ struct PackRowView: View {
         .frame(minHeight: rowHeight)
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
+        .background(COLOR_ROW_BACK)
         .background(
             // Row本体に置くとRowサイズが固定化されてしまうため
             GeometryReader { geo in
