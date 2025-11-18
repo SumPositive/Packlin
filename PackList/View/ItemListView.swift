@@ -66,7 +66,8 @@ struct ItemListView: View {
                         popupAnchor = nil
                     }
                     .background(COLOR_ROW_GROUP)
-                    //.padding(.top, -20) // 上余白を無くすため、GroupRowで＋20、ここでー20
+                    .cornerRadius(16)
+                    .padding(.top, -20) // 上余白を減らす
                 } footer: {
                     if footerMessage {
                         // フッター：操作説明、アイコン説明
@@ -77,11 +78,8 @@ struct ItemListView: View {
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            .padding(.leading, 0)
-            .padding(.trailing, 8)
-            //.navigationTitle(pack.name.placeholderText("新しいパック"))
+            .padding(.horizontal, 8)
             .navigationBarBackButtonHidden(true)
-            //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設する
                 HStack(spacing: 0) {

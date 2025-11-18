@@ -124,7 +124,7 @@ struct GroupRowView: View {
         .padding(.horizontal, 16)
         //.contentShape(Rectangle()) // 全体をタップ可能領域にする
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
-        .background(COLOR_ROW_BACK)
+        .background(isHeader ? COLOR_ROW_GROUP : COLOR_ROW_BACK)
         .background(
             // Row本体に置くとRowサイズが固定化されてしまうため
             GeometryReader { geo in
