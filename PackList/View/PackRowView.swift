@@ -50,123 +50,121 @@ struct PackRowView: View {
     }
 
     var body: some View {
-        Group {
-            VStack(spacing: 0) {
-                HStack(spacing: 0) {
-                    // 編集
-                    Button {
-                        guard let rf = rowFrame else { return }
-                        let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY)
-                        onEdit(pack, po)
-                    } label: {
-                        ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.large)
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                // 編集
+                Button {
+                    guard let rf = rowFrame else { return }
+                    let po = CGPoint(x: rf.width / 2.0,
+                                     y: rf.minY)
+                    onEdit(pack, po)
+                } label: {
+                    ZStack {
+                        Image(systemName: "case")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .symbolEffect(.bounce.up.byLayer, options: .nonRepeating) // Once
+                        
+                        if allItemsChecked {
+                            Image(systemName: "checkmark")
+                                .imageScale(.small)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .symbolEffect(.bounce.up.byLayer, options: .nonRepeating) // Once
-
-                            if allItemsChecked {
-                                Image(systemName: "checkmark")
-                                    .imageScale(.small)
-                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                    .padding(.top, 4)
-                            }
-                            else if allSufficientStock {
-                                Image(systemName: "circle")
-                                    .imageScale(.small)
-                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                    .padding(.top, 4)
-                            }
+                                .padding(.top, 4)
                         }
-                        .padding(.leading, 0)
-                        .padding(.trailing, 8)
-                        .padding(.vertical, 8)
+                        else if allSufficientStock {
+                            Image(systemName: "circle")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .padding(.top, 4)
+                        }
                     }
-                    .buttonStyle(BorderlessButtonStyle())
-                    // 名称
-                    pack.name.placeholderText("新しいパック")
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-                    Spacer()
+                    .padding(.leading, 0)
+                    .padding(.trailing, 8)
+                    .padding(.vertical, 8)
                 }
-
-                HStack(spacing: 0) {
-                    // インデント
+                .buttonStyle(BorderlessButtonStyle())
+                // 名称
+                pack.name.placeholderText("新しいパック")
+                    .lineLimit(3)
+                    .font(FONT_NAME)
+                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                Spacer()
+            }
+            
+            HStack(spacing: 0) {
+                // インデント
+                Rectangle()
+                    .frame(width: 30, height: 1)
+                    .foregroundStyle(.clear)
+                
+                if let weightLabelText = weightLabelText {
+                    Text(verbatim: weightLabelText)
+                        .font(FONT_WEIGHT)
+                        .foregroundStyle(COLOR_WEIGHT)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(COLOR_ROW_GROUP)
+                        )
+                }else{
                     Rectangle()
-                        .frame(width: 30, height: 1)
+                        .frame(width: 24, height: 1)
                         .foregroundStyle(.clear)
-                    
-                    if let weightLabelText = weightLabelText {
-                        Text(verbatim: weightLabelText)
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 3)
-                            .background(
-                                Capsule()
-                                    .fill(COLOR_ROW_GROUP)
-                            )
-                    }else{
-                        Rectangle()
-                            .frame(width: 24, height: 1)
-                            .foregroundStyle(.clear)
+                }
+                // メモ
+                if !pack.memo.isEmpty {
+                    Text(pack.memo)
+                        .lineLimit(3)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(COLOR_MEMO)
+                        .padding(.horizontal, 8)
+                }
+                Spacer()
+            }
+            // DEBUG Line
+            if DEBUG_SHOW_ORDER_ID {
+                Text("pack (\(pack.order)) [\(pack.id)]")
+            }
+        }
+        .frame(minHeight: rowHeight)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .background(
+            // Row本体に置くとRowサイズが固定化されてしまうため
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear {
+                        rowFrame = geo.frame(in: .global)
                     }
-                    // メモ
-                    if !pack.memo.isEmpty {
-                        Text(pack.memo)
-                            .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.horizontal, 8)
+                    .onChange(of: geo.frame(in: .global)) { oldFrame, newFrame in
+                        rowFrame = newFrame
                     }
-                    Spacer()
-                }
-                // DEBUG Line
-                if DEBUG_SHOW_ORDER_ID {
-                    Text("pack (\(pack.order)) [\(pack.id)]")
-                }
             }
-            .frame(minHeight: rowHeight)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            .background(
-                // Row本体に置くとRowサイズが固定化されてしまうため
-                GeometryReader { geo in
-                    Color.clear
-                        .onAppear {
-                            rowFrame = geo.frame(in: .global)
-                        }
-                        .onChange(of: geo.frame(in: .global)) { oldFrame, newFrame in
-                            rowFrame = newFrame
-                        }
-                }
-            )
-            .overlay(alignment: .bottom) {
-                // 独自の下線
-                COLOR_LIST_SEPARATOR
-                    .frame(height: LIST_SEPARATOR_THICKNESS)
-                    .ignoresSafeArea(edges: .horizontal)
-                    .padding(.horizontal, 50)
+        )
+        .overlay(alignment: .bottom) {
+            // 独自の下線
+            COLOR_LIST_SEPARATOR
+                .frame(height: LIST_SEPARATOR_THICKNESS)
+                .ignoresSafeArea(edges: .horizontal)
+                .padding(.horizontal, 50)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
+            // パック削除
+            Button {
+                pack.delete()
+            } label: {
+                Label("削除", systemImage: "trash")
             }
-            .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
-                // パック削除
-                Button {
-                    pack.delete()
-                } label: {
-                    Label("削除", systemImage: "trash")
-                }
-                .tint(.orange)
-
-                // パック複製
-                Button {
-                    pack.duplicate()
-                } label: {
-                    Label("複製", systemImage: "plus.square.on.square")
-                }
-                .tint(.blue)
+            .tint(.orange)
+            
+            // パック複製
+            Button {
+                pack.duplicate()
+            } label: {
+                Label("複製", systemImage: "plus.square.on.square")
             }
+            .tint(.blue)
         }
     }
 

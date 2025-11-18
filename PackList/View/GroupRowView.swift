@@ -50,101 +50,99 @@ struct GroupRowView: View {
     }
 
     var body: some View {
-        Group {
-            VStack(spacing: 0) {
-                HStack(spacing: 0) {
-                    // 編集
-                    Button {
-                        guard let rf = rowFrame else { return }
-                        let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY)
-                        onEdit(group, po)
-                    } label: {
-                        Image(systemName
-                              : allItemsChecked ? "checkmark.square"
-                              : allSufficientStock ? "circle.square"
-                              : "square")
-                        .imageScale(.large)
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                        .padding(.leading, 0)
-                        .padding(.trailing, 8)
-                        .padding(.vertical, 8)
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
-                    // 名称
-                    group.name.placeholderText("新しいグループ")
-                        .lineLimit(3)
-                        .font(FONT_NAME)
-                        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-                    Spacer()
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                // 編集
+                Button {
+                    guard let rf = rowFrame else { return }
+                    let po = CGPoint(x: rf.width / 2.0,
+                                     y: rf.minY)
+                    onEdit(group, po)
+                } label: {
+                    Image(systemName
+                          : allItemsChecked ? "checkmark.square"
+                          : allSufficientStock ? "circle.square"
+                          : "square")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                    .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                    .padding(.leading, 0)
+                    .padding(.trailing, 8)
+                    .padding(.vertical, 8)
                 }
+                .buttonStyle(BorderlessButtonStyle())
+                // 名称
+                group.name.placeholderText("新しいグループ")
+                    .lineLimit(3)
+                    .font(FONT_NAME)
+                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                Spacer()
+            }
+            
+            HStack(spacing: 0) {
+                // インデント
+                Rectangle()
+                    .frame(width: 30, height: 1)
+                    .foregroundStyle(.clear)
                 
-                HStack(spacing: 0) {
-                    // インデント
+                if let weightLabelText = weightLabelText {
+                    Text(verbatim: weightLabelText)
+                        .font(FONT_WEIGHT)
+                        .foregroundStyle(COLOR_WEIGHT)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP)
+                        )
+                }else{
                     Rectangle()
-                        .frame(width: 30, height: 1)
+                        .frame(width: 24, height: 1)
                         .foregroundStyle(.clear)
-
-                    if let weightLabelText = weightLabelText {
-                        Text(verbatim: weightLabelText)
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 3)
-                            .background(
-                                Capsule()
-                                    .fill(isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP)
-                            )
-                    }else{
-                        Rectangle()
-                            .frame(width: 24, height: 1)
-                            .foregroundStyle(.clear)
-                    }
-                    // メモ
-                    if !group.memo.isEmpty {
-                        Text(group.memo)
-                            .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.horizontal, 8)
-                    }
-                    Spacer()
-
-                    if isHeader {
-                        // セクションヘッダになる場合
-                    }
                 }
-                // DEBUG Line
-                if DEBUG_SHOW_ORDER_ID {
-                    Text("group (\(group.order)) [\(group.id)]")
+                // メモ
+                if !group.memo.isEmpty {
+                    Text(group.memo)
+                        .lineLimit(3)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(COLOR_MEMO)
+                        .padding(.horizontal, 8)
+                }
+                Spacer()
+                
+                if isHeader {
+                    // セクションヘッダになる場合
                 }
             }
-            .frame(minHeight: rowHeight)
-            //.padding(.top, isHeader ? 20 : 0) // セクションヘッダになる場合＋20
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            //.contentShape(Rectangle()) // 行全体をタップ可能領域にする
-            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
-            .background(
-                // Row本体に置くとRowサイズが固定化されてしまうため
-                GeometryReader { geo in
-                    Color.clear
-                        .onAppear {
-                            rowFrame = geo.frame(in: .global)
-                        }
-                        .onChange(of: geo.frame(in: .global)) { oldFrame, newFrame in
-                            rowFrame = newFrame
-                        }
-                }
-            )
-            .overlay(alignment: .bottom) {
-                if !isHeader {
-                    COLOR_LIST_SEPARATOR
-                        .frame(height: LIST_SEPARATOR_THICKNESS)
-                        .ignoresSafeArea(edges: .horizontal)
-                        .padding(.horizontal, 50)
-                }
+            // DEBUG Line
+            if DEBUG_SHOW_ORDER_ID {
+                Text("group (\(group.order)) [\(group.id)]")
+            }
+        }
+        .frame(minHeight: rowHeight)
+        //.padding(.top, isHeader ? 20 : 0) // セクションヘッダになる場合＋20
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        //.contentShape(Rectangle()) // 行全体をタップ可能領域にする
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
+        .background(
+            // Row本体に置くとRowサイズが固定化されてしまうため
+            GeometryReader { geo in
+                Color.clear
+                    .onAppear {
+                        rowFrame = geo.frame(in: .global)
+                    }
+                    .onChange(of: geo.frame(in: .global)) { oldFrame, newFrame in
+                        rowFrame = newFrame
+                    }
+            }
+        )
+        .overlay(alignment: .bottom) {
+            if !isHeader {
+                COLOR_LIST_SEPARATOR
+                    .frame(height: LIST_SEPARATOR_THICKNESS)
+                    .ignoresSafeArea(edges: .horizontal)
+                    .padding(.horizontal, 50)
             }
         }
     }
