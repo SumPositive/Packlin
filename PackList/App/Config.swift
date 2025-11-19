@@ -137,15 +137,23 @@ let AI_REQUIREMENT_MAX: Int = 1000     // 要望の最大文字数
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
 #if DEBUG
-// Local server　同一セグメント内のMac開発ローカルサーバに接続する
+//------------------------- DEBUGモード
+// Local server
 // ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
+// ローカルサーバを起動する
+//   % npx wrangler dev --local
 // 実機接続するため ngrok により localhost を公開する
-// $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
+//   $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
 let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")!
 #else
+//------------------------- RELEASEモード（ArchiveでAppStoreにアップする）
+// TestFlightでは、RELEASEモードで本番同様だが、購入はSandboxテストモードで動作するので課金されない！
+// Cloudflare Workers & Pagesへデプロイする
+//   % npx wrangler deploy
 // 本番 Deploy server
 let AZUKI_API_BASE_URL = URL(string: "https://azuki-api.azukid.com")!
 #endif
+
 /// 消費型クレジットの商品ID群（azuki-api側の環境変数：IAP_PRODUCT_CREDIT_MAP と一致させる）
 /// - Note: 配信地域ごとにIDが異なるため、日本向けとその他地域向けで定数を分けて管理する
 /// AI利用券の金額表示をLocaleに合わせて切り替えるための構造体
