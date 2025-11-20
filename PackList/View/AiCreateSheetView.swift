@@ -89,6 +89,8 @@ struct AiCreateView: View {
     @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
     /// 設定画面で選択した「新規パックの追加位置」を参照し、インポート時にも統一した挙動にする
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    /// 購入通知済みのトランザクションIDを永続化し、アプリ再起動後も重複アラートを抑止する
+    @AppStorage(AppStorageKey.aiPurchaseNotifiedTransactionIds) private var notifiedTransactionIdsBackup: Data = Data()
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -111,6 +113,43 @@ struct AiCreateView: View {
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// 端末に保存済みの通知済みトランザクションIDをStateへ復元する
+    private func loadNotifiedTransactionIdsIfNeeded() {
+        // 既にメモリ上へ読み込んでいれば追加で復元する必要はない
+        if notifiedTransactionIds.isEmpty == false {
+            return
+        }
+        // デコードが失敗した場合は空集合を維持し、重複アラート抑止だけを安全に続ける
+        do {
+            if notifiedTransactionIdsBackup.isEmpty {
+                return
+            }
+            let decoded = try JSONDecoder().decode(Set<String>.self, from: notifiedTransactionIdsBackup)
+            notifiedTransactionIds = decoded
+        } catch {
+            // 破損データは握りつぶし、次回以降に正しいJSONへ置き換える
+            notifiedTransactionIds = []
+        }
+    }
+
+    /// 通知済みリストを永続化し、アプリの再起動後も重複通知を避ける
+    private func persistNotifiedTransactionIds() {
+        do {
+            let data = try JSONEncoder().encode(notifiedTransactionIds)
+            notifiedTransactionIdsBackup = data
+        } catch {
+            // 永続化に失敗しても致命的ではないため、ログ出力のみに留める
+            print("failed to persist notifiedTransactionIds: \(error)")
+        }
+    }
+
+    /// トランザクションIDを通知済みとして登録し、即座に保存する
+    /// - Parameter identifier: StoreKitトランザクションのID文字列
+    private func markTransactionAsNotified(_ identifier: String) {
+        notifiedTransactionIds.insert(identifier)
+        persistNotifiedTransactionIds()
     }
 
     /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
@@ -270,6 +309,8 @@ struct AiCreateView: View {
             isViewVisible = true
             // 古い結果メッセージが残っていると誤解を招くので表示のたびにリセットする
             inlineGenerationFeedback = nil
+            // アプリ再起動後でも重複アラートを抑止できるよう、保存しておいたトランザクションIDを復元する
+            loadNotifiedTransactionIdsIfNeeded()
         }
         .task {
             // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
@@ -299,8 +340,8 @@ struct AiCreateView: View {
             Task {
                 await AzukiApi.shared.clearTokenRecoveryHandler()
             }
-            // 一連の購入処理で通知済みリストに溜めたIDも破棄しておき、再表示時に最新状態で判断できるようにする
-            notifiedTransactionIds.removeAll()
+            // メモリ上の通知済みリストを保存し、アプリ再起動後も同じ購入でアラートが重複しないようにする
+            persistNotifiedTransactionIds()
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -919,7 +960,7 @@ struct AiCreateView: View {
                 creditStore.overwrite(credits: verification.balance)
                 if notifiedTransactionIds.contains(transactionIdentifier) == false {
                     // ユーザーへはまだ案内していない購入なので、このタイミングでアラートを掲示する
-                    notifiedTransactionIds.insert(transactionIdentifier)
+                    markTransactionAsNotified(transactionIdentifier)
                     if verification.duplicate {
                         alertState = .purchaseAlreadyProcessed
                     } else {
@@ -937,7 +978,7 @@ struct AiCreateView: View {
                 await MainActor.run {
                     if notifiedTransactionIds.contains(transactionIdentifier) == false {
                         // サーバー側で既に処理済みだった購入についても、一度だけ状況を知らせる
-                        notifiedTransactionIds.insert(transactionIdentifier)
+                        markTransactionAsNotified(transactionIdentifier)
                         alertState = .purchaseAlreadyProcessed
                     }
                 }

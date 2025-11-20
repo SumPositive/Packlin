@@ -122,6 +122,8 @@ enum AppStorageKey {
     static let weightDisplayInKg = "setting.weightDisplayInKg"
     // AI生成画面での要望テキスト（AppStorageで復元するためのキー）
     static let aiRequirementText = "aiCreate.requirementText"
+    // 購入通知済みのトランザクションIDを永続化するためのキー（重複アラート抑止用）
+    static let aiPurchaseNotifiedTransactionIds = "aiCreate.notifiedTransactions"
 }
 
 //-------------------------------------- パックJSON関係
