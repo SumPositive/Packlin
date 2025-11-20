@@ -448,6 +448,7 @@
 				INFOPLIST_FILE = PackList/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Packlin;
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3916054326181876~1043090235";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -489,6 +490,7 @@
 				INFOPLIST_FILE = PackList/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Packlin;
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-3916054326181876~1043090235";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
