@@ -206,6 +206,11 @@ struct PackListView: View {
                 }
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
+
+                Text("このフッターの説明文は、設定で消せます")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .padding(.top, 20)
             .padding(.leading, 30)

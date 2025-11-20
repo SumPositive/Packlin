@@ -155,13 +155,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "* Tap the group icon to edit its details\n* Tap the row to show the item list\n* Press and hold the row to drag and reorder\n* The group icon status is shown as follows"
+            "value" : "• Edit a group: Tap the group icon\n• Show items: Tap the row\n• Reorder groups: Long-press a row and drag to reorder\n• Icons are displayed as follows:"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "・グループアイコンをタップすると内容を編集\n・行をタップするとアイテム一覧を表示\n・行を長押しするとドラッグして並べ替え\n・グループアイコンの表示状況は下記の通り"
+            "value" : "・グループを編集：グループアイコンをタップする\n・アイテムを表示：行をタップする\n・グループを並べ替え：行を長押ししてドラッグドロップ\n・アイコン表示は下記の通り"
           }
         }
       }
@@ -198,13 +198,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "* Tap the item icon to toggle the check status\n* Tap the row to open the edit screen\n* Tap the quantity field to edit the amount\n* Press and hold the row to drag and reorder\n* The item icon status is shown as follows"
+            "value" : "• Check an item: Tap the item icon\n• Edit an item: Tap the row\n• Edit quantity: Tap the quantity field\n• Reorder items: Long-press a row and drag to reorder\n• Icons are displayed as follows:"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "・アイテムアイコンをタップするとチェック切り替え\n・行をタップすると編集画面を表示\n・数量箇所をタップすると数量編集\n・行を長押しするとドラッグして並べ替え\n・アイテムアイコンの表示状況は下記の通り"
+            "value" : "・チェック：アイテムアイコンをタップする\n・アイテム編集：行をタップする\n・数量編集：数量箇所をタップする\n・アイテムを並べ替え：行を長押ししてドラッグドロップ\n・アイコン表示は下記の通り"
           }
         }
       }
@@ -256,13 +256,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "* Tap the pack icon to edit its details\n* Tap the row to show the group list\n* Press and hold the row to drag and reorder\n* The pack icon status is shown as follows"
+            "value" : "• Edit a pack: Tap the pack icon\n• Show groups: Tap the row\n• Reorder packs: Long-press a row and drag to reorder\n• Icons are displayed as follows:"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "・パックアイコンをタップすると内容を編集\n・行をタップするとグループ一覧を表示\n・行を長押しするとドラッグして並べ替え\n・パックアイコンの表示状況は下記の通り"
+            "value" : "・パックを編集：パックアイコンをタップする\n・グループを表示：行をタップする\n・パックを並べ替え：行を長押ししてドラッグドロップ\n・アイコン表示は下記の通り"
           }
         }
       }
@@ -363,6 +363,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit group"
+          }
+        }
+      }
+    },
+    "このフッターの説明文は、設定で消せます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This footer description can be hidden in the settings."
           }
         }
       }
