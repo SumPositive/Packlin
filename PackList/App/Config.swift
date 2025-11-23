@@ -32,9 +32,9 @@ let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
 
 //-------------------------------------- MAX関係
 
-let APP_MAX_PACK_ROWS : Int = 50
-let APP_MAX_PART_ROWS : Int = 50
-let APP_MAX_ITEM_ROWS : Int  = 100
+let APP_MAX_PACK_ROWS : Int = 30
+let APP_MAX_PART_ROWS : Int = 30
+let APP_MAX_ITEM_ROWS : Int = 100
 
 let APP_MAX_NAME_LEN : Int = 200     // .name 文字数
 let APP_MAX_MEMO_LEN : Int = 200     // .memo 文字数

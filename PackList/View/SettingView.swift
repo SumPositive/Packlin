@@ -407,9 +407,9 @@ struct SettingView: View {
 
         // 不揮発保存、初期値
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
+        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = true
         @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = true
-        @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+        @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = true
         @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
         
         // GALoggerのため変更前の設定値を記録する
