@@ -1,5 +1,4 @@
-# PackList
-モチメモ  V3
+# モチメモ/Packlin V3
 
 ## StoreKit 購入テスト環境について
 
