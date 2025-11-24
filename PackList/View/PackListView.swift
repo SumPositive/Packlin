@@ -84,7 +84,7 @@ struct PackListView: View {
                         } label: {
                             Image(systemName: "gearshape")
                                 .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolRenderingMode(.hierarchical)
                                 .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
                         }
                         .buttonStyle(.borderless)
@@ -92,7 +92,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：ボタンの役割をテキストで補足
-                            Text("ヘッダー.説明.設定")
+                            Text("設定を開く")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：巻き戻し操作の説明
-                            Text("ヘッダー.説明.Undo")
+                            Text("直前の変更を元に戻す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -148,7 +148,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：Redoの役割を説明
-                            Text("ヘッダー.説明.Redo")
+                            Text("Undoをやり直す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -178,7 +178,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：新規パック追加の説明
-                            Text("ヘッダー.説明.パック追加")
+                            Text("新しいパックを追加する")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -217,39 +217,6 @@ struct PackListView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     HStack(spacing: 8) {
-                        Image(systemName: "gearshape")
-                            .imageScale(.medium)
-                        Text("設定・オプション")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.medium)
-                        Text("Undo 元に戻す")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.medium)
-                        Text("Redo やり直す")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.medium)
-                            Image(systemName: "plus")
-                                .imageScale(.small)
-                                .padding(.top, 4)
-                        }
-                        Text("新しいパックを追加する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
                         Image(systemName: "case")
                             .imageScale(.medium)
                         Text("パックの名称やメモを編集する")
@@ -279,7 +246,7 @@ struct PackListView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
+                    .padding(.top, 8)
                 Group {
                     HStack(spacing: 8) {
                         ZStack {
@@ -316,7 +283,7 @@ struct PackListView: View {
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
 
-                Text("このフッターの説明文は、設定で消せます")
+                Text("この説明文は、初心者モードでだけ表示されます")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .trailing)

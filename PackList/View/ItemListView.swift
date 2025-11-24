@@ -103,7 +103,7 @@ struct ItemListView: View {
                         .disabled(isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("アイテムヘッダー.説明.戻る")
+                            Text("グループ一覧に戻る")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -126,7 +126,7 @@ struct ItemListView: View {
                         .disabled(!canUndo || isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("アイテムヘッダー.説明.Undo")
+                            Text("直前の変更を元に戻す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -157,7 +157,7 @@ struct ItemListView: View {
                         .disabled(!canRedo || isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("アイテムヘッダー.説明.Redo")
+                            Text("Undoをやり直す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -177,7 +177,7 @@ struct ItemListView: View {
                         .disabled(isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("アイテムヘッダー.説明.アイテム追加")
+                            Text("新しいアイテムを追加する")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -253,36 +253,6 @@ struct ItemListView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     HStack(spacing: 8) {
-                        Image(systemName: "chevron.backward")
-                            .imageScale(.medium)
-                            .padding(.leading, 4)
-                            .padding(.trailing, 2)
-                        Text("グループ画面に戻る")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.medium)
-                        Text("Undo 元に戻す")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.medium)
-                        Text("Redo やり直す")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "plus.circle")
-                            .imageScale(.medium)
-                        Text("新しいアイテムを追加する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
                         Image(systemName: "circle")
                             .imageScale(.medium)
                         Text("チェックする／しない")
@@ -308,11 +278,12 @@ struct ItemListView: View {
                 }
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
-                
+
                 Text("アイテムの状態")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)
                 Group {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle")

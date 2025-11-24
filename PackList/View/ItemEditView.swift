@@ -321,7 +321,7 @@ struct ItemEditView: View {
                     .buttonStyle(.borderless)
 
                     if isBeginnerMode {
-                        Text("アイテムヘッダー.説明.戻る")
+                        Text("アイテム一覧に戻る")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -344,7 +344,7 @@ struct ItemEditView: View {
                     .disabled(!canUndo)
 
                     if isBeginnerMode {
-                        Text("アイテムヘッダー.説明.Undo")
+                        Text("直前の変更を元に戻す")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -375,7 +375,7 @@ struct ItemEditView: View {
                     .disabled(!canRedo)
 
                     if isBeginnerMode {
-                        Text("アイテムヘッダー.説明.Redo")
+                        Text("Undoをやり直す")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -396,7 +396,7 @@ struct ItemEditView: View {
                     .buttonStyle(.borderless)
 
                     if isBeginnerMode {
-                        Text("アイテムヘッダー.説明.アイテム追加")
+                        Text("新しいアイテムを追加する")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)

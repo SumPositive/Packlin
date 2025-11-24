@@ -54,8 +54,8 @@ struct SettingView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         
                         SettingSection {
-                            // 情報
-                            InformationView()
+                            // カスタム設定
+                            CustomSetView()
                         }
                         
                         SettingSection {
@@ -64,8 +64,8 @@ struct SettingView: View {
                         }
                         
                         SettingSection {
-                            // カスタム設定
-                            CustomSetView()
+                            // 情報
+                            InformationView()
                         }
                         
                         SettingSection {

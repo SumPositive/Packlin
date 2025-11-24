@@ -172,7 +172,7 @@ struct GroupListView: View {
                         .disabled(isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("グループヘッダー.説明.戻る")
+                            Text("パック一覧に戻る")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -195,7 +195,7 @@ struct GroupListView: View {
                         .disabled(!history.canUndo || isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("グループヘッダー.説明.Undo")
+                            Text("直前の変更を元に戻す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -226,7 +226,7 @@ struct GroupListView: View {
                         .disabled(!history.canRedo || isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("グループヘッダー.説明.Redo")
+                            Text("Undoをやり直す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -246,7 +246,7 @@ struct GroupListView: View {
                         .disabled(isShowingPopup)
 
                         if isBeginnerMode {
-                            Text("グループヘッダー.説明.グループ追加")
+                            Text("新しいグループを追加する")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -305,36 +305,6 @@ struct GroupListView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     HStack(spacing: 8) {
-                        Image(systemName: "chevron.backward")
-                            .imageScale(.medium)
-                            .padding(.leading, 4)
-                            .padding(.trailing, 2)
-                        Text("パック画面に戻る")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.medium)
-                        Text("Undo 元に戻す")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.medium)
-                        Text("Redo やり直す")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "plus.square")
-                            .imageScale(.medium)
-                        Text("新しいグループを追加する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
                         Image(systemName: "square")
                             .imageScale(.medium)
                         Text("グループの名称やメモを編集する")
@@ -360,11 +330,12 @@ struct GroupListView: View {
                 }
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
-                
+
                 Text("グループの状態")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)
                 Group {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.square")

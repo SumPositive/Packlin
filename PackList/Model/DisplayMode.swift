@@ -23,7 +23,7 @@ enum DisplayMode: String, CaseIterable, Identifiable, Codable {
         case .beginner:
             return "初心者"
         case .expert:
-            return "上級者"
+            return "達人"
         }
     }
 }
