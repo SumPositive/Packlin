@@ -17,7 +17,6 @@ struct ItemListView: View {
     @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
@@ -75,8 +74,8 @@ struct ItemListView: View {
                     .cornerRadius(16)
                     .padding(.top, -20) // 上余白を減らす
                 } footer: {
-                    if footerMessage {
-                        // フッター：操作説明、アイコン説明
+                    if isBeginnerMode {
+                        // 初心者モードでは操作説明をフッターに表示して迷いを減らす
                         FooterView()
                             .listRowSeparator(.hidden) // 下線なし
                     }
