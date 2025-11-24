@@ -115,7 +115,14 @@ struct ItemRowView: View {
                             .fill(COLOR_ROW_GROUP)
                     )
 
-                    if !item.memo.isEmpty {
+                    // メモ
+                    if item.name.isEmpty, item.memo.isEmpty {
+                        Text("アイテムとは、持ち物そのもの。最小単位です")
+                            .lineLimit(3)
+                            .font(FONT_MEMO)
+                            .foregroundStyle(.secondary)
+                            .padding(.leading, 4)
+                    }else{
                         Text(item.memo)
                             .lineLimit(3)
                             .font(FONT_MEMO)

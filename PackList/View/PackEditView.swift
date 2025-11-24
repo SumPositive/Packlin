@@ -154,15 +154,6 @@ struct PackEditView: View {
                                     pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                                 }
                             }
-                        
-                        if pack.memo.isEmpty {
-                            // メモ未入力時のガイド文を表示
-                            Text("下にあるボタンからAIに作ってもらうこともできますよ")
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 20)
-                                .padding(.horizontal, 16)
-                                .allowsHitTesting(false)
-                        }
                     }
                     .frame(height: 140)
                 }

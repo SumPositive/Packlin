@@ -101,7 +101,13 @@ struct GroupRowView: View {
                         .foregroundStyle(.clear)
                 }
                 // メモ
-                if !group.memo.isEmpty {
+                if group.name.isEmpty, group.memo.isEmpty {
+                    Text("グループとは、持ち物をポーチなどで小分けにしたものです")
+                        .lineLimit(3)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                }else{
                     Text(group.memo)
                         .lineLimit(3)
                         .font(FONT_MEMO)

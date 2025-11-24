@@ -19,7 +19,6 @@ struct PackRowView: View {
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
-    private var isNamePlaceholder: Bool { pack.name.isEmpty }
     private var weightUnit: String {
         weightDisplayInKg ? String(localized: "kg") : String(localized: "g")
     }
@@ -87,7 +86,7 @@ struct PackRowView: View {
                 pack.name.placeholderText("新しいパック")
                     .lineLimit(3)
                     .font(FONT_NAME)
-                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                    .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
                 Spacer()
             }
             
@@ -113,7 +112,13 @@ struct PackRowView: View {
                         .foregroundStyle(.clear)
                 }
                 // メモ
-                if !pack.memo.isEmpty {
+                if pack.name.isEmpty, pack.memo.isEmpty {
+                    Text("パックとは、持ち物をバッグやリュックに全てまとめたものです")
+                        .lineLimit(3)
+                        .font(FONT_MEMO)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                }else{
                     Text(pack.memo)
                         .lineLimit(3)
                         .font(FONT_MEMO)
