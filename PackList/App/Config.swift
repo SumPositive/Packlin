@@ -116,6 +116,8 @@ let DEF_weightDisplayInKg = true
 let DEF_linkCheckWithStock = true
 // フッターの説明文（非表示/表示）
 let DEF_footerMessage = true
+// ヘッダーの説明を表示するモード（初心者／上級者）
+let DEF_displayMode: DisplayMode = .beginner
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
 let DEF_autoItemReorder = false
 
@@ -131,6 +133,8 @@ enum AppStorageKey {
     static let linkCheckWithStock = "setting.linkCheckWithStock"
     // フッターの説明文（非表示/表示）
     static let footerMessage = "setting.footerMessage"
+    // 表示モード（初心者／上級者）
+    static let displayMode = "setting.displayMode"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
     static let autoItemReorder = "setting.autoItemReorder"
     // AI生成画面での要望テキスト（AppStorageで復元するためのキー）

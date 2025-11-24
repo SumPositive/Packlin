@@ -16,6 +16,8 @@ struct PackListView: View {
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
+    // 表示モード（初心者／上級者）をAppStorageで永続化
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
@@ -24,6 +26,10 @@ struct PackListView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var sortedPacks: [M1Pack]
 
     private let rowHeight: CGFloat = 44
+    // 初心者モード時は説明文で高さが増えるため、可変のヘッダー高さを用意
+    private var headerHeight: CGFloat { isBeginnerMode ? 88 : rowHeight }
+    // 初心者モードかどうかでヘッダーの説明を出し分ける
+    private var isBeginnerMode: Bool { displayMode == .beginner }
     // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
     private var isShowingEditSheet: Bool { editingPack != nil }
 
@@ -69,33 +75,55 @@ struct PackListView: View {
             .padding(.horizontal, 0)
             .safeAreaInset(edge: .top) { // ヘッダ部
                 HStack {
-                    // 設定
-                    Button {
-                        // Setting
-                        popupAnchor = nil // 中央
-                        isShowSetting = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
+                    // 設定ボタンと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            // Setting
+                            popupAnchor = nil // 中央
+                            isShowSetting = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingEditSheet)
+
+                        if isBeginnerMode {
+                            // 初心者向け：ボタンの役割をテキストで補足
+                            Text("ヘッダー.説明.設定")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingEditSheet)
-                    .padding(.horizontal, 12)
-                    
-                    // Undo
-                    Button {
-                        // 履歴サービスへ委譲して巻き戻す
-                        history.undo(context: modelContext)
-                    } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
+
+                    // Undoボタンと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            // 履歴サービスへ委譲して巻き戻す
+                            history.undo(context: modelContext)
+                        } label: {
+                            Image(systemName: "arrow.uturn.backward")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(!history.canUndo || isShowingEditSheet)
+
+                        if isBeginnerMode {
+                            // 初心者向け：巻き戻し操作の説明
+                            Text("ヘッダー.説明.Undo")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(!history.canUndo || isShowingEditSheet)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
 
                     Spacer()
 
@@ -104,41 +132,63 @@ struct PackListView: View {
                         .lineLimit(1)
 
                     Spacer()
-                    
-                    // Redo
-                    Button {
-                        // 履歴サービスを用いて直前のUndoをやり直す
-                        history.redo(context: modelContext)
-                    } label: {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(!history.canRedo || isShowingEditSheet)
-                    .padding(.horizontal, 12)
-                    
-                    // 新しいパック追加
-                    Button {
-                        addPack()
-                    }
-                    label: {
-                        ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            Image(systemName: "plus")
+
+                    // Redoボタンと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            // 履歴サービスを用いて直前のUndoをやり直す
+                            history.redo(context: modelContext)
+                        } label: {
+                            Image(systemName: "arrow.uturn.forward")
                                 .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical)
-                                .padding(.top, 4)
+                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(!history.canRedo || isShowingEditSheet)
+
+                        if isBeginnerMode {
+                            // 初心者向け：Redoの役割を説明
+                            Text("ヘッダー.説明.Redo")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
                         }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingEditSheet)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
+
+                    // 新しいパック追加と説明
+                    VStack(spacing: 6) {
+                        Button {
+                            addPack()
+                        }
+                        label: {
+                            ZStack {
+                                Image(systemName: "case")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                Image(systemName: "plus")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .padding(.top, 4)
+                            }
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingEditSheet)
+
+                        if isBeginnerMode {
+                            // 初心者向け：新規パック追加の説明
+                            Text("ヘッダー.説明.パック追加")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: 92)
+                    .padding(.horizontal, 6)
                 }
                 .tint(.primary) // ヘッダ部は.accentColorにしない
-                .frame(height: rowHeight)
+                .frame(height: headerHeight)
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }

@@ -411,17 +411,38 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
         @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
-        
+        @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+
         // GALoggerのため変更前の設定値を記録する
         @State var ona_insertionPosition: InsertionPosition?
         @State var ona_showNeedWeight: Bool?
         @State var ona_weightDisplayInKg: Bool?
         @State var ona_linkCheckWithStock: Bool?
         @State var ona_footerMessage: Bool?
-        
+        @State var ona_displayMode: DisplayMode?
+
         var body: some View {
 
             VStack(alignment: .leading, spacing: 20) {
+                // 表示モード（初心者／上級者）
+                HStack(spacing: 8) {
+                    Label {
+                        Text("表示モード")
+                            .font(.callout)
+                    } icon: {
+                        Image(systemName: "lightbulb.2")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+
+                    Picker("表示モード", selection: $displayMode) {
+                        ForEach(DisplayMode.allCases) { mode in
+                            Text(mode.localizedKey)
+                                .tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 // 新規追加の位置
                 HStack(spacing: 8) {
                     Label {
@@ -494,6 +515,7 @@ struct SettingView: View {
                 ona_weightDisplayInKg  = weightDisplayInKg
                 ona_linkCheckWithStock = linkCheckWithStock
                 ona_footerMessage      = footerMessage
+                ona_displayMode        = displayMode
             }
             .onDisappear {
                 // 変更あればGALogger送信する
@@ -521,6 +543,11 @@ struct SettingView: View {
                     GALogger.log(.function(name: "setting",
                                            option: "footerMessage:"
                                            + footerMessage.description))
+                }
+                if let ona = ona_displayMode, ona != displayMode {
+                    GALogger.log(.function(name: "setting",
+                                           option: "displayMode:"
+                                           + displayMode.rawValue))
                 }
             }
         }
