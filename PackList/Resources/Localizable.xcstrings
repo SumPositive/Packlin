@@ -150,22 +150,6 @@
         }
       }
     },
-    "groupList.footer.description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Edit a group: Tap the group icon\n• Show items: Tap the row\n• Reorder groups: Long-press a row and drag to reorder\n• Icons are displayed as follows:"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "・グループを編集：グループアイコンをタップする\n・アイテムを表示：行をタップする\n・グループを並べ替え：行を長押ししてドラッグドロップ\n・アイコン表示は下記の通り"
-          }
-        }
-      }
-    },
     "info.url" : {
       "localizations" : {
         "en" : {
@@ -188,23 +172,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "item (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "itemList.footer.description" : {
-      "comment" : "このようなケースでだけ ja を使用する",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Check an item: Tap the item icon\n• Edit an item: Tap the row\n• Edit quantity: Tap the quantity field\n• Reorder items: Long-press a row and drag to reorder\n• Icons are displayed as follows:"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "・チェック：アイテムアイコンをタップする\n・アイテム編集：行をタップする\n・数量編集：数量箇所をタップする\n・アイテムを並べ替え：行を長押ししてドラッグドロップ\n・アイコン表示は下記の通り"
           }
         }
       }
@@ -250,22 +217,11 @@
         }
       }
     },
-    "packList.footer.description" : {
-      "comment" : "このようなケースでだけ ja を使用する",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Edit a pack: Tap the pack icon\n• Show groups: Tap the row\n• Reorder packs: Long-press a row and drag to reorder\n• Icons are displayed as follows:"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "・パックを編集：パックアイコンをタップする\n・グループを表示：行をタップする\n・パックを並べ替え：行を長押ししてドラッグドロップ\n・アイコン表示は下記の通り"
-          }
-        }
-      }
+    "Redo やり直す" : {
+
+    },
+    "Undo 元に戻す" : {
+
     },
     "アイテムが見つかりません" : {
       "localizations" : {
@@ -277,6 +233,9 @@
         }
       }
     },
+    "アイテムの状態" : {
+
+    },
     "アイテムを検索" : {
       "localizations" : {
         "en" : {
@@ -286,6 +245,12 @@
           }
         }
       }
+    },
+    "アイテム一覧を表示する" : {
+
+    },
+    "アイテム明細を表示し編集する" : {
+
     },
     "アプリの紹介・取扱説明" : {
       "localizations" : {
@@ -327,6 +292,9 @@
         }
       }
     },
+    "グループの名称やメモを編集する" : {
+
+    },
     "グループの末尾" : {
       "localizations" : {
         "en" : {
@@ -336,6 +304,12 @@
           }
         }
       }
+    },
+    "グループの状態" : {
+
+    },
+    "グループ一覧を表示する" : {
+
     },
     "グループ内の必要なアイテムが全てチェック済み" : {
       "localizations" : {
@@ -356,6 +330,9 @@
           }
         }
       }
+    },
+    "グループ画面に戻る" : {
+
     },
     "グループ編集" : {
       "localizations" : {
@@ -406,6 +383,9 @@
           }
         }
       }
+    },
+    "チェックする／しない" : {
+
     },
     "チェックと在庫を連動" : {
       "localizations" : {
@@ -507,6 +487,9 @@
         }
       }
     },
+    "ドラッグドロップで行を移動する" : {
+
+    },
     "パックが見つかりません" : {
       "localizations" : {
         "en" : {
@@ -527,6 +510,9 @@
         }
       }
     },
+    "パックの名称やメモを編集する" : {
+
+    },
     "パックの末尾" : {
       "localizations" : {
         "en" : {
@@ -536,6 +522,9 @@
           }
         }
       }
+    },
+    "パックの状態" : {
+
     },
     "パックの要望入力" : {
       "localizations" : {
@@ -587,6 +576,9 @@
         }
       }
     },
+    "パック画面に戻る" : {
+
+    },
     "パック編集" : {
       "localizations" : {
         "en" : {
@@ -606,6 +598,9 @@
           }
         }
       }
+    },
+    "ボタンの説明" : {
+
     },
     "メモ" : {
       "localizations" : {
@@ -1009,6 +1004,9 @@
         }
       }
     },
+    "新しいアイテムを追加する" : {
+
+    },
     "新しいグループ" : {
       "localizations" : {
         "en" : {
@@ -1018,6 +1016,9 @@
           }
         }
       }
+    },
+    "新しいグループを追加する" : {
+
     },
     "新しいパック" : {
       "localizations" : {
@@ -1038,6 +1039,9 @@
           }
         }
       }
+    },
+    "新しいパックを追加する" : {
+
     },
     "新規追加位置" : {
       "localizations" : {
@@ -1188,6 +1192,9 @@
           }
         }
       }
+    },
+    "設定・オプション" : {
+
     },
     "認証に失敗しました。アプリを再起動して再度お試しください。" : {
       "localizations" : {

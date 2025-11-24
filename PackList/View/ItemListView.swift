@@ -197,40 +197,101 @@ struct ItemListView: View {
         }
     }
 
-    /// フッター：操作説明、アイコン説明
+    /// フッター：ボタンの説明
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("itemList.footer.description")
+                Text("ボタンの説明")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                Group {
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.backward")
+                            .imageScale(.medium)
+                            .padding(.leading, 4)
+                            .padding(.trailing, 2)
+                        Text("グループ画面に戻る")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.medium)
+                        Text("Undo 元に戻す")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.medium)
+                        Text("Redo やり直す")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle")
+                            .imageScale(.medium)
+                        Text("新しいアイテムを追加する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "circle")
+                            .imageScale(.medium)
+                        Text("チェックする／しない")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.right")
+                            .imageScale(.medium)
+                            .padding(.leading, 4)
+                            .padding(.trailing, 2)
+                        Text("アイテム明細を表示し編集する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "hand.draw")
+                            .imageScale(.medium)
+                        Text("ドラッグドロップで行を移動する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .padding(.leading, 16)
                 
+                Text("アイテムの状態")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .imageScale(.large)
                         Text("チェック済み")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.circle")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .imageScale(.large)
                         Text("充足（必要数を満たしている、十分な在庫あり）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .imageScale(.large)
                         Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.fill")
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            .imageScale(.large)
                         Text("不要（必要なし）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)

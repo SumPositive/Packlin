@@ -157,11 +157,75 @@ struct PackListView: View {
         }
     }
 
-    /// フッター：操作説明、アイコン説明
+    /// フッター：ボタンの説明
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("packList.footer.description")
+                Text("ボタンの説明")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Group {
+                    HStack(spacing: 8) {
+                        Image(systemName: "gearshape")
+                            .imageScale(.medium)
+                        Text("設定・オプション")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.medium)
+                        Text("Undo 元に戻す")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.medium)
+                        Text("Redo やり直す")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.medium)
+                            Image(systemName: "plus")
+                                .imageScale(.small)
+                                .padding(.top, 4)
+                        }
+                        Text("新しいパックを追加する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "case")
+                            .imageScale(.medium)
+                        Text("パックの名称やメモを編集する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.right")
+                            .imageScale(.medium)
+                            .padding(.horizontal, 4)
+                        Text("グループ一覧を表示する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "hand.draw")
+                            .imageScale(.medium)
+                        Text("ドラッグドロップで行を移動する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .padding(.leading, 16)
+                
+                Text("パックの状態")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -171,10 +235,8 @@ struct PackListView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Image(systemName: "checkmark")
                                 .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
                         Text("パック内の必要なアイテムが全てチェック済み")
@@ -185,10 +247,8 @@ struct PackListView: View {
                         ZStack {
                             Image(systemName: "case")
                                 .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             Image(systemName: "circle")
                                 .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 4)
                         }
                         Text("充足（必要数を満たしている、十分な在庫あり）")
@@ -198,7 +258,6 @@ struct PackListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "case")
                             .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)

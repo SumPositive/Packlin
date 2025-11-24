@@ -248,20 +248,80 @@ struct GroupListView: View {
         }
     }
     
-    /// セクション2・フッター：操作説明、アイコン説明
+    /// セクション2・フッター：ボタンの説明
     struct Section2FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("groupList.footer.description")
+                Text("ボタンの説明")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                Group {
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.backward")
+                            .imageScale(.medium)
+                            .padding(.leading, 4)
+                            .padding(.trailing, 2)
+                        Text("パック画面に戻る")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .imageScale(.medium)
+                        Text("Undo 元に戻す")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.uturn.forward")
+                            .imageScale(.medium)
+                        Text("Redo やり直す")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.square")
+                            .imageScale(.medium)
+                        Text("新しいグループを追加する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "square")
+                            .imageScale(.medium)
+                        Text("グループの名称やメモを編集する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.right")
+                            .imageScale(.medium)
+                            .padding(.leading, 4)
+                            .padding(.trailing, 2)
+                        Text("アイテム一覧を表示する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "hand.draw")
+                            .imageScale(.medium)
+                        Text("ドラッグドロップで行を移動する")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .padding(.leading, 16)
                 
+                Text("グループの状態")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.square")
                             .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("グループ内の必要なアイテムが全てチェック済み")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -269,7 +329,6 @@ struct GroupListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "circle.square")
                             .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("充足（必要数を満たしている、十分な在庫あり）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -277,7 +336,6 @@ struct GroupListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "square")
                             .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
