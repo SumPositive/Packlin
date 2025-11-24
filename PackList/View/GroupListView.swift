@@ -16,7 +16,6 @@ struct GroupListView: View {
     @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
     // 表示モード（初心者／上級者）をPackListと同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
@@ -143,8 +142,8 @@ struct GroupListView: View {
                     .padding(.horizontal, 30)
                 }
                 footer: {
-                    if footerMessage {
-                        // セクション2・フッター：操作説明、アイコン説明
+                    if isBeginnerMode {
+                        // 初心者モードでは操作説明をフッターに表示して迷いを減らす
                         Section2FooterView()
                             .listRowSeparator(.hidden) // 下線なし
                     }

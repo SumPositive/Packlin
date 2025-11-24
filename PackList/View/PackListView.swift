@@ -15,7 +15,6 @@ struct PackListView: View {
     @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
     // 表示モード（初心者／上級者）をAppStorageで永続化
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
@@ -62,8 +61,8 @@ struct PackListView: View {
                     .onMove(perform: movePack)
                 }
                 footer: {
-                    if footerMessage {
-                        // フッター：操作説明、アイコン説明
+                    if isBeginnerMode {
+                        // 表示モードが初心者なら補足説明をフッターに表示する
                         FooterView()
                             .listRowSeparator(.hidden) // 下線なし
                     }

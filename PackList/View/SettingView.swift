@@ -410,7 +410,6 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = DEF_showNeedWeight
         @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
-        @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
         @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
         // GALoggerのため変更前の設定値を記録する
@@ -418,7 +417,6 @@ struct SettingView: View {
         @State var ona_showNeedWeight: Bool?
         @State var ona_weightDisplayInKg: Bool?
         @State var ona_linkCheckWithStock: Bool?
-        @State var ona_footerMessage: Bool?
         @State var ona_displayMode: DisplayMode?
 
         var body: some View {
@@ -495,18 +493,6 @@ struct SettingView: View {
                         }
                     }
                 }
-                // フッターの説明文（非表示/表示）
-                Toggle(isOn: $footerMessage) {
-                    Label {
-                        Text("フッターの説明文")
-                            .font(.body)
-                    } icon: {
-                        ZStack{
-                            Image(systemName: "platter.filled.bottom.iphone")
-                                .symbolRenderingMode(.hierarchical)
-                        }
-                    }
-                }
             }
             .onAppear {
                 // GALoggerのため変更前の設定値を記録する
@@ -514,45 +500,38 @@ struct SettingView: View {
                 ona_showNeedWeight     = showNeedWeight
                 ona_weightDisplayInKg  = weightDisplayInKg
                 ona_linkCheckWithStock = linkCheckWithStock
-                ona_footerMessage      = footerMessage
                 ona_displayMode        = displayMode
             }
             .onDisappear {
                 // 変更あればGALogger送信する
                 if let ona = ona_insertionPosition, ona != insertionPosition {
+                    // 変更内容を文字列として連結し、ログに送信する
                     GALogger.log(.function(name: "setting",
-                                           option: "insertionPosition:"
-                                                    + insertionPosition.rawValue))
+                                           option: "insertionPosition:" + insertionPosition.rawValue))
                 }
                 if let ona = ona_showNeedWeight, ona != showNeedWeight {
+                    // 初心者向け重量表示の変更を検知して記録する
                     GALogger.log(.function(name: "setting",
-                                           option: "showNeedWeight:"
-                                           + showNeedWeight.description))
+                                           option: "showNeedWeight:" + showNeedWeight.description))
                 }
                 if let ona = ona_weightDisplayInKg, ona != weightDisplayInKg {
+                    // 単位変更のトグル操作をそのまま文字列化して送信
                     GALogger.log(.function(name: "setting",
-                                           option: "weightDisplayInKg:"
-                                           + weightDisplayInKg.description))
+                                           option: "weightDisplayInKg:" + weightDisplayInKg.description))
                 }
                 if let ona = ona_linkCheckWithStock, ona != linkCheckWithStock {
+                    // チェックと在庫連動の状態変化をログする
                     GALogger.log(.function(name: "setting",
-                                           option: "linkCheckWithStock:"
-                                           + linkCheckWithStock.description))
-                }
-                if let ona = ona_footerMessage, ona != footerMessage {
-                    GALogger.log(.function(name: "setting",
-                                           option: "footerMessage:"
-                                           + footerMessage.description))
+                                           option: "linkCheckWithStock:" + linkCheckWithStock.description))
                 }
                 if let ona = ona_displayMode, ona != displayMode {
+                    // 表示モード切り替えを初心者・達人それぞれで判定して送信
                     GALogger.log(.function(name: "setting",
-                                           option: "displayMode:"
-                                           + displayMode.rawValue))
+                                           option: "displayMode:" + displayMode.rawValue))
                 }
             }
         }
     }
-    
     /// 応援・寄付
     struct DonationView: View {
         @State private var showAd = false
