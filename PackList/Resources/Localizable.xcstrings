@@ -137,12 +137,86 @@
         }
       }
     },
+    "ヘッダー.説明.Redo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo the previous undo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "やり直しで直前のUndoを戻します"
+          }
+        }
+      }
+    },
+    "ヘッダー.説明.Undo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo the latest change."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直前の変更を元に戻します"
+          }
+        }
+      }
+    },
+    "ヘッダー.説明.パック追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new pack."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新しいパックを作成します"
+          }
+        }
+      }
+    },
+    "ヘッダー.説明.設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open settings and options."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定画面を開きます"
+          }
+        }
+      }
+    },
     "g": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "g"
+          }
+        }
+      }
+    },
+    "上級者": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expert"
           }
         }
       }
@@ -169,6 +243,16 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "https://docs.azukid.com/sumpo/jp/packlin"
+          }
+        }
+      }
+    },
+    "初心者": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
           }
         }
       }
@@ -200,6 +284,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "kg"
+          }
+        }
+      }
+    },
+    "表示モード": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display mode"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示モード"
           }
         }
       }
