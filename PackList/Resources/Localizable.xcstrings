@@ -153,6 +153,22 @@
         }
       }
     },
+    "グループヘッダー.説明.Redo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo the last undone change in groups."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グループで元に戻した内容をやり直します"
+          }
+        }
+      }
+    },
     "ヘッダー.説明.Undo": {
       "localizations": {
         "en": {
@@ -165,6 +181,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "直前の変更を元に戻します"
+          }
+        }
+      }
+    },
+    "グループヘッダー.説明.Undo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo the latest group change."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直前のグループ編集を元に戻します"
           }
         }
       }
@@ -185,6 +217,22 @@
         }
       }
     },
+    "グループヘッダー.説明.グループ追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new group in this pack."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このパックに新しいグループを追加します"
+          }
+        }
+      }
+    },
     "ヘッダー.説明.設定": {
       "localizations": {
         "en": {
@@ -197,6 +245,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "設定画面を開きます"
+          }
+        }
+      }
+    },
+    "グループヘッダー.説明.戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to the pack list."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パック一覧に戻ります"
+          }
+        }
+      }
+    },
+    "アイテムヘッダー.説明.Redo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo the last undone change in items."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アイテムで元に戻した内容をやり直します"
+          }
+        }
+      }
+    },
+    "アイテムヘッダー.説明.Undo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo the latest item change."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直前のアイテム変更を元に戻します"
+          }
+        }
+      }
+    },
+    "アイテムヘッダー.説明.アイテム追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a new item to this group."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このグループに新しいアイテムを追加します"
+          }
+        }
+      }
+    },
+    "アイテムヘッダー.説明.戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to the group list."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グループ一覧に戻ります"
           }
         }
       }

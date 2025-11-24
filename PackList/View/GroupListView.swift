@@ -17,12 +17,18 @@ struct GroupListView: View {
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
+    // 表示モード（初心者／上級者）をPackListと同じキーで共有し、ヘッダー表示を切り替える
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
 
     private let rowHeight: CGFloat = 44
+    // 初心者モードでは説明文を表示するためヘッダーを少し高くしておく
+    private var headerHeight: CGFloat { isBeginnerMode ? 88 : rowHeight }
+    // 説明文を出すかどうかのフラグを共通計算にまとめる
+    private var isBeginnerMode: Bool { displayMode == .beginner }
 
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
@@ -152,30 +158,51 @@ struct GroupListView: View {
             //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) { // ヘッダ部
                 HStack {
-                    // 戻る
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.backward")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingPopup)
-                    .padding(.horizontal, 12)
+                    // 戻るボタンと初心者向け説明
+                    VStack(spacing: 6) {
+                        Button {
+                            // アイテム一覧を閉じて親画面に戻る
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.backward")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingPopup)
 
-                    // Undo
-                    Button {
-                        // 履歴サービスを介して一括で巻き戻す
-                        history.undo(context: modelContext)
-                    } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical)
+                        if isBeginnerMode {
+                            Text("グループヘッダー.説明.戻る")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(!history.canUndo || isShowingPopup)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
+
+                    // Undoボタンと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            // 履歴サービスを介して一括で巻き戻す
+                            history.undo(context: modelContext)
+                        } label: {
+                            Image(systemName: "arrow.uturn.backward")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(!history.canUndo || isShowingPopup)
+
+                        if isBeginnerMode {
+                            Text("グループヘッダー.説明.Undo")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
 
                     Spacer(minLength: 0)
 
@@ -185,31 +212,51 @@ struct GroupListView: View {
 
                     Spacer(minLength: 0)
 
-                    // Redo
-                    Button {
-                        // Undoで戻した内容を再適用する
-                        history.redo(context: modelContext)
-                    } label: {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(!history.canRedo || isShowingPopup)
-                    .padding(.horizontal, 12)
+                    // Redoボタンと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            // Undoで戻した内容を再適用する
+                            history.redo(context: modelContext)
+                        } label: {
+                            Image(systemName: "arrow.uturn.forward")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(!history.canRedo || isShowingPopup)
 
-                    // 新しいグループ追加
-                    Button(action: addGroup) {
-                        Image(systemName: "plus.square")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
+                        if isBeginnerMode {
+                            Text("グループヘッダー.説明.Redo")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingPopup)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
+
+                    // 新しいグループ追加と説明
+                    VStack(spacing: 6) {
+                        Button(action: addGroup) {
+                            Image(systemName: "plus.square")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingPopup)
+
+                        if isBeginnerMode {
+                            Text("グループヘッダー.説明.グループ追加")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: 92)
+                    .padding(.horizontal, 6)
                 }
                 .tint(.primary)
-                .frame(height: rowHeight)
+                .frame(height: headerHeight)
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }

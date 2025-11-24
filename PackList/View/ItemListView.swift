@@ -18,6 +18,8 @@ struct ItemListView: View {
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
+    // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -31,6 +33,10 @@ struct ItemListView: View {
     }
 
     private let rowHeight: CGFloat = 44
+    // 初心者モードでは説明文を表示するため、ヘッダーを高くして余裕を確保
+    private var headerHeight: CGFloat { isBeginnerMode ? 88 : rowHeight }
+    // 説明文表示判定をまとめておく
+    private var isBeginnerMode: Bool { displayMode == .beginner }
 
     // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用
     // そのため、どちらかが表示されている間はナビバーボタンを非活性にする
@@ -83,31 +89,51 @@ struct ItemListView: View {
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設する
                 HStack(spacing: 0) {
-                    // 戻る
-                    Button {
-                        dismiss()
-                        // GroupListView.onAppearで.save()が呼ばれる
-                    } label: {
-                        Image(systemName: "chevron.backward")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingPopup)
-                    .padding(.horizontal, 12)
+                    // 戻るボタンと初心者向け説明
+                    VStack(spacing: 6) {
+                        Button {
+                            dismiss()
+                            // GroupListView.onAppearで.save()が呼ばれる
+                        } label: {
+                            Image(systemName: "chevron.backward")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingPopup)
 
-                    // Undo
-                    Button {
-                        canUndo = false
-                        modelContext.undoManager?.performUndo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical)
+                        if isBeginnerMode {
+                            Text("アイテムヘッダー.説明.戻る")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(!canUndo || isShowingPopup)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
+
+                    // Undoと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            canUndo = false
+                            modelContext.undoManager?.performUndo()
+                        } label: {
+                            Image(systemName: "arrow.uturn.backward")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(!canUndo || isShowingPopup)
+
+                        if isBeginnerMode {
+                            Text("アイテムヘッダー.説明.Undo")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
 
                     Spacer(minLength: 0)
 
@@ -117,31 +143,51 @@ struct ItemListView: View {
 
                     Spacer(minLength: 0)
 
-                    // Redo
-                    Button {
-                        canRedo = false
-                        modelContext.undoManager?.performRedo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(!canRedo || isShowingPopup)
-                    .padding(.horizontal, 12)
+                    // Redoと説明
+                    VStack(spacing: 6) {
+                        Button {
+                            canRedo = false
+                            modelContext.undoManager?.performRedo()
+                        } label: {
+                            Image(systemName: "arrow.uturn.forward")
+                                .imageScale(.small)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(!canRedo || isShowingPopup)
 
-                    // 新しいアイテム追加ボタン
-                    Button(action: addItem) {
-                        Image(systemName: "plus.circle")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
+                        if isBeginnerMode {
+                            Text("アイテムヘッダー.説明.Redo")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingPopup)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 76)
+                    .padding(.horizontal, 6)
+
+                    // 新しいアイテム追加と説明
+                    VStack(spacing: 6) {
+                        Button(action: addItem) {
+                            Image(systemName: "plus.circle")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingPopup)
+
+                        if isBeginnerMode {
+                            Text("アイテムヘッダー.説明.アイテム追加")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: 92)
+                    .padding(.horizontal, 6)
                 }
                 .tint(.primary)
-                .frame(height: rowHeight)
+                .frame(height: headerHeight)
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)
             }
