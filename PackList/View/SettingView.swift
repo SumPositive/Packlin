@@ -505,29 +505,29 @@ struct SettingView: View {
             .onDisappear {
                 // 変更あればGALogger送信する
                 if let ona = ona_insertionPosition, ona != insertionPosition {
+                    // 変更内容を文字列として連結し、ログに送信する
                     GALogger.log(.function(name: "setting",
-                                           option: "insertionPosition:",
-                                                    + insertionPosition.rawValue))
+                                           option: "insertionPosition:" + insertionPosition.rawValue))
                 }
                 if let ona = ona_showNeedWeight, ona != showNeedWeight {
+                    // 初心者向け重量表示の変更を検知して記録する
                     GALogger.log(.function(name: "setting",
-                                           option: "showNeedWeight:",
-                                           + showNeedWeight.description))
+                                           option: "showNeedWeight:" + showNeedWeight.description))
                 }
                 if let ona = ona_weightDisplayInKg, ona != weightDisplayInKg {
+                    // 単位変更のトグル操作をそのまま文字列化して送信
                     GALogger.log(.function(name: "setting",
-                                           option: "weightDisplayInKg:",
-                                           + weightDisplayInKg.description))
+                                           option: "weightDisplayInKg:" + weightDisplayInKg.description))
                 }
                 if let ona = ona_linkCheckWithStock, ona != linkCheckWithStock {
+                    // チェックと在庫連動の状態変化をログする
                     GALogger.log(.function(name: "setting",
-                                           option: "linkCheckWithStock:",
-                                           + linkCheckWithStock.description))
+                                           option: "linkCheckWithStock:" + linkCheckWithStock.description))
                 }
                 if let ona = ona_displayMode, ona != displayMode {
+                    // 表示モード切り替えを初心者・達人それぞれで判定して送信
                     GALogger.log(.function(name: "setting",
-                                           option: "displayMode:",
-                                           + displayMode.rawValue))
+                                           option: "displayMode:" + displayMode.rawValue))
                 }
             }
         }
