@@ -16,8 +16,8 @@ struct GroupRowView: View {
 
     @Environment(\.modelContext) private var modelContext
 
-    @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = false
-    @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = false
+    @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = DEF_showNeedWeight
+    @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
 
     @State private var rowFrame: CGRect?
 

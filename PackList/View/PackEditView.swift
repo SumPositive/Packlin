@@ -16,7 +16,7 @@ struct PackEditView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     // 不揮発保存：チェックと在庫数を連動させる
-    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
 
     @FocusState private var nameIsFocused: Bool
 

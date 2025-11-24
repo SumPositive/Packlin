@@ -1169,12 +1169,12 @@
         }
       }
     },
-    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください。\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
+    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください（最大%lld文字）\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Share details like destination, schedule, purpose, group size, weather, and activities.\n\nExample: 6-day family trip to Italy and Spain, four people, expect rain, pack a first-aid kit."
+            "value" : "Feel free to list lots of details — destination, dates, purpose, group size, weather, activities, anything! (Up to %lld characters)\n\nExample: 6-day family trip to Italy and Spain, four people, expect rain, pack a first-aid kit."
           }
         }
       }

@@ -17,7 +17,7 @@ struct ItemSortListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = false
+    @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
 
     @State private var canUndo = false
     @State private var canRedo = false

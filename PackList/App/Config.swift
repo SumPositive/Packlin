@@ -106,20 +106,33 @@ let FONT_EDIT: Font = .title2
 
 // Setting 初期値
 
+// 新規追加の位置
+let DEF_insertionPosition: InsertionPosition = .head
+// 必要重量を表示する
+let DEF_showNeedWeight = true
+// 重量計をKgで表示
+let DEF_weightDisplayInKg = true
+// チェックと在庫数を連動させる　　　Link check status with stock quantity
+let DEF_linkCheckWithStock = true
+// フッターの説明文（非表示/表示）
+let DEF_footerMessage = true
+// 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
+let DEF_autoItemReorder = false
+
 /// 不揮発保存する
 enum AppStorageKey {
     // 新規追加の位置
     static let insertionPosition = "setting.insertionPosition"
     // 必要重量を表示する
     static let showNeedWeight = "setting.showNeedWeight"
-    // チェックと在庫数を連動させる　　　Link check status with stock quantity
-    static let linkCheckWithStock = "setting.linkCheckWithStock"
-    // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
-    static let autoItemReorder = "setting.autoItemReorder"
-    // フッターの説明文（非表示/表示）
-    static let footerMessage = "setting.footerMessage"
     // 重量計をKgで表示
     static let weightDisplayInKg = "setting.weightDisplayInKg"
+    // チェックと在庫数を連動させる　　　Link check status with stock quantity
+    static let linkCheckWithStock = "setting.linkCheckWithStock"
+    // フッターの説明文（非表示/表示）
+    static let footerMessage = "setting.footerMessage"
+    // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
+    static let autoItemReorder = "setting.autoItemReorder"
     // AI生成画面での要望テキスト（AppStorageで復元するためのキー）
     static let aiRequirementText = "aiCreate.requirementText"
     // 購入通知済みのトランザクションIDを永続化するためのキー（重複アラート抑止用）

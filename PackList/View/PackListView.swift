@@ -15,7 +15,7 @@ struct PackListView: View {
     @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
+    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
 
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?

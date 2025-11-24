@@ -17,7 +17,7 @@ struct ItemListView: View {
     @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
+    @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
 
     @State private var canUndo = false
     @State private var canRedo = false

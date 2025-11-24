@@ -15,7 +15,7 @@ struct ItemRowView: View {
 
     @Environment(\.modelContext) private var modelContext
 
-    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
 
     @State private var rowFrame: CGRect?
 

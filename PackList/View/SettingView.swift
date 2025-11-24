@@ -17,7 +17,7 @@ enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
     case head // 先頭
     case tail // 末尾
     // 初期値
-    static let `default`: InsertionPosition = .head
+    static let `default`: InsertionPosition = DEF_insertionPosition
     
     var id: String { rawValue }
     
@@ -167,7 +167,7 @@ struct SettingView: View {
         guard let supportId = supportUserId else {
             return "Version \(appVersion)"
         }
-        return "Version \(appVersion) - \(supportId)"
+        return "Version \(appVersion)  SupportID \(supportId)"
     }
 
     private var appVersion: String? {
@@ -407,10 +407,10 @@ struct SettingView: View {
 
         // 不揮発保存、初期値
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = true
-        @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = true
-        @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = true
-        @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = true
+        @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = DEF_showNeedWeight
+        @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
+        @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+        @AppStorage(AppStorageKey.footerMessage) private var footerMessage: Bool = DEF_footerMessage
         
         // GALoggerのため変更前の設定値を記録する
         @State var ona_insertionPosition: InsertionPosition?

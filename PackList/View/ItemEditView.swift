@@ -25,7 +25,7 @@ struct ItemEditView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     // 不揮発保存
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
     // 不揮発保存：itemEdit.move用
     @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
@@ -655,7 +655,7 @@ struct ItemQuickEditView: View {
 
     @Environment(\.modelContext) private var modelContext
     // 不揮発保存：チェックと在庫数を連動させる
-    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
 
     init(item: M3Item) {
         self._item = Bindable(item)

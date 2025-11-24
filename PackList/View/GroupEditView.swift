@@ -14,7 +14,7 @@ struct GroupEditView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     // 不揮発保存：チェックと在庫数を連動させる
-    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = false
+    @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
     // 不揮発保存：移動シート用の最終選択状態
     @AppStorage("groupEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("groupEdit.move.lastInsertPosition") private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
