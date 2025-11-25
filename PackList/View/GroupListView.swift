@@ -47,7 +47,7 @@ struct GroupListView: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 6) {
                     NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
-                        // アイコンの右に短いテキストを置いて高さを抑える（強調背景は使わず通常表示）
+                        // アイコン右に短いテキストを並べ、カプセル風の縁取りで押しやすさを残す
                         HStack(spacing: 10) {
                             Image(systemName: "list.bullet.rectangle")
                                 .imageScale(.large)
@@ -55,11 +55,23 @@ struct GroupListView: View {
                                 .foregroundStyle(Color.accentColor)
 
                             Text(LocalizedStringKey("全アイテム"))
-                                .font(.subheadline.weight(.semibold))
+                                // フォントを小さく軽めにして縦幅を抑える
+                                .font(.footnote.weight(.regular))
                                 .foregroundStyle(Color.primary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 10)
+                        // 上下の余白を軽めにしつつ、左右は十分に空けてタップミスを防ぐ
+                        .padding(.vertical, 9)
+                        .padding(.horizontal, 12)
+                        // 薄い塗りと境界線でカプセル風に仕上げる
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(.systemBackground).opacity(0.6))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
+                        )
                     }
                     .buttonStyle(.plain)
 
@@ -80,7 +92,7 @@ struct GroupListView: View {
                         showAiCreateSheet = true
                         GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
                     } label: {
-                        // 高さを抑えつつボタン内で完結する簡潔ラベルに変更
+                        // チャッピー相談ボタンもカプセル風にし、短い文言で高さを抑える
                         HStack(spacing: 10) {
                             Image(systemName: "sparkles")
                                 .imageScale(.large)
@@ -88,11 +100,22 @@ struct GroupListView: View {
                                 .foregroundStyle(Color.accentColor)
 
                             Text(LocalizedStringKey("チャッピーに相談"))
-                                .font(.subheadline.weight(.semibold))
+                                // 同様に小さめ・軽めのフォントで縦幅を抑える
+                                .font(.footnote.weight(.regular))
                                 .foregroundStyle(Color.primary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 9)
+                        .padding(.horizontal, 12)
+                        // 右側ボタンも同じカプセル風の塗りと線を適用して統一感を出す
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(.systemBackground).opacity(0.6))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
+                        )
                     }
                     .buttonStyle(.plain)
 
