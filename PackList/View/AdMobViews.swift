@@ -320,7 +320,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             guard let self else { return }
             self.lastPaidMicros = mockMicros
             self.lastPaidCurrencyCode = "JPY"
-            let reward = AdReward(amount: NSDecimalNumber(value: 1), type: "DEBUG")
+            // AdRewardはイニシャライザ引数を受け付けないため、モックはデフォルト初期化で生成する
+            let reward = AdReward()
             self.onRewardEarned?(reward)
         }
     }
