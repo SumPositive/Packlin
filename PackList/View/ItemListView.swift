@@ -87,7 +87,8 @@ struct ItemListView: View {
             .navigationBarBackButtonHidden(true)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設し、タイトルを下段に分離
-                VStack(alignment: .leading, spacing: 10) {
+                // 中央寄せのタイトルで、左右の操作ボタンに目を移した後でも視線を戻しやすくする
+                VStack(alignment: .center, spacing: 10) {
                     HStack(spacing: 0) {
                         // 戻るボタンと初心者向け説明
                         VStack(spacing: 6) {
@@ -182,10 +183,11 @@ struct ItemListView: View {
                     }
 
                     // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
+                    // 中央揃えにして、どの端末幅でも均等な見え方になるようにする
                     Text(pack.name.placeholder("新しいパック"))
                         .font(.headline)
                         .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)

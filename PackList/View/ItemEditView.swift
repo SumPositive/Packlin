@@ -308,7 +308,8 @@ struct ItemEditView: View {
         //.toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .top) {
             // 編集画面でもPackListView風のヘッダーを共通化し、タイトルを下段へ移動
-            VStack(alignment: .leading, spacing: 10) {
+            // 中央揃えのタイトルで、長い名称でも視線が中央に集まり読みやすくなるようにする
+            VStack(alignment: .center, spacing: 10) {
                 HStack(spacing: 0) {
                     // 戻る＋説明
                     VStack(spacing: 6) {
@@ -402,10 +403,11 @@ struct ItemEditView: View {
                 }
 
                 // 長いパック名でも欠けないように、ボタン行の下に1行で表示
+                // 中央寄せにすることで、編集ボタンの配置に左右されずにタイトルを見つけやすくする
                 Text(pack.name.placeholder("新しいパック"))
                     .font(.headline)
                     .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
             .tint(.primary)
             .frame(height: headerHeight)

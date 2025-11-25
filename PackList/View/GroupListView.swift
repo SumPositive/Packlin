@@ -156,7 +156,8 @@ struct GroupListView: View {
             .navigationBarBackButtonHidden(true)
             //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) { // ヘッダ部
-                VStack(alignment: .leading, spacing: 10) {
+                // ボタン行の下に中央揃えのタイトル行を分けて、視線の向きを合わせやすくする
+                VStack(alignment: .center, spacing: 10) {
                     HStack {
                         // 戻るボタンと初心者向け説明
                         VStack(spacing: 6) {
@@ -251,10 +252,11 @@ struct GroupListView: View {
                     }
 
                     // タイトルはボタン行の下に1行で配置し、省スペースでも欠けないようにする
+                    // 中央に寄せることで、左右どちらのボタンを主に使う場合でも目線の移動を少なくする
                     Text(pack.name.placeholder("新しいパック"))
                         .font(.headline)
                         .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)
