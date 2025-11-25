@@ -86,8 +86,9 @@ struct AppMain: App {
                             ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
                         case .itemSortList(let packID, let sort):
                             ItemSortListScene(packID: packID, sort: sort)
-                                // 並べ替え切り替え時はフェードのみのシンプルな遷移にする
-                                .navigationTransition(.opacity)
+                                // NavigationTransitionにフェードは存在しないため、アニメーションを打ち消すidentityを適用する
+                                // 画面差し替え時のフェードはItemSortList側のwithAnimationで担保する
+                                .navigationTransition(.identity)
                         }
                     }
             }
