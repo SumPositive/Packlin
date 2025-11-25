@@ -1035,6 +1035,44 @@
             "state" : "translated",
             "value" : "Thanks for watching the ad!"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告をご視聴いただきありがとうございます！"
+          }
+        }
+      }
+    },
+    "広告収益が目標を超えたのでAIを1回無料で使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The ad revenue cleared the goal, so you can use AI once for free."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告収益が目標を超えたのでAIを1回無料で使えます"
+          }
+        }
+      }
+    },
+    "広告特典の無料利用残り %lld 回" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free ad bonus uses left: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告特典の無料利用残り %lld 回"
+          }
         }
       }
     },

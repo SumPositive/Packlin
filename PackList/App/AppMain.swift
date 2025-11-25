@@ -23,6 +23,8 @@ struct AppMain: App {
     @StateObject private var navigationStore = NavigationStore()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
+    /// 広告収益によるAI無料特典の残数を管理するためのストア
+    @StateObject private var adBenefitStore = AdRewardBenefitStore()
     /// Undo/Redo を自前で管理する履歴サービス
     @StateObject private var historyService = UndoStackService()
 
@@ -101,6 +103,7 @@ struct AppMain: App {
         }
         .modelContainer(sharedModelContainer)
         .environmentObject(creditStore)
+        .environmentObject(adBenefitStore)
         .environmentObject(historyService)
         // NavigationStackのパスを共有し、画面入れ替え制御を全画面で行えるようにする
         .environmentObject(navigationStore)

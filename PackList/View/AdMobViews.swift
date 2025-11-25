@@ -124,6 +124,7 @@ struct AdMobVideoContainerView: View {
 /// AdMob報酬型広告の表示ビュー
 struct AdMobRewardedScreen: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
     // Google AdMob: gsuite@art.jp  　広告ユニット名：PackList V3 Reward
     @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
     @State private var rewardDescription: String?
@@ -191,7 +192,7 @@ struct AdMobRewardedScreen: View {
                 dismiss()
             }
             loader.onRewardEarned = { _ in
-                rewardDescription = String(localized: "広告をご視聴いただきありがとうございます！")
+                handleRewardEarned()
             }
         }
     }
@@ -202,6 +203,35 @@ struct AdMobRewardedScreen: View {
         }
         loader.present(from: topController)
     }
+
+    private func handleRewardEarned() {
+        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+        if registerBonusIfNeeded() {
+            messages.append(String(localized: "広告収益が目標を超えたのでAIを1回無料で使えます"))
+        }
+        rewardDescription = messages.joined(separator: "\n")
+    }
+
+    private func registerBonusIfNeeded() -> Bool {
+        // paidEventHandlerで受け取った最新の収益情報を使って判定する
+        guard let currencyCode = loader.lastPaidCurrencyCode,
+              let micros = loader.lastPaidMicros else {
+            return false
+        }
+        if micros < 1 {
+            return false
+        }
+        // AdMobからはマイクロ単位（100万分の1通貨）が渡されるため、大きい単位へ直す
+        let majorValue = Double(micros) / 1_000_000
+        let upperCurrency = currencyCode.uppercased()
+        if upperCurrency == "JPY" {
+            return adBenefitStore.grantBonusIfQualified(revenueYen: majorValue, revenueUsd: nil)
+        }
+        if upperCurrency == "USD" {
+            return adBenefitStore.grantBonusIfQualified(revenueYen: nil, revenueUsd: majorValue)
+        }
+        return false
+    }
 }
 
 /// AdMobの報酬型広告を読み込むクラス
@@ -209,6 +239,10 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     @Published private(set) var isLoading = false
     @Published private(set) var isReady = false
     @Published private(set) var errorMessage: String?
+    /// 広告が表示された際に通知される最新の収益額（マイクロ単位）
+    @Published private(set) var lastPaidMicros: Int64?
+    /// 広告の収益通貨コード（JPY, USDなど）。判定できた場合のみ保持する
+    @Published private(set) var lastPaidCurrencyCode: String?
 
     var onAdDismissed: (() -> Void)?
     var onRewardEarned: ((AdReward) -> Void)?
@@ -238,6 +272,14 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
                 } else if let ad {
                     self.rewardedAd = ad
                     ad.fullScreenContentDelegate = self
+                    ad.paidEventHandler = { [weak self] adValue in
+                        // 収益情報はメインスレッドで保存し、UIの更新に即座に反映させる
+                        DispatchQueue.main.async {
+                            guard let self else { return }
+                            self.lastPaidMicros = adValue.value.int64Value
+                            self.lastPaidCurrencyCode = adValue.currencyCode
+                        }
+                    }
                     self.isReady = true
                 }
             }
@@ -258,6 +300,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             guard let self else { return }
             self.isReady = false
             self.rewardedAd = nil
+            self.lastPaidMicros = nil
+            self.lastPaidCurrencyCode = nil
             self.onAdDismissed?()
             self.loadAd()
         }

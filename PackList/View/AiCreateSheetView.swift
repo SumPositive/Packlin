@@ -83,6 +83,7 @@ struct AiCreateView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.locale) private var locale
     @EnvironmentObject private var creditStore: CreditStore
+    @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
@@ -191,6 +192,17 @@ struct AiCreateView: View {
                             Capsule(style: .continuous)
                                 .fill(Color.secondary.opacity(0.3))
                         )
+                    if 0 < adBenefitStore.availableBonusUsages {
+                        Text("広告特典の無料利用残り \(adBenefitStore.availableBonusUsages) 回")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(Color(uiColor: .tertiarySystemFill))
+                            )
+                    }
 
                     Spacer(minLength: 12)
 
@@ -382,53 +394,72 @@ struct AiCreateView: View {
             return
         }
 
-        let userId = creditStore.userId
-        Task {
-            // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
-            let cost = CHATGPT_GENERATION_CREDIT_COST
-            var shouldRestoreCredits = false
-            defer {
-                Task {
-                    await MainActor.run {
-                        if shouldRestoreCredits {
-                            // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
-                            creditStore.add(credits: cost)
+            let userId = creditStore.userId
+            Task {
+                // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
+                let cost = CHATGPT_GENERATION_CREDIT_COST
+                var shouldRestoreCredits = false
+                var shouldRestoreAdBonus = false
+                var usedAdBonus = false
+                defer {
+                    Task {
+                        await MainActor.run {
+                            if shouldRestoreCredits {
+                                // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
+                                creditStore.add(credits: cost)
+                            }
+                            if shouldRestoreAdBonus {
+                                // 広告特典を予約したがAPI実行に至らなかった場合は手元に戻す
+                                adBenefitStore.restoreConsumedBonus()
+                            }
+                            isGenerating = false
                         }
-                        isGenerating = false
                     }
                 }
-            }
 
-            // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
-            let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
-            if hasEnoughCredits == false {
-                await presentCreditShortageFeedback()
-                return
-            }
-
-            do {
-                try await MainActor.run {
-                    try creditStore.consume(credits: cost)
-                    shouldRestoreCredits = true
+                // まずは広告特典があればそちらを優先的に使う
+                usedAdBonus = await MainActor.run {
+                    adBenefitStore.consumeBonusIfAvailable()
                 }
-            } catch {
-                await presentCreditShortageFeedback()
-                return
-            }
 
-            do {
-                let basePackDTO = await exportBasePackIfAvailable()
-                let dto = try await requestPackFromServer(
-                    userId: userId,
+                // クレジットを消費する必要がある場合のみ残高チェックを行う
+                if usedAdBonus == false {
+                    // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
+                    let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
+                    if hasEnoughCredits == false {
+                        await presentCreditShortageFeedback()
+                        return
+                    }
+
+                    do {
+                        try await MainActor.run {
+                            try creditStore.consume(credits: cost)
+                            shouldRestoreCredits = true
+                        }
+                    } catch {
+                        await presentCreditShortageFeedback()
+                        return
+                    }
+                } else {
+                    // 特典を仮押さえしたので、失敗時に戻せるようフラグを立てる
+                    shouldRestoreAdBonus = true
+                }
+
+                do {
+                    let basePackDTO = await exportBasePackIfAvailable()
+                    let dto = try await requestPackFromServer(
+                        userId: userId,
                     requirement: trimmedRequirement,
                     basePack: basePackDTO,
                     canAttemptRecovery: true
-                )
-                // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
-                shouldRestoreCredits = false
-                do {
-                    let packName = try await MainActor.run { () -> String in
-                        let importedPack = try createPack(from: dto)
+                    )
+                    // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
+                    shouldRestoreCredits = false
+                    // 特典利用で開始した場合も、この時点で確定させる
+                    shouldRestoreAdBonus = false
+                    do {
+                        let packName = try await MainActor.run { () -> String in
+                            let importedPack = try createPack(from: dto)
 
                         GALogger.log(.packlin_request(userId: userId,
                                                       requirement: trimmedRequirement))
