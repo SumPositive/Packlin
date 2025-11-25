@@ -127,6 +127,65 @@
         }
       }
     },
+    "Key": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Redo やり直す": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo"
+          }
+        }
+      }
+    },
+    "Undo 元に戻す": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "Undoをやり直す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undoをやり直す"
+          }
+        }
+      }
+    },
     "app.title": {
       "localizations": {
         "en": {
@@ -189,33 +248,12 @@
         }
       }
     },
-    "Key": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Key"
-          }
-        }
-      }
-    },
     "kg": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "kg"
-          }
-        }
-      }
-    },
-    "OK": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
           }
         }
       }
@@ -230,40 +268,39 @@
         }
       }
     },
-    "Redo やり直す": {
+    "このフッターの説明文は、設定で消せます": {
       "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Redo"
+            "value": "This footer description can be hidden in the settings."
           }
         }
       }
     },
-    "Undo 元に戻す": {
-      "extractionState": "stale",
+    "この説明文は、初心者モードでだけ表示されます": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Undo"
-          }
-        }
-      }
-    },
-    "Undoをやり直す": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Redo"
+            "value": "These tips appear only in Beginner mode."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Undoをやり直す"
+            "value": "この説明文は、初心者モードでだけ表示されます"
+          }
+        }
+      }
+    },
+    "この購入はすでに完了しています、枚数を更新しました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This purchase is already complete. We’ve refreshed your ticket count."
           }
         }
       }
@@ -300,6 +337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Item status"
+          }
+        }
+      }
+    },
+    "アイテムを検索": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search items"
           }
         }
       }
@@ -372,16 +419,6 @@
         }
       }
     },
-    "アイテムを検索": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search items"
-          }
-        }
-      }
-    },
     "アイテム一覧に戻る": {
       "localizations": {
         "en": {
@@ -404,6 +441,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show item list"
+          }
+        }
+      }
+    },
+    "アイテム一覧・検索": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item list & search"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アイテム一覧・検索"
           }
         }
       }
@@ -480,6 +533,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Edit group name or note"
+          }
+        }
+      }
+    },
+    "グループの境なく全てのアイテムを一覧・検索する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browse and search every item across groups"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グループの境なく全てのアイテムを一覧・検索する"
           }
         }
       }
@@ -639,43 +708,6 @@
         }
       }
     },
-    "このフッターの説明文は、設定で消せます": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This footer description can be hidden in the settings."
-          }
-        }
-      }
-    },
-    "この説明文は、初心者モードでだけ表示されます": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "These tips appear only in Beginner mode."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この説明文は、初心者モードでだけ表示されます"
-          }
-        }
-      }
-    },
-    "この購入はすでに完了しています、枚数を更新しました。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This purchase is already complete. We’ve refreshed your ticket count."
-          }
-        }
-      }
-    },
     "コピーを作成する（複製）": {
       "localizations": {
         "en": {
@@ -736,12 +768,44 @@
         }
       }
     },
+    "チャッピー(AI)に依頼": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Chappy (AI)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チャッピー(AI)に依頼"
+          }
+        }
+      }
+    },
     "チャッピー(AI)に依頼する": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Ask Chappy (AI)"
+          }
+        }
+      }
+    },
+    "チャッピー(AI)に修正や変更を依頼する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Chappy (AI) to adjust or revise your list"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チャッピー(AI)に修正や変更を依頼する"
           }
         }
       }
@@ -1100,16 +1164,6 @@
         }
       }
     },
-    "不足（必要数に満たない、在庫が足りない）": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Insufficient (not enough stock)"
-          }
-        }
-      }
-    },
     "不足個数順": {
       "localizations": {
         "en": {
@@ -1120,12 +1174,54 @@
         }
       }
     },
+    "不足個数順：個数から確認したい時": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sort by missing count: when you want to check quantities first."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不足個数順：個数から確認したい時"
+          }
+        }
+      }
+    },
     "不足重量順": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Sort by shortage weight"
+          }
+        }
+      }
+    },
+    "不足重量順：重量から確認したい時": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sort by missing weight: when you want to check weight first."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不足重量順：重量から確認したい時"
+          }
+        }
+      }
+    },
+    "不足（必要数に満たない、在庫が足りない）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insufficient (not enough stock)"
           }
         }
       }
@@ -1340,6 +1436,22 @@
         }
       }
     },
+    "在庫重量順：重量オーバー時の見直しにご利用ください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock weight order: Use to review when overweight."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在庫重量順：重量オーバー時の見直しにご利用ください"
+          }
+        }
+      }
+    },
     "変更あればすぐに並べ替える": {
       "comment": "A toggle that allows users to have their item list automatically reordered when changes are made.",
       "isCommentAutoGenerated": true,
@@ -1348,6 +1460,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reorder automatically when changes occur"
+          }
+        }
+      }
+    },
+    "常時並べ替える": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always auto-sort items"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "常時並べ替える"
           }
         }
       }
@@ -1572,6 +1700,22 @@
         }
       }
     },
+    "未チェック順：最終チェック時にご利用ください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unchecked order: Use at final check."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未チェック順：最終チェック時にご利用ください"
+          }
+        }
+      }
+    },
     "末尾": {
       "localizations": {
         "en": {
@@ -1724,17 +1868,6 @@
         }
       }
     },
-    "設定・オプション": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings / Options"
-          }
-        }
-      }
-    },
     "設定を開く": {
       "localizations": {
         "en": {
@@ -1747,6 +1880,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "設定を開く"
+          }
+        }
+      }
+    },
+    "設定・オプション": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings / Options"
           }
         }
       }
@@ -1863,86 +2007,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sound may play"
-          }
-        }
-      }
-    },
-    "グループの境なく全てのアイテムを一覧・検索する": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Browse and search every item across groups"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "グループの境なく全てのアイテムを一覧・検索する"
-          }
-        }
-      }
-    },
-    "アイテム一覧・検索": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Item list & search"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アイテム一覧・検索"
-          }
-        }
-      }
-    },
-    "チャッピー(AI)に修正や変更を依頼する": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ask Chappy (AI) to adjust or revise your list"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "チャッピー(AI)に修正や変更を依頼する"
-          }
-        }
-      }
-    },
-    "チャッピー(AI)に依頼": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ask Chappy (AI)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "チャッピー(AI)に依頼"
-          }
-        }
-      }
-    },
-    "常時並べ替える": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Always auto-sort items"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "常時並べ替える"
           }
         }
       }

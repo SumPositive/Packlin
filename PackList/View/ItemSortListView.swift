@@ -57,8 +57,8 @@ struct ItemSortListView: View {
 
     private var isShowingPopup: Bool { editingItem != nil }
 
-    // ボタン行＋タイトル行で表示しつつ、上下余白を抑えて高さをコンパクトにする
-    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
+    // ボタン行＋タイトル行のみで構成し、上下余白を抑えて高さをコンパクトにする
+    private var headerHeight: CGFloat { isBeginnerMode ? 80 : 56 }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
@@ -69,40 +69,81 @@ struct ItemSortListView: View {
                 .frame(height: LIST_SEPARATOR_THICKNESS)
                 .ignoresSafeArea(edges: .horizontal)
 
-            HStack(spacing: 10) {
-                ForEach(ItemSortOption.allCases) { option in
-                    let isCurrent = option == sortOption
+            VStack(spacing: 6) {
+                HStack(alignment: .top, spacing: 10) {
+                    ForEach(ItemSortOption.allCases) { option in
+                        let isCurrent = option == sortOption
 
-                    Button {
-                        // 選択中でもタップに反応させ、常時並べ替えがOFFでも手動で並べ替えられるようにする
-                        if isCurrent {
-                            refreshDisplayedItems(forceReset: true, forceResort: true)
-                            return
+                        VStack(spacing: 6) {
+                            Button {
+                                // タップ時は常時並べ替えの設定に関わらず強制的にリソートする
+                                refreshDisplayedItems(forceReset: true, forceResort: true)
+
+                                if isCurrent {
+                                    return
+                                }
+                                // スタックを増やさずに並べ替え画面を差し替えて、戻る操作を1回に抑える
+                                let destination = AppDestination.itemSortList(packID: pack.id, sort: option)
+                                withAnimation(.easeInOut(duration: 0.18)) {
+                                    navigationStore.replaceLast(with: destination)
+                                }
+                            } label: {
+                                Text(option.title)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(isCurrent ? Color.accentColor : .primary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .fill(isCurrent ? Color.accentColor.opacity(0.14) : Color(uiColor: .secondarySystemBackground))
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .stroke(isCurrent ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            // 選択中でも押下できることを示し、明瞭な発色を維持する
+                            .opacity(1.0)
+
+                            if isBeginnerMode {
+                                Text(option.beginnerGuide)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity)
+                            }
                         }
-                        // スタックを増やさずに並べ替え画面を差し替えて、戻る操作を1回に抑える
-                        let destination = AppDestination.itemSortList(packID: pack.id, sort: option)
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            navigationStore.replaceLast(with: destination)
-                        }
-                    } label: {
-                        Text(option.title)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(isCurrent ? Color.accentColor : .primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(isCurrent ? Color.accentColor.opacity(0.14) : Color(uiColor: .secondarySystemBackground))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(isCurrent ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1)
-                            )
+                        .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.plain)
-                    // 選択中でも押下できることを示し、明瞭な発色を維持する
-                    .opacity(1.0)
+
+                    // 変更があればすぐに並べ替えるトグルをフッターメニュー右端に集約する
+                    VStack(spacing: 6) {
+                        Button {
+                            autoItemReorder.toggle()
+                            // OFF→ONでもキャッシュを最新の並び順に揃える
+                            refreshDisplayedItems(forceReset: true, forceResort: true)
+                        } label: {
+                            VStack(spacing: 4) {
+                                Image(systemName: autoItemReorder ? "arrow.up.and.down.and.sparkles" : "arrow.up.arrow.down.square")
+                                    .imageScale(.medium)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(autoItemReorder ? Color.accentColor : Color.secondary)
+                                    .padding(8)
+
+                                if isBeginnerMode {
+                                    Text("常時並べ替える")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .frame(maxWidth: isBeginnerMode ? nil : 44, alignment: .trailing)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                    .frame(maxWidth: 110)
                 }
             }
             .padding(.horizontal, 14)
@@ -198,8 +239,6 @@ struct ItemSortListView: View {
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
 
-                        Spacer(minLength: 0)
-
                         // Redoと説明
                         VStack(spacing: 6) {
                             Button {
@@ -223,33 +262,7 @@ struct ItemSortListView: View {
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
 
-                        // 変更があればすぐに並べ替えるトグルをアイコン化して右端に集約
-                        VStack(spacing: 6) {
-                            Button {
-                                autoItemReorder.toggle()
-                                // OFF→ONでもキャッシュを最新の並び順に揃える
-                                refreshDisplayedItems(forceReset: true, forceResort: true)
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Image(systemName: autoItemReorder ? "arrow.up.and.down.and.sparkles" : "arrow.up.arrow.down.square")
-                                        .imageScale(.medium)
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(autoItemReorder ? Color.accentColor : Color.secondary)
-                                        .padding(8)
-
-                                    if isBeginnerMode {
-                                        Text("常時並べ替える")
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                            .multilineTextAlignment(.center)
-                                    }
-                                }
-                                .frame(maxWidth: isBeginnerMode ? nil : 44, alignment: .trailing)
-                            }
-                            .buttonStyle(.borderless)
-                        }
-                        .frame(maxWidth: 120)
-                        .padding(.horizontal, 6)
+                        Spacer(minLength: 0)
                     }
 
                     // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
@@ -412,6 +425,20 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
                 return String(localized: "不足重量順")
             case .stockWeight:
                 return String(localized: "在庫重量順")
+        }
+    }
+
+    /// 初心者向けの説明文
+    var beginnerGuide: String {
+        switch self {
+            case .unchecked:
+                return String(localized: "未チェック順：最終チェック時にご利用ください")
+            case .lackCount:
+                return String(localized: "不足個数順：個数から確認したい時")
+            case .lackWeight:
+                return String(localized: "不足重量順：重量から確認したい時")
+            case .stockWeight:
+                return String(localized: "在庫重量順：重量オーバー時の見直しにご利用ください")
         }
     }
 
