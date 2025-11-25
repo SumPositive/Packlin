@@ -185,6 +185,19 @@ struct AdMobRewardedScreen: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
+                #if DEBUG
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        // デバッグ時に報酬コールバックが届かないケースを手動再現する
+                        loader.simulateRewardEarnedForDebug()
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .accessibilityLabel(Text(String(localized: "デバッグ用報酬付与")))
+                }
+                #endif
             }
         }
         .onAppear {
@@ -297,6 +310,21 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             }
         }
     }
+
+    #if DEBUG
+    /// DEBUGビルドでAdMobのテスト広告が利用できない環境でも処理確認できるようにする
+    func simulateRewardEarnedForDebug() {
+        // 収益情報が無いと無料特典判定が行えないため、十分な額を仮設定してから報酬を流す
+        let mockMicros: Int64 = 60_000_000 // 60 JPY 相当の想定値
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.lastPaidMicros = mockMicros
+            self.lastPaidCurrencyCode = "JPY"
+            let reward = AdReward(amount: NSDecimalNumber(value: 1), type: "DEBUG")
+            self.onRewardEarned?(reward)
+        }
+    }
+    #endif
 
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         DispatchQueue.main.async { [weak self] in
