@@ -56,13 +56,14 @@ struct GroupListView: View {
                 .frame(height: LIST_SEPARATOR_THICKNESS)
                 .ignoresSafeArea(edges: .horizontal)
 
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
                     applyFooterLabelStyle(
                         Label {
                             // 初心者モードでは説明文も合わせて表示し、達人モードではアイコンのみでコンパクトに見せる
                             // VoiceOver向けには長めの文言を残し、アイコンのみでも意図が伝わるようにする
                             Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
+                                .foregroundStyle(.secondary)
                                 .font(.footnote.weight(.semibold))
                         } icon: {
                             Image(systemName: "list.bullet")
@@ -71,7 +72,7 @@ struct GroupListView: View {
                     )
                     .frame(maxWidth: .infinity)
                     // ボタン内の上下余白も少し詰めて、フッター全体の高さを低めに保つ
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 7)
                     .padding(.horizontal, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -89,6 +90,7 @@ struct GroupListView: View {
                         Label {
                             // 初心者モードでは依頼内容を具体的に示し、達人モードではアイコンのみで素早く押せるようにする
                             Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
+                                .foregroundStyle(.secondary)
                                 .font(.footnote.weight(.semibold))
                         } icon: {
                             Image(systemName: "sparkles")
@@ -96,7 +98,7 @@ struct GroupListView: View {
                         }
                     )
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 7)
                     .padding(.horizontal, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -107,7 +109,7 @@ struct GroupListView: View {
             }
             .padding(.horizontal, 16)
             // フッターメニュー全体の上下余白を詰めて、画面占有を抑える
-            .padding(.vertical, 6)
+            .padding(.vertical, 2)
             .background(.ultraThinMaterial)
         }
     }

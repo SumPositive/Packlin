@@ -74,7 +74,11 @@ struct ItemSortListView: View {
                     let isCurrent = option == sortOption
 
                     Button {
-                        guard !isCurrent else { return }
+                        // 選択中でもタップに反応させ、常時並べ替えがOFFでも手動で並べ替えられるようにする
+                        if isCurrent {
+                            refreshDisplayedItems(forceReset: true, forceResort: true)
+                            return
+                        }
                         // スタックを増やさずに並べ替え画面を差し替えて、戻る操作を1回に抑える
                         let destination = AppDestination.itemSortList(packID: pack.id, sort: option)
                         withAnimation(.easeInOut(duration: 0.18)) {
@@ -89,7 +93,7 @@ struct ItemSortListView: View {
                             .padding(.horizontal, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color(uiColor: .secondarySystemBackground))
+                                    .fill(isCurrent ? Color.accentColor.opacity(0.14) : Color(uiColor: .secondarySystemBackground))
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -97,9 +101,8 @@ struct ItemSortListView: View {
                             )
                     }
                     .buttonStyle(.plain)
-                    .disabled(isCurrent)
-                    // 選択中は押せないと分かるように透過度を少し下げる
-                    .opacity(isCurrent ? 0.7 : 1.0)
+                    // 選択中でも押下できることを示し、明瞭な発色を維持する
+                    .opacity(1.0)
                 }
             }
             .padding(.horizontal, 14)
@@ -227,7 +230,7 @@ struct ItemSortListView: View {
                                 // OFF→ONでもキャッシュを最新の並び順に揃える
                                 refreshDisplayedItems(forceReset: true, forceResort: true)
                             } label: {
-                                HStack(spacing: 6) {
+                                VStack(spacing: 4) {
                                     Image(systemName: autoItemReorder ? "arrow.up.and.down.and.sparkles" : "arrow.up.arrow.down.square")
                                         .imageScale(.medium)
                                         .symbolRenderingMode(.hierarchical)
@@ -238,7 +241,7 @@ struct ItemSortListView: View {
                                         Text("常時並べ替える")
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
-                                            .multilineTextAlignment(.leading)
+                                            .multilineTextAlignment(.center)
                                     }
                                 }
                                 .frame(maxWidth: isBeginnerMode ? nil : 44, alignment: .trailing)
@@ -250,8 +253,7 @@ struct ItemSortListView: View {
                     }
 
                     // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
-                    // 並べ替え条件も併記して、今どの一覧を見ているかを明示する
-                    Text("\(pack.name.placeholder("新しいパック"))（\(sortOption.title)）")
+                    Text(pack.name.placeholder("新しいパック"))
                         .font(.headline)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .center)
