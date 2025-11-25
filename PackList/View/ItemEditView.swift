@@ -372,7 +372,7 @@ struct ItemEditView: View {
                         .disabled(!canRedo)
 
                         if isBeginnerMode {
-                            Text("Undoをやり直す")
+                            Text("直前の変更にやり直す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)

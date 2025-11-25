@@ -135,7 +135,7 @@ struct PackListView: View {
                     // Redoボタンと説明
                     VStack(spacing: 6) {
                         Button {
-                            // 履歴サービスを用いて直前のUndoをやり直す
+                            // 履歴サービスを用いて直前の変更にやり直す
                             history.redo(context: modelContext)
                         } label: {
                             Image(systemName: "arrow.uturn.forward")
@@ -147,7 +147,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：Redoの役割を説明
-                            Text("Undoをやり直す")
+                            Text("直前の変更にやり直す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -282,10 +282,11 @@ struct PackListView: View {
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
 
-                Text("この説明文は、初心者モードでだけ表示されます")
+                Text("説明がウザい！と感じられた貴方、設定から達人モードをご利用ください")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)
             }
             .padding(.top, 20)
             .padding(.leading, 30)
