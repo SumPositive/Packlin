@@ -945,6 +945,16 @@
         }
       }
     },
+    "動画広告を見てAI利用券を当てよう！": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch a video ad and try to win an AI ticket!"
+          }
+        }
+      }
+    },
     "動画広告を見て寄付": {
       "localizations": {
         "en": {
@@ -961,6 +971,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Import failed"
+          }
+        }
+      }
+    },
+    "広告特典は最大1回まで保有できます。使い切ってから次を狙ってみてください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can keep only one ad bonus at a time. Use it up before trying for the next one."
           }
         }
       }

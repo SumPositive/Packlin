@@ -110,6 +110,8 @@ struct AiCreateView: View {
     @State private var notifiedTransactionIds: Set<String> = []
     /// ビューが画面上に表示されているかどうかを保持し、通知とアラートの出し分けに利用する
     @State private var isViewVisible = true
+    /// 動画広告シートの表示状態（広告経由でAI利用券抽選を案内する）
+    @State private var isPresentingAdRewardSheet = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -311,7 +313,33 @@ struct AiCreateView: View {
 
             // AI利用券購入
             creditPurchaseMenu
-            
+
+            // 最下部に動画広告誘導ボタンを配置し、広告経由の特典取得を促す
+            VStack(spacing: 8) {
+                Divider()
+
+                Button {
+                    // 抽選案内を表示する動画広告画面をシートで開く
+                    isPresentingAdRewardSheet = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "gift")
+                            .symbolRenderingMode(.hierarchical)
+                        Text(String(localized: "動画広告を見てAI利用券を当てよう！"))
+                            .font(.body.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+
+                Text(String(localized: "広告特典は最大1回まで保有できます。使い切ってから次を狙ってみてください。"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -368,6 +396,11 @@ struct AiCreateView: View {
                 message: Text(alert.message),
                 dismissButton: .default(Text("OK"))
             )
+        }
+        .sheet(isPresented: $isPresentingAdRewardSheet) {
+            // 広告での応援導線をシートとして表示し、閉じる操作も従来と揃える
+            AdMobVideoContainerView()
+                .environmentObject(adBenefitStore)
         }
     }
 
