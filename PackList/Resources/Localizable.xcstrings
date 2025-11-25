@@ -504,14 +504,16 @@
       }
     },
     "アイテム縦覧" : {
+
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Item overview"
+            "value" : "Browse items"
           }
         }
       }
+
     },
     "アプリの紹介・取扱説明" : {
       "localizations" : {
@@ -856,6 +858,7 @@
       }
     },
     "チャッピー" : {
+
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -864,16 +867,7 @@
           }
         }
       }
-    },
-    "チャッピー(AI)に作ってもらう" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Have Chappy (AI) create it"
-          }
-        }
-      }
+
     },
     "チャッピー(AI)に作成を依頼" : {
       "extractionState" : "stale",
@@ -931,14 +925,16 @@
       }
     },
     "チャッピー(AI)に修正や変更を依頼できます" : {
+
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can ask Chappy (AI) to revise or change your pack"
+            "value" : "You can ask Chappy (AI) to propose edits or changes"
           }
         }
       }
+
     },
     "チャッピー(AI)に修正を依頼" : {
       "extractionState" : "stale",
@@ -1509,14 +1505,16 @@
       }
     },
     "全てのアイテムを対象に一覧・並べ替え・検索ができます" : {
+
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can list, sort, and search across all items"
+            "value" : "You can list, sort, and search all items"
           }
         }
       }
+
     },
     "全体の並べ替えとアイテム検索" : {
       "extractionState" : "stale",

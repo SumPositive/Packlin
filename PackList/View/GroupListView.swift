@@ -194,7 +194,8 @@ struct GroupListView: View {
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            .padding(.horizontal, 0)
+            // iPhone SEでも左右に一定の余白を確保して、他画面と揃えたレイアウトにする
+            .padding(.horizontal, 8)
             //.navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
             //.toolbar(.hidden, for: .navigationBar)
