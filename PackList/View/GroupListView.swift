@@ -30,6 +30,7 @@ struct GroupListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var history: UndoStackService
+    @EnvironmentObject private var navigationStore: NavigationStore
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // 表示モード（初心者／上級者）をPackListと同じキーで共有し、ヘッダー表示を切り替える
@@ -83,7 +84,8 @@ struct GroupListView: View {
                     // 達人モードではアイコンだけを見せてボタンを把握しやすくする（AnyLabelStyleで型をそろえる）
                     .labelStyle(footerLabelStyle)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    // ボタン内の上下余白も少し詰めて、フッター全体の高さを低めに保つ
+                    .padding(.vertical, 10)
                     .padding(.horizontal, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -108,7 +110,7 @@ struct GroupListView: View {
                     // 達人モード向けのコンパクト表示（AnyLabelStyleで型をそろえる）
                     .labelStyle(footerLabelStyle)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 10)
                     .padding(.horizontal, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -118,7 +120,8 @@ struct GroupListView: View {
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            // フッターメニュー全体の上下余白を詰めて、画面占有を抑える
+            .padding(.vertical, 6)
             .background(.ultraThinMaterial)
         }
     }

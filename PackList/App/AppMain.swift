@@ -20,7 +20,7 @@ import GoogleMobileAds
 struct AppMain: App {
 
     @Environment(\.scenePhase) private var scenePhase
-    @State private var navigationPath = NavigationPath()
+    @StateObject private var navigationStore = NavigationStore()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
     @StateObject private var creditStore = CreditStore()
     /// Undo/Redo を自前で管理する履歴サービス
@@ -74,7 +74,7 @@ struct AppMain: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $navigationPath) {
+            NavigationStack(path: $navigationStore.path) {
                 PackListView()
                     .navigationDestination(for: AppDestination.self) { destination in
                         switch destination {
@@ -86,6 +86,8 @@ struct AppMain: App {
                             ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
                         case .itemSortList(let packID, let sort):
                             ItemSortListScene(packID: packID, sort: sort)
+                                // 並べ替え切り替え時はフェードのみのシンプルな遷移にする
+                                .navigationTransition(.opacity)
                         }
                     }
             }
@@ -102,6 +104,8 @@ struct AppMain: App {
         .modelContainer(sharedModelContainer)
         .environmentObject(creditStore)
         .environmentObject(historyService)
+        // NavigationStackのパスを共有し、画面入れ替え制御を全画面で行えるようにする
+        .environmentObject(navigationStore)
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .background else { return }
             // バックグラウンドへ遷移するタイミングでのみ保存処理を試みる

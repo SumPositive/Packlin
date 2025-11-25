@@ -16,6 +16,7 @@ struct ItemSortListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationStore: NavigationStore
 
     @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
@@ -71,12 +72,19 @@ struct ItemSortListView: View {
                 ForEach(ItemSortOption.allCases) { option in
                     let isCurrent = option == sortOption
 
-                    NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
+                    Button {
+                        guard !isCurrent else { return }
+                        // スタックを増やさずに並べ替え画面を差し替えて、戻る操作を1回に抑える
+                        let destination = AppDestination.itemSortList(packID: pack.id, sort: option)
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            navigationStore.replaceLast(with: destination)
+                        }
+                    } label: {
                         Text(option.title)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(isCurrent ? Color.accentColor : .primary)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 8)
                             .padding(.horizontal, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -94,7 +102,7 @@ struct ItemSortListView: View {
                 }
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.vertical, 6)
             .background(.ultraThinMaterial)
         }
     }
