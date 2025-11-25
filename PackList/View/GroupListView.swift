@@ -29,18 +29,6 @@ struct GroupListView: View {
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
-    // フッターボタン用のラベルスタイルをまとめ、分岐ごとに同じ見た目になるように切り替える
-    @ViewBuilder
-    private func applyFooterLabelStyle<Content: View>(_ content: Content) -> some View {
-        if isBeginnerMode {
-            // 初心者はタイトル＋アイコンでボタン内容を理解しやすくする
-            content.labelStyle(.titleAndIcon)
-        } else {
-            // 達人はアイコンのみで素早く押せる
-            content.labelStyle(.iconOnly)
-        }
-    }
-
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
     }
@@ -56,60 +44,89 @@ struct GroupListView: View {
                 .frame(height: LIST_SEPARATOR_THICKNESS)
                 .ignoresSafeArea(edges: .horizontal)
 
-            HStack(spacing: 8) {
-                NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
-                    applyFooterLabelStyle(
-                        Label {
-                            // 初心者モードでは説明文も合わせて表示し、達人モードではアイコンのみでコンパクトに見せる
-                            // VoiceOver向けには長めの文言を残し、アイコンのみでも意図が伝わるようにする
-                            Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
-                                .foregroundStyle(.secondary)
-                                .font(.footnote.weight(.semibold))
-                        } icon: {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(spacing: 6) {
+                    NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
+                        // 「未 ✔︎ 順」ボタンに似た彩度の高い背景で、次の画面へ進む動線を目立たせる
+                        VStack(spacing: 8) {
                             Image(systemName: "list.bullet.rectangle")
+                                .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical)
-                        }
-                    )
-                    .frame(maxWidth: .infinity)
-                    // ボタン内の上下余白も少し詰めて、フッター全体の高さを低めに保つ
-                    .padding(.vertical, 7)
-                    .padding(.horizontal, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(uiColor: .secondarySystemBackground))
-                    )
-                }
-                .buttonStyle(.plain)
+                                .foregroundStyle(Color.accentColor)
 
-                Button {
-                    // 現在のパック内容をチャッピーに共有し、AI提案を受ける
-                    showAiCreateSheet = true
-                    GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
-                } label: {
-                    applyFooterLabelStyle(
-                        Label {
-                            // 初心者モードでは依頼内容を具体的に示し、達人モードではアイコンのみで素早く押せるようにする
-                            Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
-                                .foregroundStyle(.secondary)
-                                .font(.footnote.weight(.semibold))
-                        } icon: {
-                            Image(systemName: "sparkles")
-                                .symbolRenderingMode(.hierarchical)
+                            Text(LocalizedStringKey("全アイテム"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.accentColor)
                         }
-                    )
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
-                    .padding(.horizontal, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(uiColor: .secondarySystemBackground))
-                    )
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color.accentColor.opacity(0.14))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color.accentColor, lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    if isBeginnerMode {
+                        // 以前の長文ラベルはここで補足として表示し、ボタン内は短い語句で理解しやすくする
+                        Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+
+                VStack(spacing: 6) {
+                    Button {
+                        // 現在のパック内容をチャッピーに共有し、AI提案を受ける
+                        showAiCreateSheet = true
+                        GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
+                    } label: {
+                        VStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                                .foregroundStyle(Color.accentColor)
+
+                            Text(LocalizedStringKey("AIに相談"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color.accentColor.opacity(0.14))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color.accentColor, lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    if isBeginnerMode {
+                        // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
+                        Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 16)
             // フッターメニュー全体の上下余白を詰めて、画面占有を抑える
-            .padding(.vertical, 2)
+            .padding(.vertical, isBeginnerMode ? 8 : 6)
             .background(.ultraThinMaterial)
         }
     }

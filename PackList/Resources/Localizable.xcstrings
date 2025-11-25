@@ -157,6 +157,22 @@
         }
       }
     },
+    "AIに相談" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIに相談"
+          }
+        }
+      }
+    },
     "app.title" : {
       "localizations" : {
         "en" : {
@@ -571,6 +587,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "グループの境なく全てのアイテムを一覧・検索する"
+          }
+        }
+      }
+    },
+    "全アイテム" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All items"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全アイテム"
           }
         }
       }
@@ -1915,7 +1947,20 @@
       }
     },
     "直前の変更にやり直す" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo the last change"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直前の変更にやり直す"
+          }
+        }
+      }
     },
     "直前の変更を元に戻す" : {
       "localizations" : {
@@ -2077,7 +2122,20 @@
       }
     },
     "説明がウザい！と感じられた貴方、設定から達人モードをご利用ください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the tips feel overwhelming, switch to Expert mode from Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "説明がウザい！と感じられた貴方、設定から達人モードをご利用ください"
+          }
+        }
+      }
     },
     "購入の承認待ちです、まだ課金されません。承認が完了すると自動で反映されます。" : {
       "localizations" : {
