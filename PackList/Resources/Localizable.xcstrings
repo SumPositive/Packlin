@@ -496,6 +496,15 @@
     },
     "アイテム縦覧" : {
 
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Browse items"
+          }
+        }
+      }
+
     },
     "アプリの紹介・取扱説明" : {
       "localizations" : {
@@ -838,6 +847,15 @@
     },
     "チャッピー" : {
 
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy"
+          }
+        }
+      }
+
     },
     "チャッピー(AI)に作成を依頼" : {
       "localizations" : {
@@ -894,6 +912,15 @@
       }
     },
     "チャッピー(AI)に修正や変更を依頼できます" : {
+
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can ask Chappy (AI) to propose edits or changes"
+          }
+        }
+      }
 
     },
     "チャッピー(AI)に修正を依頼" : {
@@ -1465,6 +1492,15 @@
       }
     },
     "全てのアイテムを対象に一覧・並べ替え・検索ができます" : {
+
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can list, sort, and search all items"
+          }
+        }
+      }
 
     },
     "全体の並べ替えとアイテム検索" : {
