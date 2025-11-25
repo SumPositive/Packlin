@@ -28,6 +28,16 @@ struct GroupListView: View {
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
+    // フッターボタン用のラベルスタイルをまとめ、三項演算子でも型がぶれないように型消去しておく
+    private var footerLabelStyle: AnyLabelStyle {
+        if isBeginnerMode {
+            // 初心者は説明付き
+            return AnyLabelStyle(.titleAndIcon)
+        }
+        // 達人はアイコンのみで素早く押せる
+        return AnyLabelStyle(.iconOnly)
+    }
+
     private var sortedGroups: [M2Group] {
         pack.child.sorted { $0.order < $1.order }
     }
@@ -54,8 +64,8 @@ struct GroupListView: View {
                         Image(systemName: "list.bullet")
                             .symbolRenderingMode(.hierarchical)
                     }
-                    // 達人モードではアイコンだけを見せてボタンを把握しやすくする
-                    .labelStyle(isBeginnerMode ? .titleAndIcon : .iconOnly)
+                    // 達人モードではアイコンだけを見せてボタンを把握しやすくする（AnyLabelStyleで型をそろえる）
+                    .labelStyle(footerLabelStyle)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 10)
@@ -79,8 +89,8 @@ struct GroupListView: View {
                         Image(systemName: "sparkles")
                             .symbolRenderingMode(.hierarchical)
                     }
-                    // 達人モード向けのコンパクト表示
-                    .labelStyle(isBeginnerMode ? .titleAndIcon : .iconOnly)
+                    // 達人モード向けのコンパクト表示（AnyLabelStyleで型をそろえる）
+                    .labelStyle(footerLabelStyle)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 10)
