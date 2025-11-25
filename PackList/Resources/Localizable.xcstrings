@@ -157,22 +157,6 @@
         }
       }
     },
-    "チャッピーに相談" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "チャッピーに相談"
-          }
-        }
-      }
-    },
     "app.title" : {
       "localizations" : {
         "en" : {
@@ -458,6 +442,7 @@
       }
     },
     "アイテム一覧・検索" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -508,6 +493,9 @@
           }
         }
       }
+    },
+    "アイテム縦覧" : {
+
     },
     "アプリの紹介・取扱説明" : {
       "localizations" : {
@@ -576,6 +564,7 @@
       }
     },
     "グループの境なく全てのアイテムを一覧・検索する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -587,22 +576,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "グループの境なく全てのアイテムを一覧・検索する"
-          }
-        }
-      }
-    },
-    "全アイテム" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All items"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "全アイテム"
           }
         }
       }
@@ -863,6 +836,9 @@
         }
       }
     },
+    "チャッピー" : {
+
+    },
     "チャッピー(AI)に作成を依頼" : {
       "localizations" : {
         "en" : {
@@ -901,6 +877,7 @@
       }
     },
     "チャッピー(AI)に修正や変更を依頼する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -915,6 +892,9 @@
           }
         }
       }
+    },
+    "チャッピー(AI)に修正や変更を依頼できます" : {
+
     },
     "チャッピー(AI)に修正を依頼" : {
       "extractionState" : "stale",
@@ -953,6 +933,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chappy is thinking. We’ll notify you when suggestions arrive, so feel free to close this and keep exploring."
+          }
+        }
+      }
+    },
+    "チャッピーに相談" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask Chappy"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャッピーに相談"
           }
         }
       }
@@ -1428,6 +1425,23 @@
         }
       }
     },
+    "全アイテム" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All items"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全アイテム"
+          }
+        }
+      }
+    },
     "全チェックOFF" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1449,6 +1463,9 @@
           }
         }
       }
+    },
+    "全てのアイテムを対象に一覧・並べ替え・検索ができます" : {
+
     },
     "全体の並べ替えとアイテム検索" : {
       "extractionState" : "stale",

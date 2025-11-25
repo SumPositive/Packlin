@@ -241,6 +241,8 @@ struct ItemSortListView: View {
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
 
+                        Spacer(minLength: 0)
+
                         // 並べ替え画面を示すアイコンと初心者向けサブタイトル
                         VStack(spacing: 4) {
                             Image(systemName: "list.bullet.rectangle")
@@ -248,7 +250,7 @@ struct ItemSortListView: View {
                                 .symbolRenderingMode(.hierarchical)
                             
                             if isBeginnerMode {
-                                Text("アイテム一覧・検索")
+                                Text("アイテム縦覧")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -281,7 +283,7 @@ struct ItemSortListView: View {
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
 
-                        Spacer(minLength: 0)
+                        Spacer(minLength: 76)
                     }
 
                     // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする

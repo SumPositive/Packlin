@@ -54,15 +54,13 @@ struct GroupListView: View {
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(Color.accentColor)
 
-                            Text(LocalizedStringKey("全アイテム"))
+                            Text(LocalizedStringKey("アイテム縦覧"))
                                 // フォントを小さく軽めにして縦幅を抑える
                                 .font(.footnote.weight(.regular))
                                 .foregroundStyle(Color.primary)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        // 上下の余白を軽めにしつつ、左右は十分に空けてタップミスを防ぐ
-                        .padding(.vertical, 9)
-                        .padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 4)
                         // 薄い塗りと境界線でカプセル風に仕上げる
                         .background(
                             RoundedRectangle(cornerRadius: 16)
@@ -77,7 +75,7 @@ struct GroupListView: View {
 
                     if isBeginnerMode {
                         // 以前の長文ラベルはここで補足として表示し、ボタン内は短い語句で理解しやすくする
-                        Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
+                        Text(LocalizedStringKey("全てのアイテムを対象に一覧・並べ替え・検索ができます"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -99,14 +97,13 @@ struct GroupListView: View {
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(Color.accentColor)
 
-                            Text(LocalizedStringKey("チャッピーに相談"))
+                            Text(LocalizedStringKey("チャッピー"))
                                 // 同様に小さめ・軽めのフォントで縦幅を抑える
                                 .font(.footnote.weight(.regular))
                                 .foregroundStyle(Color.primary)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 9)
-                        .padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 2)
                         // 右側ボタンも同じカプセル風の塗りと線を適用して統一感を出す
                         .background(
                             RoundedRectangle(cornerRadius: 16)
@@ -121,7 +118,7 @@ struct GroupListView: View {
 
                     if isBeginnerMode {
                         // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
-                        Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
+                        Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼できます"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
