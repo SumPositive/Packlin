@@ -117,7 +117,7 @@ let DEF_linkCheckWithStock = true
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
-let DEF_autoItemReorder = false
+let DEF_autoItemReorder = true
 
 /// 不揮発保存する
 enum AppStorageKey {

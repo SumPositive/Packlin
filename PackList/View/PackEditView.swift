@@ -203,7 +203,7 @@ struct PackEditView: View {
                     Image(systemName: "sparkles")
                     //.imageScale(.large)
                         .symbolRenderingMode(.hierarchical)
-                    Text("チャッピー(AI)に作成を依頼")
+                    Text("チャッピー")
                         .font(.body.weight(.regular))
                 }
             }

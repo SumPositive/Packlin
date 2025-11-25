@@ -111,7 +111,6 @@ struct ItemSortListView: View {
                                 Text(option.beginnerGuide)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
                                     .frame(maxWidth: .infinity)
                             }
                         }
@@ -126,26 +125,26 @@ struct ItemSortListView: View {
                             refreshDisplayedItems(forceReset: true, forceResort: true)
                         } label: {
                             VStack(spacing: 4) {
-                                Image(systemName: autoItemReorder ? "arrow.up.and.down.and.sparkles" : "arrow.up.arrow.down.square")
+                                Image(systemName: "arrow.up.and.down.and.sparkles")
                                     .imageScale(.medium)
                                     .symbolRenderingMode(.hierarchical)
                                     .foregroundStyle(autoItemReorder ? Color.accentColor : Color.secondary)
                                     .padding(8)
-
-                                if isBeginnerMode {
-                                    Text("常時並べ替える")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
                             }
                             // 幅を圧縮してフッター全体の占有を抑える
-                            .frame(maxWidth: isBeginnerMode ? 64 : 44, alignment: .trailing)
+                            //.frame(maxWidth: isBeginnerMode ? 64 : 44, alignment: .trailing)
                         }
                         .buttonStyle(.borderless)
+
+                        if isBeginnerMode {
+                            Text("常時並べ替え")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                //.multilineTextAlignment(.center)
+                        }
                     }
-                    // 以前よりおおよそ半分の幅にして、ボタン群とのバランスを取る
-                    .frame(maxWidth: isBeginnerMode ? 64 : 52)
+                    //.frame(maxWidth: isBeginnerMode ? 64 : 52)
+                    .frame(maxWidth: 40)
                 }
             }
             .padding(.horizontal, 14)
@@ -215,7 +214,7 @@ struct ItemSortListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 76)
+                        .frame(minWidth: 55)
                         .padding(.horizontal, 6)
 
                         // Undoと説明
@@ -238,27 +237,20 @@ struct ItemSortListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 76)
+                        .frame(minWidth: 55)
                         .padding(.horizontal, 6)
 
-                        Spacer(minLength: 0)
-
-                        // 並べ替え画面を示すアイコンと初心者向けサブタイトル
-                        VStack(spacing: 4) {
-                            Image(systemName: "list.bullet.rectangle")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                            
-                            if isBeginnerMode {
-                                Text("アイテム縦覧")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
+                        Spacer()
                         
-                        Spacer(minLength: 0)
+                        if isBeginnerMode {
+                            Text("アイテム\n縦覧")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .frame(minWidth: 66)
+                            Spacer()
+                        }
 
                         // Redoと説明
                         VStack(spacing: 6) {
@@ -280,7 +272,7 @@ struct ItemSortListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 76)
+                        .frame(minWidth: 55)
                         .padding(.horizontal, 6)
 
                         Spacer(minLength: 76)

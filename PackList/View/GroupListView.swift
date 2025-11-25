@@ -223,7 +223,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 76)
+                        .frame(width: 55)
                         .padding(.horizontal, 6)
 
                         // Undoボタンと説明
@@ -246,10 +246,20 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 76)
+                        .frame(minWidth: 55)
                         .padding(.horizontal, 6)
 
-                        Spacer(minLength: 0)
+                        Spacer()
+                        
+                        if isBeginnerMode {
+                            Text("グループ\n一覧")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .frame(minWidth: 66)
+                            Spacer()
+                        }
 
                         // Redoボタンと説明
                         VStack(spacing: 6) {
@@ -271,7 +281,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 76)
+                        .frame(minWidth: 55)
                         .padding(.horizontal, 6)
 
                         // 新しいグループ追加と説明
@@ -291,7 +301,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(maxWidth: 92)
+                        .frame(minWidth: 76)
                         .padding(.horizontal, 6)
                     }
 
@@ -373,7 +383,7 @@ struct GroupListView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
-                        Image(systemName: "hand.draw")
+                        Image(systemName: "hand.point.up.left.and.text")
                             .imageScale(.medium)
                         Text("ドラッグドロップで行を移動する")
                             .font(.footnote)

@@ -98,7 +98,7 @@ struct PackListView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 76)
+                    .frame(width: 50)
                     .padding(.horizontal, 6)
 
                     // Undoボタンと説明
@@ -122,14 +122,15 @@ struct PackListView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 76)
+                    .frame(maxWidth: 55)
                     .padding(.horizontal, 6)
 
                     Spacer()
 
                     Text("app.title")
-                        .font(.headline)
+                        .font(.body)
                         .lineLimit(1)
+                        .frame(minWidth: 66)
 
                     Spacer()
 
@@ -154,7 +155,7 @@ struct PackListView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 76)
+                    .frame(maxWidth: 55)
                     .padding(.horizontal, 6)
 
                     // 新しいパック追加と説明
@@ -217,7 +218,7 @@ struct PackListView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 92)
+                    .frame(width: 66)
                     .padding(.horizontal, 6)
                 }
                 .tint(.primary) // ヘッダ部は.accentColorにしない
@@ -271,7 +272,7 @@ struct PackListView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
-                        Image(systemName: "hand.draw")
+                        Image(systemName: "hand.point.up.left.and.text")
                             .imageScale(.medium)
                         Text("ドラッグドロップで行を移動する")
                             .font(.footnote)

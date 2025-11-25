@@ -330,7 +330,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 76)
+                    .frame(width: 55)
                     .padding(.horizontal, 6)
 
                     // Undo＋説明
@@ -353,11 +353,21 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 76)
+                    .frame(minWidth: 55)
                     .padding(.horizontal, 6)
 
-                    Spacer(minLength: 0)
-
+                    Spacer()
+                    
+                    if isBeginnerMode {
+                        Text("アイテム\n編集")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .frame(minWidth: 66)
+                        Spacer()
+                    }
+                    
                     // Redo＋説明
                     VStack(spacing: 6) {
                         Button {
@@ -378,7 +388,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 76)
+                    .frame(minWidth: 55)
                     .padding(.horizontal, 6)
 
                     // 追加＋説明
@@ -399,7 +409,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(maxWidth: 92)
+                    .frame(minWidth: 76)
                     .padding(.horizontal, 6)
                 }
 
