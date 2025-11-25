@@ -194,8 +194,6 @@ struct GroupListView: View {
             }
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            // iPhone SEでも左右に一定の余白を確保して、他画面と揃えたレイアウトにする
-            .padding(.horizontal, 8)
             //.navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)
             //.toolbar(.hidden, for: .navigationBar)
@@ -224,7 +222,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(width: 55)
+                        .frame(width: 50)
                         .padding(.horizontal, 6)
 
                         // Undoボタンと説明
@@ -247,7 +245,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(maxWidth: 55)
                         .padding(.horizontal, 6)
 
                         Spacer()
@@ -282,7 +280,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(maxWidth: 55)
                         .padding(.horizontal, 6)
 
                         // 新しいグループ追加と説明
@@ -302,7 +300,7 @@ struct GroupListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 76)
+                        .frame(width: 66)
                         .padding(.horizontal, 6)
                     }
 
@@ -321,20 +319,20 @@ struct GroupListView: View {
                 .background(.thinMaterial)
             }
         }
-            .contentShape(Rectangle())
-            .simultaneousGesture(
+        .contentShape(Rectangle())
+        .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
                 .onEnded { value in
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
-
+                    
                     if isShowingPopup {
                         if abs(horizontal) <= 80 && abs(vertical) <= 80 { return }
                         editingGroup = nil
                         popupAnchor = nil
                         return
                     }
-
+                    
                     if horizontal <= 80 || abs(vertical) >= 50 { return }
                     dismiss()
                 }

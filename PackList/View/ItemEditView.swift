@@ -330,7 +330,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(width: 55)
+                    .frame(width: 50)
                     .padding(.horizontal, 6)
 
                     // Undo＋説明
@@ -353,7 +353,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(minWidth: 55)
+                    .frame(maxWidth: 55)
                     .padding(.horizontal, 6)
 
                     Spacer()
@@ -388,7 +388,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(minWidth: 55)
+                    .frame(maxWidth: 55)
                     .padding(.horizontal, 6)
 
                     // 追加＋説明
@@ -409,7 +409,7 @@ struct ItemEditView: View {
                                 .multilineTextAlignment(.center)
                         }
                     }
-                    .frame(minWidth: 76)
+                    .frame(width: 74)
                     .padding(.horizontal, 6)
                 }
 

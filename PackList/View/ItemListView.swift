@@ -111,7 +111,7 @@ struct ItemListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(width: 55)
+                        .frame(width: 50)
                         .padding(.horizontal, 6)
 
                         // Undoと説明
@@ -134,7 +134,7 @@ struct ItemListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(maxWidth: 55)
                         .padding(.horizontal, 6)
 
                         Spacer()
@@ -169,7 +169,7 @@ struct ItemListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(maxWidth: 55)
                         .padding(.horizontal, 6)
 
                         // 新しいアイテム追加と説明
@@ -189,7 +189,7 @@ struct ItemListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 76)
+                        .frame(width: 74)
                         .padding(.horizontal, 6)
                     }
 

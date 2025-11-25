@@ -214,7 +214,7 @@ struct ItemSortListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(width: 50)
                         .padding(.horizontal, 6)
 
                         // Undoと説明
@@ -237,7 +237,7 @@ struct ItemSortListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(maxWidth: 55)
                         .padding(.horizontal, 6)
 
                         Spacer()
@@ -272,10 +272,10 @@ struct ItemSortListView: View {
                                     .multilineTextAlignment(.center)
                             }
                         }
-                        .frame(minWidth: 55)
+                        .frame(maxWidth: 55)
                         .padding(.horizontal, 6)
 
-                        Spacer(minLength: 76)
+                        Spacer(minLength: 66)
                     }
 
                     // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
