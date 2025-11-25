@@ -290,8 +290,11 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         guard let rewardedAd else { return }
         let ad = rewardedAd
         ad.present(from: root) { [weak self] in
-            guard let self else { return }
-            self.onRewardEarned?(ad.adReward)
+            // 報酬付与コールバックは任意のスレッドで呼ばれるため、UI更新に備えてメインスレッドへ戻す
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.onRewardEarned?(ad.adReward)
+            }
         }
     }
 
