@@ -219,6 +219,12 @@ struct AdMobRewardedScreen: View {
 
     private func handleRewardEarned() {
         var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+        // すでに無料特典を1回分持っている場合は、使い切ってもらうために新規付与を見送る
+        if adBenefitStore.hasBonus {
+            messages.append(String(localized: "無料特典は1回分までです。使い切ってから次の特典を受け取れます。"))
+            rewardDescription = messages.joined(separator: "\n")
+            return
+        }
         if registerBonusIfNeeded() {
             messages.append(String(localized: "広告収益が目標を超えたのでAIを1回無料で使えます"))
         }

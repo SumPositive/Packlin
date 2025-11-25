@@ -17,12 +17,15 @@ final class AdRewardBenefitStore: ObservableObject {
     @Published private(set) var lastQualifiedRevenueYen: Double?
 
     private let userDefaults: UserDefaults
+    /// 無料特典を溜め込まず、常に「1回使ってから次を受け取る」運用にするための上限値
+    private let maxBonusCount = 1
     private let bonusKey = "ad.reward.bonus.remaining"
     private let lastRevenueKey = "ad.reward.bonus.lastRevenueYen"
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
-        let storedBonus = userDefaults.integer(forKey: bonusKey)
+        // 旧バージョンで2回以上保有していたとしても、今回からは1回に丸める
+        let storedBonus = min(userDefaults.integer(forKey: bonusKey), maxBonusCount)
         // 初期値は0だが、保存値があればそれを優先する
         self.availableBonusUsages = storedBonus
         if userDefaults.object(forKey: lastRevenueKey) != nil {
@@ -39,6 +42,11 @@ final class AdRewardBenefitStore: ObservableObject {
     /// - Returns: 付与に成功した場合はtrue
     @discardableResult
     func grantBonusIfQualified(revenueYen: Double?, revenueUsd: Double?) -> Bool {
+        // すでに上限まで保有していれば新規付与はスキップし、広告を使う動機を保つ
+        if maxBonusCount <= availableBonusUsages {
+            return false
+        }
+
         var reached = false
         if let yen = revenueYen {
             if AD_REWARD_THRESHOLD_YEN <= yen {

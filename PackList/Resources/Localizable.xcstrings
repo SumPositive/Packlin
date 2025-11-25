@@ -1048,6 +1048,22 @@
         }
       }
     },
+    "無料特典は1回分までです。使い切ってから次の特典を受け取れます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad bonuses are limited to one use. Use it before you can receive another."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無料特典は1回分までです。使い切ってから次の特典を受け取れます。"
+          }
+        }
+      }
+    },
     "広告特典の無料利用残り %lld 回": {
       "localizations": {
         "en": {
