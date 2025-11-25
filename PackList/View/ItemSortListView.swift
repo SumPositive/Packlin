@@ -60,6 +60,45 @@ struct ItemSortListView: View {
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
+    // 並べ替えを切り替えるためのフッターメニュー
+    private var sortFooterMenu: some View {
+        VStack(spacing: 0) {
+            COLOR_LIST_SEPARATOR
+                .frame(height: LIST_SEPARATOR_THICKNESS)
+                .ignoresSafeArea(edges: .horizontal)
+
+            HStack(spacing: 10) {
+                ForEach(ItemSortOption.allCases) { option in
+                    let isCurrent = option == sortOption
+
+                    NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
+                        Text(option.title)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(isCurrent ? Color.accentColor : .primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color(uiColor: .secondarySystemBackground))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(isCurrent ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isCurrent)
+                    // 選択中は押せないと分かるように透過度を少し下げる
+                    .opacity(isCurrent ? 0.7 : 1.0)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
+        }
+    }
+
     var body: some View {
         ZStack {
             VStack {
@@ -246,6 +285,9 @@ struct ItemSortListView: View {
                     dismiss()
                 }
         )
+        .safeAreaInset(edge: .bottom) {
+            sortFooterMenu
+        }
     }
 
     /// アイテムを検索

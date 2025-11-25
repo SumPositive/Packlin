@@ -23,7 +23,6 @@ struct GroupListView: View {
     @State private var popupAnchor: CGPoint?
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
 
-    private let rowHeight: CGFloat = 44
     // ヘッダーはボタン行＋タイトル行の2段構成にしつつ、上下余白を抑えて高さもコンパクトにする
     private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
     // 説明文を出すかどうかのフラグを共通にまとめる
@@ -36,6 +35,61 @@ struct GroupListView: View {
     // Group編集はシート表示へ移行したため、Popupは利用しない
     // それでも編集中はツールバー操作を抑制したいので、フラグ名は流用
     private var isShowingPopup: Bool { editingGroup != nil }
+
+    // Group一覧の下に固定表示するメニュー
+    private var footerMenu: some View {
+        VStack(spacing: 0) {
+            COLOR_LIST_SEPARATOR
+                .frame(height: LIST_SEPARATOR_THICKNESS)
+                .ignoresSafeArea(edges: .horizontal)
+
+            HStack(spacing: 12) {
+                NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
+                    Label {
+                        // 全体の未チェックをまとめて確認・検索できるボタン
+                        Text("アイテム一覧・検索")
+                            .font(.footnote.weight(.semibold))
+                    } icon: {
+                        Image(systemName: "list.bullet")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color(uiColor: .secondarySystemBackground))
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    // 現在のパック内容をチャッピーに共有し、AI提案を受ける
+                    showAiCreateSheet = true
+                    GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
+                } label: {
+                    Label {
+                        Text("チャッピー(AI)に依頼")
+                            .font(.footnote.weight(.semibold))
+                    } icon: {
+                        Image(systemName: "sparkles")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color(uiColor: .secondarySystemBackground))
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
+        }
+    }
 
     
     var body: some View {
@@ -87,60 +141,6 @@ struct GroupListView: View {
                     .onMove(perform: moveGroup)
                 }
                 // 並べ替え一覧
-                Section {
-                    ForEach(ItemSortOption.allCases) { option in
-                        NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: option)) {
-                            HStack {
-                                Text(option.title)
-                                    .font(FONT_MEMO)
-                                    .foregroundStyle(COLOR_MEMO)
-                                Spacer()
-                            }
-                            .frame(minHeight: rowHeight)
-                            .overlay(alignment: .bottom) {
-                                // 独自の下線
-                                COLOR_LIST_SEPARATOR
-                                    .frame(height: LIST_SEPARATOR_THICKNESS)
-                                    .ignoresSafeArea(edges: .horizontal)
-                                    .padding(.horizontal, 4)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets())
-                        .padding(.horizontal, 32)
-                    }
-                    .padding(.horizontal, 16)
-                }
-                header: {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Button {
-                                // AI修正シートを開いて、現在のパック内容を基にチャッピーへ依頼する
-                                showAiCreateSheet = true
-                                GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
-                            } label: {
-                                Label {
-                                    Text("チャッピー(AI)に修正を依頼")
-                                        .font(.footnote.weight(.regular))
-                                } icon: {
-                                    Image(systemName: "sparkles")
-                                        .symbolRenderingMode(.hierarchical)
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                            .padding(.bottom, 12)
-                        }
-                        // セクション2・ヘッダー タイトル
-                        HStack {
-                            Text("全体の並べ替えとアイテム検索")
-                                .font(.body.weight(.bold))
-                            Spacer()
-                        }
-                    }
-                    .padding(.horizontal, 30)
-                }
                 footer: {
                     if isBeginnerMode {
                         // 初心者モードでは操作説明をフッターに表示して迷いを減らす
@@ -267,8 +267,8 @@ struct GroupListView: View {
                 .background(.thinMaterial)
             }
         }
-        .contentShape(Rectangle())
-        .simultaneousGesture(
+            .contentShape(Rectangle())
+            .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
                 .onEnded { value in
                     let horizontal = value.translation.width
@@ -298,6 +298,9 @@ struct GroupListView: View {
             AiCreateSheetView(basePack: pack)
                 .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
+        }
+        .safeAreaInset(edge: .bottom) {
+            footerMenu
         }
     }
     
