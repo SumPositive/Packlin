@@ -86,11 +86,8 @@ struct AppMain: App {
                             ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
                         case .itemSortList(let packID, let sort):
                             ItemSortListScene(packID: packID, sort: sort)
-                                // NavigationTransitionにフェードは存在しないため、アニメーションを打ち消すidentityを適用する
-                                // 画面差し替え時のフェードはItemSortList側のwithAnimationで担保する
-                                .navigationTransition(.identity)
-                        }
                     }
+                }
             }
             .onAppear {
                 // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる

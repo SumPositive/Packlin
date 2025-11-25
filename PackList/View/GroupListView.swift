@@ -8,22 +8,6 @@
 import SwiftUI
 import SwiftData
 
-// LabelStyleの型を消して三項演算子で切り替えられるようにするための軽量なラッパー
-struct AnyLabelStyle: LabelStyle {
-    private let makeBody: (Configuration) -> AnyView
-
-    init<S: LabelStyle>(_ style: S) {
-        // 内部にクロージャとして保持し、呼び出し側は常に同じ型として扱えるようにする
-        makeBody = { configuration in
-            AnyView(style.makeBody(configuration: configuration))
-        }
-    }
-
-    func makeBody(configuration: Configuration) -> some View {
-        makeBody(configuration)
-    }
-}
-
 struct GroupListView: View {
     let pack: M1Pack
 
@@ -45,14 +29,16 @@ struct GroupListView: View {
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
-    // フッターボタン用のラベルスタイルをまとめ、三項演算子でも型がぶれないように型消去しておく
-    private var footerLabelStyle: AnyLabelStyle {
+    // フッターボタン用のラベルスタイルをまとめ、分岐ごとに同じ見た目になるように切り替える
+    @ViewBuilder
+    private func applyFooterLabelStyle<Content: View>(_ content: Content) -> some View {
         if isBeginnerMode {
-            // 初心者は説明付き
-            return AnyLabelStyle(.titleAndIcon)
+            // 初心者はタイトル＋アイコンでボタン内容を理解しやすくする
+            content.labelStyle(.titleAndIcon)
+        } else {
+            // 達人はアイコンのみで素早く押せる
+            content.labelStyle(.iconOnly)
         }
-        // 達人はアイコンのみで素早く押せる
-        return AnyLabelStyle(.iconOnly)
     }
 
     private var sortedGroups: [M2Group] {
@@ -72,17 +58,17 @@ struct GroupListView: View {
 
             HStack(spacing: 12) {
                 NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
-                    Label {
-                        // 初心者モードでは説明文も合わせて表示し、達人モードではアイコンのみでコンパクトに見せる
-                        // VoiceOver向けには長めの文言を残し、アイコンのみでも意図が伝わるようにする
-                        Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
-                            .font(.footnote.weight(.semibold))
-                    } icon: {
-                        Image(systemName: "list.bullet")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    // 達人モードではアイコンだけを見せてボタンを把握しやすくする（AnyLabelStyleで型をそろえる）
-                    .labelStyle(footerLabelStyle)
+                    applyFooterLabelStyle(
+                        Label {
+                            // 初心者モードでは説明文も合わせて表示し、達人モードではアイコンのみでコンパクトに見せる
+                            // VoiceOver向けには長めの文言を残し、アイコンのみでも意図が伝わるようにする
+                            Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
+                                .font(.footnote.weight(.semibold))
+                        } icon: {
+                            Image(systemName: "list.bullet")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    )
                     .frame(maxWidth: .infinity)
                     // ボタン内の上下余白も少し詰めて、フッター全体の高さを低めに保つ
                     .padding(.vertical, 10)
@@ -99,16 +85,16 @@ struct GroupListView: View {
                     showAiCreateSheet = true
                     GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
                 } label: {
-                    Label {
-                        // 初心者モードでは依頼内容を具体的に示し、達人モードではアイコンのみで素早く押せるようにする
-                        Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
-                            .font(.footnote.weight(.semibold))
-                    } icon: {
-                        Image(systemName: "sparkles")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    // 達人モード向けのコンパクト表示（AnyLabelStyleで型をそろえる）
-                    .labelStyle(footerLabelStyle)
+                    applyFooterLabelStyle(
+                        Label {
+                            // 初心者モードでは依頼内容を具体的に示し、達人モードではアイコンのみで素早く押せるようにする
+                            Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
+                                .font(.footnote.weight(.semibold))
+                        } icon: {
+                            Image(systemName: "sparkles")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    )
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .padding(.horizontal, 10)
