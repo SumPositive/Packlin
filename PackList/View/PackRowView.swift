@@ -161,8 +161,8 @@ struct PackRowView: View {
                 .ignoresSafeArea(edges: .horizontal)
                 .padding(.horizontal, 50)
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
-            // パック削除
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) { // 左スワイプ・アクション（フルスワイプ即削除を無効化）
+            // パック削除（ワンタップでのみ削除されるようにして事故を防ぐ）
             Button {
                 pack.delete()
             } label: {

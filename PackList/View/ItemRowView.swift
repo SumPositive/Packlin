@@ -169,8 +169,8 @@ struct ItemRowView: View {
                 .padding(.leading, 50)
                 .padding(.trailing, 30)
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
-            // アイテム削除
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) { // 左スワイプ・アクション（フルスワイプ即削除を無効化）
+            // アイテム削除（必ずボタンタップを挟み、誤操作を防ぐ）
             Button {
                 item.delete()
             } label: {

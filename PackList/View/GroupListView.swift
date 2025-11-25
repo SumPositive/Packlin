@@ -142,8 +142,8 @@ struct GroupListView: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         // 行のトップレベルでスワイプ操作を受け付けるようにする
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) { // 左スワイプ・アクション
-                            // グループ削除（行コンテナで定義してスワイプ無効化を防ぐ）
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) { // 左スワイプ・アクション（全スワイプ即削除を避ける）
+                            // グループ削除（行コンテナで定義してスワイプ無効化を防ぐ＋フルスワイプ事故を防止）
                             Button {
                                 group.delete()
                             } label: {
