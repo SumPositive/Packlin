@@ -248,14 +248,9 @@ struct PackListView: View {
                     .padding(.top, 8)
                 Group {
                     HStack(spacing: 8) {
-                        ZStack {
-                            Image(systemName: "case")
-                                .imageScale(.large)
-                            Image(systemName: "checkmark")
-                                .imageScale(.small)
-                                .padding(.top, 4)
-                        }
-                        Text("パック内の必要なアイテムが全てチェック済み")
+                        Image(systemName: "case")
+                            .imageScale(.large)
+                        Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -272,9 +267,14 @@ struct PackListView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
-                        Image(systemName: "case")
-                            .imageScale(.large)
-                        Text("不足（必要数に満たない、在庫が足りない）")
+                        ZStack {
+                            Image(systemName: "case")
+                                .imageScale(.large)
+                            Image(systemName: "checkmark")
+                                .imageScale(.small)
+                                .padding(.top, 4)
+                        }
+                        Text("✔︎済（パック内の必要なアイテムが全てチェック済み）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

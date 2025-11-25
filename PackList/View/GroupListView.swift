@@ -370,9 +370,9 @@ struct GroupListView: View {
                     .padding(.top, 8)
                 Group {
                     HStack(spacing: 8) {
-                        Image(systemName: "checkmark.square")
+                        Image(systemName: "square")
                             .imageScale(.large)
-                        Text("グループ内の必要なアイテムが全てチェック済み")
+                        Text("不足（必要数に満たない、在庫が足りない）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -384,9 +384,9 @@ struct GroupListView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
-                        Image(systemName: "square")
+                        Image(systemName: "checkmark.square")
                             .imageScale(.large)
-                        Text("不足（必要数に満たない、在庫が足りない）")
+                        Text("✔︎済（グループ内の必要なアイテムが全てチェック済み）")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

@@ -66,10 +66,11 @@ struct ItemRowView: View {
                                 item.stock = item.need
                             }
                         }else{
-                            if linkCheckWithStock {
-                                // チェックと在庫数を連動させる
-                                item.stock = 0
-                            }
+                            // 0 にはしない
+                            // if linkCheckWithStock {
+                            //     // チェックと在庫数を連動させる
+                            //     item.stock = 0
+                            // }
                         }
                     } label: {
                         Image(systemName
