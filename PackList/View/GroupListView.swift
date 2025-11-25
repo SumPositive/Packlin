@@ -8,6 +8,22 @@
 import SwiftUI
 import SwiftData
 
+// LabelStyleの型を消して三項演算子で切り替えられるようにするための軽量なラッパー
+struct AnyLabelStyle: LabelStyle {
+    private let makeBody: (Configuration) -> AnyView
+
+    init<S: LabelStyle>(_ style: S) {
+        // 内部にクロージャとして保持し、呼び出し側は常に同じ型として扱えるようにする
+        makeBody = { configuration in
+            AnyView(style.makeBody(configuration: configuration))
+        }
+    }
+
+    func makeBody(configuration: Configuration) -> some View {
+        makeBody(configuration)
+    }
+}
+
 struct GroupListView: View {
     let pack: M1Pack
 
