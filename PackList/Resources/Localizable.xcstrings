@@ -2010,6 +2010,22 @@
           }
         }
       }
+    },
+    "アイテムを一覧・検索する": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アイテムを一覧・検索する"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browse and search items"
+          }
+        }
+      }
     }
   },
   "version": "1.1"

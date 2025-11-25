@@ -139,11 +139,13 @@ struct ItemSortListView: View {
                                         .multilineTextAlignment(.center)
                                 }
                             }
-                            .frame(maxWidth: isBeginnerMode ? nil : 44, alignment: .trailing)
+                            // 幅を圧縮してフッター全体の占有を抑える
+                            .frame(maxWidth: isBeginnerMode ? 64 : 44, alignment: .trailing)
                         }
                         .buttonStyle(.borderless)
                     }
-                    .frame(maxWidth: 110)
+                    // 以前よりおおよそ半分の幅にして、ボタン群とのバランスを取る
+                    .frame(maxWidth: isBeginnerMode ? 64 : 52)
                 }
             }
             .padding(.horizontal, 14)
@@ -193,7 +195,7 @@ struct ItemSortListView: View {
             .safeAreaInset(edge: .top) {
                 // PackListと同じヘッダー構成で、視線移動しやすいボタン配置に揃える
                 VStack(alignment: .center, spacing: 6) {
-                    HStack(spacing: 0) {
+                    HStack(alignment: .top, spacing: 0) {
                         // 戻るボタンと初心者向け説明
                         VStack(spacing: 6) {
                             Button {
@@ -261,6 +263,23 @@ struct ItemSortListView: View {
                         }
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
+
+                        Spacer(minLength: 0)
+
+                        // 並べ替え画面を示すアイコンと初心者向けサブタイトル
+                        VStack(spacing: 4) {
+                            Image(systemName: "list.bullet.rectangle")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+
+                            if isBeginnerMode {
+                                Text("アイテムを一覧・検索する")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
 
                         Spacer(minLength: 0)
                     }
