@@ -260,45 +260,6 @@
         }
       }
     },
-    "Redo やり直す" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo"
-          }
-        }
-      }
-    },
-    "Undo 元に戻す" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo"
-          }
-        }
-      }
-    },
-    "Undoをやり直す" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undoをやり直す"
-          }
-        }
-      }
-    },
     "アイテム\n一覧" : {
 
     },
@@ -325,23 +286,6 @@
             "state" : "translated",
             "value" : "An item is each belonging itself — the smallest unit."
           }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイテムとは、持ち物そのもの。最小単位です"
-          }
-        }
-      }
-    },
-    "アイテムの状態" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Item status"
-          }
         }
       }
     },
@@ -351,91 +295,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Item status (unchecked first)"
-          }
-        }
-      }
-    },
-    "アイテムヘッダー.説明.Redo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo the last undone change in items."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイテムで元に戻した内容をやり直します"
-          }
-        }
-      }
-    },
-    "アイテムヘッダー.説明.Undo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo the latest item change."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "直前のアイテム変更を元に戻します"
-          }
-        }
-      }
-    },
-    "アイテムヘッダー.説明.アイテム追加" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a new item to this group."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このグループに新しいアイテムを追加します"
-          }
-        }
-      }
-    },
-    "アイテムヘッダー.説明.戻る" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Return to the group list."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループ一覧に戻ります"
-          }
-        }
-      }
-    },
-    "アイテムを一覧・検索する" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Browse and search items"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイテムを一覧・検索する"
           }
         }
       }
@@ -450,35 +309,12 @@
         }
       }
     },
-    "アイテム一覧・検索" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Item list & search"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイテム一覧・検索"
-          }
-        }
-      }
-    },
     "アイテム一覧に戻る" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Back to item list"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アイテム一覧に戻る"
           }
         }
       }
@@ -553,12 +389,6 @@
             "state" : "translated",
             "value" : "A group splits belongings into pouches or smaller bundles."
           }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループとは、持ち物をポーチなどで小分けにしたものです"
-          }
         }
       }
     },
@@ -578,23 +408,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit group name or note"
-          }
-        }
-      }
-    },
-    "グループの境なく全てのアイテムを一覧・検索する" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Browse and search every item across groups"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループの境なく全てのアイテムを一覧・検索する"
           }
         }
       }
@@ -619,86 +432,12 @@
         }
       }
     },
-    "グループヘッダー.説明.Redo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo the last undone change in groups."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループで元に戻した内容をやり直します"
-          }
-        }
-      }
-    },
-    "グループヘッダー.説明.Undo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo the latest group change."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "直前のグループ編集を元に戻します"
-          }
-        }
-      }
-    },
-    "グループヘッダー.説明.グループ追加" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create a new group in this pack."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このパックに新しいグループを追加します"
-          }
-        }
-      }
-    },
-    "グループヘッダー.説明.戻る" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Return to the pack list."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "パック一覧に戻ります"
-          }
-        }
-      }
-    },
     "グループ一覧に戻る" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Back to group list"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループ一覧に戻る"
           }
         }
       }
@@ -713,17 +452,6 @@
         }
       }
     },
-    "グループ内の必要なアイテムが全てチェック済み" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everything you need in this group is checked off!"
-          }
-        }
-      }
-    },
     "グループ名" : {
       "localizations" : {
         "en" : {
@@ -734,51 +462,12 @@
         }
       }
     },
-    "グループ画面に戻る" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to group screen"
-          }
-        }
-      }
-    },
     "グループ編集" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit group"
-          }
-        }
-      }
-    },
-    "このフッターの説明文は、設定で消せます" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This footer description can be hidden in the settings."
-          }
-        }
-      }
-    },
-    "この説明文は、初心者モードでだけ表示されます" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "These tips appear only in Beginner mode."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "この説明文は、初心者モードでだけ表示されます"
           }
         }
       }
@@ -833,28 +522,6 @@
         }
       }
     },
-    "チェックと在庫を連動" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Link checks with inventory"
-          }
-        }
-      }
-    },
-    "チェック済み" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checked"
-          }
-        }
-      }
-    },
     "チャッピー" : {
       "localizations" : {
         "en" : {
@@ -868,34 +535,6 @@
     "チャッピー(AI)に作ってもらう" : {
 
     },
-    "チャッピー(AI)に作成を依頼" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy (AI) to create it"
-          }
-        }
-      }
-    },
-    "チャッピー(AI)に依頼" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy (AI)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "チャッピー(AI)に依頼"
-          }
-        }
-      }
-    },
     "チャッピー(AI)に依頼する" : {
       "localizations" : {
         "en" : {
@@ -906,40 +545,12 @@
         }
       }
     },
-    "チャッピー(AI)に修正や変更を依頼する" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy (AI) to adjust or revise your list"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "チャッピー(AI)に修正や変更を依頼する"
-          }
-        }
-      }
-    },
     "チャッピー(AI)に修正や変更を依頼できます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "You can ask Chappy (AI) to propose edits or changes"
-          }
-        }
-      }
-    },
-    "チャッピー(AI)に修正を依頼" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy (AI) to revise it"
           }
         }
       }
@@ -970,23 +581,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chappy is thinking. We’ll notify you when suggestions arrive, so feel free to close this and keep exploring."
-          }
-        }
-      }
-    },
-    "チャッピーに相談" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "チャッピーに相談"
           }
         }
       }
@@ -1037,12 +631,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A pack bundles every belonging together into one bag or backpack."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "パックとは、持ち物をバッグやリュックに全てまとめたものです"
           }
         }
       }
@@ -1114,12 +702,6 @@
             "state" : "translated",
             "value" : "Back to pack list"
           }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "パック一覧に戻る"
-          }
         }
       }
     },
@@ -1129,17 +711,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter your pack request"
-          }
-        }
-      }
-    },
-    "パック内の必要なアイテムが全てチェック済み" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All required items in the pack are checked"
           }
         }
       }
@@ -1154,102 +725,12 @@
         }
       }
     },
-    "パック画面に戻る" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to pack screen"
-          }
-        }
-      }
-    },
     "パック編集" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit pack"
-          }
-        }
-      }
-    },
-    "フッターの説明文" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Footer description"
-          }
-        }
-      }
-    },
-    "ヘッダー.説明.Redo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo the previous undo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "やり直しで直前のUndoを戻します"
-          }
-        }
-      }
-    },
-    "ヘッダー.説明.Undo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo the latest change."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "直前の変更を元に戻します"
-          }
-        }
-      }
-    },
-    "ヘッダー.説明.パック追加" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create a new pack."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新しいパックを作成します"
-          }
-        }
-      }
-    },
-    "ヘッダー.説明.設定" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open settings and options."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定画面を開きます"
           }
         }
       }
@@ -1270,28 +751,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notes"
-          }
-        }
-      }
-    },
-    "上級者" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expert"
-          }
-        }
-      }
-    },
-    "下にあるボタンからAIに作ってもらうこともできますよ" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can also have the AI create one using the button below."
           }
         }
       }
@@ -1326,68 +785,12 @@
         }
       }
     },
-    "不足個数順" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort by shortage count"
-          }
-        }
-      }
-    },
-    "不足個数順：個数から確認したい時" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort by missing count: when you want to check quantities first."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不足個数順：個数から確認したい時"
-          }
-        }
-      }
-    },
     "不足重量" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Missing weight"
-          }
-        }
-      }
-    },
-    "不足重量順" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort by shortage weight"
-          }
-        }
-      }
-    },
-    "不足重量順：重量から確認したい時" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort by missing weight: when you want to check weight first."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不足重量順：重量から確認したい時"
           }
         }
       }
@@ -1462,62 +865,12 @@
         }
       }
     },
-    "全アイテム" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All items"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "全アイテム"
-          }
-        }
-      }
-    },
-    "全チェックOFF" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uncheck all"
-          }
-        }
-      }
-    },
-    "全チェックON" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check all"
-          }
-        }
-      }
-    },
     "全てのアイテムを対象に一覧・並べ替え・検索ができます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "You can list, sort, and search all items"
-          }
-        }
-      }
-    },
-    "全体の並べ替えとアイテム検索" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reorder everything and search items"
           }
         }
       }
@@ -1672,66 +1025,8 @@
         }
       }
     },
-    "在庫重量順" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort by stock weight"
-          }
-        }
-      }
-    },
-    "在庫重量順：重量オーバー時の見直しにご利用ください" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stock weight order: Use to review when overweight."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在庫重量順：重量オーバー時の見直しにご利用ください"
-          }
-        }
-      }
-    },
-    "変更あればすぐに並べ替える" : {
-      "comment" : "A toggle that allows users to have their item list automatically reordered when changes are made.",
-      "extractionState" : "stale",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reorder automatically when changes occur"
-          }
-        }
-      }
-    },
     "常時並べ替え" : {
 
-    },
-    "常時並べ替える" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Always auto-sort items"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "常時並べ替える"
-          }
-        }
-      }
     },
     "広告をご視聴いただきありがとうございます！" : {
       "localizations" : {
@@ -1953,34 +1248,6 @@
         }
       }
     },
-    "未チェック順" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unchecked"
-          }
-        }
-      }
-    },
-    "未チェック順：最終チェック時にご利用ください" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unchecked order: Use at final check."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未チェック順：最終チェック時にご利用ください"
-          }
-        }
-      }
-    },
     "末尾" : {
       "localizations" : {
         "en" : {
@@ -2018,12 +1285,6 @@
             "state" : "translated",
             "value" : "Redo the last change"
           }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "直前の変更にやり直す"
-          }
         }
       }
     },
@@ -2033,12 +1294,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Undo last change"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "直前の変更を元に戻す"
           }
         }
       }
@@ -2100,12 +1355,6 @@
             "state" : "translated",
             "value" : "Display mode"
           }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "表示モード"
-          }
         }
       }
     },
@@ -2139,15 +1388,8 @@
         }
       }
     },
-    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください（最大%lld文字）\n\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Feel free to list lots of details — destination, dates, purpose, group size, weather, activities, anything! (Up to %lld characters)\n\nExample: 6-day family trip to Italy and Spain, four people, expect rain, pack a first-aid kit."
-          }
-        }
-      }
+    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください（最大%lld文字）\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
+
     },
     "設定" : {
       "localizations" : {
@@ -2159,29 +1401,12 @@
         }
       }
     },
-    "設定・オプション" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings / Options"
-          }
-        }
-      }
-    },
     "設定を開く" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定を開く"
           }
         }
       }
@@ -2202,12 +1427,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "If the tips feel overwhelming, switch to Expert mode from Settings."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "説明がウザい！と感じられた貴方、設定から達人モードをご利用ください"
           }
         }
       }
@@ -2278,12 +1497,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expert"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "達人"
           }
         }
       }
