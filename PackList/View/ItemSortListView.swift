@@ -18,6 +18,8 @@ struct ItemSortListView: View {
     @Environment(\.dismiss) private var dismiss
 
     @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
+    // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -53,7 +55,10 @@ struct ItemSortListView: View {
 
     private var isShowingPopup: Bool { editingItem != nil }
 
-    private let headerHeight: CGFloat = 44
+    // ボタン行＋タイトル行で表示しつつ、上下余白を抑えて高さをコンパクトにする
+    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
+    // 説明文表示判定をまとめておく
+    private var isBeginnerMode: Bool { displayMode == .beginner }
 
     var body: some View {
         ZStack {
@@ -107,67 +112,95 @@ struct ItemSortListView: View {
                 }
                 .padding(.trailing, 16)
             }
-            .navigationTitle(sortOption.title)
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) {
-                // 並べ替え画面用のカスタムヘッダー
-                HStack(spacing: 0) {
-                    // 閉じる
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.backward")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
+                // PackListと同じヘッダー構成で、視線移動しやすいボタン配置に揃える
+                VStack(alignment: .center, spacing: 6) {
+                    HStack(spacing: 0) {
+                        // 戻るボタンと初心者向け説明
+                        VStack(spacing: 6) {
+                            Button {
+                                dismiss()
+                            } label: {
+                                Image(systemName: "chevron.backward")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(isShowingPopup)
+
+                            if isBeginnerMode {
+                                Text("グループ一覧に戻る")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: 76)
+                        .padding(.horizontal, 6)
+
+                        // Undoと説明
+                        VStack(spacing: 6) {
+                            Button {
+                                canUndo = false
+                                modelContext.undoManager?.performUndo()
+                            } label: {
+                                Image(systemName: "arrow.uturn.backward")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(!canUndo || isShowingPopup)
+
+                            if isBeginnerMode {
+                                Text("直前の変更を元に戻す")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: 76)
+                        .padding(.horizontal, 6)
+
+                        Spacer(minLength: 0)
+
+                        // Redoと説明
+                        VStack(spacing: 6) {
+                            Button {
+                                canRedo = false
+                                modelContext.undoManager?.performRedo()
+                            } label: {
+                                Image(systemName: "arrow.uturn.forward")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(!canRedo || isShowingPopup)
+
+                            if isBeginnerMode {
+                                Text("Undoをやり直す")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: 76)
+                        .padding(.horizontal, 6)
                     }
-                    .buttonStyle(.borderless)
-                    .disabled(isShowingPopup)
-                    .padding(.horizontal, 12)
 
-                    // Undo
-                    Button {
-                        canUndo = false
-                        modelContext.undoManager?.performUndo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(!canUndo || isShowingPopup)
-                    .padding(.horizontal, 12)
-
-                    Spacer(minLength: 0)
-
-                    Text(sortOption.title)
+                    // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
+                    // 並べ替え条件も併記して、今どの一覧を見ているかを明示する
+                    Text("\(pack.name.placeholder("新しいパック"))（\(sortOption.title)）")
                         .font(.headline)
                         .lineLimit(1)
-
-                    Spacer(minLength: 0)
-
-                    // Redo
-                    Button {
-                        canRedo = false
-                        modelContext.undoManager?.performRedo()
-                    } label: {
-                        Image(systemName: "arrow.uturn.forward")
-                            .imageScale(.small)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(!canRedo || isShowingPopup)
-                    .padding(.horizontal, 12)
-
-                    // スペース
-                    Rectangle()
-                        .fill(.clear)
-                        .frame(width: 24)
-                        .padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)
+                // ヘッダーの上下余白を抑えてリスト領域を広げる
+                .padding(.vertical, 3)
                 .background(.thinMaterial)
             }
             .onAppear {
@@ -360,7 +393,8 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     private func compare(ll: M3Item, rr: M3Item,
                          primary: Int, rrPrimary: Int) -> Bool {
         if primary != rrPrimary {
-            return primary > rrPrimary
+            // できるだけ「<」向きで比較し、どちらが大きいかを明示する
+            return rrPrimary < primary
         }
         // 同じとき、Groupに遡って比較する
         return fallbackCompare(ll: ll, rr: rr)
