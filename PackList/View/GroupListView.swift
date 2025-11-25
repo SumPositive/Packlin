@@ -46,13 +46,16 @@ struct GroupListView: View {
             HStack(spacing: 12) {
                 NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
                     Label {
-                        // 全体の未チェックをまとめて確認・検索できるボタン
-                        Text("アイテム一覧・検索")
+                        // 初心者モードでは説明文も合わせて表示し、達人モードではアイコンのみでコンパクトに見せる
+                        // VoiceOver向けには長めの文言を残し、アイコンのみでも意図が伝わるようにする
+                        Text(LocalizedStringKey("グループの境なく全てのアイテムを一覧・検索する"))
                             .font(.footnote.weight(.semibold))
                     } icon: {
                         Image(systemName: "list.bullet")
                             .symbolRenderingMode(.hierarchical)
                     }
+                    // 達人モードではアイコンだけを見せてボタンを把握しやすくする
+                    .labelStyle(isBeginnerMode ? .titleAndIcon : .iconOnly)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 10)
@@ -69,12 +72,15 @@ struct GroupListView: View {
                     GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
                 } label: {
                     Label {
-                        Text("チャッピー(AI)に依頼")
+                        // 初心者モードでは依頼内容を具体的に示し、達人モードではアイコンのみで素早く押せるようにする
+                        Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼する"))
                             .font(.footnote.weight(.semibold))
                     } icon: {
                         Image(systemName: "sparkles")
                             .symbolRenderingMode(.hierarchical)
                     }
+                    // 達人モード向けのコンパクト表示
+                    .labelStyle(isBeginnerMode ? .titleAndIcon : .iconOnly)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 10)

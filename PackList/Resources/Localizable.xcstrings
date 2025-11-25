@@ -1867,6 +1867,22 @@
         }
       }
     },
+    "グループの境なく全てのアイテムを一覧・検索する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browse and search every item across groups"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グループの境なく全てのアイテムを一覧・検索する"
+          }
+        }
+      }
+    },
     "アイテム一覧・検索": {
       "localizations": {
         "en": {
@@ -1879,6 +1895,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "アイテム一覧・検索"
+          }
+        }
+      }
+    },
+    "チャッピー(AI)に修正や変更を依頼する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Chappy (AI) to adjust or revise your list"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チャッピー(AI)に修正や変更を依頼する"
           }
         }
       }
