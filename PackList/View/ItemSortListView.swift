@@ -34,6 +34,7 @@ struct ItemSortListView: View {
     }
 
     private var displayedItems: [M3Item] {
+        // トグルのON/OFFに関わらず、キャッシュ側は最新順を握っておく
         autoItemReorder ? baseSortedItems : cachedItems
     }
 
@@ -142,22 +143,6 @@ struct ItemSortListView: View {
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
-
-                // 編集操作に応じて自動で並び替え
-                Toggle(isOn: $autoItemReorder) {
-                    HStack(spacing: 0) {
-                        Spacer()
-                        Image(systemName: "arrow.up.and.down.and.sparkles")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .padding(8)
-
-                        Text("変更あればすぐに並べ替える")
-                            .font(.body)
-                    }
-                    .foregroundStyle(.secondary)
-                }
-                .padding(.trailing, 16)
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
@@ -234,6 +219,34 @@ struct ItemSortListView: View {
                         }
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
+
+                        // 変更があればすぐに並べ替えるトグルをアイコン化して右端に集約
+                        VStack(spacing: 6) {
+                            Button {
+                                autoItemReorder.toggle()
+                                // OFF→ONでもキャッシュを最新の並び順に揃える
+                                refreshDisplayedItems(forceReset: true, forceResort: true)
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: autoItemReorder ? "arrow.up.and.down.and.sparkles" : "arrow.up.arrow.down.square")
+                                        .imageScale(.medium)
+                                        .symbolRenderingMode(.hierarchical)
+                                        .foregroundStyle(autoItemReorder ? Color.accentColor : Color.secondary)
+                                        .padding(8)
+
+                                    if isBeginnerMode {
+                                        Text("常時並べ替える")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                }
+                                .frame(maxWidth: isBeginnerMode ? nil : 44, alignment: .trailing)
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                        .frame(maxWidth: 120)
+                        .padding(.horizontal, 6)
                     }
 
                     // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
@@ -252,16 +265,19 @@ struct ItemSortListView: View {
             }
             .onAppear {
                 updateUndoRedo()
-                refreshDisplayedItems(forceReset: true)
+                // ソート切り替え直後は自動並べ替えスイッチに関係なく最新順を採用
+                refreshDisplayedItems(forceReset: true, forceResort: true)
                 GALogger.log(.function(name: "item_sort", option: sortOption.rawValue))
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()
             }
-            .onChange(of: !autoItemReorder) { _, _ in
-                refreshDisplayedItems(forceReset: true)
+            .onChange(of: autoItemReorder) { _, _ in
+                // スイッチのON/OFFを問わず、一度は最新の並べ替えを反映する
+                refreshDisplayedItems(forceReset: true, forceResort: true)
             }
             .onChange(of: baseSortedItemIDs) { _, _ in
+                // 並びに変更があった場合は現在のモードを尊重しつつキャッシュを更新
                 refreshDisplayedItems()
             }
 
@@ -289,8 +305,10 @@ struct ItemSortListView: View {
                         return
                     }
 
-                    if horizontal <= 80 || abs(vertical) >= 50 { return }
-                    dismiss()
+                    if horizontal <= 80 { return }
+                    if abs(vertical) < 50 {
+                        dismiss()
+                    }
                 }
         )
         .safeAreaInset(edge: .bottom) {
@@ -342,10 +360,16 @@ struct ItemSortListView: View {
         }
     }
 
-    private func refreshDisplayedItems(forceReset: Bool = false) {
+    private func refreshDisplayedItems(forceReset: Bool = false, forceResort: Bool = false) {
         let items = baseSortedItems
 
         guard !autoItemReorder else {
+            cachedItems = items
+            return
+        }
+
+        // 並べ替えスイッチがOFFでも、指示されたときは最新順に戻す
+        if forceResort {
             cachedItems = items
             return
         }
