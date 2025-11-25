@@ -81,7 +81,7 @@ struct GroupEditView: View {
                                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                                     
-                                    Text("全チェックOFF")
+                                    Text("全✔︎on→OFF")
                                         .font(.caption)
                                 }else{
                                     Image(systemName: "checkmark.square")
@@ -89,7 +89,7 @@ struct GroupEditView: View {
                                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                                     
-                                    Text("全チェックON")
+                                    Text("全✔︎off→ON")
                                         .font(.caption)
                                 }
                             }

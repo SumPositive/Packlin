@@ -53,10 +53,10 @@ struct PackEditView: View {
                                     }
                                 }
                                 if allItemsChecked {
-                                    Text("全チェックOFF")
+                                    Text("全✔︎on→OFF")
                                         .font(.caption)
                                 }else{
-                                    Text("全チェックON")
+                                    Text("全✔︎off→ON")
                                         .font(.caption)
                                 }
                             }

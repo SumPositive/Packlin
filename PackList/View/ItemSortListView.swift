@@ -58,7 +58,7 @@ struct ItemSortListView: View {
     private var isShowingPopup: Bool { editingItem != nil }
 
     // ボタン行＋タイトル行のみで構成し、上下余白を抑えて高さをコンパクトにする
-    private var headerHeight: CGFloat { isBeginnerMode ? 80 : 56 }
+    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 56 }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
@@ -241,6 +241,23 @@ struct ItemSortListView: View {
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
 
+                        // 並べ替え画面を示すアイコンと初心者向けサブタイトル
+                        VStack(spacing: 4) {
+                            Image(systemName: "list.bullet.rectangle")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                            
+                            if isBeginnerMode {
+                                Text("アイテム一覧・検索")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        Spacer(minLength: 0)
+
                         // Redoと説明
                         VStack(spacing: 6) {
                             Button {
@@ -263,23 +280,6 @@ struct ItemSortListView: View {
                         }
                         .frame(maxWidth: 76)
                         .padding(.horizontal, 6)
-
-                        Spacer(minLength: 0)
-
-                        // 並べ替え画面を示すアイコンと初心者向けサブタイトル
-                        VStack(spacing: 4) {
-                            Image(systemName: "list.bullet.rectangle")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-
-                            if isBeginnerMode {
-                                Text("アイテムを一覧・検索する")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
 
                         Spacer(minLength: 0)
                     }
@@ -437,13 +437,13 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
             case .unchecked:
-                return String(localized: "未チェック順")
+                return String(localized: "未 ✔︎ 順")
             case .lackCount:
-                return String(localized: "不足個数順")
+                return String(localized: "不足個数")
             case .lackWeight:
-                return String(localized: "不足重量順")
+                return String(localized: "不足重量")
             case .stockWeight:
-                return String(localized: "在庫重量順")
+                return String(localized: "在庫重量")
         }
     }
 
@@ -451,13 +451,13 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     var beginnerGuide: String {
         switch self {
             case .unchecked:
-                return String(localized: "未チェック順：最終チェック時にご利用ください")
+                return String(localized: "最終チェック時にご利用ください")
             case .lackCount:
-                return String(localized: "不足個数順：個数から確認したい時")
+                return String(localized: "個数から確認したい時")
             case .lackWeight:
-                return String(localized: "不足重量順：重量から確認したい時")
+                return String(localized: "重量から確認したい時")
             case .stockWeight:
-                return String(localized: "在庫重量順：重量オーバー時の見直しにご利用ください")
+                return String(localized: "重量オーバー時の見直しにご利用ください")
         }
     }
 

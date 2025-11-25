@@ -66,7 +66,7 @@ struct GroupListView: View {
                                 .foregroundStyle(.secondary)
                                 .font(.footnote.weight(.semibold))
                         } icon: {
-                            Image(systemName: "list.bullet")
+                            Image(systemName: "list.bullet.rectangle")
                                 .symbolRenderingMode(.hierarchical)
                         }
                     )
