@@ -157,18 +157,18 @@
         }
       }
     },
-    "AIに相談" : {
+    "チャッピーに相談" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask AI"
+            "value" : "Ask Chappy"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AIに相談"
+            "value" : "チャッピーに相談"
           }
         }
       }

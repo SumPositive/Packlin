@@ -37,7 +37,7 @@ struct GroupListView: View {
     // それでも編集中はツールバー操作を抑制したいので、フラグ名は流用
     private var isShowingPopup: Bool { editingGroup != nil }
 
-    // Group一覧の下に固定表示するメニュー
+    // Group一覧の下に固定表示するメニュー（縦幅を抑えてアイコン＋短文を横並びに）
     private var footerMenu: some View {
         VStack(spacing: 0) {
             COLOR_LIST_SEPARATOR
@@ -47,28 +47,19 @@ struct GroupListView: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 6) {
                     NavigationLink(value: AppDestination.itemSortList(packID: pack.id, sort: .unchecked)) {
-                        // 「未 ✔︎ 順」ボタンに似た彩度の高い背景で、次の画面へ進む動線を目立たせる
-                        VStack(spacing: 8) {
+                        // アイコンの右に短いテキストを置いて高さを抑える（強調背景は使わず通常表示）
+                        HStack(spacing: 10) {
                             Image(systemName: "list.bullet.rectangle")
                                 .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(Color.accentColor)
 
                             Text(LocalizedStringKey("全アイテム"))
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Color.primary)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(Color.accentColor.opacity(0.14))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.accentColor, lineWidth: 1)
-                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 10)
                     }
                     .buttonStyle(.plain)
 
@@ -85,31 +76,23 @@ struct GroupListView: View {
 
                 VStack(spacing: 6) {
                     Button {
-                        // 現在のパック内容をチャッピーに共有し、AI提案を受ける
+                        // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
                         showAiCreateSheet = true
                         GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
                     } label: {
-                        VStack(spacing: 8) {
+                        // 高さを抑えつつボタン内で完結する簡潔ラベルに変更
+                        HStack(spacing: 10) {
                             Image(systemName: "sparkles")
                                 .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(Color.accentColor)
 
-                            Text(LocalizedStringKey("AIに相談"))
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Color.accentColor)
+                            Text(LocalizedStringKey("チャッピーに相談"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Color.primary)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(Color.accentColor.opacity(0.14))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.accentColor, lineWidth: 1)
-                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 10)
                     }
                     .buttonStyle(.plain)
 
