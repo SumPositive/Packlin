@@ -43,9 +43,9 @@ struct ItemEditView: View {
     @State private var moveInsertPosition: MoveInsertPosition = .end
 
     private let sectionCornerRadius: CGFloat = 12
-    private let baseHeaderHeight: CGFloat = 74
-    // 初心者モードでは説明テキストとタイトル行を置くため高さを拡大する
-    private var headerHeight: CGFloat { isBeginnerMode ? 116 : baseHeaderHeight }
+    private let baseHeaderHeight: CGFloat = 64
+    // 初心者モードでは説明テキストとタイトル行を置くため高さを拡大するが、余白はやや抑える
+    private var headerHeight: CGFloat { isBeginnerMode ? 96 : baseHeaderHeight }
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
     private var nameFieldMinHeight: CGFloat {
@@ -309,7 +309,8 @@ struct ItemEditView: View {
         .safeAreaInset(edge: .top) {
             // 編集画面でもPackListView風のヘッダーを共通化し、タイトルを下段へ移動
             // 中央揃えのタイトルで、長い名称でも視線が中央に集まり読みやすくなるようにする
-            VStack(alignment: .center, spacing: 10) {
+            // spacingを詰めて上下の余白を半分程度に抑え、編集領域を広く確保する
+            VStack(alignment: .center, spacing: 6) {
                 HStack(spacing: 0) {
                     // 戻る＋説明
                     VStack(spacing: 6) {
@@ -412,7 +413,8 @@ struct ItemEditView: View {
             .tint(.primary)
             .frame(height: headerHeight)
             .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            // ヘッダーの上下余白を控えめにして編集フォームを広く見せる
+            .padding(.vertical, 3)
             .background(.thinMaterial)
         }
         .simultaneousGesture(

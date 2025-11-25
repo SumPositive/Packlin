@@ -32,8 +32,8 @@ struct ItemListView: View {
     }
 
     private let rowHeight: CGFloat = 44
-    // ボタン行＋タイトル行で表示するため、少し高めの余裕を確保する
-    private var headerHeight: CGFloat { isBeginnerMode ? 116 : 74 }
+    // ボタン行＋タイトル行で表示しつつ、上下余白を抑えて高さをコンパクトにする
+    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
@@ -88,7 +88,8 @@ struct ItemListView: View {
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設し、タイトルを下段に分離
                 // 中央寄せのタイトルで、左右の操作ボタンに目を移した後でも視線を戻しやすくする
-                VStack(alignment: .center, spacing: 10) {
+                // spacingを詰めてヘッダーの上下余白を約半分に抑える
+                VStack(alignment: .center, spacing: 6) {
                     HStack(spacing: 0) {
                         // 戻るボタンと初心者向け説明
                         VStack(spacing: 6) {
@@ -192,7 +193,8 @@ struct ItemListView: View {
                 .tint(.primary)
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                // ヘッダーの上下余白を抑えてリスト領域を広げる
+                .padding(.vertical, 3)
                 .background(.thinMaterial)
             }
             .onAppear {

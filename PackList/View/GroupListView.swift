@@ -24,8 +24,8 @@ struct GroupListView: View {
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
 
     private let rowHeight: CGFloat = 44
-    // ヘッダーはボタン行＋タイトル行の2段構成にし、高さに余裕を持たせる
-    private var headerHeight: CGFloat { isBeginnerMode ? 116 : 74 }
+    // ヘッダーはボタン行＋タイトル行の2段構成にしつつ、上下余白を抑えて高さもコンパクトにする
+    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
@@ -157,7 +157,8 @@ struct GroupListView: View {
             //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) { // ヘッダ部
                 // ボタン行の下に中央揃えのタイトル行を分けて、視線の向きを合わせやすくする
-                VStack(alignment: .center, spacing: 10) {
+                // spacingも少し詰めて上下余白を半分程度に縮める
+                VStack(alignment: .center, spacing: 6) {
                     HStack {
                         // 戻るボタンと初心者向け説明
                         VStack(spacing: 6) {
@@ -261,7 +262,8 @@ struct GroupListView: View {
                 .tint(.primary)
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                // ヘッダーの上下余白を控えめにしてコンテンツの見える領域を増やす
+                .padding(.vertical, 3)
                 .background(.thinMaterial)
             }
         }
