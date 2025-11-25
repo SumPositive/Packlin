@@ -26,7 +26,7 @@ struct GroupListView: View {
     private let rowHeight: CGFloat = 44
     // 初心者モードでは説明文を表示するためヘッダーを少し高くしておく
     private var headerHeight: CGFloat { isBeginnerMode ? 88 : rowHeight }
-    // 説明文を出すかどうかのフラグを共通計算にまとめる
+    // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
     private var sortedGroups: [M2Group] {

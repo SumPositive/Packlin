@@ -16,13 +16,18 @@ struct ItemRowView: View {
     @Environment(\.modelContext) private var modelContext
 
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+    // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { item.name.isEmpty }
     private var weightUnit: String { String(localized: "g") }
+    // 説明文を出すかどうかのフラグを共通にまとめる
+    private var isBeginnerMode: Bool { displayMode == .beginner }
 
+    
     init(item: M3Item,
          onEdit: @escaping (M3Item, CGPoint) -> Void) {
         self.item = item
@@ -116,7 +121,7 @@ struct ItemRowView: View {
                     )
 
                     // メモ
-                    if item.name.isEmpty, item.memo.isEmpty {
+                    if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
                         Text("アイテムとは、持ち物そのもの。最小単位です")
                             .lineLimit(3)
                             .font(FONT_MEMO)

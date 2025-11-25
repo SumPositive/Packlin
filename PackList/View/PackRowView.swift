@@ -16,6 +16,9 @@ struct PackRowView: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = DEF_showNeedWeight
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
+    // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
@@ -47,7 +50,10 @@ struct PackRowView: View {
         let items = pack.child.flatMap { $0.child }
         return items.count
     }
+    // 説明文を出すかどうかのフラグを共通にまとめる
+    private var isBeginnerMode: Bool { displayMode == .beginner }
 
+    
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
@@ -112,7 +118,7 @@ struct PackRowView: View {
                         .foregroundStyle(.clear)
                 }
                 // メモ
-                if pack.name.isEmpty, pack.memo.isEmpty {
+                if isBeginnerMode, pack.name.isEmpty, pack.memo.isEmpty {
                     Text("パックとは、持ち物をバッグやリュックに全てまとめたものです")
                         .lineLimit(3)
                         .font(FONT_MEMO)

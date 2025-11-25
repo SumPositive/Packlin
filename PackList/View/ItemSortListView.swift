@@ -305,7 +305,7 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
                 return String(localized: "在庫重量順")
         }
     }
-    
+
     // Sort条件
     /// pack配下の全Itemを並べ替える
     /// - Parameter pack: M1Pack

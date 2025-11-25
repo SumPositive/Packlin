@@ -18,6 +18,8 @@ struct GroupRowView: View {
 
     @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = DEF_showNeedWeight
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
+    // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
     @State private var rowFrame: CGRect?
 
@@ -48,7 +50,10 @@ struct GroupRowView: View {
     private var allItems: Int {
         return group.child.count
     }
+    // 説明文を出すかどうかのフラグを共通にまとめる
+    private var isBeginnerMode: Bool { displayMode == .beginner }
 
+    
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
@@ -101,7 +106,7 @@ struct GroupRowView: View {
                         .foregroundStyle(.clear)
                 }
                 // メモ
-                if group.name.isEmpty, group.memo.isEmpty {
+                if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
                     Text("グループとは、持ち物をポーチなどで小分けにしたものです")
                         .lineLimit(3)
                         .font(FONT_MEMO)
