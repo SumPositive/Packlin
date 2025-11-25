@@ -6,13 +6,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ""
+            "value" : " "
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ""
+            "value" : " "
           }
         }
       }
@@ -157,7 +157,7 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "group (%1$lld) [%2$@]"
           }
         }
@@ -183,7 +183,7 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "item (%1$lld) [%2$@]"
           }
         }
@@ -224,7 +224,7 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "pack (%1$lld) [%2$@]"
           }
         }
@@ -279,7 +279,20 @@
       }
     },
     "アイテムとは、持ち物そのもの。最小単位です" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An item is each belonging itself — the smallest unit."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイテムとは、持ち物そのもの。最小単位です"
+          }
+        }
+      }
     },
     "アイテムの状態" : {
       "localizations" : {
@@ -436,7 +449,20 @@
       }
     },
     "グループとは、持ち物をポーチなどで小分けにしたものです" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A group splits belongings into pouches or smaller bundles."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループとは、持ち物をポーチなどで小分けにしたものです"
+          }
+        }
+      }
     },
     "グループの先頭" : {
       "localizations" : {
@@ -801,7 +827,20 @@
       }
     },
     "パックとは、持ち物をバッグやリュックに全てまとめたものです" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pack bundles every belonging together into one bag or backpack."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パックとは、持ち物をバッグやリュックに全てまとめたものです"
+          }
+        }
+      }
     },
     "パックの先頭" : {
       "localizations" : {
@@ -1783,7 +1822,20 @@
       }
     },
     "達人" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expert"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "達人"
+          }
+        }
+      }
     },
     "重量計をKgで表示" : {
       "localizations" : {
