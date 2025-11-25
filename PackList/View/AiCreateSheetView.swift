@@ -195,7 +195,7 @@ struct AiCreateView: View {
                                 .fill(Color.secondary.opacity(0.3))
                         )
                     if 0 < adBenefitStore.availableBonusUsages {
-                        Text("広告特典の無料利用残り \(adBenefitStore.availableBonusUsages) 回")
+                        Text("特典1回")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.primary)
                             .padding(.vertical, 6)
@@ -325,7 +325,7 @@ struct AiCreateView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text(String(localized: "動画広告を見てAI利用券を当てよう！"))
+                        Text(String(localized: "動画広告を見て特典をもらおう！"))
                             .font(.body.weight(.semibold))
                     }
                     .frame(maxWidth: .infinity)
@@ -333,7 +333,7 @@ struct AiCreateView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)
 
-                Text(String(localized: "広告特典は最大1回まで保有できます。使い切ってから次を狙ってみてください。"))
+                Text(String(localized: "視聴回数と時間によりAI利用「特典1回」を提供します"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
