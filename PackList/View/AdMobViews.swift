@@ -154,11 +154,30 @@ struct AdMobRewardedScreen: View {
                     }
                 }
 
-                Button(String(localized: "広告を再生")) {
+                Button {
+                    // 読み込み完了後にのみ広告を再生する
                     presentAd()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: loader.isReady ? "play.circle.fill" : "goforward")
+                            .symbolRenderingMode(.hierarchical)
+                        if loader.isReady {
+                            Text(String(localized: "広告を再生"))
+                        } else if loader.isLoading {
+                            Text(String(localized: "広告を読み込み中..."))
+                        } else {
+                            Text(String(localized: "広告を準備中"))
+                        }
+                    }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(!loader.isReady)
+                // 読み込み中や準備中はボタンを押せないようにして状態を伝える
+                .disabled(loader.isReady == false)
+
+                // ローディングや準備状況を文字でも明示する
+                Text(loader.isReady ? String(localized: "広告の準備が完了しました") : String(localized: "広告の読み込みを待っています"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 if let rewardDescription {
                     Text(rewardDescription)
@@ -187,9 +206,6 @@ struct AdMobRewardedScreen: View {
             }
         }
         .onAppear {
-            loader.onAdDismissed = {
-                dismiss()
-            }
             loader.onRewardEarned = { _ in
                 rewardDescription = String(localized: "広告をご視聴いただきありがとうございます！")
             }
