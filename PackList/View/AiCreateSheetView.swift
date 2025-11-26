@@ -83,7 +83,6 @@ struct AiCreateView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.locale) private var locale
     @EnvironmentObject private var creditStore: CreditStore
-    @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
@@ -196,11 +195,6 @@ struct AiCreateView: View {
                                 .fill(Color.secondary.opacity(0.3))
                         )
                     
-                    Spacer()
-                    if 0 < adBenefitStore.availableBonusUsages {
-                        // 特典バッジ
-                        AdRewardBonusBadgeView()
-                    }
                     Spacer()
                     // 送信
                     Button {
@@ -320,7 +314,7 @@ struct AiCreateView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text("広告を見て寄付　（特典あり）")
+                        Text(String(localized: "広告を見て寄付（購入者特典）"))
                             .font(.body.weight(.semibold))
                     }
                 }
@@ -426,18 +420,12 @@ struct AiCreateView: View {
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
-            var shouldRestoreAdBonus = false
-            var usedAdBonus = false
             defer {
                 Task {
                     await MainActor.run {
                         if shouldRestoreCredits {
                             // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
                             creditStore.add(credits: cost)
-                        }
-                        if shouldRestoreAdBonus {
-                            // 広告特典を予約したがAPI実行に至らなかった場合は手元に戻す
-                            adBenefitStore.restoreConsumedBonus()
                         }
                         isGenerating = false
                     }
@@ -449,32 +437,21 @@ struct AiCreateView: View {
                 return
             }
 
-            // まずは広告特典があればそちらを優先的に使う
-            usedAdBonus = await MainActor.run {
-                adBenefitStore.consumeBonusIfAvailable()
+            // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
+            let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
+            if hasEnoughCredits == false {
+                await presentCreditShortageFeedback()
+                return
             }
 
-            // クレジットを消費する必要がある場合のみ残高チェックを行う
-            if usedAdBonus == false {
-                // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
-                let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
-                if hasEnoughCredits == false {
-                    await presentCreditShortageFeedback()
-                    return
+            do {
+                try await MainActor.run {
+                    try creditStore.consume(credits: cost)
+                    shouldRestoreCredits = true
                 }
-
-                do {
-                    try await MainActor.run {
-                        try creditStore.consume(credits: cost)
-                        shouldRestoreCredits = true
-                    }
-                } catch {
-                    await presentCreditShortageFeedback()
-                    return
-                }
-            } else {
-                // 特典を仮押さえしたので、失敗時に戻せるようフラグを立てる
-                shouldRestoreAdBonus = true
+            } catch {
+                await presentCreditShortageFeedback()
+                return
             }
 
                 do {
@@ -487,8 +464,6 @@ struct AiCreateView: View {
                     )
                     // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                     shouldRestoreCredits = false
-                    // 特典利用で開始した場合も、この時点で確定させる
-                    shouldRestoreAdBonus = false
                     do {
                         let packName = try await MainActor.run { () -> String in
                             let importedPack = try createPack(from: dto)
@@ -591,7 +566,7 @@ struct AiCreateView: View {
             return true
         }
         // 購入履歴が1件も無い場合は広告特典だけでは認証できないことを先に伝え、無駄な視聴を防ぐ
-        let hasPurchaseHistory = await hasStoreKitPurchaseHistory()
+        let hasPurchaseHistory = await PurchaseHistoryChecker.hasPurchasedOnce()
         await MainActor.run {
             if hasPurchaseHistory {
                 inlineGenerationFeedback = .failure(message: String(localized: "AI利用には認証が必要です。購入復元またはアプリ再起動後に再度お試しください。"))
@@ -602,26 +577,10 @@ struct AiCreateView: View {
         return false
     }
 
-    /// StoreKitの購入履歴が1件でも端末に残っているかどうかを素早く確認する
-    /// - Returns: どれかのプロダクトIDでトランザクションが見つかった場合はtrue
-    private func hasStoreKitPurchaseHistory() async -> Bool {
-        for option in AZUKI_CREDIT_PURCHASE_OPTIONS {
-            for productId in option.allProductIds {
-                if Task.isCancelled {
-                    return false
-                }
-                if await Transaction.latest(for: productId) != nil {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
     /// StoreKitの購入履歴を確認し、復旧ハンドラを登録すべき状況かどうかを仕分ける
     /// - Important: 未購入ユーザーへは復旧手段が存在しないため、ハンドラ登録を避けて誤解を抑止する
     private func prepareTokenRecoveryHandlerIfPossible() async {
-        let hasHistory = await hasStoreKitPurchaseHistory()
+        let hasHistory = await PurchaseHistoryChecker.hasPurchasedOnce()
         if hasHistory == false {
             await AzukiApi.shared.clearTokenRecoveryHandler()
             return

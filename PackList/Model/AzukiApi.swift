@@ -210,6 +210,49 @@ final class AzukiApi {
         }
     }
 
+    /// 広告収益による特典でAI利用券を追加し、サーバー側にも理由を伝える
+    /// - Parameters:
+    ///   - userId: サーバー側で利用券を管理するユーザーID
+    ///   - grantedTickets: 今回追加する枚数
+    ///   - revenueMicros: 広告SDKから通知された収益（マイクロ単位）
+    ///   - currencyCode: 収益の通貨コード（JPY/USDなど）
+    /// - Returns: 追加後の最新残高
+    func grantAdRewardCredit(userId: String,
+                             grantedTickets: Int,
+                             revenueMicros: Int64,
+                             currencyCode: String) async throws -> Int {
+        struct GrantRequest: Encodable {
+            let userId: String
+            let grantedTickets: Int
+            let revenueMicros: Int64
+            let currencyCode: String
+            let source: String
+        }
+
+        struct GrantResponse: Decodable {
+            let balance: Int
+        }
+
+        guard let url = makeURL(path: "/api/credit/ad-reward") else {
+            throw AzukiAPIError.invalidURL
+        }
+
+        let body = GrantRequest(
+            userId: userId,
+            grantedTickets: grantedTickets,
+            revenueMicros: revenueMicros,
+            currencyCode: currencyCode,
+            source: "ad_reward"
+        )
+        let data = try await sendJSONRequest(url: url, body: body, authorization: .required)
+        do {
+            let response = try decoder.decode(GrantResponse.self, from: data)
+            return response.balance
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
     struct VerifyPurchaseResult {
         /// サーバーが返した最新残高
         let balance: Int

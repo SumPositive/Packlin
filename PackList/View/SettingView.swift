@@ -558,7 +558,7 @@ struct SettingView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text("広告を見て寄付　（特典あり）")
+                        Text(String(localized: "広告を見て寄付（購入者特典）"))
                             .font(.body.weight(.semibold))
                     }
                 }

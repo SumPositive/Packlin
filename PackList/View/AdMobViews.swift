@@ -121,50 +121,74 @@ struct AdMobBannerConfiguration: Identifiable {
     let size: CGSize
 }
 
-/// 特典バッジの見た目を統一するための共通ビュー
+/// 購入者向けの広告特典状況を示すバッジ
 struct AdRewardBonusBadgeView: View {
     @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
-    /// 説明テキストを並べるかどうか（アイコンだけで足りる場面も想定）
-    var showStatusText: Bool = true
+    /// 購入履歴があるかどうかを親ビューから受け取り、案内文を切り替える
+    var hasPurchaseHistory: Bool
 
     var body: some View {
-        VStack(spacing: 2) {
-            Text("広告特典")
-                .font(.caption2)
-                .foregroundStyle(adBenefitStore.hasBonus ? .primary : .secondary)
+        VStack(spacing: 6) {
+            Text(String(localized: "購入者特典"))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+
             ZStack {
-                Image(systemName: adBenefitStore.hasBonus ? "gift.fill" : "gift")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(adBenefitStore.hasBonus ? Color.accentColor : Color.secondary)
-                    .offset(x: -6, y: 0)
-
-                if adBenefitStore.hasBonus {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.green)
-                        .offset(x: 8, y: -3)
-                } else if adBenefitStore.wasBonusConsumed {
-                    Image(systemName: "circle.slash")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .offset(x: 8, y: -3)
-                }
+                Circle()
+                    .fill(Color.accentColor.opacity(0.12))
+                    .frame(width: 48, height: 48)
+                Image(systemName: "ticket.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.orange)
+                    .symbolEffect(.bounce, options: .repeat(2))
             }
-            Text("1回無料")
-                .font(.caption2)
-                .foregroundStyle(adBenefitStore.hasBonus ? .primary : Color.clear)
-        }
-    }
 
-//    private var perkStatusText: String {
-//        if adBenefitStore.hasBonus {
-//            return String(localized: "ad.reward.badge.status.active", defaultValue: "特典1回無料が有効です。使い切ると再カウントします")
-//        }
-//        if adBenefitStore.wasBonusConsumed {
-//            return String(localized: "ad.reward.badge.status.used", defaultValue: "特典1回無料を使いました。次の広告視聴から再カウントが始まります")
-//        }
-//        return String(localized: "ad.reward.badge.status.locked", defaultValue: "広告を視聴して特典1回無料を受け取りましょう")
-//    }
+            if hasPurchaseHistory {
+                Text(String(localized: "広告収益が基準を超えるとAI利用券を1枚追加します"))
+                    .font(.caption2)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(String(localized: "AI利用券を1枚購入すると特典が解放されます"))
+                    .font(.caption2)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+
+            if hasPurchaseHistory, let remaining = adBenefitStore.remainingYenToNextGrant {
+                Text(String(format: String(localized: "あと%.1f円の寄付で1枚追加"), remaining))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+        }
+        .frame(maxWidth: 200)
+    }
+}
+
+/// AI利用券が追加されたことを目に見える形で知らせるトースト
+struct AdRewardTicketToastView: View {
+    var grantedTickets: Int
+
+    var body: some View {
+        let safeTickets = grantedTickets <= 0 ? 1 : grantedTickets
+        HStack(spacing: 10) {
+            Image(systemName: "ticket.fill")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.white)
+                .symbolEffect(.bounce, options: .repeat(3))
+            let template = String(localized: "AI利用券を%d枚受け取りました")
+            Text(String(format: template, safeTickets))
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(.white)
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .background(
+            Capsule(style: .continuous)
+                .fill(Color.blue.opacity(0.9))
+        )
+        .shadow(radius: 6)
+    }
 }
 
 #if canImport(GoogleMobileAds)
@@ -172,10 +196,14 @@ struct AdRewardBonusBadgeView: View {
 struct AdMobUnifiedSupportView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
+    @EnvironmentObject private var creditStore: CreditStore
     @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
 
     @State private var rewardDescription: String?
     @State private var infoMessage: String?
+    @State private var hasPurchaseHistory = false
+    @State private var showTicketAnimation = false
+    @State private var lastGrantedTickets = 0
 
     private let bannerConfig = AdMobBannerConfiguration(
         adUnitID: ADMOB_BANNER_UnitID,
@@ -219,6 +247,16 @@ struct AdMobUnifiedSupportView: View {
             loader.onRewardEarned = { _ in
                 handleRewardEarnedFromVideo()
             }
+            Task {
+                hasPurchaseHistory = await PurchaseHistoryChecker.hasPurchasedOnce()
+            }
+        }
+        .overlay(alignment: .top) {
+            if showTicketAnimation {
+                AdRewardTicketToastView(grantedTickets: lastGrantedTickets)
+                    .padding(.top, 12)
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
     }
 
@@ -227,7 +265,7 @@ struct AdMobUnifiedSupportView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Spacer()
-                Text("広告を見て開発者に寄付ができます。寄付の累計額によりAI利用1回無料特典が提供されます")
+                Text(String(localized: "AI利用券を購入した方への特典として、広告収益が一定額を超えるたびにAI利用券を1枚追加します"))
                     .font(.body)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.primary)
@@ -238,18 +276,14 @@ struct AdMobUnifiedSupportView: View {
             HStack {
                 Spacer()
                 // 特典バッジ
-                AdRewardBonusBadgeView()
+                AdRewardBonusBadgeView(hasPurchaseHistory: hasPurchaseHistory)
                 Spacer()
             }
-            if adBenefitStore.hasBonus {
-                HStack {
-                    Spacer()
-                    Text("特典1回無料は受け取り済みです。\n使い切ってから新たな特典をお待ちください")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-            }
+            Text(String(localized: "購入履歴が確認できる端末で視聴した場合にのみAI利用券が追加されます"))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -361,28 +395,6 @@ struct AdMobUnifiedSupportView: View {
         )
     }
 
-    private var remainingYenToBonus: Double? {
-        if adBenefitStore.hasBonus {
-            return nil
-        }
-        let remaining = AD_REWARD_THRESHOLD_YEN - adBenefitStore.accumulatedRevenueYen
-        if remaining <= 0 {
-            return nil
-        }
-        return remaining
-    }
-
-    private var remainingUsdToBonus: Double? {
-        if adBenefitStore.hasBonus {
-            return nil
-        }
-        let remaining = AD_REWARD_THRESHOLD_USD - adBenefitStore.accumulatedRevenueUsd
-        if remaining <= 0 {
-            return nil
-        }
-        return remaining
-    }
-
     private func presentAd() {
         guard let topController = UIApplication.topMostViewController() else {
             return
@@ -403,21 +415,95 @@ struct AdMobUnifiedSupportView: View {
 //    }
 
     private func handleRewardEarnedFromVideo() {
-        // 直前のpaidEventHandlerで拾った収益情報を使って特典付与を試みる
-        guard let currencyCode = loader.lastPaidCurrencyCode,
-              let micros = loader.lastPaidMicros else {
-            rewardDescription = String(localized: "収益情報を取得できませんでしたが、視聴はカウントされました")
-            return
+        Task {
+            // 直前のpaidEventHandlerで拾った収益情報を使って特典付与を試みる
+            guard let currencyCode = loader.lastPaidCurrencyCode,
+                  let micros = loader.lastPaidMicros else {
+                await MainActor.run {
+                    rewardDescription = String(localized: "収益情報を取得できませんでしたが、視聴はカウントされました")
+                }
+                return
+            }
+
+            var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+            let purchased = await PurchaseHistoryChecker.hasPurchasedOnce()
+            await MainActor.run { hasPurchaseHistory = purchased }
+            if purchased == false {
+                messages.append(String(localized: "この特典は購入者向けです。まずはAI利用券を1枚購入してからお試しください。"))
+                await MainActor.run {
+                    rewardDescription = messages.joined(separator: "\n")
+                }
+                return
+            }
+
+            let grantedTickets = await MainActor.run {
+                adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode, hasPurchaseHistory: purchased)
+            }
+            if grantedTickets < 1 {
+                messages.append(String(localized: "寄付が基準に届くとAI利用券を追加します。引き続き応援ありがとうございます。"))
+                await MainActor.run {
+                    rewardDescription = messages.joined(separator: "\n")
+                }
+                return
+            }
+
+            let synced = await addCreditsFromAdReward(count: grantedTickets, micros: micros, currencyCode: currencyCode)
+            if synced {
+                let template = String(localized: "購入者特典としてAI利用券を%d枚追加しました。")
+                messages.append(String(format: template, grantedTickets))
+            } else {
+                messages.append(String(localized: "端末内にAI利用券を追加しましたが、サーバー同期に失敗しました。通信環境を整えてから再度ご確認ください。"))
+            }
+            await MainActor.run {
+                rewardDescription = messages.joined(separator: "\n")
+            }
         }
-        let granted = adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode)
-        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
-        if adBenefitStore.hasBonus {
-            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
+    }
+
+    /// サーバーとKeychainの両方へ広告特典によるAI利用券追加を反映する
+    /// - Returns: サーバー反映まで成功した場合はtrue
+    private func addCreditsFromAdReward(count: Int, micros: Int64, currencyCode: String) async -> Bool {
+        if count < 1 {
+            return false
         }
-        if granted {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
+        do {
+            let balance = try await AzukiApi.shared.grantAdRewardCredit(
+                userId: creditStore.userId,
+                grantedTickets: count,
+                revenueMicros: micros,
+                currencyCode: currencyCode
+            )
+            await MainActor.run {
+                creditStore.overwrite(credits: balance)
+                lastGrantedTickets = count
+                withAnimation(.spring()) {
+                    showTicketAnimation = true
+                }
+            }
+            await scheduleToastHide()
+            return true
+        } catch {
+            // サーバー連携に失敗しても端末上では約束通り追加し、後続の同期で整合させる
+            await MainActor.run {
+                creditStore.add(credits: count)
+                lastGrantedTickets = count
+                withAnimation(.spring()) {
+                    showTicketAnimation = true
+                }
+            }
+            await scheduleToastHide()
+            return false
         }
-        rewardDescription = messages.joined(separator: "\n")
+    }
+
+    /// 一時的なトースト表示を一定時間後に消す
+    private func scheduleToastHide() async {
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        await MainActor.run {
+            withAnimation(.easeInOut) {
+                showTicketAnimation = false
+            }
+        }
     }
 }
 #else
@@ -463,9 +549,13 @@ struct AdMobVideoContainerView: View {
 struct AdMobRewardedScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
+    @EnvironmentObject private var creditStore: CreditStore
     // Google AdMob: gsuite@art.jp  　広告ユニット名：PackList V3 Reward
     @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
     @State private var rewardDescription: String?
+    @State private var hasPurchaseHistory = false
+    @State private var showTicketAnimation = false
+    @State private var lastGrantedTickets = 0
 
     var body: some View {
         NavigationView {
@@ -546,6 +636,16 @@ struct AdMobRewardedScreen: View {
             loader.onRewardEarned = { _ in
                 handleRewardEarned()
             }
+            Task {
+                hasPurchaseHistory = await PurchaseHistoryChecker.hasPurchasedOnce()
+            }
+        }
+        .overlay(alignment: .top) {
+            if showTicketAnimation {
+                AdRewardTicketToastView(grantedTickets: lastGrantedTickets)
+                    .padding(.top, 12)
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
     }
 
@@ -557,24 +657,93 @@ struct AdMobRewardedScreen: View {
     }
 
     private func handleRewardEarned() {
-        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
-        let granted = registerBonusIfNeeded()
-        if adBenefitStore.hasBonus {
-            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
+        Task {
+            var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+            guard let currencyCode = loader.lastPaidCurrencyCode,
+                  let micros = loader.lastPaidMicros else {
+                await MainActor.run {
+                    rewardDescription = String(localized: "収益情報を取得できませんでしたが、視聴はカウントされました")
+                }
+                return
+            }
+
+            let purchased = await PurchaseHistoryChecker.hasPurchasedOnce()
+            await MainActor.run { hasPurchaseHistory = purchased }
+            if purchased == false {
+                messages.append(String(localized: "この特典は購入者向けです。まずはAI利用券を1枚購入してからお試しください。"))
+                await MainActor.run {
+                    rewardDescription = messages.joined(separator: "\n")
+                }
+                return
+            }
+
+            let grantedTickets = await MainActor.run {
+                adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode, hasPurchaseHistory: purchased)
+            }
+            if grantedTickets < 1 {
+                messages.append(String(localized: "寄付が基準に届くとAI利用券を追加します。引き続き応援ありがとうございます。"))
+                await MainActor.run {
+                    rewardDescription = messages.joined(separator: "\n")
+                }
+                return
+            }
+
+            let synced = await addCreditsFromAdReward(count: grantedTickets, micros: micros, currencyCode: currencyCode)
+            if synced {
+                let template = String(localized: "購入者特典としてAI利用券を%d枚追加しました。")
+                messages.append(String(format: template, grantedTickets))
+            } else {
+                messages.append(String(localized: "端末内にAI利用券を追加しましたが、サーバー同期に失敗しました。通信環境を整えてから再度ご確認ください。"))
+            }
+            await MainActor.run {
+                rewardDescription = messages.joined(separator: "\n")
+            }
         }
-        if granted {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
-        }
-        rewardDescription = messages.joined(separator: "\n")
     }
 
-    private func registerBonusIfNeeded() -> Bool {
-        // paidEventHandlerで受け取った最新の収益情報を使って判定する
-        guard let currencyCode = loader.lastPaidCurrencyCode,
-              let micros = loader.lastPaidMicros else {
+    /// サーバーとKeychainの両方へ広告特典によるAI利用券追加を反映する
+    /// - Returns: サーバー反映まで成功した場合はtrue
+    private func addCreditsFromAdReward(count: Int, micros: Int64, currencyCode: String) async -> Bool {
+        if count < 1 {
             return false
         }
-        return adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode)
+        do {
+            let balance = try await AzukiApi.shared.grantAdRewardCredit(
+                userId: creditStore.userId,
+                grantedTickets: count,
+                revenueMicros: micros,
+                currencyCode: currencyCode
+            )
+            await MainActor.run {
+                creditStore.overwrite(credits: balance)
+                lastGrantedTickets = count
+                withAnimation(.spring()) {
+                    showTicketAnimation = true
+                }
+            }
+            await scheduleToastHide()
+            return true
+        } catch {
+            await MainActor.run {
+                creditStore.add(credits: count)
+                lastGrantedTickets = count
+                withAnimation(.spring()) {
+                    showTicketAnimation = true
+                }
+            }
+            await scheduleToastHide()
+            return false
+        }
+    }
+
+    /// 一時的なトースト表示を一定時間後に消す
+    private func scheduleToastHide() async {
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        await MainActor.run {
+            withAnimation(.easeInOut) {
+                showTicketAnimation = false
+            }
+        }
     }
 }
 
@@ -645,7 +814,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     #if DEBUG
     /// DEBUGビルドでAdMobのテスト広告が利用できない環境でも処理確認できるようにする
     func simulateRewardEarnedForDebug() {
-        // 収益情報が無いと特典1回無料の判定が行えないため、十分な額を仮設定してから報酬を流す
+        // 収益情報が無いとAI利用券追加の判定が行えないため、十分な額を仮設定してから報酬を流す
         let mockMicros: Int64 = 60_000_000 // 60 JPY 相当の想定値
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }

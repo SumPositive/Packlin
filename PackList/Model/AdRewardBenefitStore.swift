@@ -7,14 +7,12 @@
 
 import Foundation
 
-/// 広告収益が設定金額を超えたときに付与する「特典1回無料」を管理するObservableObject
-/// - Note: サーバーを介さずローカルだけで完結させるため、UserDefaultsへ永続化して再起動後も残す
+/// 広告収益が設定金額を超えたときにAI利用券を追加する進捗を管理するObservableObject
+/// - Note: サーバー連携とは独立してローカルで収益の積み上げを記録し、閾値を超えた回数だけ付与判定を行う
 @MainActor
 final class AdRewardBenefitStore: ObservableObject {
-    /// 利用可能な特典1回無料の残数
-    @Published private(set) var availableBonusUsages: Int
-    /// 直近で特典を消費した日時。使ったことが分かるように残しておき、次に付与されたらリセットする
-    @Published private(set) var lastBonusConsumedAt: Date?
+    /// 最後に特典が発生した日時
+    @Published private(set) var lastGrantedAt: Date?
     /// 最後に条件を満たした収益額（円換算が取れた場合のみ記録する）
     @Published private(set) var lastQualifiedRevenueYen: Double?
     /// 付与までの進捗を把握するための累計収益（円）
@@ -23,24 +21,17 @@ final class AdRewardBenefitStore: ObservableObject {
     @Published private(set) var accumulatedRevenueUsd: Double
 
     private let userDefaults: UserDefaults
-    /// 特典1回無料を溜め込まず、常に「1回使ってから次を受け取る」運用にするための上限値
-    private let maxBonusCount = 1
-    private let bonusKey = "ad.reward.bonus.remaining"
-    private let lastConsumedKey = "ad.reward.bonus.lastConsumedAt"
+    private let lastGrantedKey = "ad.reward.bonus.lastGrantedAt"
     private let lastRevenueKey = "ad.reward.bonus.lastRevenueYen"
     private let accumulatedYenKey = "ad.reward.bonus.accumulatedYen"
     private let accumulatedUsdKey = "ad.reward.bonus.accumulatedUsd"
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
-        // 旧バージョンで2回以上保有していたとしても、今回からは1回に丸める
-        let storedBonus = min(userDefaults.integer(forKey: bonusKey), maxBonusCount)
-        // 初期値は0だが、保存値があればそれを優先する
-        self.availableBonusUsages = storedBonus
-        if let consumedDate = userDefaults.object(forKey: lastConsumedKey) as? Date {
-            self.lastBonusConsumedAt = consumedDate
+        if let grantedDate = userDefaults.object(forKey: lastGrantedKey) as? Date {
+            self.lastGrantedAt = grantedDate
         } else {
-            self.lastBonusConsumedAt = nil
+            self.lastGrantedAt = nil
         }
         if userDefaults.object(forKey: lastRevenueKey) != nil {
             self.lastQualifiedRevenueYen = userDefaults.double(forKey: lastRevenueKey)
@@ -54,64 +45,59 @@ final class AdRewardBenefitStore: ObservableObject {
         self.accumulatedRevenueUsd = (storedUsd * 100).rounded() / 100
     }
 
-    /// 収益イベントを受け取り、必要に応じて特典1回無料を付与する
+    /// 収益イベントを受け取り、必要に応じてAI利用券を付与する
     /// - Parameters:
     ///   - micros: 広告SDKから通知されるマイクロ単位の収益
     ///   - currencyCode: 通貨コード（例: "JPY" / "USD"）。判別できない場合はnil
-    /// - Returns: 特典付与に成功したらtrue
+    ///   - hasPurchaseHistory: StoreKit購入履歴が1件以上あるかどうか
+    /// - Returns: 今回の視聴で追加できたAI利用券の枚数
     @discardableResult
-    func recordRevenue(micros: Int64, currencyCode: String?) -> Bool {
+    func recordRevenue(micros: Int64, currencyCode: String?, hasPurchaseHistory: Bool) -> Int {
         // 0や負の値が来ることは想定していないが、念のため無視する
         if micros < 1 {
-            return false
+            return 0
         }
         guard let upperCurrency = currencyCode?.uppercased() else {
-            return false
+            return 0
         }
-        // すでに「特典1回無料」を保有している間はカウントを進めず、使い切ってから次のサイクルを開始する
-        if maxBonusCount <= availableBonusUsages {
-            return false
+        // 購入履歴が無い場合は広告収益の累積を進めない。購入後に改めてカウントしてもらう
+        if hasPurchaseHistory == false {
+            return 0
         }
         // マイクロ単位（100万分の1）から大きい単位へ直す
         let majorValue = Double(micros) / 1_000_000
 
-        var granted = false
+        var grantedTickets = 0
         if upperCurrency == "JPY" {
             accumulatedRevenueYen += majorValue
-            granted = grantBonusIfQualified(revenueYen: accumulatedRevenueYen, revenueUsd: nil)
-            // 特典付与に成功したら累計をゼロに戻し、「使い切り」であることを明確にする
-            if granted {
-                accumulatedRevenueYen = 0
+            grantedTickets = grantBonusIfQualified(revenueYen: accumulatedRevenueYen, revenueUsd: nil)
+            // 通貨を跨いだ二重カウントを避けるため、別通貨の進捗はリセットする
+            if 0 < grantedTickets {
+                lastGrantedAt = Date()
+                accumulatedRevenueYen = normalizeProgress(accumulatedRevenueYen, threshold: AD_REWARD_THRESHOLD_YEN)
                 accumulatedRevenueUsd = 0
-                // 新しく付与されたタイミングで「前回使った」フラグをクリアする
-                lastBonusConsumedAt = nil
             }
         } else if upperCurrency == "USD" {
             accumulatedRevenueUsd += majorValue
-            granted = grantBonusIfQualified(revenueYen: nil, revenueUsd: accumulatedRevenueUsd)
-            if granted {
-                accumulatedRevenueUsd = 0
+            grantedTickets = grantBonusIfQualified(revenueYen: nil, revenueUsd: accumulatedRevenueUsd)
+            if 0 < grantedTickets {
+                lastGrantedAt = Date()
+                accumulatedRevenueUsd = normalizeProgress(accumulatedRevenueUsd, threshold: AD_REWARD_THRESHOLD_USD)
                 accumulatedRevenueYen = 0
-                lastBonusConsumedAt = nil
             }
         }
 
         persist()
-        return granted
+        return grantedTickets
     }
 
-    /// 広告の収益が閾値を超えていれば特典1回無料を付与する
+    /// 広告の収益が閾値を超えていればAI利用券を付与する
     /// - Parameters:
     ///   - revenueYen: 円換算の収益額
     ///   - revenueUsd: 米ドル換算の収益額
-    /// - Returns: 付与に成功した場合はtrue
+    /// - Returns: 付与できたAI利用券枚数
     @discardableResult
-    func grantBonusIfQualified(revenueYen: Double?, revenueUsd: Double?) -> Bool {
-        // すでに上限まで保有していれば新規付与はスキップし、広告を使う動機を保つ
-        if maxBonusCount <= availableBonusUsages {
-            return false
-        }
-
+    func grantBonusIfQualified(revenueYen: Double?, revenueUsd: Double?) -> Int {
         var reached = false
         if let yen = revenueYen {
             if AD_REWARD_THRESHOLD_YEN <= yen {
@@ -127,58 +113,39 @@ final class AdRewardBenefitStore: ObservableObject {
             }
         }
         if reached == false {
-            return false
+            return 0
         }
-        availableBonusUsages += 1
-        // 付与した瞬間に「使用済み」扱いを解除し、視覚的に有効状態へ戻す
-        lastBonusConsumedAt = nil
-        persist()
-        return true
-    }
-
-    /// 利用可能な特典1回無料を消費する。残数が無い場合はfalseを返す
-    /// - Returns: 消費できたらtrue
-    func consumeBonusIfAvailable() -> Bool {
-        if availableBonusUsages < 1 {
-            return false
+        // 閾値を超えた回数分だけAI利用券を追加できるようにする
+        var grantedTickets = 0
+        if let yenRevenue = revenueYen {
+            while AD_REWARD_THRESHOLD_YEN <= yenRevenue - (Double(grantedTickets) * AD_REWARD_THRESHOLD_YEN) {
+                grantedTickets += 1
+            }
+        } else if let usdRevenue = revenueUsd {
+            while AD_REWARD_THRESHOLD_USD <= usdRevenue - (Double(grantedTickets) * AD_REWARD_THRESHOLD_USD) {
+                grantedTickets += 1
+            }
         }
-        availableBonusUsages -= 1
-        // 「使い切り」を明確にするため、使用したタイミングで進捗もリセットして次のカウントをゼロから始める
-        accumulatedRevenueYen = 0
-        accumulatedRevenueUsd = 0
-        // 無効になったことをUIで示すため、最後に消費した日時を残す
-        lastBonusConsumedAt = Date()
-        persist()
-        return true
+        return grantedTickets
     }
 
-    /// 直前に消費した特典を復元したい場合に呼び出す
-    func restoreConsumedBonus() {
-        // 取り消し操作などで1回分だけ復元する。上限を超えないように抑制する
-        availableBonusUsages = min(availableBonusUsages + 1, maxBonusCount)
-        // 復元できた場合は有効状態に戻るため、使用済みフラグを外す
-        if 0 < availableBonusUsages {
-            lastBonusConsumedAt = nil
+    /// 次の特典までに必要な金額を円ベースで返す（円の累計が有効なときのみ）
+    var remainingYenToNextGrant: Double? {
+        if accumulatedRevenueYen <= 0 {
+            return AD_REWARD_THRESHOLD_YEN
         }
-        persist()
-    }
-
-    /// 特典1回無料を保有しているかどうかを判定する
-    var hasBonus: Bool {
-        return 0 < availableBonusUsages
-    }
-
-    /// 直近で特典を使ったかどうか（現在は未保有で、消費記録が残っている場合にtrue）
-    var wasBonusConsumed: Bool {
-        return hasBonus == false && lastBonusConsumedAt != nil
+        let remaining = AD_REWARD_THRESHOLD_YEN - accumulatedRevenueYen
+        if remaining <= 0 {
+            return 0
+        }
+        return (remaining * 100).rounded() / 100
     }
 
     private func persist() {
-        userDefaults.set(availableBonusUsages, forKey: bonusKey)
-        if let consumedDate = lastBonusConsumedAt {
-            userDefaults.set(consumedDate, forKey: lastConsumedKey)
+        if let grantedDate = lastGrantedAt {
+            userDefaults.set(grantedDate, forKey: lastGrantedKey)
         } else {
-            userDefaults.removeObject(forKey: lastConsumedKey)
+            userDefaults.removeObject(forKey: lastGrantedKey)
         }
         if let lastQualifiedRevenueYen {
             userDefaults.set(lastQualifiedRevenueYen, forKey: lastRevenueKey)
@@ -187,5 +154,11 @@ final class AdRewardBenefitStore: ObservableObject {
         }
         userDefaults.set(accumulatedRevenueYen, forKey: accumulatedYenKey)
         userDefaults.set(accumulatedRevenueUsd, forKey: accumulatedUsdKey)
+    }
+
+    /// 累積の小数点以下が増えすぎないよう正規化して返す
+    private func normalizeProgress(_ value: Double, threshold: Double) -> Double {
+        let remainder = value.truncatingRemainder(dividingBy: threshold)
+        return (remainder * 100).rounded() / 100
     }
 }
