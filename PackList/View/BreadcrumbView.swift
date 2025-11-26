@@ -15,7 +15,7 @@ struct BreadcrumbView: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 2) {
             // 先頭のパック名を左寄せ・省略付きで表示し、タップでパック一覧へ戻れるようにする
             crumb(for: packName, action: packAction)
 
@@ -68,9 +68,8 @@ struct BreadcrumbView: View {
         Text("＞")
             // 文字サイズを合わせ、余白を最小限にして密度を高める
             .font(.caption)
-            // 左側の余白をなくし、右側だけ少しスペースを空けて並びを詰める
-            .padding(.leading, 0)
-            .padding(.trailing, 1)
+            // 左右の余白を同じ幅にそろえて、左右で均等な間隔にする
+            .padding(.horizontal, 1)
     }
 }
 
