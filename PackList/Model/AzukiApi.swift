@@ -136,6 +136,23 @@ final class AzukiApi {
         self.deviceAuthenticator = deviceAuthenticator
     }
 
+    /// 認証必須エンドポイントを呼び出すための前提条件が整っているか確認する
+    /// - Note: アクセストークンかリフレッシュトークンのどちらかが生きていれば true
+    ///         復旧ハンドラが登録済みなら、そこからの再取得に期待できるため true
+    func hasValidOrRecoverableAuthToken() async -> Bool {
+        if accessTokenStore.currentTokenIfValid() != nil {
+            return true
+        }
+        if refreshTokenStore.currentTokenIfValid() != nil {
+            return true
+        }
+        let handler = await tokenRecoveryHandlerBox.currentHandler()
+        if handler != nil {
+            return true
+        }
+        return false
+    }
+
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID

@@ -422,56 +422,61 @@ struct AiCreateView: View {
             return
         }
 
-            let userId = creditStore.userId
-            Task {
-                // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
-                let cost = CHATGPT_GENERATION_CREDIT_COST
-                var shouldRestoreCredits = false
-                var shouldRestoreAdBonus = false
-                var usedAdBonus = false
-                defer {
-                    Task {
-                        await MainActor.run {
-                            if shouldRestoreCredits {
-                                // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
-                                creditStore.add(credits: cost)
-                            }
-                            if shouldRestoreAdBonus {
-                                // 広告特典を予約したがAPI実行に至らなかった場合は手元に戻す
-                                adBenefitStore.restoreConsumedBonus()
-                            }
-                            isGenerating = false
+        let userId = creditStore.userId
+        Task {
+            // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
+            let cost = CHATGPT_GENERATION_CREDIT_COST
+            var shouldRestoreCredits = false
+            var shouldRestoreAdBonus = false
+            var usedAdBonus = false
+            defer {
+                Task {
+                    await MainActor.run {
+                        if shouldRestoreCredits {
+                            // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
+                            creditStore.add(credits: cost)
                         }
-                    }
-                }
-
-                // まずは広告特典があればそちらを優先的に使う
-                usedAdBonus = await MainActor.run {
-                    adBenefitStore.consumeBonusIfAvailable()
-                }
-
-                // クレジットを消費する必要がある場合のみ残高チェックを行う
-                if usedAdBonus == false {
-                    // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
-                    let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
-                    if hasEnoughCredits == false {
-                        await presentCreditShortageFeedback()
-                        return
-                    }
-
-                    do {
-                        try await MainActor.run {
-                            try creditStore.consume(credits: cost)
-                            shouldRestoreCredits = true
+                        if shouldRestoreAdBonus {
+                            // 広告特典を予約したがAPI実行に至らなかった場合は手元に戻す
+                            adBenefitStore.restoreConsumedBonus()
                         }
-                    } catch {
-                        await presentCreditShortageFeedback()
-                        return
+                        isGenerating = false
                     }
-                } else {
-                    // 特典を仮押さえしたので、失敗時に戻せるようフラグを立てる
-                    shouldRestoreAdBonus = true
                 }
+            }
+
+            let canAuthenticate = await ensureAzukiAuthenticationAvailability()
+            if canAuthenticate == false {
+                return
+            }
+
+            // まずは広告特典があればそちらを優先的に使う
+            usedAdBonus = await MainActor.run {
+                adBenefitStore.consumeBonusIfAvailable()
+            }
+
+            // クレジットを消費する必要がある場合のみ残高チェックを行う
+            if usedAdBonus == false {
+                // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
+                let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
+                if hasEnoughCredits == false {
+                    await presentCreditShortageFeedback()
+                    return
+                }
+
+                do {
+                    try await MainActor.run {
+                        try creditStore.consume(credits: cost)
+                        shouldRestoreCredits = true
+                    }
+                } catch {
+                    await presentCreditShortageFeedback()
+                    return
+                }
+            } else {
+                // 特典を仮押さえしたので、失敗時に戻せるようフラグを立てる
+                shouldRestoreAdBonus = true
+            }
 
                 do {
                     let basePackDTO = await exportBasePackIfAvailable()
@@ -570,6 +575,19 @@ struct AiCreateView: View {
             return
         }
         await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください。"))
+    }
+
+    /// azuki-api認証が事前に確保できるかどうかを判定し、未準備ならすぐに中断する
+    /// - Returns: 通信に進んでよい場合はtrue
+    private func ensureAzukiAuthenticationAvailability() async -> Bool {
+        let hasTokenOrRecovery = await AzukiApi.shared.hasValidOrRecoverableAuthToken()
+        if hasTokenOrRecovery {
+            return true
+        }
+        await MainActor.run {
+            inlineGenerationFeedback = .failure(message: String(localized: "AI利用には認証が必要です。AI利用券の購入やアプリ再起動後に再度お試しください。"))
+        }
+        return false
     }
 
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
