@@ -561,40 +561,11 @@ struct SettingView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.secondary)
+                    .tint(.brown)
+                    .padding(.horizontal, 32)
                     .sheet(isPresented: $showAd) {
                         // バナーも動画もまとめて閲覧できる新しいシートを表示
                         AdMobAdSheetView()
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button(action: {
-                            withAnimation {
-                                // SafariでURLを表示する
-                                showAdMovie = true
-                            }
-                        }) {
-                            VStack(spacing: 2) {
-                                Text("動画広告を見て寄付")
-                                    .frame(maxWidth: .infinity)
-
-                                HStack(spacing: 4) {
-                                    Image(systemName: "exclamationmark.triangle")
-                                        .imageScale(.small)
-                                        .symbolRenderingMode(.hierarchical)
-                                    Text("音が出る場合があります")
-                                        .font(.caption)
-                                        .foregroundStyle(.primary)
-                                }
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.secondary)
-                        .sheet(isPresented: $showAdMovie) {
-                            // バナー同様にシートで動画広告を案内する
-                            AdMobAdSheetView()
-                        }
-
                     }
                 }
             }

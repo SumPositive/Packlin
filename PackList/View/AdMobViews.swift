@@ -39,10 +39,10 @@ struct AdMobAdSheetView: View {
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
-            size: CGSize(width: 320, height: 50)
-        ),
+//        AdMobBannerConfiguration(
+//            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
+//            size: CGSize(width: 320, height: 50)
+//        ),
         AdMobBannerConfiguration(
             adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 320, height: 100)
@@ -63,40 +63,51 @@ struct AdMobAdSheetView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        // バナー広告をシンプルに縦へ並べる
-                        ForEach(bannerConfigs) { config in
-                            AdMobBannerCardView(configuration: config)
-                        }
-                    }
-                    .padding()
+                VStack(spacing: 0) {
+                    Text("タップして広告を見て開発者を応援してください")
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
 
-                    #if canImport(GoogleMobileAds)
-                    // 報酬型動画広告の視聴エリア。カード風にまとめる。
                     VStack(alignment: .leading, spacing: 16) {
+                        // バナー広告
+                        ForEach(bannerConfigs) { config in
+                            AdMobBannerView(
+                                adUnitID: config.adUnitID,
+                                size: config.size
+                            )
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color(uiColor: .tertiarySystemBackground))
+                            )
+                        }
+#if canImport(GoogleMobileAds)
+                        // 動画広告
                         AdMobRewardedContentView(
                             loader: loader,
                             rewardDescription: $rewardDescription,
                             presentAction: presentAd
                         )
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(uiColor: .tertiarySystemBackground))
+                        )
+#else
+                        // GoogleMobileAdsが利用できない環境では既存のプレースホルダーを表示
+                        LegacyVideoAdContainerView()
+                            .padding(.vertical, 8)
+#endif
                     }
                     .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(Color(uiColor: .secondarySystemBackground))
-                    )
-                    #else
-                    // GoogleMobileAdsが利用できない環境では既存のプレースホルダーを表示
-                    LegacyVideoAdContainerView()
-                        .padding(.vertical, 8)
-                    #endif
                 }
-                .padding(.vertical, 16)
+                .padding(.vertical, 8)
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("タップして広告をご覧ください"))
+            .navigationTitle(Text("広告を見て寄付"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -115,10 +126,11 @@ struct AdMobAdSheetView: View {
         .onAppear {
             // 動画視聴完了後にシートを閉じる・お礼を出す挙動を設定
             loader.onAdDismissed = {
-                dismiss()
+                // 次の動画広告を読み込む
+                loader.loadAd()
             }
             loader.onRewardEarned = { _ in
-                rewardDescription = String(localized: "広告をご視聴いただきありがとうございます！")
+                rewardDescription = String(localized: "ご視聴いただきありがとうございます！")
             }
         }
         #endif
@@ -135,163 +147,74 @@ struct AdMobAdSheetView: View {
     #endif
 }
 
-/// バナー広告の表示を管理するビュー（互換用）
-struct AdMobBannerContainerView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    private let bannerConfigs = [
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
-            size: CGSize(width: 320, height: 50)
-        ),
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 320, height: 100)
-        ),
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 300, height: 250)
-        )
-    ]
-
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(bannerConfigs) { config in
-                        AdMobBannerCardView(configuration: config)
-                    }
-                }
-                .padding()
-            }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("タップして広告をご覧ください"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        // 閉じる
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// 単一のAdMobバナー広告カード
-struct AdMobBannerCardView: View {
-    let configuration: AdMobBannerConfiguration
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-
-            AdMobBannerView(
-                adUnitID: configuration.adUnitID,
-                size: configuration.size
-            )
-
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color(uiColor: .secondarySystemBackground))
-        )
-    }
-}
-
 struct AdMobBannerConfiguration: Identifiable {
     let id = UUID()
     let adUnitID: String
     let size: CGSize
 }
 
-/// 動画広告の表示を管理するビュー
-struct AdMobVideoContainerView: View {
-    var body: some View {
-        #if canImport(GoogleMobileAds)
-        AdMobRewardedScreen()
-        #else
-        LegacyVideoAdContainerView()
-        #endif
-    }
-}
-
 #if canImport(GoogleMobileAds)
-/// AdMob報酬型広告の表示ビュー
-struct AdMobRewardedScreen: View {
-    @Environment(\.dismiss) private var dismiss
-    // Google AdMob: gsuite@art.jp  　広告ユニット名：PackList V3 Reward
-    @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
-    @State private var rewardDescription: String?
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 24) {
-                // シート版と同じUIを再利用する
-                AdMobRewardedContentView(
-                    loader: loader,
-                    rewardDescription: $rewardDescription,
-                    presentAction: presentAd
-                )
-
-                Spacer()
-            }
-            .padding(.top, 24)
-            .padding(.horizontal)
-            .background(Color(uiColor: .systemBackground))
-            .navigationTitle(Text("動画広告"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        // 閉じる
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-            }
-        }
-        .onAppear {
-            loader.onRewardEarned = { _ in
-                rewardDescription = String(localized: "広告をご視聴いただきありがとうございます！")
-            }
-        }
-    }
-
-    private func presentAd() {
-        guard let topController = UIApplication.topMostViewController() else {
-            return
-        }
-        loader.present(from: topController)
-    }
-}
-
-/// 報酬型広告のUI部品。NavigationView内外で共通利用する。
+/// 動画広告
 struct AdMobRewardedContentView: View {
     @ObservedObject var loader: RewardedAdLoader
     @Binding var rewardDescription: String?
     let presentAction: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            // ユーザー向けの注意書き
-            Text("動画を最後まで視聴すると開発者をサポートできます")
+        VStack(spacing: 8) {
+            HStack(spacing: 66) {
+                Label {
+                    Text("動画広告")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                } icon: {
+                    Image(systemName: "movieclapper")
+                        .symbolRenderingMode(.hierarchical)
+                        .colorMultiply(.primary)
+                }
+
+                Label {
+                    Text("音が出ます")
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle")
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(.red)
+                }
+            }
+
+            Text("最後まで視聴すると開発者をサポートできます")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
                 .padding(.horizontal)
+ 
+            HStack {
+                Spacer()
 
-            if loader.isLoading {
-                ProgressView(String(localized: "広告を読み込み中..."))
-                    .padding()
+                if loader.isLoading {
+                    ProgressView(String(localized: "広告を読み込み中..."))
+                        .padding()
+                }else{
+                    
+                    Button {
+                        presentAction()
+                    } label: {
+                        Label {
+                            Text("広告を再生する")
+                                .font(.body.weight(.semibold))
+                                .padding(.horizontal, 8)
+                        } icon: {
+                            Image(systemName: loader.isReady ? "play.rectangle" : "pause.rectangle")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!loader.isReady)
+                    
+                }
+                Spacer()
             }
 
             if let errorMessage = loader.errorMessage {
@@ -306,13 +229,7 @@ struct AdMobRewardedContentView: View {
                     .buttonStyle(.borderedProminent)
                 }
             }
-
-            Button(String(localized: "広告を再生")) {
-                presentAction()
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(!loader.isReady)
-
+            
             if let rewardDescription {
                 Text(rewardDescription)
                     .font(.footnote)

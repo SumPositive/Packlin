@@ -492,7 +492,11 @@
         }
       }
     },
+    "ご視聴いただきありがとうございます！" : {
+
+    },
     "タップして広告をご覧ください" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -501,6 +505,9 @@
           }
         }
       }
+    },
+    "タップして広告を見て開発者を応援してください" : {
+
     },
     "チェックする／しない" : {
       "localizations" : {
@@ -895,6 +902,9 @@
         }
       }
     },
+    "最後まで視聴すると開発者をサポートできます" : {
+
+    },
     "最終チェック時にご利用ください" : {
       "localizations" : {
         "en" : {
@@ -936,6 +946,7 @@
       }
     },
     "動画を最後まで視聴すると開発者をサポートできます" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -956,6 +967,7 @@
       }
     },
     "動画広告を見て寄付" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1029,6 +1041,7 @@
 
     },
     "広告をご視聴いただきありがとうございます！" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1039,6 +1052,7 @@
       }
     },
     "広告を再生" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1047,6 +1061,9 @@
           }
         }
       }
+    },
+    "広告を再生する" : {
+
     },
     "広告を見て寄付" : {
       "localizations" : {
@@ -1541,7 +1558,11 @@
         }
       }
     },
+    "音が出ます" : {
+
+    },
     "音が出る場合があります" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
