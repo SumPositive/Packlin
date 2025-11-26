@@ -1043,8 +1043,38 @@
         }
       }
     },
-    "常時並べ替え": {},
-    "広告の視聴時間と回数が目標を超えたので無料特典を付与しました": {},
+    "常時並べ替え": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "常時並べ替え"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always sort"
+          }
+        }
+      }
+    },
+    "広告の視聴時間と回数が目標を超えたので無料特典を付与しました": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad views exceeded the goal, so you received one-time free perk."
+          }
+        }
+      }
+    },
     "広告をご視聴いただきありがとうございます！": {
       "localizations": {
         "en": {
@@ -1346,7 +1376,22 @@
         }
       }
     },
-    "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください": {},
+    "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You already have the one-time free perk. The next count starts after you use it."
+          }
+        }
+      }
+    },
     "無料特典は1回分までです。使い切ってから次の特典を受け取れます。": {
       "extractionState": "stale",
       "localizations": {
@@ -1364,7 +1409,22 @@
         }
       }
     },
-    "特典1回無料": {},
+    "特典1回無料": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典1回無料"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One-time free perk"
+          }
+        }
+      }
+    },
     "直前の変更にやり直す": {
       "localizations": {
         "en": {
@@ -1385,7 +1445,22 @@
         }
       }
     },
-    "視聴累計によりAI利用「特典1回無料」をプレゼント": {},
+    "視聴累計によりAI利用「特典1回無料」をプレゼント": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "視聴累計によりAI利用「特典1回無料」をプレゼント"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Earn a one-time free perk for AI use from cumulative ad views"
+          }
+        }
+      }
+    },
     "移動": {
       "localizations": {
         "en": {
@@ -1685,13 +1760,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "使える無料特典: %lld回"
+            "value": "特典1回無料の残り: %lld回"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Available free rewards: %lld time(s)"
+            "value": "One-time free perk remaining: %lld time(s)"
           }
         }
       }
@@ -1701,13 +1776,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと%.1f円で無料特典を付与"
+            "value": "あと%.1f円で特典1回無料を付与"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free reward after another ¥%.1f"
+            "value": "One-time free perk after another ¥%.1f"
           }
         }
       }
@@ -1717,13 +1792,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと$%.2fで無料特典を付与"
+            "value": "あと$%.2fで特典1回無料を付与"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free reward after another $%.2f"
+            "value": "One-time free perk after another $%.2f"
           }
         }
       }
@@ -1733,13 +1808,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "視聴した広告の収益を自動でカウントし、基準を超えるとAI特典を1回プレゼント"
+            "value": "視聴した広告の収益を自動でカウントし、基準を超えると特典1回無料をプレゼントします。特典は使い切りです"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "We count ad revenue automatically and grant one AI reward when the goal is reached."
+            "value": "We count ad revenue automatically and grant one single-use perk when the goal is reached. The perk is one-and-done."
           }
         }
       }
@@ -1814,6 +1889,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Could not retrieve revenue data, but your view was counted."
+          }
+        }
+      }
+    },
+    "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad views exceeded the goal, so you received one-time free perk."
+          }
+        }
+      }
+    },
+    "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You already have the one-time free perk. The next count starts after you use it."
           }
         }
       }

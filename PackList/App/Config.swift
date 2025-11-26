@@ -294,8 +294,8 @@ let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
 ]
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
 let CHATGPT_GENERATION_CREDIT_COST = 1
-/// 広告収益がこの金額を上回れば1回分の無料特典を付与する（円）
+/// 広告収益がこの金額を上回れば「特典1回無料」を付与する（円）
 let AD_REWARD_THRESHOLD_YEN: Double = 50
-/// 広告収益がこの金額を上回れば1回分の無料特典を付与する（ドル）
+/// 広告収益がこの金額を上回れば「特典1回無料」を付与する（ドル）
 let AD_REWARD_THRESHOLD_USD: Double = 0.49
 

@@ -179,8 +179,8 @@ struct AdMobUnifiedSupportView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Label {
-                        // 利用可能な無料特典回数をフォーマットして表示
-                        let availableFormat = String(localized: "ad.reward.available", defaultValue: "使える無料特典: %lld回")
+                        // 利用可能な「特典1回無料」の残数をフォーマットして表示
+                        let availableFormat = String(localized: "ad.reward.available", defaultValue: "特典1回無料の残り: %lld回")
                         Text(String.localizedStringWithFormat(availableFormat, Int64(adBenefitStore.availableBonusUsages)))
                             .font(.headline)
                     } icon: {
@@ -190,21 +190,27 @@ struct AdMobUnifiedSupportView: View {
                     Spacer()
                 }
 
+                if adBenefitStore.hasBonus {
+                    Text(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 if let remainingYen = remainingYenToBonus {
                     // 日本円で次の特典までの残額を案内（ロケールを固定して小数点表記を安定させる）
-                    let yenFormat = String(localized: "ad.reward.progress.yen", defaultValue: "あと%.1f円で無料特典を付与", locale: Locale(identifier: "ja_JP"))
+                    let yenFormat = String(localized: "ad.reward.progress.yen", defaultValue: "あと%.1f円で特典1回無料を付与", locale: Locale(identifier: "ja_JP"))
                     Text(String.localizedStringWithFormat(yenFormat, remainingYen))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 if let remainingUsd = remainingUsdToBonus {
                     // 米ドル表記での残額案内（ドルは小数点2桁で表示）
-                    let usdFormat = String(localized: "ad.reward.progress.usd", defaultValue: "あと$%.2fで無料特典を付与", locale: Locale(identifier: "en_US"))
+                    let usdFormat = String(localized: "ad.reward.progress.usd", defaultValue: "あと$%.2fで特典1回無料を付与", locale: Locale(identifier: "en_US"))
                     Text(String.localizedStringWithFormat(usdFormat, remainingUsd))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                Text(String(localized: "ad.reward.progress.detail", defaultValue: "視聴した広告の収益を自動でカウントし、基準を超えるとAI特典を1回プレゼント"))
+                Text(String(localized: "ad.reward.progress.detail", defaultValue: "視聴した広告の収益を自動でカウントし、基準を超えると特典1回無料をプレゼントします。特典は使い切りです"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -291,6 +297,9 @@ struct AdMobUnifiedSupportView: View {
     }
 
     private var remainingYenToBonus: Double? {
+        if adBenefitStore.hasBonus {
+            return nil
+        }
         let remaining = AD_REWARD_THRESHOLD_YEN - adBenefitStore.accumulatedRevenueYen
         if remaining <= 0 {
             return nil
@@ -299,6 +308,9 @@ struct AdMobUnifiedSupportView: View {
     }
 
     private var remainingUsdToBonus: Double? {
+        if adBenefitStore.hasBonus {
+            return nil
+        }
         let remaining = AD_REWARD_THRESHOLD_USD - adBenefitStore.accumulatedRevenueUsd
         if remaining <= 0 {
             return nil
@@ -317,10 +329,10 @@ struct AdMobUnifiedSupportView: View {
         let granted = adBenefitStore.recordRevenue(micros: adValue.value.int64Value, currencyCode: adValue.currencyCode)
         var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
         if adBenefitStore.hasBonus {
-            messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
+            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
         }
         if granted {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
+            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
         }
         infoMessage = messages.joined(separator: "\n")
     }
@@ -335,10 +347,10 @@ struct AdMobUnifiedSupportView: View {
         let granted = adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode)
         var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
         if adBenefitStore.hasBonus {
-            messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
+            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
         }
         if granted {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
+            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
         }
         rewardDescription = messages.joined(separator: "\n")
     }
@@ -482,10 +494,10 @@ struct AdMobRewardedScreen: View {
         var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
         let granted = registerBonusIfNeeded()
         if adBenefitStore.hasBonus {
-            messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
+            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
         }
         if granted {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
+            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
         }
         rewardDescription = messages.joined(separator: "\n")
     }
@@ -567,7 +579,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     #if DEBUG
     /// DEBUGビルドでAdMobのテスト広告が利用できない環境でも処理確認できるようにする
     func simulateRewardEarnedForDebug() {
-        // 収益情報が無いと無料特典判定が行えないため、十分な額を仮設定してから報酬を流す
+        // 収益情報が無いと特典1回無料の判定が行えないため、十分な額を仮設定してから報酬を流す
         let mockMicros: Int64 = 60_000_000 // 60 JPY 相当の想定値
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }

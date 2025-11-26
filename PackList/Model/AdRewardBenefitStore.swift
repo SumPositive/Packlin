@@ -7,11 +7,11 @@
 
 import Foundation
 
-/// 広告収益が設定金額を超えたときに付与する「AI1回無料特典」を管理するObservableObject
+/// 広告収益が設定金額を超えたときに付与する「特典1回無料」を管理するObservableObject
 /// - Note: サーバーを介さずローカルだけで完結させるため、UserDefaultsへ永続化して再起動後も残す
 @MainActor
 final class AdRewardBenefitStore: ObservableObject {
-    /// 利用可能な無料特典の残数
+    /// 利用可能な特典1回無料の残数
     @Published private(set) var availableBonusUsages: Int
     /// 最後に条件を満たした収益額（円換算が取れた場合のみ記録する）
     @Published private(set) var lastQualifiedRevenueYen: Double?
@@ -21,7 +21,7 @@ final class AdRewardBenefitStore: ObservableObject {
     @Published private(set) var accumulatedRevenueUsd: Double
 
     private let userDefaults: UserDefaults
-    /// 無料特典を溜め込まず、常に「1回使ってから次を受け取る」運用にするための上限値
+    /// 特典1回無料を溜め込まず、常に「1回使ってから次を受け取る」運用にするための上限値
     private let maxBonusCount = 1
     private let bonusKey = "ad.reward.bonus.remaining"
     private let lastRevenueKey = "ad.reward.bonus.lastRevenueYen"
@@ -46,7 +46,7 @@ final class AdRewardBenefitStore: ObservableObject {
         self.accumulatedRevenueUsd = (storedUsd * 100).rounded() / 100
     }
 
-    /// 収益イベントを受け取り、必要に応じて無料特典を付与する
+    /// 収益イベントを受け取り、必要に応じて特典1回無料を付与する
     /// - Parameters:
     ///   - micros: 広告SDKから通知されるマイクロ単位の収益
     ///   - currencyCode: 通貨コード（例: "JPY" / "USD"）。判別できない場合はnil
@@ -60,6 +60,10 @@ final class AdRewardBenefitStore: ObservableObject {
         guard let upperCurrency = currencyCode?.uppercased() else {
             return false
         }
+        // すでに「特典1回無料」を保有している間はカウントを進めず、使い切ってから次のサイクルを開始する
+        if maxBonusCount <= availableBonusUsages {
+            return false
+        }
         // マイクロ単位（100万分の1）から大きい単位へ直す
         let majorValue = Double(micros) / 1_000_000
 
@@ -67,15 +71,17 @@ final class AdRewardBenefitStore: ObservableObject {
         if upperCurrency == "JPY" {
             accumulatedRevenueYen += majorValue
             granted = grantBonusIfQualified(revenueYen: accumulatedRevenueYen, revenueUsd: nil)
-            // 特典付与に成功したら進捗をリセットし、次回の積み上げを分かりやすくする
+            // 特典付与に成功したら累計をゼロに戻し、「使い切り」であることを明確にする
             if granted {
-                accumulatedRevenueYen = max(0, accumulatedRevenueYen - AD_REWARD_THRESHOLD_YEN)
+                accumulatedRevenueYen = 0
+                accumulatedRevenueUsd = 0
             }
         } else if upperCurrency == "USD" {
             accumulatedRevenueUsd += majorValue
             granted = grantBonusIfQualified(revenueYen: nil, revenueUsd: accumulatedRevenueUsd)
             if granted {
-                accumulatedRevenueUsd = max(0, accumulatedRevenueUsd - AD_REWARD_THRESHOLD_USD)
+                accumulatedRevenueUsd = 0
+                accumulatedRevenueYen = 0
             }
         }
 
@@ -83,7 +89,7 @@ final class AdRewardBenefitStore: ObservableObject {
         return granted
     }
 
-    /// 広告の収益が閾値を超えていれば無料特典を1回分付与する
+    /// 広告の収益が閾値を超えていれば特典1回無料を付与する
     /// - Parameters:
     ///   - revenueYen: 円換算の収益額
     ///   - revenueUsd: 米ドル換算の収益額
@@ -117,24 +123,28 @@ final class AdRewardBenefitStore: ObservableObject {
         return true
     }
 
-    /// 利用可能な無料特典を消費する。残数が無い場合はfalseを返す
+    /// 利用可能な特典1回無料を消費する。残数が無い場合はfalseを返す
     /// - Returns: 消費できたらtrue
     func consumeBonusIfAvailable() -> Bool {
         if availableBonusUsages < 1 {
             return false
         }
         availableBonusUsages -= 1
+        // 「使い切り」を明確にするため、使用したタイミングで進捗もリセットして次のカウントをゼロから始める
+        accumulatedRevenueYen = 0
+        accumulatedRevenueUsd = 0
         persist()
         return true
     }
 
     /// 直前に消費した特典を復元したい場合に呼び出す
     func restoreConsumedBonus() {
-        availableBonusUsages += 1
+        // 取り消し操作などで1回分だけ復元する。上限を超えないように抑制する
+        availableBonusUsages = min(availableBonusUsages + 1, maxBonusCount)
         persist()
     }
 
-    /// 無料特典を保有しているかどうかを判定する
+    /// 特典1回無料を保有しているかどうかを判定する
     var hasBonus: Bool {
         return 0 < availableBonusUsages
     }
