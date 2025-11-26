@@ -215,7 +215,10 @@ struct AdMobUnifiedSupportView: View {
             ScrollView {
                 VStack(spacing: 10) {
                     // 広告特典の説明
-                    rewardProgressSection
+                    // 未購入のユーザーには特典説明を出さずに、通常の寄付案内だけを見せる
+                    if hasPurchaseHistory {
+                        rewardProgressSection
+                    }
                     // バナー広告
                     bannerSection
                     // 動画広告
