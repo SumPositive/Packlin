@@ -88,6 +88,7 @@
       }
     },
     "ad.reward.badge.status.active" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -104,6 +105,7 @@
       }
     },
     "ad.reward.badge.status.locked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -120,6 +122,7 @@
       }
     },
     "ad.reward.badge.status.used" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -106,12 +106,12 @@ struct AdMobBannerCardView: View {
             )
 
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color(uiColor: .secondarySystemBackground))
-        )
+//        .padding()
+//        .frame(maxWidth: .infinity, alignment: .leading)
+//        .background(
+//            RoundedRectangle(cornerRadius: 24)
+//                .fill(Color(uiColor: .secondarySystemBackground))
+//        )
     }
 }
 
@@ -128,7 +128,7 @@ struct AdRewardBonusBadgeView: View {
     var showStatusText: Bool = true
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 2) {
             Text("広告特典")
                 .font(.caption2)
                 .foregroundStyle(adBenefitStore.hasBonus ? .primary : .secondary)
@@ -144,7 +144,7 @@ struct AdRewardBonusBadgeView: View {
                         .foregroundStyle(.green)
                         .offset(x: 8, y: -3)
                 } else if adBenefitStore.wasBonusConsumed {
-                    Image(systemName: "slash.circle.fill")
+                    Image(systemName: "circle.slash")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.secondary)
                         .offset(x: 8, y: -3)
@@ -153,32 +153,18 @@ struct AdRewardBonusBadgeView: View {
             Text("1回無料")
                 .font(.caption2)
                 .foregroundStyle(adBenefitStore.hasBonus ? .primary : Color.clear)
-
-//            if showStatusText {
-//                VStack(alignment: .leading, spacing: 4) {
-//                    Text("特典1回無料")
-//                        .font(.caption2)
-//                        .foregroundStyle(.secondary)
-//                    // 有効・使用済み・未取得のどの状態なのかを説明文で補足
-//                    Text(perkStatusText)
-//                        .font(.footnote)
-//                        .foregroundStyle(.secondary)
-//                }
-//            }
-
-            Spacer(minLength: 0)
         }
     }
 
-    private var perkStatusText: String {
-        if adBenefitStore.hasBonus {
-            return String(localized: "ad.reward.badge.status.active", defaultValue: "特典1回無料が有効です。使い切ると再カウントします")
-        }
-        if adBenefitStore.wasBonusConsumed {
-            return String(localized: "ad.reward.badge.status.used", defaultValue: "特典1回無料を使いました。次の広告視聴から再カウントが始まります")
-        }
-        return String(localized: "ad.reward.badge.status.locked", defaultValue: "広告を視聴して特典1回無料を受け取りましょう")
-    }
+//    private var perkStatusText: String {
+//        if adBenefitStore.hasBonus {
+//            return String(localized: "ad.reward.badge.status.active", defaultValue: "特典1回無料が有効です。使い切ると再カウントします")
+//        }
+//        if adBenefitStore.wasBonusConsumed {
+//            return String(localized: "ad.reward.badge.status.used", defaultValue: "特典1回無料を使いました。次の広告視聴から再カウントが始まります")
+//        }
+//        return String(localized: "ad.reward.badge.status.locked", defaultValue: "広告を視聴して特典1回無料を受け取りましょう")
+//    }
 }
 
 #if canImport(GoogleMobileAds)
@@ -285,8 +271,21 @@ struct AdMobUnifiedSupportView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
-            AdMobBannerCardView(configuration: bannerConfig)
+            // バナー広告
+            //AdMobBannerCardView(configuration: bannerConfig)
+            AdMobBannerView(
+                adUnitID: bannerConfig.adUnitID,
+                size: bannerConfig.size,
+                onPaidEvent: {_ in
+                }
+            )
         }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(uiColor: .secondarySystemBackground))
+        )
     }
 
     /// 動画広告
@@ -299,12 +298,6 @@ struct AdMobUnifiedSupportView: View {
                 Image(systemName: "play.rectangle.on.rectangle")
                     .symbolRenderingMode(.hierarchical)
             }
-
-//            if let infoMessage {
-//                Text(infoMessage)
-//                    .font(.footnote)
-//                    .foregroundStyle(.secondary)
-//            }
 
             if loader.isLoading {
                 ProgressView(String(localized: "動画広告を読み込み中..."))
