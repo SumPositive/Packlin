@@ -261,9 +261,6 @@ struct AdMobRewardedScreen: View {
             }
         }
         .onAppear {
-            loader.onAdDismissed = {
-                dismiss()
-            }
             loader.onRewardEarned = { _ in
                 rewardDescription = String(localized: "広告をご視聴いただきありがとうございます！")
             }
