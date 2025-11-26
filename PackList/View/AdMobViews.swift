@@ -128,40 +128,43 @@ struct AdRewardBonusBadgeView: View {
     var showStatusText: Bool = true
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack(alignment: .topTrailing) {
-                // バッジの下地。付与状態や使用済み状態をアイコンで直感的に示す
-                Circle()
-                    .fill(Color(uiColor: .tertiarySystemFill))
-                    .frame(width: 52, height: 52)
-
+        VStack(spacing: 0) {
+            Text("広告特典")
+                .font(.caption2)
+                .foregroundStyle(adBenefitStore.hasBonus ? .primary : .secondary)
+            ZStack {
                 Image(systemName: adBenefitStore.hasBonus ? "gift.fill" : "gift")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(adBenefitStore.hasBonus ? Color.accentColor : Color.secondary)
+                    .offset(x: -6, y: 0)
 
                 if adBenefitStore.hasBonus {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.green)
-                        .offset(x: 14, y: -14)
+                        .offset(x: 8, y: -3)
                 } else if adBenefitStore.wasBonusConsumed {
                     Image(systemName: "slash.circle.fill")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(.secondary)
-                        .offset(x: 14, y: -14)
+                        .offset(x: 8, y: -3)
                 }
             }
+            Text("1回無料")
+                .font(.caption2)
+                .foregroundStyle(adBenefitStore.hasBonus ? .primary : Color.clear)
 
-            if showStatusText {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(String(localized: "ad.reward.badge.title", defaultValue: "特典1回無料"))
-                        .font(.headline)
-                    // 有効・使用済み・未取得のどの状態なのかを説明文で補足
-                    Text(perkStatusText)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            }
+//            if showStatusText {
+//                VStack(alignment: .leading, spacing: 4) {
+//                    Text("特典1回無料")
+//                        .font(.caption2)
+//                        .foregroundStyle(.secondary)
+//                    // 有効・使用済み・未取得のどの状態なのかを説明文で補足
+//                    Text(perkStatusText)
+//                        .font(.footnote)
+//                        .foregroundStyle(.secondary)
+//                }
+//            }
 
             Spacer(minLength: 0)
         }
@@ -196,15 +199,18 @@ struct AdMobUnifiedSupportView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 10) {
+                    // 広告特典の説明
                     rewardProgressSection
+                    // バナー広告
                     bannerSection
+                    // 動画広告
                     videoSection
                 }
                 .padding()
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text(String(localized: "ad.unified.title")))
+            .navigationTitle(Text("広告を見て寄付"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -227,88 +233,96 @@ struct AdMobUnifiedSupportView: View {
         }
     }
 
+    /// 広告特典の説明
     private var rewardProgressSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(String(localized: "ad.unified.lead"))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            VStack(alignment: .leading, spacing: 12) {
-                // 他画面でも共通化した特典バッジをそのまま利用する
-                AdRewardBonusBadgeView()
-
-                if adBenefitStore.hasBonus {
-                    Text(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                if let remainingYen = remainingYenToBonus {
-                    // 日本円で次の特典までの残額を案内（ロケールを固定して小数点表記を安定させる）
-                    let yenFormat = String(localized: "ad.reward.progress.yen", defaultValue: "あと%.1f円で特典1回無料を付与", locale: Locale(identifier: "ja_JP"))
-                    Text(String.localizedStringWithFormat(yenFormat, remainingYen))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                if let remainingUsd = remainingUsdToBonus {
-                    // 米ドル表記での残額案内（ドルは小数点2桁で表示）
-                    let usdFormat = String(localized: "ad.reward.progress.usd", defaultValue: "あと$%.2fで特典1回無料を付与", locale: Locale(identifier: "en_US"))
-                    Text(String.localizedStringWithFormat(usdFormat, remainingUsd))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                Text(String(localized: "ad.reward.progress.detail", defaultValue: "視聴した広告の収益を自動でカウントし、基準を超えると特典1回無料をプレゼントします。特典は使い切りです"))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+            HStack {
+                Spacer()
+                Text("広告を見て開発者に寄付ができます。寄付の累計額によりAI利用1回無料特典が提供されます")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.primary)
+                    .padding(.bottom, 20)
+                Spacer()
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(uiColor: .secondarySystemBackground))
-            )
+
+            HStack {
+                Spacer()
+                // 特典バッジ
+                AdRewardBonusBadgeView()
+                Spacer()
+            }
+            if adBenefitStore.hasBonus {
+                HStack {
+                    Spacer()
+                    Text("特典1回無料は受け取り済みです。\n使い切ってから新たな特典をお待ちください")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+            }
         }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(uiColor: .secondarySystemBackground))
+        )
     }
 
+    /// バナー広告
     private var bannerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                Text(String(localized: "ad.unified.banner.title", defaultValue: "バナー広告"))
+                Text("広告")
                     .font(.headline)
             } icon: {
                 Image(systemName: "rectangle.fill.on.rectangle.fill")
                     .symbolRenderingMode(.hierarchical)
             }
 
-            Text(String(localized: "ad.unified.banner.message", defaultValue: "バナーをタップして開くと収益が加算されます"))
+            Text("広告をタップして開いてください")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
-            AdMobBannerCardView(configuration: bannerConfig) { adValue in
-                registerRevenue(adValue)
-            }
+            AdMobBannerCardView(configuration: bannerConfig)
         }
     }
 
+    /// 動画広告
     private var videoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                Text(String(localized: "ad.unified.video.title", defaultValue: "動画広告"))
+                Text("動画広告")
                     .font(.headline)
             } icon: {
                 Image(systemName: "play.rectangle.on.rectangle")
                     .symbolRenderingMode(.hierarchical)
             }
 
-            if let infoMessage {
-                Text(infoMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
+//            if let infoMessage {
+//                Text(infoMessage)
+//                    .font(.footnote)
+//                    .foregroundStyle(.secondary)
+//            }
 
             if loader.isLoading {
-                ProgressView(String(localized: "広告を読み込み中..."))
+                ProgressView(String(localized: "動画広告を読み込み中..."))
                     .padding(.vertical, 8)
+            }else{
+                Text("広告を再生して最後までご覧ください")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Label {
+                    Text("音が出る場合があります")
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle")
+                        .symbolRenderingMode(.hierarchical)
+                        .colorMultiply(.red)
+                }
             }
 
             if let errorMessage = loader.errorMessage {
@@ -323,12 +337,20 @@ struct AdMobUnifiedSupportView: View {
                 }
             }
 
-            Button(String(localized: "広告を再生")) {
+            Button {
                 presentAd()
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "play.rectangle")
+                        .symbolRenderingMode(.hierarchical)
+                    Text("広告を再生")
+                        .font(.body.weight(.semibold))
+                }
             }
             .buttonStyle(.borderedProminent)
             .disabled(loader.isReady == false)
 
+            
             if let rewardDescription {
                 Text(rewardDescription)
                     .font(.footnote)
@@ -372,17 +394,17 @@ struct AdMobUnifiedSupportView: View {
         loader.present(from: topController)
     }
 
-    private func registerRevenue(_ adValue: AdPaidValue) {
-        let granted = adBenefitStore.recordRevenue(micros: adValue.value.int64Value, currencyCode: adValue.currencyCode)
-        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
-        if adBenefitStore.hasBonus {
-            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
-        }
-        if granted {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
-        }
-        infoMessage = messages.joined(separator: "\n")
-    }
+//    private func registerRevenue(_ adValue: AdPaidValue) {
+//        let granted = adBenefitStore.recordRevenue(micros: adValue.value.int64Value, currencyCode: adValue.currencyCode)
+//        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+//        if adBenefitStore.hasBonus {
+//            messages.append(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
+//        }
+//        if granted {
+//            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので特典1回無料を付与しました"))
+//        }
+//        infoMessage = messages.joined(separator: "\n")
+//    }
 
     private func handleRewardEarnedFromVideo() {
         // 直前のpaidEventHandlerで拾った収益情報を使って特典付与を試みる

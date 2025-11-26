@@ -540,7 +540,7 @@ struct SettingView: View {
         var body: some View {
             VStack(alignment: .leading, spacing: 8) {
                 Label {
-                    Text("開発者を応援する（特典あり）")
+                    Text("開発者を応援する")
                         .font(.body.weight(.medium))
                 } icon: {
                     Image(systemName: "heart.fill")
@@ -548,31 +548,26 @@ struct SettingView: View {
                         .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
                 }
 
-                Text("視聴累計によりAI利用「特典1回無料」をプレゼント")
-                    .font(.caption.weight(.medium))
-                    .padding(.leading, 32)
-                    .padding(.top, -4)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    // 広告を見て寄付する（ボタン）
-                    Button(action: {
-                        withAnimation {
-                            // SafariでURLを表示する
-                            showAd = true
-                        }
-                    }) {
-                        VStack(spacing: 2) {
-                            Text("広告を見て寄付")
-                                .frame(maxWidth: .infinity)
-                            Text(String(localized: "donation.ad.unified.subtitle", defaultValue: "バナー広告と動画広告を同じ画面で視聴"))
-                                .font(.caption)
-                        }
+                // 広告を見て寄付する（ボタン）
+                Button(action: {
+                    withAnimation {
+                        // SafariでURLを表示する
+                        showAd = true
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.secondary)
-                    .sheet(isPresented: $showAd) {
-                        AdMobUnifiedSupportView()
+                }) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "gift")
+                            .symbolRenderingMode(.hierarchical)
+                        Text("広告を見て寄付　（特典あり）")
+                            .font(.body.weight(.semibold))
                     }
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brown)
+                .padding(.horizontal, 25)
+                .frame(maxWidth: .infinity)
+                .sheet(isPresented: $showAd) {
+                    AdMobUnifiedSupportView()
                 }
             }
         }

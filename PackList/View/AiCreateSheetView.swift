@@ -11,7 +11,7 @@ import Foundation
 import StoreKit
 
 
-let AiCreateSheetView_HEIGHT: CGFloat = 680.0 // シート表示時の高さ指定
+let AiCreateSheetView_HEIGHT: CGFloat = 700.0 // シート表示時の高さ指定
 
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
@@ -188,24 +188,18 @@ struct AiCreateView: View {
                     Text("AI利用券残り \(creditStore.credits) 枚")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        .frame(minWidth: 120, minHeight: 24)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 8)
                         .background(
                             Capsule(style: .continuous)
                                 .fill(Color.secondary.opacity(0.3))
                         )
-
+                    
                     Spacer()
                     if 0 < adBenefitStore.availableBonusUsages {
-                        Text("特典1回無料")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 8)
-                            .background(
-                                Capsule(style: .continuous)
-                                    .fill(Color(uiColor: .tertiarySystemFill))
-                            )
+                        // 特典バッジ
+                        AdRewardBonusBadgeView()
                     }
                     Spacer()
                     // 送信
@@ -234,12 +228,13 @@ struct AiCreateView: View {
                         }
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
-                        .frame(minHeight: 20)
+                        .frame(minHeight: 24)
                     }
                     .disabled(isRequirementEmpty || isGenerating)
                     .buttonStyle(.borderedProminent)
                     .tint(.accentColor)
                     .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .frame(minWidth: 100)
                 }
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
@@ -315,11 +310,8 @@ struct AiCreateView: View {
             creditPurchaseMenu
 
             // 最下部に動画広告誘導ボタンを配置し、広告経由の特典取得を促す
-            VStack(spacing: 12) {
-                Divider()
-
-                // 特典バッジの見た目を広告画面と揃え、状態が一目でわかるようにする
-                AdRewardBonusBadgeView()
+            VStack(spacing: 6) {
+                Divider() // 区切り線
 
                 Button {
                     // 抽選案内を表示する統合広告画面をシートで開く
@@ -328,19 +320,19 @@ struct AiCreateView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text("動画広告を見て寄付（特典あり）")
+                        Text("広告を見て寄付　（特典あり）")
                             .font(.body.weight(.semibold))
                     }
-                    //.frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .tint(.brown)
+                .padding(.horizontal, 10)
 
-                Text("視聴累計によりAI利用「特典1回無料」をプレゼント")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
+//                Text("視聴累計によりAI利用を1回無料プレゼント")
+//                    .font(.caption)
+//                    .foregroundStyle(.secondary)
+//                    .multilineTextAlignment(.center)
+//                    .frame(maxWidth: .infinity)
             }
 
         }
