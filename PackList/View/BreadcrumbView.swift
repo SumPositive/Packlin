@@ -43,6 +43,8 @@ struct BreadcrumbView: View {
         }
         // 左余白を少し広げて、ヘッダー内での窮屈さを和らげる
         .padding(.leading, 12)
+        // 上方向にも十分な空き領域を設け、ヘッダーと重ならないようにする（元より+8pt）
+        .padding(.top, 8)
         // 全体を左寄せにして、親子関係が視覚的に並ぶようにする
         .frame(maxWidth: .infinity, alignment: .leading)
     }
