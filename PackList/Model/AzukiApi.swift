@@ -136,6 +136,30 @@ final class AzukiApi {
         self.deviceAuthenticator = deviceAuthenticator
     }
 
+    /// 認証必須エンドポイントを呼び出すための前提条件を詳細に判定する
+    /// - Important: 本アプリはメールアドレスやSNSログインを採用せず、StoreKitの購入情報とApp Attestを組み合わせて
+    ///              サーバー署名付きトークンを払い出す。そのため「ログインしていないのに認証できるのか？」という疑問には
+    ///              「購入検証時に端末署名で自動的にログイン相当の認証を完了させている」ことで答える。
+    /// - Note: アクセストークンやリフレッシュトークンが残っていれば即座に通信できる。
+    ///         トークンが失効していても復旧ハンドラが登録済みなら、直近の購入履歴検証を通じて再取得できる見込みがある。
+    func currentAuthReadiness() async -> (isReady: Bool, explanation: String) {
+        // Keychainにまだ有効なアクセストークンが残っていれば即利用可能
+        if accessTokenStore.currentTokenIfValid() != nil {
+            return (true, "アクセス・リフレッシュトークンが端末に残っているため追加ログイン不要")
+        }
+        // リフレッシュトークンが生きていれば自動更新だけで十分
+        if refreshTokenStore.currentTokenIfValid() != nil {
+            return (true, "購入時に発行されたリフレッシュトークンで再認証可能")
+        }
+        // 復旧ハンドラはStoreKitの購入履歴をApp Attest付きで検証し直すためのもの
+        let handler = await tokenRecoveryHandlerBox.currentHandler()
+        if handler != nil {
+            return (true, "購入履歴の再検証でアクセストークンを取り直せるためログイン操作は不要")
+        }
+        // 何も準備が整っていない場合はfalseを返し、UI側で購入復元などを促す
+        return (false, "端末に認証情報が残っていません。購入復元や再起動で再取得が必要")
+    }
+
     /// OpenAI(azuki-api経由)にパック生成を依頼する
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID

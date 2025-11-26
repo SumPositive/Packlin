@@ -301,6 +301,38 @@
         }
       }
     },
+    "AI利用には認証が必要です。購入復元またはアプリ再起動後に再度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication is required to use AI. Please restore purchases or restart the app, then try again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI利用には認証が必要です。購入復元またはアプリ再起動後に再度お試しください。"
+          }
+        }
+      }
+    },
+    "AI利用はStoreKitの購入情報と端末証明で自動認証します。ログイン不要で%@。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI use is auto-authorized with StoreKit purchases and device attestation—no login needed because %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI利用はStoreKitの購入情報と端末証明で自動認証します。ログイン不要で%@。"
+          }
+        }
+      }
+    },
     "AI利用券が不足しています。下のメニューから購入してください。" : {
       "localizations" : {
         "en" : {
@@ -734,6 +766,7 @@
       }
     },
     "タップして広告をご覧ください" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1436,6 +1469,22 @@
     },
     "広告特典" : {
 
+    },
+    "広告特典だけでは認証に必要な購入履歴を作れません。AI利用券を1枚購入してからお試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ad rewards alone cannot create the purchase history required for authentication. Please buy one AI ticket before trying again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告特典だけでは認証に必要な購入履歴を作れません。AI利用券を1枚購入してからお試しください。"
+          }
+        }
+      }
     },
     "広告特典の無料利用残り %lld 回" : {
       "extractionState" : "stale",
