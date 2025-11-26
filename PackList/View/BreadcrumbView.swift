@@ -66,9 +66,11 @@ struct BreadcrumbView: View {
     // パンくずの区切り記号
     private var separator: some View {
         Text("＞")
-            // 文字サイズを合わせ、左右の余白を絞って密度を高める
+            // 文字サイズを合わせ、余白を最小限にして密度を高める
             .font(.caption)
-            .padding(.horizontal, 1)
+            // 左側の余白をなくし、右側だけ少しスペースを空けて並びを詰める
+            .padding(.leading, 0)
+            .padding(.trailing, 1)
     }
 }
 
