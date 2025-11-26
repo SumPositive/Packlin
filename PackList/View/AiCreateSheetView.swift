@@ -315,11 +315,14 @@ struct AiCreateView: View {
             creditPurchaseMenu
 
             // 最下部に動画広告誘導ボタンを配置し、広告経由の特典取得を促す
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 Divider()
 
+                // 特典バッジの見た目を広告画面と揃え、状態が一目でわかるようにする
+                AdRewardBonusBadgeView()
+
                 Button {
-                    // 抽選案内を表示する動画広告画面をシートで開く
+                    // 抽選案内を表示する統合広告画面をシートで開く
                     isPresentingAdRewardSheet = true
                 } label: {
                     HStack(spacing: 10) {
@@ -399,7 +402,7 @@ struct AiCreateView: View {
         }
         .sheet(isPresented: $isPresentingAdRewardSheet) {
             // 広告での応援導線をシートとして表示し、閉じる操作も従来と揃える
-            AdMobVideoContainerView()
+            AdMobUnifiedSupportView()
                 .environmentObject(adBenefitStore)
         }
     }
