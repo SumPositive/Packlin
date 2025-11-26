@@ -20,6 +20,7 @@ struct ItemEditView: View {
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var history: UndoStackService
+    @EnvironmentObject private var navigationStore: NavigationStore
 
     @FocusState private var focusedField: Field?
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
@@ -417,7 +418,10 @@ struct ItemEditView: View {
                 BreadcrumbView(
                     packName: pack.name.placeholder("新しいパック"),
                     groupName: group.name.placeholder("新しいグループ"),
-                    itemName: item.name.placeholder("新しいアイテム")
+                    itemName: item.name.placeholder("新しいアイテム"),
+                    packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
+                    groupAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id), AppDestination.itemList(packID: pack.id, groupID: group.id)]) },
+                    itemAction: nil
                 )
             }
             .tint(.primary)

@@ -282,7 +282,10 @@ struct ItemSortListView: View {
                     BreadcrumbView(
                         packName: pack.name.placeholder("新しいパック"),
                         groupName: nil,
-                        itemName: nil
+                        itemName: sortOption.title,
+                        packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
+                        groupAction: nil,
+                        itemAction: nil
                     )
                 }
                 .tint(.primary)

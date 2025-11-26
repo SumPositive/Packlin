@@ -15,6 +15,7 @@ struct ItemListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var history: UndoStackService
+    @EnvironmentObject private var navigationStore: NavigationStore
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
@@ -197,7 +198,10 @@ struct ItemListView: View {
                     BreadcrumbView(
                         packName: pack.name.placeholder("新しいパック"),
                         groupName: group.name.placeholder("新しいグループ"),
-                        itemName: nil
+                        itemName: nil,
+                        packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
+                        groupAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id), AppDestination.itemList(packID: pack.id, groupID: group.id)]) },
+                        itemAction: nil
                     )
                 }
                 .tint(.primary)

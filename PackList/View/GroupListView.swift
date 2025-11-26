@@ -308,7 +308,10 @@ struct GroupListView: View {
                     BreadcrumbView(
                         packName: pack.name.placeholder("新しいパック"),
                         groupName: nil,
-                        itemName: nil
+                        itemName: nil,
+                        packAction: { navigationStore.path = NavigationPath() },
+                        groupAction: nil,
+                        itemAction: nil
                     )
                 }
                 .tint(.primary)
