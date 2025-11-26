@@ -11,7 +11,8 @@ struct BreadcrumbView: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 2) {
+            // 先頭のパック名を左寄せ・省略付きで表示
             breadcrumbText(for: packName)
 
             if let groupName = groupName {
@@ -24,23 +25,28 @@ struct BreadcrumbView: View {
                 breadcrumbText(for: itemName)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .center)
+        // 全体を左寄せにして、親子関係が視覚的に並ぶようにする
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // 1要素分のテキストを最大幅付きで描画し、末尾に自動省略記号を付ける
     @ViewBuilder
     private func breadcrumbText(for name: String) -> some View {
         Text(name)
-            .font(.headline)
+            // 視認性を保ちつつもヘッダー内の高さを抑えるためcaptionサイズを採用
+            .font(.caption)
             .lineLimit(1)
             .truncationMode(.tail)
-            .frame(maxWidth: maxNameWidth, alignment: .center)
+            // 左寄せで固定幅に収め、文字数が多い場合は末尾を省略
+            .frame(maxWidth: maxNameWidth, alignment: .leading)
     }
 
     // パンくずの区切り記号
     private var separator: some View {
         Text("＞")
-            .font(.headline)
+            // 文字サイズを合わせ、左右の余白を絞って密度を高める
+            .font(.caption)
+            .padding(.horizontal, 2)
     }
 }
 
