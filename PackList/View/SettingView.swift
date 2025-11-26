@@ -536,6 +536,7 @@ struct SettingView: View {
     struct DonationView: View {
         @State private var showAd = false
         @State private var showDonate = false
+        @State private var hasPurchaseHistory = false
 
         var body: some View {
             VStack(alignment: .leading, spacing: 8) {
@@ -558,7 +559,8 @@ struct SettingView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text(String(localized: "広告を見て寄付（購入者特典）"))
+                        Text(hasPurchaseHistory ? String(localized: "広告を見て寄付（購入者特典）")
+                             : String(localized: "広告を見て寄付"))
                             .font(.body.weight(.semibold))
                     }
                 }
@@ -568,6 +570,13 @@ struct SettingView: View {
                 .frame(maxWidth: .infinity)
                 .sheet(isPresented: $showAd) {
                     AdMobUnifiedSupportView()
+                }
+                .task {
+                    // 購入済みユーザーかどうかを判定し、ボタン表記を切り替える
+                    let purchased = await PurchaseHistoryChecker.hasPurchasedOnce()
+                    await MainActor.run {
+                        hasPurchaseHistory = purchased
+                    }
                 }
             }
         }

@@ -113,10 +113,20 @@ struct AiCreateView: View {
     @State private var isViewVisible = true
     /// 動画広告シートの表示状態（広告経由でAI利用券抽選を案内する）
     @State private var isPresentingAdRewardSheet = false
+    /// 広告誘導ボタンの表示文言を切り替えるために購入履歴の有無を保持する
+    @State private var hasPurchaseHistory = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// 広告視聴誘導ボタンのラベル。購入履歴があるかどうかで表記を変える
+    private var adDonationButtonTitle: String {
+        if hasPurchaseHistory {
+            return String(localized: "広告を見て寄付（購入者特典）")
+        }
+        return String(localized: "広告を見て寄付")
     }
 
     /// 端末に保存済みの通知済みトランザクションIDをStateへ復元する
@@ -316,7 +326,7 @@ struct AiCreateView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text(String(localized: "広告を見て寄付（購入者特典）"))
+                        Text(adDonationButtonTitle)
                             .font(.body.weight(.semibold))
                     }
                 }
@@ -343,6 +353,11 @@ struct AiCreateView: View {
             loadNotifiedTransactionIdsIfNeeded()
         }
         .task {
+            // 購入履歴の有無を事前に調べてラベル表記を決める。メニューを開いた直後から正しい案内を出すために早めに評価する
+            let purchased = await PurchaseHistoryChecker.hasPurchasedOnce()
+            await MainActor.run {
+                hasPurchaseHistory = purchased
+            }
             // AzukiApiへトークン復旧ロジックを注入する前に、StoreKit購入履歴があるかどうかを確認しておく
             // 端末に購入履歴がまったく無い状態でハンドラを登録すると、未購入ユーザーでも認証可能と誤解されるため避ける
             await prepareTokenRecoveryHandlerIfPossible()

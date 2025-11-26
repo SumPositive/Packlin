@@ -224,7 +224,8 @@ struct AdMobUnifiedSupportView: View {
                 .padding()
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("広告を見て寄付"))
+            .navigationTitle(Text(hasPurchaseHistory ? String(localized: "広告を見て寄付（購入者特典）")
+                                                : String(localized: "広告を見て寄付")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
