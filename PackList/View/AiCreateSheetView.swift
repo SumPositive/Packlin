@@ -83,6 +83,8 @@ struct AiCreateView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.locale) private var locale
     @EnvironmentObject private var creditStore: CreditStore
+    /// 広告特典の付与状況を共有し、AI利用券追加のアニメーションやカウントを連動させる
+    @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
 
     /// ユーザーからAIへの要望・要件テキスト
     /// AppStorageを利用してシートを閉じても入力内容を保持する
