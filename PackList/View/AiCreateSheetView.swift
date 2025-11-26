@@ -580,12 +580,19 @@ struct AiCreateView: View {
     /// azuki-api認証が事前に確保できるかどうかを判定し、未準備ならすぐに中断する
     /// - Returns: 通信に進んでよい場合はtrue
     private func ensureAzukiAuthenticationAvailability() async -> Bool {
-        let hasTokenOrRecovery = await AzukiApi.shared.hasValidOrRecoverableAuthToken()
-        if hasTokenOrRecovery {
+        let readiness = await AzukiApi.shared.currentAuthReadiness()
+        if readiness.isReady {
+            // ログインボタンが無いことへの疑問に答えるため、UI側でも仕組みを明示しておく
+            await MainActor.run {
+                let template = String(localized: "AI利用はStoreKitの購入情報と端末証明で自動認証します。ログイン不要で%@。")
+                inlineGenerationFeedback = .info(
+                    message: String(format: template, readiness.explanation)
+                )
+            }
             return true
         }
         await MainActor.run {
-            inlineGenerationFeedback = .failure(message: String(localized: "AI利用には認証が必要です。AI利用券の購入やアプリ再起動後に再度お試しください。"))
+            inlineGenerationFeedback = .failure(message: String(localized: "AI利用には認証が必要です。購入復元またはアプリ再起動後に再度お試しください。"))
         }
         return false
     }
@@ -1171,6 +1178,8 @@ struct AiCreateView: View {
         case success(message: String)
         /// 失敗時のメッセージ
         case failure(message: String)
+        /// ログイン不要で認証できる理由など、補足情報を伝えるためのメッセージ
+        case info(message: String)
 
         /// ラベルに表示する文言
         var message: String {
@@ -1178,6 +1187,8 @@ struct AiCreateView: View {
             case .success(let message):
                 return message
             case .failure(let message):
+                return message
+            case .info(let message):
                 return message
             }
         }
@@ -1189,6 +1200,8 @@ struct AiCreateView: View {
                 return Color.green
             case .failure:
                 return Color.red
+            case .info:
+                return Color.blue
             }
         }
 
@@ -1199,6 +1212,8 @@ struct AiCreateView: View {
                 return Color.green.opacity(0.12)
             case .failure:
                 return Color.red.opacity(0.12)
+            case .info:
+                return Color.blue.opacity(0.1)
             }
         }
 
@@ -1209,6 +1224,8 @@ struct AiCreateView: View {
                 return "checkmark.circle.fill"
             case .failure:
                 return "exclamationmark.triangle.fill"
+            case .info:
+                return "info.circle.fill"
             }
         }
     }
