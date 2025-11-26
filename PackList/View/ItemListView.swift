@@ -193,12 +193,12 @@ struct ItemListView: View {
                         .padding(.horizontal, 6)
                     }
 
-                    // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
-                    // 中央揃えにして、どの端末幅でも均等な見え方になるようにする
-                    Text(pack.name.placeholder("新しいパック"))
-                        .font(.headline)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    // パック＞グループのパンくずを並べ、各名称は画面幅の1/4までで自動省略する
+                    BreadcrumbView(
+                        packName: pack.name.placeholder("新しいパック"),
+                        groupName: group.name.placeholder("新しいグループ"),
+                        itemName: nil
+                    )
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)

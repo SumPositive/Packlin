@@ -304,12 +304,12 @@ struct GroupListView: View {
                         .padding(.horizontal, 6)
                     }
 
-                    // タイトルはボタン行の下に1行で配置し、省スペースでも欠けないようにする
-                    // 中央に寄せることで、左右どちらのボタンを主に使う場合でも目線の移動を少なくする
-                    Text(pack.name.placeholder("新しいパック"))
-                        .font(.headline)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    // パック名だけのときもパンくず形式で表示し、長い名称は画面幅の1/4までで省略する
+                    BreadcrumbView(
+                        packName: pack.name.placeholder("新しいパック"),
+                        groupName: nil,
+                        itemName: nil
+                    )
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)

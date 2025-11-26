@@ -413,12 +413,12 @@ struct ItemEditView: View {
                     .padding(.horizontal, 6)
                 }
 
-                // 長いパック名でも欠けないように、ボタン行の下に1行で表示
-                // 中央寄せにすることで、編集ボタンの配置に左右されずにタイトルを見つけやすくする
-                Text(pack.name.placeholder("新しいパック"))
-                    .font(.headline)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                // パック＞グループ＞アイテムのパンくずを並べ、各名称は画面幅の1/4までに抑える
+                BreadcrumbView(
+                    packName: pack.name.placeholder("新しいパック"),
+                    groupName: group.name.placeholder("新しいグループ"),
+                    itemName: item.name.placeholder("新しいアイテム")
+                )
             }
             .tint(.primary)
             .frame(height: headerHeight)
