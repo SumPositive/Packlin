@@ -347,10 +347,9 @@ struct AiCreateView: View {
             loadNotifiedTransactionIdsIfNeeded()
         }
         .task {
-            // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
-            await AzukiApi.shared.registerTokenRecoveryHandler {
-                await recoverAccessTokenByVerifyingLatestTransactions()
-            }
+            // AzukiApiへトークン復旧ロジックを注入する前に、StoreKit購入履歴があるかどうかを確認しておく
+            // 端末に購入履歴がまったく無い状態でハンドラを登録すると、未購入ユーザーでも認証可能と誤解されるため避ける
+            await prepareTokenRecoveryHandlerIfPossible()
             // 初回表示時に商品情報を取得しつつ、サーバー残高との同期も直ちに行う
             await loadProductsIfNeeded()
             // サーバー残高との同期は一度だけ実行し、Keychainの値と揃えておく
@@ -591,10 +590,45 @@ struct AiCreateView: View {
             }
             return true
         }
+        // 購入履歴が1件も無い場合は広告特典だけでは認証できないことを先に伝え、無駄な視聴を防ぐ
+        let hasPurchaseHistory = await hasStoreKitPurchaseHistory()
         await MainActor.run {
-            inlineGenerationFeedback = .failure(message: String(localized: "AI利用には認証が必要です。購入復元またはアプリ再起動後に再度お試しください。"))
+            if hasPurchaseHistory {
+                inlineGenerationFeedback = .failure(message: String(localized: "AI利用には認証が必要です。購入復元またはアプリ再起動後に再度お試しください。"))
+                return
+            }
+            inlineGenerationFeedback = .failure(message: String(localized: "広告特典だけでは認証に必要な購入履歴を作れません。AI利用券を1枚購入してからお試しください。"))
         }
         return false
+    }
+
+    /// StoreKitの購入履歴が1件でも端末に残っているかどうかを素早く確認する
+    /// - Returns: どれかのプロダクトIDでトランザクションが見つかった場合はtrue
+    private func hasStoreKitPurchaseHistory() async -> Bool {
+        for option in AZUKI_CREDIT_PURCHASE_OPTIONS {
+            for productId in option.allProductIds {
+                if Task.isCancelled {
+                    return false
+                }
+                if await Transaction.latest(for: productId) != nil {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /// StoreKitの購入履歴を確認し、復旧ハンドラを登録すべき状況かどうかを仕分ける
+    /// - Important: 未購入ユーザーへは復旧手段が存在しないため、ハンドラ登録を避けて誤解を抑止する
+    private func prepareTokenRecoveryHandlerIfPossible() async {
+        let hasHistory = await hasStoreKitPurchaseHistory()
+        if hasHistory == false {
+            await AzukiApi.shared.clearTokenRecoveryHandler()
+            return
+        }
+        await AzukiApi.shared.registerTokenRecoveryHandler {
+            await recoverAccessTokenByVerifyingLatestTransactions()
+        }
     }
 
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む

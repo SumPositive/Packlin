@@ -2047,6 +2047,22 @@
           }
         }
       }
+    },
+    "広告特典だけでは認証に必要な購入履歴を作れません。AI利用券を1枚購入してからお試しください。": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告特典だけでは認証に必要な購入履歴を作れません。AI利用券を1枚購入してからお試しください。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad rewards alone cannot create the purchase history required for authentication. Please buy one AI ticket before trying again."
+          }
+        }
+      }
     }
   },
   "version": "1.1"
