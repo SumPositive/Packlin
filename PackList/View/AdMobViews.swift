@@ -179,7 +179,9 @@ struct AdMobUnifiedSupportView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Label {
-                        Text(String(localized: "ad.reward.available", defaultValue: "使える無料特典: %lld回", arguments: [Int64(adBenefitStore.availableBonusUsages)]))
+                        // 利用可能な無料特典回数をフォーマットして表示
+                        let availableFormat = String(localized: "ad.reward.available", defaultValue: "使える無料特典: %lld回")
+                        Text(String.localizedStringWithFormat(availableFormat, Int64(adBenefitStore.availableBonusUsages)))
                             .font(.headline)
                     } icon: {
                         Image(systemName: "gift.fill")
@@ -189,12 +191,16 @@ struct AdMobUnifiedSupportView: View {
                 }
 
                 if let remainingYen = remainingYenToBonus {
-                    Text(String(localized: "ad.reward.progress.yen", defaultValue: "あと%.1f円で無料特典を付与", locale: Locale(identifier: "ja_JP"), arguments: [remainingYen]))
+                    // 日本円で次の特典までの残額を案内（ロケールを固定して小数点表記を安定させる）
+                    let yenFormat = String(localized: "ad.reward.progress.yen", defaultValue: "あと%.1f円で無料特典を付与", locale: Locale(identifier: "ja_JP"))
+                    Text(String.localizedStringWithFormat(yenFormat, remainingYen))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 if let remainingUsd = remainingUsdToBonus {
-                    Text(String(localized: "ad.reward.progress.usd", defaultValue: "あと$%.2fで無料特典を付与", arguments: [remainingUsd]))
+                    // 米ドル表記での残額案内（ドルは小数点2桁で表示）
+                    let usdFormat = String(localized: "ad.reward.progress.usd", defaultValue: "あと$%.2fで無料特典を付与", locale: Locale(identifier: "en_US"))
+                    Text(String.localizedStringWithFormat(usdFormat, remainingUsd))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
