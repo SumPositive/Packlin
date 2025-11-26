@@ -536,8 +536,9 @@ struct AdMobRewardedScreen: View {
             }
         }
         .onAppear {
+            // 動画広告を閉じた後もこの画面を維持し、連続視聴や再読込を行えるようにする
             loader.onAdDismissed = {
-                dismiss()
+                // ここでは画面を閉じず、広告リロードとUI更新のみを任せる
             }
             loader.onRewardEarned = { _ in
                 handleRewardEarned()
