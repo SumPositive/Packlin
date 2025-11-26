@@ -1924,6 +1924,70 @@
           }
         }
       }
+    },
+    "ad.reward.badge.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典1回無料"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One-time free perk"
+          }
+        }
+      }
+    },
+    "ad.reward.badge.status.active": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典1回無料が有効です。使い切ると再カウントします"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your one-time free perk is active. Tracking resumes after you use it."
+          }
+        }
+      }
+    },
+    "ad.reward.badge.status.used": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典1回無料を使いました。次の広告視聴から再カウントが始まります"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You used the one-time free perk. Tracking restarts with the next ad view."
+          }
+        }
+      }
+    },
+    "ad.reward.badge.status.locked": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を視聴して特典1回無料を受け取りましょう"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch ads to earn the one-time free perk."
+          }
+        }
+      }
     }
   },
   "version": "1.1"

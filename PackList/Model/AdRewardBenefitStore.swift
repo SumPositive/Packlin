@@ -13,6 +13,8 @@ import Foundation
 final class AdRewardBenefitStore: ObservableObject {
     /// 利用可能な特典1回無料の残数
     @Published private(set) var availableBonusUsages: Int
+    /// 直近で特典を消費した日時。使ったことが分かるように残しておき、次に付与されたらリセットする
+    @Published private(set) var lastBonusConsumedAt: Date?
     /// 最後に条件を満たした収益額（円換算が取れた場合のみ記録する）
     @Published private(set) var lastQualifiedRevenueYen: Double?
     /// 付与までの進捗を把握するための累計収益（円）
@@ -24,6 +26,7 @@ final class AdRewardBenefitStore: ObservableObject {
     /// 特典1回無料を溜め込まず、常に「1回使ってから次を受け取る」運用にするための上限値
     private let maxBonusCount = 1
     private let bonusKey = "ad.reward.bonus.remaining"
+    private let lastConsumedKey = "ad.reward.bonus.lastConsumedAt"
     private let lastRevenueKey = "ad.reward.bonus.lastRevenueYen"
     private let accumulatedYenKey = "ad.reward.bonus.accumulatedYen"
     private let accumulatedUsdKey = "ad.reward.bonus.accumulatedUsd"
@@ -34,6 +37,11 @@ final class AdRewardBenefitStore: ObservableObject {
         let storedBonus = min(userDefaults.integer(forKey: bonusKey), maxBonusCount)
         // 初期値は0だが、保存値があればそれを優先する
         self.availableBonusUsages = storedBonus
+        if let consumedDate = userDefaults.object(forKey: lastConsumedKey) as? Date {
+            self.lastBonusConsumedAt = consumedDate
+        } else {
+            self.lastBonusConsumedAt = nil
+        }
         if userDefaults.object(forKey: lastRevenueKey) != nil {
             self.lastQualifiedRevenueYen = userDefaults.double(forKey: lastRevenueKey)
         } else {
@@ -75,6 +83,8 @@ final class AdRewardBenefitStore: ObservableObject {
             if granted {
                 accumulatedRevenueYen = 0
                 accumulatedRevenueUsd = 0
+                // 新しく付与されたタイミングで「前回使った」フラグをクリアする
+                lastBonusConsumedAt = nil
             }
         } else if upperCurrency == "USD" {
             accumulatedRevenueUsd += majorValue
@@ -82,6 +92,7 @@ final class AdRewardBenefitStore: ObservableObject {
             if granted {
                 accumulatedRevenueUsd = 0
                 accumulatedRevenueYen = 0
+                lastBonusConsumedAt = nil
             }
         }
 
@@ -119,6 +130,8 @@ final class AdRewardBenefitStore: ObservableObject {
             return false
         }
         availableBonusUsages += 1
+        // 付与した瞬間に「使用済み」扱いを解除し、視覚的に有効状態へ戻す
+        lastBonusConsumedAt = nil
         persist()
         return true
     }
@@ -133,6 +146,8 @@ final class AdRewardBenefitStore: ObservableObject {
         // 「使い切り」を明確にするため、使用したタイミングで進捗もリセットして次のカウントをゼロから始める
         accumulatedRevenueYen = 0
         accumulatedRevenueUsd = 0
+        // 無効になったことをUIで示すため、最後に消費した日時を残す
+        lastBonusConsumedAt = Date()
         persist()
         return true
     }
@@ -141,6 +156,10 @@ final class AdRewardBenefitStore: ObservableObject {
     func restoreConsumedBonus() {
         // 取り消し操作などで1回分だけ復元する。上限を超えないように抑制する
         availableBonusUsages = min(availableBonusUsages + 1, maxBonusCount)
+        // 復元できた場合は有効状態に戻るため、使用済みフラグを外す
+        if 0 < availableBonusUsages {
+            lastBonusConsumedAt = nil
+        }
         persist()
     }
 
@@ -149,8 +168,18 @@ final class AdRewardBenefitStore: ObservableObject {
         return 0 < availableBonusUsages
     }
 
+    /// 直近で特典を使ったかどうか（現在は未保有で、消費記録が残っている場合にtrue）
+    var wasBonusConsumed: Bool {
+        return hasBonus == false && lastBonusConsumedAt != nil
+    }
+
     private func persist() {
         userDefaults.set(availableBonusUsages, forKey: bonusKey)
+        if let consumedDate = lastBonusConsumedAt {
+            userDefaults.set(consumedDate, forKey: lastConsumedKey)
+        } else {
+            userDefaults.removeObject(forKey: lastConsumedKey)
+        }
         if let lastQualifiedRevenueYen {
             userDefaults.set(lastQualifiedRevenueYen, forKey: lastRevenueKey)
         } else {

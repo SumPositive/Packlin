@@ -177,18 +177,7 @@ struct AdMobUnifiedSupportView: View {
                 .foregroundStyle(.secondary)
 
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Label {
-                        // 利用可能な「特典1回無料」の残数をフォーマットして表示
-                        let availableFormat = String(localized: "ad.reward.available", defaultValue: "特典1回無料の残り: %lld回")
-                        Text(String.localizedStringWithFormat(availableFormat, Int64(adBenefitStore.availableBonusUsages)))
-                            .font(.headline)
-                    } icon: {
-                        Image(systemName: "gift.fill")
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    Spacer()
-                }
+                bonusBadge
 
                 if adBenefitStore.hasBonus {
                     Text(String(localized: "特典1回無料は受け取り済みです。使い切ると次のカウントが始まります"))
@@ -243,6 +232,44 @@ struct AdMobUnifiedSupportView: View {
         }
     }
 
+    private var bonusBadge: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack(alignment: .topTrailing) {
+                // バッジの下地。付与状態や使用済み状態をアイコンで直感的に示す
+                Circle()
+                    .fill(Color(uiColor: .tertiarySystemFill))
+                    .frame(width: 52, height: 52)
+
+                Image(systemName: adBenefitStore.hasBonus ? "gift.fill" : "gift")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(adBenefitStore.hasBonus ? Color.accentColor : Color.secondary)
+
+                if adBenefitStore.hasBonus {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(.green)
+                        .offset(x: 14, y: -14)
+                } else if adBenefitStore.wasBonusConsumed {
+                    Image(systemName: "slash.circle.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .offset(x: 14, y: -14)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(String(localized: "ad.reward.badge.title", defaultValue: "特典1回無料"))
+                    .font(.headline)
+                // 有効・使用済み・未取得のどの状態なのかを説明文で補足
+                Text(perkStatusText)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
     private var videoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
@@ -294,6 +321,16 @@ struct AdMobUnifiedSupportView: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(uiColor: .secondarySystemBackground))
         )
+    }
+
+    private var perkStatusText: String {
+        if adBenefitStore.hasBonus {
+            return String(localized: "ad.reward.badge.status.active", defaultValue: "特典1回無料が有効です。使い切ると再カウントします")
+        }
+        if adBenefitStore.wasBonusConsumed {
+            return String(localized: "ad.reward.badge.status.used", defaultValue: "特典1回無料を使いました。次の広告視聴から再カウントが始まります")
+        }
+        return String(localized: "ad.reward.badge.status.locked", defaultValue: "広告を視聴して特典1回無料を受け取りましょう")
     }
 
     private var remainingYenToBonus: Double? {
