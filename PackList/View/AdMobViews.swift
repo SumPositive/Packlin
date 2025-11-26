@@ -43,77 +43,77 @@ let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
 
 
 
-/// バナー広告の表示を管理するビュー
-struct AdMobBannerContainerView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    private let bannerConfigs = [
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
-            size: CGSize(width: 320, height: 50)
-        ),
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 320, height: 100)
-        ),
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 300, height: 250)
-        )
-    ]
-
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(bannerConfigs) { config in
-                        AdMobBannerCardView(configuration: config, onPaidEvent: nil)
-                    }
-                }
-                .padding()
-            }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("タップして広告をご覧ください"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        // 閉じる
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// 単一のAdMobバナー広告カード
-struct AdMobBannerCardView: View {
-    let configuration: AdMobBannerConfiguration
-    var onPaidEvent: ((AdPaidValue) -> Void)?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-
-            AdMobBannerView(
-                adUnitID: configuration.adUnitID,
-                size: configuration.size,
-                onPaidEvent: onPaidEvent
-            )
-
-        }
-//        .padding()
-//        .frame(maxWidth: .infinity, alignment: .leading)
-//        .background(
-//            RoundedRectangle(cornerRadius: 24)
-//                .fill(Color(uiColor: .secondarySystemBackground))
+///// バナー広告の表示を管理するビュー
+//struct AdMobBannerContainerView: View {
+//    @Environment(\.dismiss) private var dismiss
+//
+//    private let bannerConfigs = [
+//        AdMobBannerConfiguration(
+//            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
+//            size: CGSize(width: 320, height: 50)
+//        ),
+//        AdMobBannerConfiguration(
+//            adUnitID: ADMOB_BANNER_UnitID,
+//            size: CGSize(width: 320, height: 100)
+//        ),
+//        AdMobBannerConfiguration(
+//            adUnitID: ADMOB_BANNER_UnitID,
+//            size: CGSize(width: 300, height: 250)
 //        )
-    }
-}
+//    ]
+//
+//    var body: some View {
+//        NavigationView {
+//            ScrollView {
+//                VStack(spacing: 16) {
+//                    ForEach(bannerConfigs) { config in
+//                        AdMobBannerCardView(configuration: config, onPaidEvent: nil)
+//                    }
+//                }
+//                .padding()
+//            }
+//            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+//            .navigationTitle(Text("タップして広告をご覧ください"))
+//            .navigationBarTitleDisplayMode(.inline)
+//            .toolbar {
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button {
+//                        // 閉じる
+//                        dismiss()
+//                    } label: {
+//                        Image(systemName: "chevron.down")
+//                            .imageScale(.large)
+//                            .symbolRenderingMode(.hierarchical)
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+///// 単一のAdMobバナー広告カード
+//struct AdMobBannerCardView: View {
+//    let configuration: AdMobBannerConfiguration
+//    var onPaidEvent: ((AdPaidValue) -> Void)?
+//
+//    var body: some View {
+//        VStack(alignment: .leading, spacing: 12) {
+//
+//            AdMobBannerView(
+//                adUnitID: configuration.adUnitID,
+//                size: configuration.size,
+//                onPaidEvent: onPaidEvent
+//            )
+//
+//        }
+////        .padding()
+////        .frame(maxWidth: .infinity, alignment: .leading)
+////        .background(
+////            RoundedRectangle(cornerRadius: 24)
+////                .fill(Color(uiColor: .secondarySystemBackground))
+////        )
+//    }
+//}
 
 struct AdMobBannerConfiguration: Identifiable {
     let id = UUID()
@@ -252,7 +252,7 @@ struct AdMobUnifiedSupportView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(Color(uiColor: .tertiarySystemBackground))
         )
     }
 
@@ -284,7 +284,7 @@ struct AdMobUnifiedSupportView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(Color(uiColor: .tertiarySystemBackground))
         )
     }
 
@@ -354,7 +354,7 @@ struct AdMobUnifiedSupportView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(Color(uiColor: .tertiarySystemBackground))
         )
     }
 
