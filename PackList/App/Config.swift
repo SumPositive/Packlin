@@ -111,9 +111,9 @@ let DEF_insertionPosition: InsertionPosition = .head
 // 必要重量を表示する
 let DEF_showNeedWeight = true
 // 重量計をKgで表示
-let DEF_weightDisplayInKg = true
-// チェックと在庫数を連動させる　　　Link check status with stock quantity
-let DEF_linkCheckWithStock = true
+let DEF_weightDisplayInKg = false
+// チェックで在庫数を満たす
+let DEF_linkCheckWithStock = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
