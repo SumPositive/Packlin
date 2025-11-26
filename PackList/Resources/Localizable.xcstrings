@@ -880,6 +880,7 @@
       }
     },
     "デバッグ用報酬付与" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
