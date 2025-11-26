@@ -278,11 +278,15 @@ struct ItemSortListView: View {
                         Spacer(minLength: 66)
                     }
 
-                    // タイトルは2段目で1行固定にし、長い名称でも欠けにくくする
-                    Text(pack.name.placeholder("新しいパック"))
-                        .font(.headline)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    // パック名のみのパンくずも最大幅を1/4に抑えて表示する
+                    BreadcrumbView(
+                        packName: pack.name.placeholder("新しいパック"),
+                        groupName: nil,
+                        itemName: sortOption.title,
+                        packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
+                        groupAction: nil,
+                        itemAction: nil
+                    )
                 }
                 .tint(.primary)
                 .frame(height: headerHeight)

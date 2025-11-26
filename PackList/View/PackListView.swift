@@ -236,7 +236,7 @@ struct PackListView: View {
         // 設定画面もシート表示へ変更
         .sheet(isPresented: $isShowSetting) {
             SettingView()
-                .presentationDetents([.height(650), .large])
+                .presentationDetents([.height(SettingView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
         // 初心者モード時のAI新規作成メニューから遷移するシート

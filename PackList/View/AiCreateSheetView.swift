@@ -11,7 +11,7 @@ import Foundation
 import StoreKit
 
 
-let AiCreateSheetView_HEIGHT: CGFloat = 680.0 // シート表示時の高さ指定
+let AiCreateSheetView_HEIGHT: CGFloat = 640.0 // シート表示時の高さ指定
 
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
