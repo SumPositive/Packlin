@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct BreadcrumbView: View {
     let packName: String
@@ -12,6 +13,15 @@ struct BreadcrumbView: View {
     // パック・グループ・アイテム名それぞれの最大幅を画面の1/4に揃え、長文を詰めて表示する
     private var maxNameWidth: CGFloat {
         UIScreen.main.bounds.width / 4
+    }
+
+    // captionフォントでの実測幅を取得し、最大幅を超えないようにする
+    private func nameWidth(for name: String) -> CGFloat {
+        let font = UIFont.preferredFont(forTextStyle: .caption1)
+        let attributes = [NSAttributedString.Key.font: font]
+        let measuredWidth = (name as NSString).size(withAttributes: attributes).width
+        // 実測幅が最大幅より小さければそのまま、長ければ最大幅に抑える
+        return min(measuredWidth, maxNameWidth)
     }
 
     var body: some View {
@@ -45,8 +55,8 @@ struct BreadcrumbView: View {
             .font(.caption)
             .lineLimit(1)
             .truncationMode(.tail)
-            // 左寄せで固定幅に収め、文字数が多い場合は末尾を省略
-            .frame(maxWidth: maxNameWidth, alignment: .leading)
+            // 左寄せで幅は文字列ぶんの最小限にしつつ、最大幅を超えないように制限
+            .frame(width: nameWidth(for: name), alignment: .leading)
     }
 
     // タップ可能なパンくず要素を生成する
