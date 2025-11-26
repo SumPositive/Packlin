@@ -323,7 +323,7 @@ struct PackListView: View {
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
 
-                Text("説明がウザい！と感じられた貴方、設定から達人モードをご利用ください")
+                Text("現在、「初心者」表示モードです。設定から「達人」を選択すれば、ほぼアイコンだけの達人表示に変わります")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
