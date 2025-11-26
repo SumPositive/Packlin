@@ -539,9 +539,9 @@ struct SettingView: View {
         @State private var showDonate = false
 
         var body: some View {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 8) {
                 Label {
-                    Text("開発者を応援する")
+                    Text("開発者を応援する（特典あり）")
                         .font(.body.weight(.medium))
                 } icon: {
                     Image(systemName: "heart.fill")
@@ -549,7 +549,12 @@ struct SettingView: View {
                         .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
                 }
 
-                VStack(alignment: .leading, spacing: 16) {
+                Text("視聴累計によりAI利用「特典1回無料」をプレゼント")
+                    .font(.caption.weight(.medium))
+                    .padding(.leading, 32)
+                    .padding(.top, -4)
+
+                VStack(alignment: .leading, spacing: 8) {
                     // 広告を見て寄付する（ボタン）
                     Button(action: {
                         withAnimation {

@@ -221,12 +221,12 @@ struct AdMobRewardedScreen: View {
         var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
         // すでに無料特典を1回分持っている場合は、使い切ってもらうために新規付与を見送る
         if adBenefitStore.hasBonus {
-            messages.append(String(localized: "無料特典は1回分までです。「特典1回」は使い切ってから次の特典が受け取れます"))
+            messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
             rewardDescription = messages.joined(separator: "\n")
             return
         }
         if registerBonusIfNeeded() {
-            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたのでAI利用が1回無料になります"))
+            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
         }
         rewardDescription = messages.joined(separator: "\n")
     }

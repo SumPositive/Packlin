@@ -184,30 +184,30 @@ struct AiCreateView: View {
             
             VStack(alignment: .leading, spacing: 12) {
                 // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     Text("AI利用券残り \(creditStore.credits) 枚")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, 8)
                         .background(
                             Capsule(style: .continuous)
                                 .fill(Color.secondary.opacity(0.3))
                         )
+
+                    Spacer()
                     if 0 < adBenefitStore.availableBonusUsages {
-                        Text("特典1回")
-                            .font(.caption.weight(.semibold))
+                        Text("特典1回無料")
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.primary)
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 8)
                             .background(
                                 Capsule(style: .continuous)
                                     .fill(Color(uiColor: .tertiarySystemFill))
                             )
                     }
-
-                    Spacer(minLength: 12)
-
+                    Spacer()
                     // 送信
                     Button {
                         // 送信ボタンを押した瞬間にフォーカスを解除し、キーボードを閉じる
@@ -233,7 +233,7 @@ struct AiCreateView: View {
                                 .font(.callout.weight(.semibold))
                         }
                         .padding(.vertical, 4)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, 8)
                         .frame(minHeight: 20)
                     }
                     .disabled(isRequirementEmpty || isGenerating)
@@ -325,15 +325,15 @@ struct AiCreateView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "gift")
                             .symbolRenderingMode(.hierarchical)
-                        Text(String(localized: "動画広告を見て特典をもらおう！"))
+                        Text("動画広告を見て寄付（特典あり）")
                             .font(.body.weight(.semibold))
                     }
-                    .frame(maxWidth: .infinity)
+                    //.frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)
 
-                Text(String(localized: "視聴回数と時間によりAI利用「特典1回」を提供します"))
+                Text("視聴累計によりAI利用「特典1回無料」をプレゼント")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
