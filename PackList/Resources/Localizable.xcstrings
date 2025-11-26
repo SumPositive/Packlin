@@ -1,1670 +1,1823 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " "
+  "sourceLanguage": "en",
+  "strings": {
+    "": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " "
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
           }
         }
       }
     },
-    "%@ を取り込みました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ has been imported!"
+    "%@ を取り込みました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has been imported!"
           }
         }
       }
     },
-    "%@ を追加しました。アプリで内容を確認しましょう" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ has been added. Check it in the app."
+    "%@ を追加しました。アプリで内容を確認しましょう": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has been added. Check it in the app."
           }
         }
       }
     },
-    "✔︎済（グループ内の必要なアイテムが全てチェック済み）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done (all required items in the group are checked)"
+    "✔︎済（グループ内の必要なアイテムが全てチェック済み）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done (all required items in the group are checked)"
           }
         }
       }
     },
-    "✔︎済（パック内の必要なアイテムが全てチェック済み）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done (all required items in the pack are checked)"
+    "✔︎済（パック内の必要なアイテムが全てチェック済み）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done (all required items in the pack are checked)"
           }
         }
       }
     },
-    "✔︎済（数量に関わらずチェック済みである）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done (checked regardless of quantity)"
+    "✔︎済（数量に関わらずチェック済みである）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done (checked regardless of quantity)"
           }
         }
       }
     },
-    "AI利用が可能か確認できません。通信環境をご確認ください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Can’t check if AI features are available right now. Please check your internet connection."
+    "AI利用が可能か確認できません。通信環境をご確認ください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can’t check if AI features are available right now. Please check your internet connection."
           }
         }
       }
     },
-    "AI利用券が不足しています。下のメニューから購入してください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You’re out of AI tickets! Get more from the menu below."
+    "AI利用券が不足しています。下のメニューから購入してください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re out of AI tickets! Get more from the menu below."
           }
         }
       }
     },
-    "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You still have some AI tickets left! You can buy more once your balance hits zero."
+    "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You still have some AI tickets left! You can buy more once your balance hits zero."
           }
         }
       }
     },
-    "AI利用券が購入できませんでした、課金されません。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn’t buy AI tickets. Don’t worry, you weren’t charged."
+    "AI利用券が購入できませんでした、課金されません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t buy AI tickets. Don’t worry, you weren’t charged."
           }
         }
       }
     },
-    "AI利用券の購入" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Purchase AI Tickets"
+    "AI利用券の購入": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purchase AI Tickets"
           }
         }
       }
     },
-    "AI利用券の購入中に問題が発生しました、課金されません。通信環境をご確認ください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We ran into a problem while purchasing AI tickets. You haven’t been charged. Please check your internet connection."
+    "AI利用券の購入中に問題が発生しました、課金されません。通信環境をご確認ください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We ran into a problem while purchasing AI tickets. You haven’t been charged. Please check your internet connection."
           }
         }
       }
     },
-    "AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your AI tickets are safely kept on this device, but they’ll be lost if you delete the app or your device breaks. Try to use them soon!"
+    "AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your AI tickets are safely kept on this device, but they’ll be lost if you delete the app or your device breaks. Try to use them soon!"
           }
         }
       }
     },
-    "AI利用券を%lld枚追加しました。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Added %lld AI tickets."
+    "AI利用券を%lld枚追加しました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added %lld AI tickets."
           }
         }
       }
     },
-    "AI利用券残り %lld 枚" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld AI tickets remaining"
+    "AI利用券残り %lld 枚": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld AI tickets remaining"
           }
         }
       }
     },
-    "app.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Packlin"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "モチメモ"
-          }
-        }
-      }
-    },
-    "g" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "g"
-          }
-        }
-      }
-    },
-    "group (%lld) [%@]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "group (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "info.url" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://docs.azukid.com/sumpo/packlin"
+    "app.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Packlin"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "https://docs.azukid.com/sumpo/jp/packlin"
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "モチメモ"
           }
         }
       }
     },
-    "item (%lld) [%@]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "item (%1$lld) [%2$@]"
+    "g": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "g"
           }
         }
       }
     },
-    "Key" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Key"
+    "group (%lld) [%@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "group (%1$lld) [%2$@]"
           }
         }
       }
     },
-    "kg" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "kg"
-          }
-        }
-      }
-    },
-    "OK" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        }
-      }
-    },
-    "pack (%lld) [%@]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pack (%1$lld) [%2$@]"
-          }
-        }
-      }
-    },
-    "アイテム\n一覧" : {
-
-    },
-    "アイテム\n編集" : {
-
-    },
-    "アイテム\n縦覧" : {
-
-    },
-    "アイテムが見つかりません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No items found."
-          }
-        }
-      }
-    },
-    "アイテムとは、持ち物そのもの。最小単位です" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "An item is each belonging itself — the smallest unit."
-          }
-        }
-      }
-    },
-    "アイテムの状態（未✔︎順）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Item status (unchecked first)"
-          }
-        }
-      }
-    },
-    "アイテムを検索" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search items"
-          }
-        }
-      }
-    },
-    "アイテム一覧に戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to item list"
-          }
-        }
-      }
-    },
-    "アイテム一覧を表示する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show item list"
-          }
-        }
-      }
-    },
-    "アイテム明細を表示し編集する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View and edit item details"
-          }
-        }
-      }
-    },
-    "アイテム縦覧" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Browse items"
-          }
-        }
-      }
-    },
-    "アプリの紹介・取扱説明" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About the App & How to Use It"
-          }
-        }
-      }
-    },
-    "クリア" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear"
-          }
-        }
-      }
-    },
-    "グループ\n一覧" : {
-
-    },
-    "グループが見つかりません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No groups found."
-          }
-        }
-      }
-    },
-    "グループとは、持ち物をポーチなどで小分けにしたものです" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A group splits belongings into pouches or smaller bundles."
-          }
-        }
-      }
-    },
-    "グループの先頭" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top of group"
-          }
-        }
-      }
-    },
-    "グループの名称やメモを編集する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit group name or note"
-          }
-        }
-      }
-    },
-    "グループの末尾" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bottom of group"
-          }
-        }
-      }
-    },
-    "グループの状態" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group status"
-          }
-        }
-      }
-    },
-    "グループ一覧に戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to group list"
-          }
-        }
-      }
-    },
-    "グループ一覧を表示する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show group list"
-          }
-        }
-      }
-    },
-    "グループ名" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group Name"
-          }
-        }
-      }
-    },
-    "グループ編集" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit group"
-          }
-        }
-      }
-    },
-    "この購入はすでに完了しています、枚数を更新しました。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This purchase is already complete. We’ve refreshed your ticket count."
-          }
-        }
-      }
-    },
-    "コピーを作成する（複製）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Make a copy (duplicate)"
-          }
-        }
-      }
-    },
-    "タップして広告をご覧ください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap to watch the ad"
-          }
-        }
-      }
-    },
-    "チェックする／しない" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check or uncheck"
-          }
-        }
-      }
-    },
-    "チェックで在庫を満たす" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fill stock by checking"
-          }
-        }
-      }
-    },
-    "チャッピー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chappy"
-          }
-        }
-      }
-    },
-    "チャッピー(AI)に作ってもらう" : {
-
-    },
-    "チャッピー(AI)に依頼する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask Chappy (AI)"
-          }
-        }
-      }
-    },
-    "チャッピー(AI)に修正や変更を依頼できます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can ask Chappy (AI) to propose edits or changes"
-          }
-        }
-      }
-    },
-    "チャッピーからの応答がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No response from Chappy"
-          }
-        }
-      }
-    },
-    "チャッピーが忙しそうです。時間をおいて再度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chappy seems busy. Please try again later."
-          }
-        }
-      }
-    },
-    "チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chappy is thinking. We’ll notify you when suggestions arrive, so feel free to close this and keep exploring."
-          }
-        }
-      }
-    },
-    "チャッピーの提案が届きました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chappy’s suggestion has arrived"
-          }
-        }
-      }
-    },
-    "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The pack has been updated with Chappy’s suggestions. Feel free to customize it further."
-          }
-        }
-      }
-    },
-    "デバッグ用報酬付与" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grant reward (Debug)"
+    "info.url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://docs.azukid.com/sumpo/packlin"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "デバッグ用報酬付与"
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "https://docs.azukid.com/sumpo/jp/packlin"
           }
         }
       }
     },
-    "ドラッグドロップで行を移動する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move row by drag and drop"
+    "item (%lld) [%@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "item (%1$lld) [%2$@]"
           }
         }
       }
     },
-    "パックが見つかりません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No packs found."
+    "Key": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key"
           }
         }
       }
     },
-    "パックとは、持ち物をバッグやリュックに全てまとめたものです" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A pack bundles every belonging together into one bag or backpack."
+    "kg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kg"
           }
         }
       }
     },
-    "パックの先頭" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to top"
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
           }
         }
       }
     },
-    "パックの名称やメモを編集する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit pack name or note"
+    "pack (%lld) [%@]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pack (%1$lld) [%2$@]"
           }
         }
       }
     },
-    "パックの末尾" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to bottom"
+    "アイテム\n一覧": {},
+    "アイテム\n編集": {},
+    "アイテム\n縦覧": {},
+    "アイテムが見つかりません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No items found."
           }
         }
       }
     },
-    "パックの状態" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pack status"
+    "アイテムとは、持ち物そのもの。最小単位です": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An item is each belonging itself — the smallest unit."
           }
         }
       }
     },
-    "パックの要望入力" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter pack request"
+    "アイテムの状態（未✔︎順）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item status (unchecked first)"
           }
         }
       }
     },
-    "パックを読み込む" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Load pack"
+    "アイテムを検索": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search items"
           }
         }
       }
     },
-    "パック一覧に戻る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to pack list"
+    "アイテム一覧に戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to item list"
           }
         }
       }
     },
-    "パック作成の要望を入れてね" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter your pack request"
+    "アイテム一覧を表示する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show item list"
           }
         }
       }
     },
-    "パック名" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pack name"
+    "アイテム明細を表示し編集する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View and edit item details"
           }
         }
       }
     },
-    "パック編集" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit pack"
+    "アイテム縦覧": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browse items"
           }
         }
       }
     },
-    "ボタンの説明" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Button description"
+    "アプリの紹介・取扱説明": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About the App & How to Use It"
           }
         }
       }
     },
-    "メモ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notes"
+    "クリア": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
           }
         }
       }
     },
-    "不要（必要なし）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not needed"
+    "グループ\n一覧": {},
+    "グループが見つかりません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No groups found."
           }
         }
       }
     },
-    "不足（必要数に満たない、在庫が足りない）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insufficient (not enough stock)"
+    "グループとは、持ち物をポーチなどで小分けにしたものです": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A group splits belongings into pouches or smaller bundles."
           }
         }
       }
     },
-    "不足個数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Missing quantity"
+    "グループの先頭": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top of group"
           }
         }
       }
     },
-    "不足重量" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Missing weight"
+    "グループの名称やメモを編集する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit group name or note"
           }
         }
       }
     },
-    "個" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pcs"
+    "グループの末尾": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom of group"
           }
         }
       }
     },
-    "個数から確認したい時" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When you want to review by quantity"
+    "グループの状態": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group status"
           }
         }
       }
     },
-    "個重量" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weight"
+    "グループ一覧に戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to group list"
           }
         }
       }
     },
-    "充足（必要数を満たしている、十分な在庫あり）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enough (sufficient stock)"
+    "グループ一覧を表示する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show group list"
           }
         }
       }
     },
-    "先頭" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beginning"
+    "グループ名": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group Name"
           }
         }
       }
     },
-    "全✔︎off→ON" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All checks off → ON"
+    "グループ編集": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit group"
           }
         }
       }
     },
-    "全✔︎on→OFF" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All checks on → OFF"
+    "この購入はすでに完了しています、枚数を更新しました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This purchase is already complete. We’ve refreshed your ticket count."
           }
         }
       }
     },
-    "全てのアイテムを対象に一覧・並べ替え・検索ができます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can list, sort, and search all items"
+    "コピーを作成する（複製）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a copy (duplicate)"
           }
         }
       }
     },
-    "共有・保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share or Save"
+    "タップして広告をご覧ください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to watch the ad"
           }
         }
       }
     },
-    "再読み込み" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reload"
+    "チェックする／しない": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check or uncheck"
           }
         }
       }
     },
-    "最終チェック時にご利用ください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use this when doing the final check"
+    "チェックで在庫を満たす": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fill stock by checking"
           }
         }
       }
     },
-    "初心者" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beginner"
+    "チャッピー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chappy"
           }
         }
       }
     },
-    "削除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Del"
+    "チャッピー(AI)に作ってもらう": {},
+    "チャッピー(AI)に依頼する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Chappy (AI)"
           }
         }
       }
     },
-    "前へ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prev"
+    "チャッピー(AI)に修正や変更を依頼できます": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can ask Chappy (AI) to propose edits or changes"
           }
         }
       }
     },
-    "動画を最後まで視聴すると開発者をサポートできます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch the video to the end to support the developer."
+    "チャッピーからの応答がありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No response from Chappy"
           }
         }
       }
     },
-    "動画広告" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Video ad"
+    "チャッピーが忙しそうです。時間をおいて再度お試しください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chappy seems busy. Please try again later."
           }
         }
       }
     },
-    "動画広告を見てAI利用券を当てよう！" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch a video ad and try to win an AI ticket!"
+    "チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chappy is thinking. We’ll notify you when suggestions arrive, so feel free to close this and keep exploring."
           }
         }
       }
     },
-    "動画広告を見て寄付" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch a video ad to donate"
+    "チャッピーの提案が届きました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chappy’s suggestion has arrived"
           }
         }
       }
     },
-    "動画広告を見て寄付（特典あり）" : {
-
-    },
-    "取り込みに失敗しました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import failed"
+    "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pack has been updated with Chappy’s suggestions. Feel free to customize it further."
           }
         }
       }
     },
-    "取り込み完了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import complete"
-          }
-        }
-      }
-    },
-    "名称" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        }
-      }
-    },
-    "商品情報が見つかりません。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Product information not found."
-          }
-        }
-      }
-    },
-    "在庫数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stock"
-          }
-        }
-      }
-    },
-    "在庫重量" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In-stock weight"
-          }
-        }
-      }
-    },
-    "常時並べ替え" : {
-
-    },
-    "広告の視聴時間と回数が目標を超えたので無料特典を付与しました" : {
-
-    },
-    "広告をご視聴いただきありがとうございます！" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thanks for watching the ad!"
+    "デバッグ用報酬付与": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grant reward (Debug)"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告をご視聴いただきありがとうございます！"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デバッグ用報酬付与"
           }
         }
       }
     },
-    "広告を再生" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play ad"
+    "ドラッグドロップで行を移動する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move row by drag and drop"
           }
         }
       }
     },
-    "広告を見て寄付" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch an ad to donate"
+    "パックが見つかりません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No packs found."
           }
         }
       }
     },
-    "広告を読み込み中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading ad..."
+    "パックとは、持ち物をバッグやリュックに全てまとめたものです": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pack bundles every belonging together into one bag or backpack."
           }
         }
       }
     },
-    "広告収益が目標を超えたのでAIを1回無料で使えます" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The ad revenue cleared the goal, so you can use AI once for free."
+    "パックの先頭": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to top"
+          }
+        }
+      }
+    },
+    "パックの名称やメモを編集する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit pack name or note"
+          }
+        }
+      }
+    },
+    "パックの末尾": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to bottom"
+          }
+        }
+      }
+    },
+    "パックの状態": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pack status"
+          }
+        }
+      }
+    },
+    "パックの要望入力": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter pack request"
+          }
+        }
+      }
+    },
+    "パックを読み込む": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load pack"
+          }
+        }
+      }
+    },
+    "パック一覧に戻る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to pack list"
+          }
+        }
+      }
+    },
+    "パック作成の要望を入れてね": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter your pack request"
+          }
+        }
+      }
+    },
+    "パック名": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pack name"
+          }
+        }
+      }
+    },
+    "パック編集": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit pack"
+          }
+        }
+      }
+    },
+    "ボタンの説明": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Button description"
+          }
+        }
+      }
+    },
+    "メモ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "不要（必要なし）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not needed"
+          }
+        }
+      }
+    },
+    "不足（必要数に満たない、在庫が足りない）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insufficient (not enough stock)"
+          }
+        }
+      }
+    },
+    "不足個数": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missing quantity"
+          }
+        }
+      }
+    },
+    "不足重量": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missing weight"
+          }
+        }
+      }
+    },
+    "個": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pcs"
+          }
+        }
+      }
+    },
+    "個数から確認したい時": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you want to review by quantity"
+          }
+        }
+      }
+    },
+    "個重量": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight"
+          }
+        }
+      }
+    },
+    "充足（必要数を満たしている、十分な在庫あり）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enough (sufficient stock)"
+          }
+        }
+      }
+    },
+    "先頭": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginning"
+          }
+        }
+      }
+    },
+    "全✔︎off→ON": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All checks off → ON"
+          }
+        }
+      }
+    },
+    "全✔︎on→OFF": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All checks on → OFF"
+          }
+        }
+      }
+    },
+    "全てのアイテムを対象に一覧・並べ替え・検索ができます": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can list, sort, and search all items"
+          }
+        }
+      }
+    },
+    "共有・保存": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share or Save"
+          }
+        }
+      }
+    },
+    "再読み込み": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reload"
+          }
+        }
+      }
+    },
+    "最終チェック時にご利用ください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use this when doing the final check"
+          }
+        }
+      }
+    },
+    "初心者": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        }
+      }
+    },
+    "削除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Del"
+          }
+        }
+      }
+    },
+    "前へ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prev"
+          }
+        }
+      }
+    },
+    "動画を最後まで視聴すると開発者をサポートできます": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch the video to the end to support the developer."
+          }
+        }
+      }
+    },
+    "動画広告": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video ad"
+          }
+        }
+      }
+    },
+    "動画広告を見てAI利用券を当てよう！": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch a video ad and try to win an AI ticket!"
+          }
+        }
+      }
+    },
+    "動画広告を見て寄付": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch a video ad to donate"
+          }
+        }
+      }
+    },
+    "動画広告を見て寄付（特典あり）": {},
+    "取り込みに失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import failed"
+          }
+        }
+      }
+    },
+    "取り込み完了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import complete"
+          }
+        }
+      }
+    },
+    "名称": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "商品情報が見つかりません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Product information not found."
+          }
+        }
+      }
+    },
+    "在庫数": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stock"
+          }
+        }
+      }
+    },
+    "在庫重量": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In-stock weight"
+          }
+        }
+      }
+    },
+    "常時並べ替え": {},
+    "広告の視聴時間と回数が目標を超えたので無料特典を付与しました": {},
+    "広告をご視聴いただきありがとうございます！": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thanks for watching the ad!"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告収益が目標を超えたのでAIを1回無料で使えます"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告をご視聴いただきありがとうございます！"
           }
         }
       }
     },
-    "広告特典の無料利用残り %lld 回" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Free ad bonus uses left: %lld"
+    "広告を再生": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play ad"
+          }
+        }
+      }
+    },
+    "広告を見て寄付": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch an ad to donate"
+          }
+        }
+      }
+    },
+    "広告を読み込み中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading ad..."
+          }
+        }
+      }
+    },
+    "広告収益が目標を超えたのでAIを1回無料で使えます": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The ad revenue cleared the goal, so you can use AI once for free."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告特典の無料利用残り %lld 回"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告収益が目標を超えたのでAIを1回無料で使えます"
           }
         }
       }
     },
-    "広告特典は最大1回まで保有できます。使い切ってから次を狙ってみてください。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can keep only one ad bonus at a time. Use it up before trying for the next one."
-          }
-        }
-      }
-    },
-    "必要数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Required"
-          }
-        }
-      }
-    },
-    "必要重量を表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show required weight"
-          }
-        }
-      }
-    },
-    "情報を表示できません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to display information"
-          }
-        }
-      }
-    },
-    "想定外の結果が返りました、課金されません。時間をおいて再度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We received an unexpected result. You haven’t been charged. Please try again later."
-          }
-        }
-      }
-    },
-    "挿入位置" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insert position"
-          }
-        }
-      }
-    },
-    "提案を考え中" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thinking up ideas..."
-          }
-        }
-      }
-    },
-    "操作" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Action"
-          }
-        }
-      }
-    },
-    "数量" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quantity"
-          }
-        }
-      }
-    },
-    "新しいアイテム" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New item"
-          }
-        }
-      }
-    },
-    "新しいアイテムを追加する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a new item"
-          }
-        }
-      }
-    },
-    "新しいグループ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New group"
-          }
-        }
-      }
-    },
-    "新しいグループを追加する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a new group"
-          }
-        }
-      }
-    },
-    "新しいパック" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New pack"
-          }
-        }
-      }
-    },
-    "新しいパックの名前を入れてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a name for the new pack"
-          }
-        }
-      }
-    },
-    "新しいパックを追加する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a new pack"
-          }
-        }
-      }
-    },
-    "新規追加位置" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Where to insert new items"
-          }
-        }
-      }
-    },
-    "既に購入済みです。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Already purchased."
-          }
-        }
-      }
-    },
-    "未 ✔︎ 順" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unchecked first order"
-          }
-        }
-      }
-    },
-    "末尾" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End"
-          }
-        }
-      }
-    },
-    "次へ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
-          }
-        }
-      }
-    },
-    "消す" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erase"
-          }
-        }
-      }
-    },
-    "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください" : {
-
-    },
-    "無料特典は1回分までです。使い切ってから次の特典を受け取れます。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ad bonuses are limited to one use. Use it before you can receive another."
+    "広告特典の無料利用残り %lld 回": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free ad bonus uses left: %lld"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無料特典は1回分までです。使い切ってから次の特典を受け取れます。"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告特典の無料利用残り %lld 回"
           }
         }
       }
     },
-    "特典1回無料" : {
-
-    },
-    "直前の変更にやり直す" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo the last change"
+    "広告特典は最大1回まで保有できます。使い切ってから次を狙ってみてください。": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can keep only one ad bonus at a time. Use it up before trying for the next one."
           }
         }
       }
     },
-    "直前の変更を元に戻す" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo last change"
+    "必要数": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required"
           }
         }
       }
     },
-    "視聴累計によりAI利用「特典1回無料」をプレゼント" : {
-
-    },
-    "移動" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move"
+    "必要重量を表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show required weight"
           }
         }
       }
     },
-    "移動する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move item"
+    "情報を表示できません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to display information"
           }
         }
       }
     },
-    "移動元" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "From"
+    "想定外の結果が返りました、課金されません。時間をおいて再度お試しください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We received an unexpected result. You haven’t been charged. Please try again later."
           }
         }
       }
     },
-    "移動先" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To"
+    "挿入位置": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insert position"
           }
         }
       }
     },
-    "自分で作る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create it yourself"
+    "提案を考え中": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thinking up ideas..."
           }
         }
       }
     },
-    "表示モード" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Display mode"
+    "操作": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Action"
           }
         }
       }
     },
-    "複製" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dupe"
+    "数量": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantity"
           }
         }
       }
     },
-    "複製する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duplicate"
+    "新しいアイテム": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New item"
           }
         }
       }
     },
-    "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。要望に沿った叩き台を手早く作ってくれる感じです。参考にして修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type your request and hit “Send” — Chappy will help you make or edit a pack! You’ll get a quick draft based on your idea, so feel free to tweak and have fun with it. One AI ticket lets you send one request."
+    "新しいアイテムを追加する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a new item"
           }
         }
       }
     },
-    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください（最大%lld文字）\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-
-    },
-    "設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
+    "新しいグループ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New group"
           }
         }
       }
     },
-    "設定を開く" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open settings"
+    "新しいグループを追加する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a new group"
           }
         }
       }
     },
-    "認証に失敗しました。アプリを再起動して再度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Authentication failed. Restart the app and try again."
+    "新しいパック": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New pack"
           }
         }
       }
     },
-    "説明がウザい！と感じられた貴方、設定から達人モードをご利用ください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If the tips feel overwhelming, switch to Expert mode from Settings."
+    "新しいパックの名前を入れてください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a name for the new pack"
           }
         }
       }
     },
-    "購入の承認待ちです、まだ課金されません。承認が完了すると自動で反映されます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your purchase is pending approval. You haven’t been charged yet. It will apply automatically once approved."
+    "新しいパックを追加する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a new pack"
           }
         }
       }
     },
-    "購入を中止しました、課金されません。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Purchase canceled. You haven’t been charged."
+    "新規追加位置": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where to insert new items"
           }
         }
       }
     },
-    "購入手続きが完了しました。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Purchase completed."
+    "既に購入済みです。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already purchased."
           }
         }
       }
     },
-    "購入状況" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Purchase status"
+    "未 ✔︎ 順": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unchecked first order"
           }
         }
       }
     },
-    "送信" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send"
+    "末尾": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End"
           }
         }
       }
     },
-    "通信障害が発生しているようです。しばらくしてから再度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We’re having trouble connecting. Please try again later."
+    "次へ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
           }
         }
       }
     },
-    "達人" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expert"
+    "消す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erase"
           }
         }
       }
     },
-    "重量オーバー時の見直しにご利用ください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use this when reviewing overweight items"
+    "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください": {},
+    "無料特典は1回分までです。使い切ってから次の特典を受け取れます。": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad bonuses are limited to one use. Use it before you can receive another."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無料特典は1回分までです。使い切ってから次の特典を受け取れます。"
           }
         }
       }
     },
-    "重量から確認したい時" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When you want to review by weight"
+    "特典1回無料": {},
+    "直前の変更にやり直す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo the last change"
           }
         }
       }
     },
-    "重量計をKgで表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show scale in kg"
+    "直前の変更を元に戻す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo last change"
           }
         }
       }
     },
-    "開発者を応援する" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Support the developer"
+    "視聴累計によりAI利用「特典1回無料」をプレゼント": {},
+    "移動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move"
           }
         }
       }
     },
-    "開発者を応援する（特典あり）" : {
-
+    "移動する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move item"
+          }
+        }
+      }
     },
-    "音が出る場合があります" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sound may play"
+    "移動元": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From"
+          }
+        }
+      }
+    },
+    "移動先": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To"
+          }
+        }
+      }
+    },
+    "自分で作る": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create it yourself"
+          }
+        }
+      }
+    },
+    "表示モード": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display mode"
+          }
+        }
+      }
+    },
+    "複製": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dupe"
+          }
+        }
+      }
+    },
+    "複製する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate"
+          }
+        }
+      }
+    },
+    "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。要望に沿った叩き台を手早く作ってくれる感じです。参考にして修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type your request and hit “Send” — Chappy will help you make or edit a pack! You’ll get a quick draft based on your idea, so feel free to tweak and have fun with it. One AI ticket lets you send one request."
+          }
+        }
+      }
+    },
+    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください（最大%lld文字）\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参": {},
+    "設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "設定を開く": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open settings"
+          }
+        }
+      }
+    },
+    "認証に失敗しました。アプリを再起動して再度お試しください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication failed. Restart the app and try again."
+          }
+        }
+      }
+    },
+    "説明がウザい！と感じられた貴方、設定から達人モードをご利用ください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If the tips feel overwhelming, switch to Expert mode from Settings."
+          }
+        }
+      }
+    },
+    "購入の承認待ちです、まだ課金されません。承認が完了すると自動で反映されます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your purchase is pending approval. You haven’t been charged yet. It will apply automatically once approved."
+          }
+        }
+      }
+    },
+    "購入を中止しました、課金されません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purchase canceled. You haven’t been charged."
+          }
+        }
+      }
+    },
+    "購入手続きが完了しました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purchase completed."
+          }
+        }
+      }
+    },
+    "購入状況": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purchase status"
+          }
+        }
+      }
+    },
+    "送信": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "通信障害が発生しているようです。しばらくしてから再度お試しください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We’re having trouble connecting. Please try again later."
+          }
+        }
+      }
+    },
+    "達人": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expert"
+          }
+        }
+      }
+    },
+    "重量オーバー時の見直しにご利用ください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use this when reviewing overweight items"
+          }
+        }
+      }
+    },
+    "重量から確認したい時": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you want to review by weight"
+          }
+        }
+      }
+    },
+    "重量計をKgで表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show scale in kg"
+          }
+        }
+      }
+    },
+    "開発者を応援する": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support the developer"
+          }
+        }
+      }
+    },
+    "開発者を応援する（特典あり）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support the developer (with perks)"
+          }
+        }
+      }
+    },
+    "音が出る場合があります": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound may play"
+          }
+        }
+      }
+    },
+    "ad.unified.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告をまとめて視聴"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch ads together"
+          }
+        }
+      }
+    },
+    "ad.unified.lead": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バナー広告と動画広告を1画面で視聴し、収益を特典に交換できます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View banner and video ads on one screen and turn revenue into rewards."
+          }
+        }
+      }
+    },
+    "ad.reward.available": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使える無料特典: %lld回"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available free rewards: %lld time(s)"
+          }
+        }
+      }
+    },
+    "ad.reward.progress.yen": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%.1f円で無料特典を付与"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free reward after another ¥%.1f"
+          }
+        }
+      }
+    },
+    "ad.reward.progress.usd": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと$%.2fで無料特典を付与"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free reward after another $%.2f"
+          }
+        }
+      }
+    },
+    "ad.reward.progress.detail": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "視聴した広告の収益を自動でカウントし、基準を超えるとAI特典を1回プレゼント"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We count ad revenue automatically and grant one AI reward when the goal is reached."
+          }
+        }
+      }
+    },
+    "ad.unified.banner.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バナー広告"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banner ads"
+          }
+        }
+      }
+    },
+    "ad.unified.banner.message": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バナーをタップして開くと収益が加算されます"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap and open banners to add revenue."
+          }
+        }
+      }
+    },
+    "ad.unified.video.title": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "動画広告"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video ads"
+          }
+        }
+      }
+    },
+    "donation.ad.unified.subtitle": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バナー広告と動画広告を同じ画面で視聴"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch banner and video ads on the same screen."
+          }
+        }
+      }
+    },
+    "収益情報を取得できませんでしたが、視聴はカウントされました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not retrieve revenue data, but your view was counted."
           }
         }
       }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }

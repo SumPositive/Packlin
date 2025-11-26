@@ -16,6 +16,16 @@ import UIKit
 import GoogleMobileAds
 #endif
 
+#if canImport(GoogleMobileAds)
+typealias AdPaidValue = AdValue
+#else
+/// GoogleMobileAdsが利用できない環境向けの代替型。収益カウント用の最小限の情報だけ保持する
+struct AdPaidValue {
+    let value: NSDecimalNumber
+    let currencyCode: String?
+}
+#endif
+
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
 
 // 広告ユニットID
@@ -57,7 +67,7 @@ struct AdMobBannerContainerView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     ForEach(bannerConfigs) { config in
-                        AdMobBannerCardView(configuration: config)
+                        AdMobBannerCardView(configuration: config, onPaidEvent: nil)
                     }
                 }
                 .padding()
@@ -84,13 +94,15 @@ struct AdMobBannerContainerView: View {
 /// 単一のAdMobバナー広告カード
 struct AdMobBannerCardView: View {
     let configuration: AdMobBannerConfiguration
+    var onPaidEvent: ((AdPaidValue) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
 
             AdMobBannerView(
                 adUnitID: configuration.adUnitID,
-                size: configuration.size
+                size: configuration.size,
+                onPaidEvent: onPaidEvent
             )
 
         }
@@ -108,6 +120,249 @@ struct AdMobBannerConfiguration: Identifiable {
     let adUnitID: String
     let size: CGSize
 }
+
+#if canImport(GoogleMobileAds)
+/// バナー広告と動画広告を1画面にまとめ、収益計測から特典付与まで完結させるビュー
+struct AdMobUnifiedSupportView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var adBenefitStore: AdRewardBenefitStore
+    @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
+
+    @State private var rewardDescription: String?
+    @State private var infoMessage: String?
+
+    private let bannerConfig = AdMobBannerConfiguration(
+        adUnitID: ADMOB_BANNER_UnitID,
+        size: CGSize(width: 320, height: 100)
+    )
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    rewardProgressSection
+                    bannerSection
+                    videoSection
+                }
+                .padding()
+            }
+            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .navigationTitle(Text(String(localized: "ad.unified.title")))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        // 閉じる
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            loader.onAdDismissed = { dismiss() }
+            loader.onRewardEarned = { _ in
+                handleRewardEarnedFromVideo()
+            }
+        }
+    }
+
+    private var rewardProgressSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(String(localized: "ad.unified.lead"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Label {
+                        Text(String(localized: "ad.reward.available", defaultValue: "使える無料特典: %lld回", arguments: [Int64(adBenefitStore.availableBonusUsages)]))
+                            .font(.headline)
+                    } icon: {
+                        Image(systemName: "gift.fill")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    Spacer()
+                }
+
+                if let remainingYen = remainingYenToBonus {
+                    Text(String(localized: "ad.reward.progress.yen", defaultValue: "あと%.1f円で無料特典を付与", locale: Locale(identifier: "ja_JP"), arguments: [remainingYen]))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                if let remainingUsd = remainingUsdToBonus {
+                    Text(String(localized: "ad.reward.progress.usd", defaultValue: "あと$%.2fで無料特典を付与", arguments: [remainingUsd]))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Text(String(localized: "ad.reward.progress.detail", defaultValue: "視聴した広告の収益を自動でカウントし、基準を超えるとAI特典を1回プレゼント"))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(uiColor: .secondarySystemBackground))
+            )
+        }
+    }
+
+    private var bannerSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                Text(String(localized: "ad.unified.banner.title", defaultValue: "バナー広告"))
+                    .font(.headline)
+            } icon: {
+                Image(systemName: "rectangle.fill.on.rectangle.fill")
+                    .symbolRenderingMode(.hierarchical)
+            }
+
+            Text(String(localized: "ad.unified.banner.message", defaultValue: "バナーをタップして開くと収益が加算されます"))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+
+            AdMobBannerCardView(configuration: bannerConfig) { adValue in
+                registerRevenue(adValue)
+            }
+        }
+    }
+
+    private var videoSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                Text(String(localized: "ad.unified.video.title", defaultValue: "動画広告"))
+                    .font(.headline)
+            } icon: {
+                Image(systemName: "play.rectangle.on.rectangle")
+                    .symbolRenderingMode(.hierarchical)
+            }
+
+            if let infoMessage {
+                Text(infoMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            if loader.isLoading {
+                ProgressView(String(localized: "広告を読み込み中..."))
+                    .padding(.vertical, 8)
+            }
+
+            if let errorMessage = loader.errorMessage {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(errorMessage)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Button(String(localized: "再読み込み")) {
+                        loader.loadAd()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+
+            Button(String(localized: "広告を再生")) {
+                presentAd()
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(loader.isReady == false)
+
+            if let rewardDescription {
+                Text(rewardDescription)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(uiColor: .secondarySystemBackground))
+        )
+    }
+
+    private var remainingYenToBonus: Double? {
+        let remaining = AD_REWARD_THRESHOLD_YEN - adBenefitStore.accumulatedRevenueYen
+        if remaining <= 0 {
+            return nil
+        }
+        return remaining
+    }
+
+    private var remainingUsdToBonus: Double? {
+        let remaining = AD_REWARD_THRESHOLD_USD - adBenefitStore.accumulatedRevenueUsd
+        if remaining <= 0 {
+            return nil
+        }
+        return remaining
+    }
+
+    private func presentAd() {
+        guard let topController = UIApplication.topMostViewController() else {
+            return
+        }
+        loader.present(from: topController)
+    }
+
+    private func registerRevenue(_ adValue: AdPaidValue) {
+        let granted = adBenefitStore.recordRevenue(micros: adValue.value.int64Value, currencyCode: adValue.currencyCode)
+        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+        if adBenefitStore.hasBonus {
+            messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
+        }
+        if granted {
+            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
+        }
+        infoMessage = messages.joined(separator: "\n")
+    }
+
+    private func handleRewardEarnedFromVideo() {
+        // 直前のpaidEventHandlerで拾った収益情報を使って特典付与を試みる
+        guard let currencyCode = loader.lastPaidCurrencyCode,
+              let micros = loader.lastPaidMicros else {
+            rewardDescription = String(localized: "収益情報を取得できませんでしたが、視聴はカウントされました")
+            return
+        }
+        let granted = adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode)
+        var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
+        if adBenefitStore.hasBonus {
+            messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
+        }
+        if granted {
+            messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
+        }
+        rewardDescription = messages.joined(separator: "\n")
+    }
+}
+#else
+/// GoogleMobileAdsが利用できない環境向けの簡易ビュー
+struct AdMobUnifiedSupportView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 16) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.largeTitle)
+                    .foregroundStyle(.yellow)
+                Text(String(localized: "setting.bannerAdUnavailable"))
+                    .multilineTextAlignment(.center)
+                    .font(.headline)
+                Button(String(localized: "setting.adClose")) {
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+            .navigationTitle(Text(String(localized: "ad.unified.title")))
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+#endif
 
 /// 動画広告の表示を管理するビュー
 struct AdMobVideoContainerView: View {
@@ -219,13 +474,11 @@ struct AdMobRewardedScreen: View {
 
     private func handleRewardEarned() {
         var messages: [String] = [String(localized: "広告をご視聴いただきありがとうございます！")]
-        // すでに無料特典を1回分持っている場合は、使い切ってもらうために新規付与を見送る
+        let granted = registerBonusIfNeeded()
         if adBenefitStore.hasBonus {
             messages.append(String(localized: "無料特典は1回分だけです。使い切ってから次の無料特典を受け取ってください"))
-            rewardDescription = messages.joined(separator: "\n")
-            return
         }
-        if registerBonusIfNeeded() {
+        if granted {
             messages.append(String(localized: "広告の視聴時間と回数が目標を超えたので無料特典を付与しました"))
         }
         rewardDescription = messages.joined(separator: "\n")
@@ -237,19 +490,7 @@ struct AdMobRewardedScreen: View {
               let micros = loader.lastPaidMicros else {
             return false
         }
-        if micros < 1 {
-            return false
-        }
-        // AdMobからはマイクロ単位（100万分の1通貨）が渡されるため、大きい単位へ直す
-        let majorValue = Double(micros) / 1_000_000
-        let upperCurrency = currencyCode.uppercased()
-        if upperCurrency == "JPY" {
-            return adBenefitStore.grantBonusIfQualified(revenueYen: majorValue, revenueUsd: nil)
-        }
-        if upperCurrency == "USD" {
-            return adBenefitStore.grantBonusIfQualified(revenueYen: nil, revenueUsd: majorValue)
-        }
-        return false
+        return adBenefitStore.recordRevenue(micros: micros, currencyCode: currencyCode)
     }
 }
 
@@ -359,9 +600,10 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
 struct AdMobBannerView: View {
     let adUnitID: String
     let size: CGSize
+    var onPaidEvent: ((AdPaidValue) -> Void)?
 
     var body: some View {
-        AdMobBannerRepresentable(adUnitID: adUnitID, size: size)
+        AdMobBannerRepresentable(adUnitID: adUnitID, size: size, onPaidEvent: onPaidEvent)
             .frame(width: size.width, height: size.height)
             .frame(maxWidth: .infinity)
             .background(
@@ -374,9 +616,10 @@ struct AdMobBannerView: View {
 struct AdMobBannerRepresentable: UIViewControllerRepresentable {
     let adUnitID: String
     let size: CGSize
+    var onPaidEvent: ((AdPaidValue) -> Void)?
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(onPaidEvent: onPaidEvent)
     }
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -388,6 +631,10 @@ struct AdMobBannerRepresentable: UIViewControllerRepresentable {
         bannerView.rootViewController = viewController
         bannerView.delegate = context.coordinator
         bannerView.translatesAutoresizingMaskIntoConstraints = false
+        bannerView.paidEventHandler = { adValue in
+            // paidEventHandlerはメインスレッド保証ではないためUI更新しないように返却だけ行う
+            context.coordinator.onPaidEvent?(adValue)
+        }
 
         viewController.view.addSubview(bannerView)
         NSLayoutConstraint.activate([
@@ -406,7 +653,12 @@ struct AdMobBannerRepresentable: UIViewControllerRepresentable {
     }
 
     final class Coordinator: NSObject, BannerViewDelegate {
+        let onPaidEvent: ((AdPaidValue) -> Void)?
         weak var bannerView: BannerView?
+
+        init(onPaidEvent: ((AdPaidValue) -> Void)?) {
+            self.onPaidEvent = onPaidEvent
+        }
     }
 }
 #else
@@ -414,6 +666,7 @@ struct AdMobBannerRepresentable: UIViewControllerRepresentable {
 struct AdMobBannerView: View {
     let adUnitID: String
     let size: CGSize
+    var onPaidEvent: ((AdPaidValue) -> Void)?
 
     var body: some View {
         RoundedRectangle(cornerRadius: 12)

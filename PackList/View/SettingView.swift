@@ -535,7 +535,6 @@ struct SettingView: View {
     /// 応援・寄付
     struct DonationView: View {
         @State private var showAd = false
-        @State private var showAdMovie = false
         @State private var showDonate = false
 
         var body: some View {
@@ -562,42 +561,17 @@ struct SettingView: View {
                             showAd = true
                         }
                     }) {
-                        Text("広告を見て寄付")
-                            .frame(maxWidth: .infinity)
+                        VStack(spacing: 2) {
+                            Text("広告を見て寄付")
+                                .frame(maxWidth: .infinity)
+                            Text(String(localized: "donation.ad.unified.subtitle", defaultValue: "バナー広告と動画広告を同じ画面で視聴"))
+                                .font(.caption)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.secondary)
                     .sheet(isPresented: $showAd) {
-                        AdMobBannerContainerView()
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button(action: {
-                            withAnimation {
-                                // SafariでURLを表示する
-                                showAdMovie = true
-                            }
-                        }) {
-                            VStack(spacing: 2) {
-                                Text("動画広告を見て寄付")
-                                    .frame(maxWidth: .infinity)
-
-                                HStack(spacing: 4) {
-                                    Image(systemName: "exclamationmark.triangle")
-                                        .imageScale(.small)
-                                        .symbolRenderingMode(.hierarchical)
-                                    Text("音が出る場合があります")
-                                        .font(.caption)
-                                        .foregroundStyle(.primary)
-                                }
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.secondary)
-                        .sheet(isPresented: $showAdMovie) {
-                            AdMobVideoContainerView()
-                        }
-
+                        AdMobUnifiedSupportView()
                     }
                 }
             }

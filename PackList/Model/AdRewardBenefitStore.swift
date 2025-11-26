@@ -15,12 +15,18 @@ final class AdRewardBenefitStore: ObservableObject {
     @Published private(set) var availableBonusUsages: Int
     /// 最後に条件を満たした収益額（円換算が取れた場合のみ記録する）
     @Published private(set) var lastQualifiedRevenueYen: Double?
+    /// 付与までの進捗を把握するための累計収益（円）
+    @Published private(set) var accumulatedRevenueYen: Double
+    /// 付与までの進捗を把握するための累計収益（ドル）
+    @Published private(set) var accumulatedRevenueUsd: Double
 
     private let userDefaults: UserDefaults
     /// 無料特典を溜め込まず、常に「1回使ってから次を受け取る」運用にするための上限値
     private let maxBonusCount = 1
     private let bonusKey = "ad.reward.bonus.remaining"
     private let lastRevenueKey = "ad.reward.bonus.lastRevenueYen"
+    private let accumulatedYenKey = "ad.reward.bonus.accumulatedYen"
+    private let accumulatedUsdKey = "ad.reward.bonus.accumulatedUsd"
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -33,6 +39,48 @@ final class AdRewardBenefitStore: ObservableObject {
         } else {
             self.lastQualifiedRevenueYen = nil
         }
+        // 累計収益も保存値を優先する。端数が多くなると視認性が下がるため、小数第2位で丸めてから表示する
+        let storedYen = userDefaults.double(forKey: accumulatedYenKey)
+        self.accumulatedRevenueYen = (storedYen * 100).rounded() / 100
+        let storedUsd = userDefaults.double(forKey: accumulatedUsdKey)
+        self.accumulatedRevenueUsd = (storedUsd * 100).rounded() / 100
+    }
+
+    /// 収益イベントを受け取り、必要に応じて無料特典を付与する
+    /// - Parameters:
+    ///   - micros: 広告SDKから通知されるマイクロ単位の収益
+    ///   - currencyCode: 通貨コード（例: "JPY" / "USD"）。判別できない場合はnil
+    /// - Returns: 特典付与に成功したらtrue
+    @discardableResult
+    func recordRevenue(micros: Int64, currencyCode: String?) -> Bool {
+        // 0や負の値が来ることは想定していないが、念のため無視する
+        if micros < 1 {
+            return false
+        }
+        guard let upperCurrency = currencyCode?.uppercased() else {
+            return false
+        }
+        // マイクロ単位（100万分の1）から大きい単位へ直す
+        let majorValue = Double(micros) / 1_000_000
+
+        var granted = false
+        if upperCurrency == "JPY" {
+            accumulatedRevenueYen += majorValue
+            granted = grantBonusIfQualified(revenueYen: accumulatedRevenueYen, revenueUsd: nil)
+            // 特典付与に成功したら進捗をリセットし、次回の積み上げを分かりやすくする
+            if granted {
+                accumulatedRevenueYen = max(0, accumulatedRevenueYen - AD_REWARD_THRESHOLD_YEN)
+            }
+        } else if upperCurrency == "USD" {
+            accumulatedRevenueUsd += majorValue
+            granted = grantBonusIfQualified(revenueYen: nil, revenueUsd: accumulatedRevenueUsd)
+            if granted {
+                accumulatedRevenueUsd = max(0, accumulatedRevenueUsd - AD_REWARD_THRESHOLD_USD)
+            }
+        }
+
+        persist()
+        return granted
     }
 
     /// 広告の収益が閾値を超えていれば無料特典を1回分付与する
@@ -98,5 +146,7 @@ final class AdRewardBenefitStore: ObservableObject {
         } else {
             userDefaults.removeObject(forKey: lastRevenueKey)
         }
+        userDefaults.set(accumulatedRevenueYen, forKey: accumulatedYenKey)
+        userDefaults.set(accumulatedRevenueUsd, forKey: accumulatedUsdKey)
     }
 }
