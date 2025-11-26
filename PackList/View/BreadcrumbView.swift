@@ -12,12 +12,12 @@ struct BreadcrumbView: View {
 
     // パック・グループ・アイテム名それぞれの最大幅を画面の1/4に揃え、長文を詰めて表示する
     private var maxNameWidth: CGFloat {
-        UIScreen.main.bounds.width / 4
+        (UIScreen.main.bounds.width - 36.0*2) / 3.0
     }
 
-    // captionフォントでの実測幅を取得し、最大幅を超えないようにする
+    // footnoteフォントでの実測幅を取得し、最大幅を超えないようにする
     private func nameWidth(for name: String) -> CGFloat {
-        let font = UIFont.preferredFont(forTextStyle: .caption1)
+        let font = UIFont.preferredFont(forTextStyle: .footnote)
         let attributes = [NSAttributedString.Key.font: font]
         let measuredWidth = (name as NSString).size(withAttributes: attributes).width
         // 実測幅が最大幅より小さければそのまま、長ければ最大幅に抑える
@@ -52,7 +52,7 @@ struct BreadcrumbView: View {
     private func breadcrumbText(for name: String) -> some View {
         Text(name)
             // 視認性を保ちつつもヘッダー内の高さを抑えるためcaptionサイズを採用
-            .font(.caption)
+            .font(.footnote)
             .lineLimit(1)
             .truncationMode(.tail)
             // 左寄せで幅は文字列ぶんの最小限にしつつ、最大幅を超えないように制限
@@ -77,7 +77,8 @@ struct BreadcrumbView: View {
     private var separator: some View {
         Text("＞")
             // 文字サイズを合わせ、余白を最小限にして密度を高める
-            .font(.caption)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
             // 左右の余白を同じ幅にそろえて、左右で均等な間隔にする
             .padding(.horizontal, 1)
     }

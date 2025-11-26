@@ -11,6 +11,9 @@ import SwiftData
 import UniformTypeIdentifiers
 import Foundation
 
+
+let SettingView_HEIGHT: CGFloat = 610.0 // シート表示時の高さ指定
+
 /// 新規追加する位置
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
     // 選択肢
