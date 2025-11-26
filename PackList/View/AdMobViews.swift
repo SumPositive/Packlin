@@ -212,7 +212,10 @@ struct AdMobUnifiedSupportView: View {
             }
         }
         .onAppear {
-            loader.onAdDismissed = { dismiss() }
+            // 広告終了後にサポート画面が閉じないよう、ここでは画面を閉じずに次の広告読み込みだけを行う
+            loader.onAdDismissed = {
+                loader.loadAd()
+            }
             loader.onRewardEarned = { _ in
                 handleRewardEarnedFromVideo()
             }
@@ -536,8 +539,9 @@ struct AdMobRewardedScreen: View {
             }
         }
         .onAppear {
+            // 動画視聴後もサポート画面に留まれるよう、閉じずに次回の広告を準備する
             loader.onAdDismissed = {
-                dismiss()
+                loader.loadAd()
             }
             loader.onRewardEarned = { _ in
                 handleRewardEarned()
