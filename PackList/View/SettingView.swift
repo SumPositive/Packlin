@@ -563,7 +563,8 @@ struct SettingView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.secondary)
                     .sheet(isPresented: $showAd) {
-                        AdMobBannerContainerView()
+                        // バナーも動画もまとめて閲覧できる新しいシートを表示
+                        AdMobAdSheetView()
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
@@ -590,7 +591,8 @@ struct SettingView: View {
                         .buttonStyle(.borderedProminent)
                         .tint(.secondary)
                         .sheet(isPresented: $showAdMovie) {
-                            AdMobVideoContainerView()
+                            // バナー同様にシートで動画広告を案内する
+                            AdMobAdSheetView()
                         }
 
                     }
