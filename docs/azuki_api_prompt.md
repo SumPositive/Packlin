@@ -14,7 +14,7 @@
     - `/api/credit/check` のクエリに `userAdId` が含まれていれば、認証済みの `userId` を逆引きできるようにする。
 
 2. `/api/credit/check` の入力と出力
-    - 入力: `userId` は必須。`userAdId` は任意だが、あれば記録・紐付け対象とする。
+    - 入力: `userId` は「購入済みなどで発行済みのときのみ」送る想定とし、未発行なら省略可。`userAdId` は任意だが、あれば記録・紐付け対象とする（`userId` 未保有ユーザーは `userAdId` のみで呼び出す）。
     - 出力: 以下のフィールドをJSONで返す。
         - `balance`: 現在の有料クレジット残高（整数）。
         - `adRewardAvailable`: AdMob視聴による広告特典が利用可能かどうかの真偽値。未判定の場合は `false` を返す。
