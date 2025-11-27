@@ -316,8 +316,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         let ad = rewardedAd
         if let userAdId, userAdId.isEmpty == false {
             // SSVでサーバーへ渡すcustomDataに広告用IDを仕込む
-            let options = GADServerSideVerificationOptions()
-            options.customRewardString = userAdId
+            let options = ServerSideVerificationOptions()
+            options.customRewardText = userAdId
             ad.serverSideVerificationOptions = options
         }
         ad.present(from: root) { [weak self] in
@@ -336,7 +336,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         }
     }
 
-    func adDidPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.onAdPresented?()
