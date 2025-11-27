@@ -1,3 +1,10 @@
+//
+//  BreadcrumbView.swift
+//  Packlin  Pack>Group>Itemをパンくずリスト表示する
+//
+//  Created by sumpo on 2025/11/27.
+//
+
 import SwiftUI
 import UIKit
 
@@ -10,7 +17,7 @@ struct BreadcrumbView: View {
     let groupAction: (() -> Void)?
     let itemAction: (() -> Void)?
 
-    // パック・グループ・アイテム名それぞれの最大幅を画面の1/4に揃え、長文を詰めて表示する
+    // 各パンくずの最大幅を画面の1/3以内にする
     private var maxNameWidth: CGFloat {
         (UIScreen.main.bounds.width - 36.0*2) / 3.0
     }
@@ -70,6 +77,11 @@ struct BreadcrumbView: View {
             }
             // ヘッダー内ではリンク風の見た目を避け、通常テキストのまま押しやすくする
             .buttonStyle(.plain)
+            //.padding(3)
+            //.background(
+            //    Capsule(style: .continuous)
+            //        .fill(Color.secondary.opacity(0.2))
+            //)
         } else {
             breadcrumbText(for: name)
         }

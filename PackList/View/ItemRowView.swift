@@ -79,6 +79,7 @@ struct ItemRowView: View {
                               : item.need <= item.stock ? "circle.circle"
                               : "circle")
                         .imageScale(.large)
+                        .tint(item.need == 0 ? .secondary : .accentColor)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                     }

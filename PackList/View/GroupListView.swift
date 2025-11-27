@@ -24,8 +24,8 @@ struct GroupListView: View {
     @State private var popupAnchor: CGPoint?
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
 
-    // ヘッダーはボタン行＋タイトル行の2段構成にしつつ、上下余白を抑えて高さもコンパクトにする
-    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
+    // ヘッダーの高さを表示モードで変える
+    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
@@ -84,7 +84,7 @@ struct GroupListView: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                VStack(spacing: 6) {
+                VStack(spacing: 4) {
                     Button {
                         // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
                         showAiCreateSheet = true
@@ -103,7 +103,7 @@ struct GroupListView: View {
                                 .foregroundStyle(Color.primary)
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 2)
+                        .padding(.vertical, 1)
                         // 右側ボタンも同じカプセル風の塗りと線を適用して統一感を出す
                         .background(
                             RoundedRectangle(cornerRadius: 16)

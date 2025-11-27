@@ -33,10 +33,10 @@ struct ItemListView: View {
     }
 
     private let rowHeight: CGFloat = 44
-    // ボタン行＋タイトル行で表示しつつ、上下余白を抑えて高さをコンパクトにする
-    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 64 }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // ヘッダーの高さを表示モードで変える
+    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
 
     // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用
     // そのため、どちらかが表示されている間はナビバーボタンを非活性にする

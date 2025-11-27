@@ -44,10 +44,9 @@ struct ItemEditView: View {
     @State private var moveInsertPosition: MoveInsertPosition = .end
 
     private let sectionCornerRadius: CGFloat = 12
-    private let baseHeaderHeight: CGFloat = 64
-    // 初心者モードでは説明テキストとタイトル行を置くため高さを拡大するが、余白はやや抑える
-    private var headerHeight: CGFloat { isBeginnerMode ? 96 : baseHeaderHeight }
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // ヘッダーの高さを表示モードで変える
+    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
 
     private var nameFieldMinHeight: CGFloat {
         UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
@@ -286,6 +285,7 @@ struct ItemEditView: View {
                                   : item.need <= item.stock ? "circle.circle"
                                   : "circle")
                             .imageScale(.large)
+                            .tint(item.need == 0 ? .secondary : .accentColor)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                         }

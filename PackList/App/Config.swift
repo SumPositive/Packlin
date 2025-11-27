@@ -29,6 +29,9 @@ let APP_HEIGHT_MAX : CGFloat = 9999    // Free
 
 // 行の下線太さ
 let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
+// ヘッダーの高さ
+let APP_HEADER_HEIGHT_BEG : CGFloat = 100.0  // 初心者モード
+let APP_HEADER_HEIGHT_EXP : CGFloat =  56.0  // 達人モード
 
 //-------------------------------------- MAX関係
 

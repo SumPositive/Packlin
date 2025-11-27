@@ -57,10 +57,10 @@ struct ItemSortListView: View {
 
     private var isShowingPopup: Bool { editingItem != nil }
 
-    // ボタン行＋タイトル行のみで構成し、上下余白を抑えて高さをコンパクトにする
-    private var headerHeight: CGFloat { isBeginnerMode ? 96 : 56 }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // ヘッダーの高さを表示モードで変える
+    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
 
     // 並べ替えを切り替えるためのフッターメニュー
     private var sortFooterMenu: some View {
@@ -74,7 +74,7 @@ struct ItemSortListView: View {
                     ForEach(ItemSortOption.allCases) { option in
                         let isCurrent = option == sortOption
 
-                        VStack(spacing: 6) {
+                        VStack(spacing: 4) {
                             Button {
                                 // タップ時は常時並べ替えの設定に関わらず強制的にリソートする
                                 refreshDisplayedItems(forceReset: true, forceResort: true)
@@ -147,8 +147,8 @@ struct ItemSortListView: View {
                     .frame(maxWidth: 40)
                 }
             }
+            .padding(.top, 8)
             .padding(.horizontal, 14)
-            .padding(.vertical, 6)
             .background(.ultraThinMaterial)
         }
     }

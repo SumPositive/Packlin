@@ -173,24 +173,20 @@ struct AiCreateView: View {
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。要望に沿った叩き台を手早く作ってくれる感じです。参考にして修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。
+                要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や修正を依頼できます。チャッピーから届いた提案を眺めて修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。
                 """)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 24)
             
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
                 // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
                 HStack(spacing: 12) {
                     Text("AI利用券残り \(creditStore.credits) 枚")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 8)
+                        .foregroundStyle(.primary)
+                        .padding(.vertical, 4)
                         .padding(.horizontal, 12)
-                        .background(
-                            Capsule(style: .continuous)
-                                .fill(Color.secondary.opacity(0.3))
-                        )
 
                     Spacer(minLength: 12)
 
@@ -212,27 +208,28 @@ struct AiCreateView: View {
                             }else{
                                 // 送信アイコン
                                 Image(systemName: "paperplane")
+                                    .imageScale(.medium)
                                     .symbolRenderingMode(.hierarchical)
                             }
 
                             Text(isGenerating ? "提案を考え中" : "送信")
                                 .font(.callout.weight(.semibold))
                         }
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: 20)
+                        .padding(.vertical, -4)
+                        .padding(.horizontal, 4)
                     }
                     .disabled(isRequirementEmpty || isGenerating)
                     .buttonStyle(.borderedProminent)
                     .tint(.accentColor)
-                    .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
+                .padding(.horizontal, 8)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {
                     // 入力欄。カード背景と馴染むよう余白のみを加える
                     TextEditor(text: $requirementText)
-                        .frame(height: 170)
+                        .frame(height: 200)
                         .padding(2)
                         .focused(requirementFocus)
                         .background(Color.clear)
@@ -262,9 +259,9 @@ struct AiCreateView: View {
                     }
                 }
             }
-            .padding(16)
+            .padding(8)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(
                         Color(uiColor: colorScheme == .dark ? .tertiarySystemBackground : .systemGray3)
                     )
@@ -276,6 +273,7 @@ struct AiCreateView: View {
                     .foregroundStyle(.blue)
             }
 
+            // 送信結果メッセージ
             if let feedback = inlineGenerationFeedback {
                 // 成功と失敗で色やアイコンを切り替え、視覚的に状態を把握しやすくする
                 HStack(alignment: .top, spacing: 8) {
@@ -286,7 +284,8 @@ struct AiCreateView: View {
                         .font(.body.weight(.medium))
                         .foregroundStyle(feedback.tintColor)
                 }
-                .padding(12)
+                .frame(maxWidth: .infinity)
+                .padding(8)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(feedback.backgroundColor)

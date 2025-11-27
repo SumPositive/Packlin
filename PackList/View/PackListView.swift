@@ -26,10 +26,10 @@ struct PackListView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var sortedPacks: [M1Pack]
 
     private let rowHeight: CGFloat = 44
-    // 初心者モード時は説明文で高さが増えるため、可変のヘッダー高さを用意
-    private var headerHeight: CGFloat { isBeginnerMode ? 88 : rowHeight }
     // 初心者モードかどうかでヘッダーの説明を出し分ける
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // ヘッダーの高さを表示モードで変える
+    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
     // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
     private var isShowingEditSheet: Bool { editingPack != nil }
 
@@ -160,55 +160,35 @@ struct PackListView: View {
 
                     // 新しいパック追加と説明
                     VStack(spacing: 6) {
-                        if isBeginnerMode {
-                            // 初心者モードではメニューからAI依頼と手動作成を選べるようにする
-                            Menu {
-                                Button {
-                                    // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
-                                    isShowAiCreateSheet = true
-                                } label: {
-                                    Label("チャッピー(AI)に作ってもらう", systemImage: "sparkles")
-                                }
-
-                                Button {
-                                    // これまで通り自分で項目を入力して作成するパターン
-                                    addPack()
-                                } label: {
-                                    Label("自分で作る", systemImage: "hand.tap")
-                                }
-                            } label: {
-                                ZStack {
-                                    Image(systemName: "case")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical)
-                                    Image(systemName: "plus")
-                                        .imageScale(.small)
-                                        .symbolRenderingMode(.hierarchical)
-                                        .padding(.top, 4)
-                                }
-                            }
-                            .menuStyle(.button)
-                            .buttonStyle(.borderless)
-                            .disabled(isShowingEditSheet)
-                        } else {
-                            // 上級者モードでは従来のワンタップ追加を維持
+                        // メニューからAI依頼と手動作成を選べるようにする
+                        Menu {
                             Button {
+                                // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
+                                isShowAiCreateSheet = true
+                            } label: {
+                                Label("チャッピー(AI)に作ってもらう", systemImage: "sparkles")
+                            }
+                            
+                            Button {
+                                // これまで通り自分で項目を入力して作成するパターン
                                 addPack()
+                            } label: {
+                                Label("自分で作る", systemImage: "hand.tap")
                             }
-                            label: {
-                                ZStack {
-                                    Image(systemName: "case")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                    Image(systemName: "plus")
-                                        .imageScale(.small)
-                                        .symbolRenderingMode(.hierarchical)
-                                        .padding(.top, 4)
-                                }
+                        } label: {
+                            ZStack {
+                                Image(systemName: "case")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical)
+                                Image(systemName: "plus")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .padding(.top, 4)
                             }
-                            .buttonStyle(.borderless)
-                            .disabled(isShowingEditSheet)
                         }
+                        .menuStyle(.button)
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingEditSheet)
 
                         if isBeginnerMode {
                             // 初心者向け：新規パック追加の説明
