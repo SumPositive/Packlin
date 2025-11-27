@@ -15,6 +15,8 @@ final class CreditStore: ObservableObject {
     @Published private(set) var credits: Int
     /// azuki-api側でユーザーを識別するためのID。初回作成後はKeychainで保持する。
     let userId: String
+    /// AdMobのSSV customDataへ付与する広告識別子（アプリ内で一意に生成して保持する）
+    let userAdId: String
 
 //    private let userDefaults: UserDefaults
     private let keychain: KeychainStorage
@@ -26,6 +28,8 @@ final class CreditStore: ObservableObject {
         self.keychain = keychain
         // 既存ユーザーであればKeychainから、旧バージョン利用者であればUserDefaultsからIDを復元する
         self.userId = AzukiUserIdentifier.loadOrCreate(keychain: keychain)
+        // 広告連携用のIDも同様にKeychainから復元し、無ければ新規に作成する
+        self.userAdId = AzukiAdUserIdentifier.loadOrCreate(keychain: keychain)
 
         if let storedInKeychain = keychain.loadInt(forKey: keychainBalanceKey) {
             // Keychainに保存済みならそのまま採用する
@@ -110,6 +114,23 @@ private enum AzukiUserIdentifier {
 //        }
         let newId = UUID().uuidString.lowercased()
 //        userDefaults.set(newId, forKey: storageKey)
+        keychain.saveString(newId, forKey: storageKey)
+        return newId
+    }
+}
+
+/// AdMob SSV向けに利用する広告用の識別子を管理するヘルパ
+private enum AzukiAdUserIdentifier {
+    private static let storageKey = "azuki.api.userAdId"
+
+    /// Keychainに保存済みであればそれを返し、無ければUUIDから生成する
+    /// - Parameter keychain: セキュアに保持するためのKeychainストレージ
+    /// - Returns: AdMobのcustomDataへ付与する文字列
+    static func loadOrCreate(keychain: KeychainStorage) -> String {
+        if let storedInKeychain = keychain.loadString(forKey: storageKey), storedInKeychain.isEmpty == false {
+            return storedInKeychain
+        }
+        let newId = "ad-" + UUID().uuidString.lowercased()
         keychain.saveString(newId, forKey: storageKey)
         return newId
     }

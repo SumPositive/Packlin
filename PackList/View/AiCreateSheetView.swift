@@ -103,6 +103,8 @@ struct AiCreateView: View {
     @State private var storeProducts: [Product] = []
     /// 初回表示時にサーバー残高とKeychain残高を同期したかどうかのフラグ
     @State private var didRequestInitialBalance = false
+    /// 広告視聴により一時的に利用できる特典があるかどうか
+    @State private var adRewardAvailable = false
     /// StoreKitのトランザクション更新ストリームを監視するためのタスク
     @State private var transactionObservationTask: Task<Void, Never>?
     /// すでにユーザーへ通知済みのトランザクションIDを記録し、同じ購入結果のアラートを連続表示しないようにする
@@ -113,6 +115,25 @@ struct AiCreateView: View {
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
         requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// クレジット枚数だけで送信できるかどうか
+    private var hasTicketForGeneration: Bool {
+        CHATGPT_GENERATION_CREDIT_COST <= creditStore.credits
+    }
+
+    /// 入力とローディング状態、手持ちの特典から送信可否を算出する
+    private var canSendRequest: Bool {
+        if isRequirementEmpty {
+            return false
+        }
+        if isGenerating {
+            return false
+        }
+        if adRewardAvailable {
+            return true
+        }
+        return hasTicketForGeneration
     }
 
     /// 端末に保存済みの通知済みトランザクションIDをStateへ復元する
@@ -182,11 +203,15 @@ struct AiCreateView: View {
             VStack(alignment: .leading, spacing: 6) {
                 // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
                 HStack(spacing: 12) {
-                    Text("AI利用券残り \(creditStore.credits) 枚")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 12)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("AI利用券残り \(creditStore.credits) 枚")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 12)
+
+                        adRewardBadge
+                    }
 
                     Spacer(minLength: 12)
 
@@ -218,7 +243,7 @@ struct AiCreateView: View {
                         .padding(.vertical, -4)
                         .padding(.horizontal, 4)
                     }
-                    .disabled(isRequirementEmpty || isGenerating)
+                    .disabled(canSendRequest == false)
                     .buttonStyle(.borderedProminent)
                     .tint(.accentColor)
                     .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -318,7 +343,7 @@ struct AiCreateView: View {
             // 初回表示時に商品情報を取得しつつ、サーバー残高との同期も直ちに行う
             await loadProductsIfNeeded()
             // サーバー残高との同期は一度だけ実行し、Keychainの値と揃えておく
-            await syncCreditBalanceIfNeeded()
+            await syncCreditStatusIfNeeded()
             // 購入完了後にViewがフォアグラウンドでなくても反映できるよう、トランザクション更新を監視する
             if transactionObservationTask == nil {
                 transactionObservationTask = Task {
@@ -365,6 +390,24 @@ struct AiCreateView: View {
         }
         return Color(uiColor: .systemGray6)
     }
+
+    /// 広告特典の状態を示すバッジ
+    private var adRewardBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: adRewardAvailable ? "gift.fill" : "gift")
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(adRewardAvailable ? Color.pink : Color.secondary)
+            Text(adRewardAvailable ? String(localized: "広告特典を使用できます") : String(localized: "広告特典は未付与です"))
+                .font(.caption)
+                .foregroundStyle(adRewardAvailable ? Color.primary : Color.secondary)
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+        .background(
+            Capsule(style: .continuous)
+                .fill(adRewardAvailable ? Color.pink.opacity(0.16) : Color(uiColor: .tertiarySystemFill))
+        )
+    }
     
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
@@ -386,6 +429,8 @@ struct AiCreateView: View {
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
+            var shouldRestoreAdReward = false
+            let usesAdReward = await MainActor.run { adRewardAvailable }
             defer {
                 Task {
                     await MainActor.run {
@@ -393,26 +438,37 @@ struct AiCreateView: View {
                             // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
                             creditStore.add(credits: cost)
                         }
+                        if shouldRestoreAdReward {
+                            adRewardAvailable = true
+                        }
                         isGenerating = false
                     }
                 }
             }
 
             // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
-            let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
-            if hasEnoughCredits == false {
-                await presentCreditShortageFeedback()
-                return
-            }
-
-            do {
-                try await MainActor.run {
-                    try creditStore.consume(credits: cost)
-                    shouldRestoreCredits = true
+            if usesAdReward == false {
+                let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
+                if hasEnoughCredits == false {
+                    await presentCreditShortageFeedback()
+                    return
                 }
-            } catch {
-                await presentCreditShortageFeedback()
-                return
+
+                do {
+                    try await MainActor.run {
+                        try creditStore.consume(credits: cost)
+                        shouldRestoreCredits = true
+                    }
+                } catch {
+                    await presentCreditShortageFeedback()
+                    return
+                }
+            } else {
+                await MainActor.run {
+                    // 広告特典がある場合は優先的に利用し、同時にローカルのフラグを落として重複消費を防ぐ
+                    adRewardAvailable = false
+                }
+                shouldRestoreAdReward = true
             }
 
             do {
@@ -425,6 +481,7 @@ struct AiCreateView: View {
                 )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
+                shouldRestoreAdReward = false
                 do {
                     let packName = try await MainActor.run { () -> String in
                         let importedPack = try createPack(from: dto)
@@ -453,7 +510,7 @@ struct AiCreateView: View {
                     // サーバー側で不足判定となったのでローカルを戻さず、Keychain残高を最新状態で使い続ける
                     shouldRestoreCredits = false
                     // サーバーの残高を参照してKeychainを最新化し、複数端末での消費にも追随させる
-                    await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+                    await refreshCreditStatusFromServer(showAlertOnFailure: false)
                     await presentCreditShortageFeedback()
                 case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
                     let message = apiError.errorDescription
@@ -607,7 +664,7 @@ struct AiCreateView: View {
                 } catch let apiError as AzukiAPIError {
                     if case .duplicateTransaction = apiError {
                         // すでに処理済みなら残高だけ再取得しておき、トークンはサーバー任せとする
-                        await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+                        await refreshCreditStatusFromServer(showAlertOnFailure: false)
                         didRecoverToken = true
                     }
                 } catch {
@@ -627,7 +684,7 @@ struct AiCreateView: View {
     }
 
     /// Keychainに保持している残高とサーバーの残高を初回表示時に同期する
-    private func syncCreditBalanceIfNeeded() async {
+    private func syncCreditStatusIfNeeded() async {
         let shouldFetch = await MainActor.run { () -> Bool in
             if didRequestInitialBalance {
                 // すでに同期済みであれば追加のサーバーアクセスは避ける
@@ -639,18 +696,20 @@ struct AiCreateView: View {
         if shouldFetch == false {
             return
         }
-        await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+        await refreshCreditStatusFromServer(showAlertOnFailure: false)
     }
 
     /// サーバーに保存されている残高を取得してKeychainへ反映する
     /// - Parameter showAlertOnFailure: 失敗時にユーザーへアラート表示するかどうか
-    private func refreshCreditBalanceFromServer(showAlertOnFailure: Bool) async {
+    private func refreshCreditStatusFromServer(showAlertOnFailure: Bool) async {
         let userId = await MainActor.run { creditStore.userId }
+        let userAdId = await MainActor.run { creditStore.userAdId }
         do {
             // azuki-apiへ問い合わせて最新残高を受け取り、Keychainに保持している値と揃える
-            let remoteBalance = try await AzukiApi.shared.fetchCreditBalance(userId: userId)
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId, userAdId: userAdId)
             await MainActor.run {
-                creditStore.overwrite(credits: remoteBalance)
+                creditStore.overwrite(credits: status.balance)
+                adRewardAvailable = status.adRewardAvailable
             }
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {
@@ -972,7 +1031,7 @@ struct AiCreateView: View {
         } catch let apiError as AzukiAPIError {
             // サーバー側ですでに処理済みであれば最新残高を取得し直す
             if case .duplicateTransaction = apiError {
-                await refreshCreditBalanceFromServer(showAlertOnFailure: false)
+                await refreshCreditStatusFromServer(showAlertOnFailure: false)
                 await MainActor.run {
                     if notifiedTransactionIds.contains(transactionIdentifier) == false {
                         // サーバー側で既に処理済みだった購入についても、一度だけ状況を知らせる

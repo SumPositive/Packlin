@@ -36,6 +36,7 @@ let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
 /// バナー広告と動画広告をまとめて確認できるシートビュー
 struct AdMobAdSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var creditStore: CreditStore
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
@@ -125,12 +126,25 @@ struct AdMobAdSheetView: View {
         #if canImport(GoogleMobileAds)
         .onAppear {
             // 動画視聴完了後にシートを閉じる・お礼を出す挙動を設定
+            loader.updateUserAdId(creditStore.userAdId)
             loader.onAdDismissed = {
                 // 次の動画広告を読み込む
                 loader.loadAd()
             }
             loader.onRewardEarned = { _ in
                 rewardDescription = String(localized: "ご視聴いただきありがとうございます！")
+            }
+            loader.onAdLoaded = {
+                rewardDescription = nil
+            }
+            loader.onAdFailedToLoad = { error in
+                rewardDescription = error.localizedDescription
+            }
+            loader.onAdPresented = {
+                rewardDescription = nil
+            }
+            loader.onAdFailedToPresent = { error in
+                rewardDescription = error.localizedDescription
             }
         }
         #endif
@@ -246,16 +260,31 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     @Published private(set) var isReady = false
     @Published private(set) var errorMessage: String?
 
+    var onAdLoaded: (() -> Void)?
+    var onAdFailedToLoad: ((Error) -> Void)?
+    var onAdPresented: (() -> Void)?
+    var onAdFailedToPresent: ((Error) -> Void)?
     var onAdDismissed: (() -> Void)?
     var onRewardEarned: ((AdReward) -> Void)?
 
     private let adUnitID: String
+    private var userAdId: String?
     private var rewardedAd: RewardedAd?
 
     init(adUnitID: String) {
         self.adUnitID = adUnitID
         super.init()
         loadAd()
+    }
+
+    /// AdMobのSSV customDataへ埋め込むユーザー識別子を更新する
+    /// - Parameter id: Keychainで保持している一意なID
+    func updateUserAdId(_ id: String?) {
+        guard let id, id.isEmpty == false else {
+            userAdId = nil
+            return
+        }
+        userAdId = id
     }
 
     func loadAd() {
@@ -270,11 +299,13 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
                 self.isLoading = false
                 if let error {
                     self.errorMessage = error.localizedDescription
+                    self.onAdFailedToLoad?(error)
                     self.rewardedAd = nil
                 } else if let ad {
                     self.rewardedAd = ad
                     ad.fullScreenContentDelegate = self
                     self.isReady = true
+                    self.onAdLoaded?()
                 }
             }
         }
@@ -283,6 +314,12 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     func present(from root: UIViewController) {
         guard let rewardedAd else { return }
         let ad = rewardedAd
+        if let userAdId, userAdId.isEmpty == false {
+            // SSVでサーバーへ渡すcustomDataに広告用IDを仕込む
+            let options = GADServerSideVerificationOptions()
+            options.customRewardString = userAdId
+            ad.serverSideVerificationOptions = options
+        }
         ad.present(from: root) { [weak self] in
             guard let self else { return }
             self.onRewardEarned?(ad.adReward)
@@ -299,12 +336,20 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         }
     }
 
+    func adDidPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.onAdPresented?()
+        }
+    }
+
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.errorMessage = error.localizedDescription
             self.isReady = false
             self.rewardedAd = nil
+            self.onAdFailedToPresent?(error)
         }
     }
 }

@@ -86,6 +86,12 @@ enum AzukiAPIError: LocalizedError {
 final class AzukiApi {
     static let shared = AzukiApi()
 
+    /// /api/credit/check が返すクレジット状況
+    struct CreditStatus {
+        let balance: Int
+        let adRewardAvailable: Bool
+    }
+
     private let session: URLSession
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
@@ -163,24 +169,42 @@ final class AzukiApi {
         }
     }
 
-    /// サーバーに保存されている最新のクレジット残高を取得し、Keychainと突き合わせるために利用する
-    /// - Parameter userId: 照会対象のユーザーID（JWTで本人確認される）
-    /// - Returns: サーバーが保持する残高
-    func fetchCreditBalance(userId: String) async throws -> Int {
+    /// サーバーに保存されている最新のクレジット残高や広告特典の状態を取得する
+    /// - Parameters:
+    ///   - userId: 照会対象のユーザーID
+    ///   - userAdId: AdMobのcustomDataとして送信する広告識別子
+    /// - Returns: クレジット残高と広告特典フラグ
+    func fetchCreditStatus(userId: String, userAdId: String?) async throws -> CreditStatus {
         struct CreditCheckResponse: Decodable {
             let balance: Int
+            let adRewardAvailable: Bool?
+            let accessToken: String?
+            let accessTokenExpiresAt: Double?
+            let refreshToken: String?
+            let refreshTokenExpiresAt: Double?
         }
 
-        // Hono側でJWTとuserIdの整合性をチェックするため、クエリにもuserIdを明示的に付与する
-        guard let url = makeURL(path: "/api/credit/check", queryItems: [URLQueryItem(name: "userId", value: userId)]) else {
+        var queryItems = [URLQueryItem(name: "userId", value: userId)]
+        if let userAdId, userAdId.isEmpty == false {
+            queryItems.append(URLQueryItem(name: "userAdId", value: userAdId))
+        }
+
+        guard let url = makeURL(path: "/api/credit/check", queryItems: queryItems) else {
             throw AzukiAPIError.invalidURL
         }
 
-        let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .required)
+        // アクセストークン未取得のユーザーにも発行するため、認証ヘッダは任意付与とする
+        let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .optional)
         let data = try await send(request: request)
         do {
             let response = try decoder.decode(CreditCheckResponse.self, from: data)
-            return response.balance
+            storeTokensIfProvided(
+                accessToken: response.accessToken,
+                accessTokenExpiresAt: response.accessTokenExpiresAt,
+                refreshToken: response.refreshToken,
+                refreshTokenExpiresAt: response.refreshTokenExpiresAt
+            )
+            return CreditStatus(balance: response.balance, adRewardAvailable: response.adRewardAvailable ?? false)
         } catch {
             throw AzukiAPIError.decoding
         }
