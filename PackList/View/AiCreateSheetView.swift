@@ -114,6 +114,8 @@ struct AiCreateView: View {
     @State private var notifiedTransactionIds: Set<String> = []
     /// ビューが画面上に表示されているかどうかを保持し、通知とアラートの出し分けに利用する
     @State private var isViewVisible = true
+    /// 広告特典バッジを押下した際にAI依頼シートを再度開くためのフラグ
+    @State private var isPresentingAiCreateSheetFromBadge = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -340,6 +342,12 @@ struct AiCreateView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        // バッジタップでAI依頼シートを重ねて開く
+        .sheet(isPresented: $isPresentingAiCreateSheetFromBadge) {
+            AiCreateSheetView(basePack: basePack)
+                .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
+                .presentationDragIndicator(.visible)
+        }
         .onAppear {
             // シートが表示されたら画面内フィードバックを優先で伝えるためのフラグを立てる
             isViewVisible = true
@@ -406,30 +414,37 @@ struct AiCreateView: View {
 
     /// 広告特典の状態を示すバッジ
     private var adRewardBadge: some View {
-        VStack(alignment: .center, spacing: 4) {
-            HStack(spacing: 8) {
-                ForEach(0..<adRewardStampGoal, id: \.self) { index in
-                    let filled = index < adRewardStamps
-                    Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(filled ? Color.primary : Color.secondary)
+        Button {
+            // 1タップでAI依頼シートを開けるようにし、広告特典を活用する導線を強化
+            isPresentingAiCreateSheetFromBadge = true
+        } label: {
+            VStack(alignment: .center, spacing: 4) {
+                HStack(spacing: 8) {
+                    ForEach(0..<adRewardStampGoal, id: \.self) { index in
+                        let filled = index < adRewardStamps
+                        Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(filled ? Color.primary : Color.secondary)
+                    }
+                    Text("広告を見て特典をゲット")
+                        .font(.body)
+                        .foregroundStyle(Color.primary)
                 }
-                Text("広告を見て特典をゲット")
-                    .font(.body)
-                    .foregroundStyle(Color.primary)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background(
+                    Capsule(style: .circular)
+                        .fill(.tertiary)
+                )
+
+                Text("動画広告を3回視聴すると送信が1回無料になります")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            .background(
-                Capsule(style: .circular)
-                    .fill(.tertiary)
-            )
-            
-            Text("動画広告を3回視聴すると送信が1回無料になります")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity) // 中央寄せのために必要
         }
-        .frame(maxWidth: .infinity) // 中央寄せのために必要
+        // ボタンらしさを抑え、既存バッジの見た目を維持する
+        .buttonStyle(.plain)
     }
 
 //    private var adRewardBadgeText: String {
@@ -879,6 +894,15 @@ struct AiCreateView: View {
         }
     }
 
+    /// AI利用券購入ボタンを横方向へ並べるためのグリッド定義
+    private var purchaseGridColumns: [GridItem] {
+        let columns: [GridItem] = [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12),
+        ]
+        return columns
+    }
+
     /// AI利用回数券購入メニュー
     private var creditPurchaseMenu: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -890,10 +914,11 @@ struct AiCreateView: View {
                     .symbolRenderingMode(.hierarchical)
             }
 
-            // Config側で定義した金額・クレジットの対応表をそのまま描画する
-            VStack(alignment: .leading, spacing: 4) {
+            // Config側で定義した金額・クレジットの対応表を横並びのグリッドで描画する
+            LazyVGrid(columns: purchaseGridColumns, alignment: .center, spacing: 12) {
                 ForEach(AZUKI_CREDIT_PURCHASE_OPTIONS, id: \.productIdJapan) { option in
                     Button {
+                        // 横並びでも分かりやすいように、タップ操作の結果を明示
                         purchaseCredits(option: option)
                     } label: {
                         HStack(spacing: 0) {
@@ -904,16 +929,18 @@ struct AiCreateView: View {
                             }
                             Text(option.localizedButtonTitle(for: locale))
                                 .font(.title3.weight(.bold))
+                                .multilineTextAlignment(.leading)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(4)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
                     }
                     .buttonStyle(.bordered)
                     .tint(.accentColor.opacity(1.0))
                     .disabled(processingProductId != nil || isPurchaseUnavailable(for: option))
                 }
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, 12)
 
             if let warningMessage = purchaseRestrictionWarning {
                 Text(warningMessage)
