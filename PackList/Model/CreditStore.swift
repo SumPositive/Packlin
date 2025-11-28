@@ -13,21 +13,23 @@ import Combine
 @MainActor
 final class CreditStore: ObservableObject {
     @Published private(set) var credits: Int
-    /// azuki-api側でユーザーを識別するためのID。初回作成後はKeychainで保持する。
-    let userId: String
-    /// AdMobのSSV customDataへ付与する広告識別子（アプリ内で一意に生成して保持する）
-    let userAdId: String
+    /// azuki-api側でユーザーを識別するためのID。必要になるまでは生成を遅延させ、
+    /// DEBUG起動でKeychainを空のまま確認できるようにする
+    private(set) lazy var userId: String = {
+        // 初回アクセス時にのみUUIDを採番し、Keychainへ書き戻す
+        AzukiUserIdentifier.loadOrCreate(keychain: keychain)
+    }()
+    /// AdMobのSSV customDataへ付与する広告識別子。同様に必要になるまで生成を遅らせる
+    private(set) lazy var userAdId: String = {
+        // 広告動画を開くタイミングで初めて作成されるようにし、未購入状態でもKeychainが空のままになる
+        AzukiAdUserIdentifier.loadOrCreate(keychain: keychain)
+    }()
 
     private let keychain: KeychainStorage
     private let keychainBalanceKey = "azuki.credit.balance"
 
     init(keychain: KeychainStorage = KeychainStorage()) {
         self.keychain = keychain
-        // 既存ユーザーであればKeychainから、旧バージョン利用者であればUserDefaultsからIDを復元する
-        self.userId = AzukiUserIdentifier.loadOrCreate(keychain: keychain)
-        // 広告連携用のIDも同様にKeychainから復元し、無ければ新規に作成する
-        self.userAdId = AzukiAdUserIdentifier.loadOrCreate(keychain: keychain)
-
         if let storedInKeychain = keychain.loadInt(forKey: keychainBalanceKey) {
             // Keychainに保存済みならそのまま採用する
             self.credits = storedInKeychain
