@@ -316,9 +316,10 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         guard let rewardedAd else { return }
         let ad = rewardedAd
         if let userId, userId.isEmpty == false {
-            // SSVでサーバーへ渡すcustomDataに広告用IDを仕込む
+            // SSV経由でサーバーへ渡す識別子はuserIdで統一し、課金と広告視聴の紐づけを一本化する
             let options = ServerSideVerificationOptions()
-            options.customRewardText = userId
+            // customDataはアプリ側で自由に設定できる文字列。ここではKeychainに保持しているuserIdをそのまま送る
+            options.customData = userId
             ad.serverSideVerificationOptions = options
         }
         ad.present(from: root) { [weak self] in
