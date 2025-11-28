@@ -20,11 +20,15 @@ import GoogleMobileAds
 
 // 広告ユニットID
 #if DEBUG
+// リワード型 テスト用
+let ADMOB_REWARD_1_UnitID  = "ca-app-pub-3940256099942544/1712485313"
 // アダプティブ バナー テスト用
 let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 // インタースティシャル（全画面動画）テスト用
 let ADMOB_VIDEO_UnitID  = "ca-app-pub-3940256099942544/4411468910"
 #else
+// リワード型
+let ADMOB_REWARD_1_UnitID  = "ca-app-pub-7576639777972199/1661712828"
 // アダプティブ バナー 本番用
 let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 // インタースティシャル（全画面動画）本番用
