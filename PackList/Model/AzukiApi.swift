@@ -376,6 +376,15 @@ final class AzukiApi {
         }
     }
 
+    /// Keychainに有効なアクセストークンが保持されているかを確認する
+    /// - Returns: 有効期限内のアクセストークンがあれば true
+    func hasValidAccessToken() -> Bool {
+        guard let token = accessTokenStore.currentTokenIfValid() else {
+            return false
+        }
+        return token.isEmpty == false
+    }
+
     /// 認証必須リクエスト向けに有効なアクセストークンを確保する
     /// - Returns: Authorizationヘッダへ設定すべきトークン文字列
     private func obtainValidAccessTokenForRequiredRequest() async throws -> String {
