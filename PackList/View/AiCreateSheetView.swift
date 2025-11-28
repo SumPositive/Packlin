@@ -11,7 +11,7 @@ import Foundation
 import StoreKit
 
 
-let AiCreateSheetView_HEIGHT: CGFloat = 640.0 // シート表示時の高さ指定
+let AiCreateSheetView_HEIGHT: CGFloat = 690.0 // シート表示時の高さ指定
 
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
@@ -220,8 +220,6 @@ struct AiCreateView: View {
                             .foregroundStyle(.primary)
                             .padding(.vertical, 4)
                             .padding(.horizontal, 12)
-
-                        adRewardBadge
                     }
 
                     Spacer(minLength: 12)
@@ -335,6 +333,10 @@ struct AiCreateView: View {
             // AI利用券購入
             creditPurchaseMenu
             
+            Divider()
+            
+            // リワード広告特典
+            adRewardBadge
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -404,40 +406,47 @@ struct AiCreateView: View {
 
     /// 広告特典の状態を示すバッジ
     private var adRewardBadge: some View {
-        HStack(spacing: 6) {
-            ForEach(0..<adRewardStampGoal, id: \.self) { index in
-                let filled = index < adRewardStamps
-                Image(systemName: filled ? "gift.fill" : "gift")
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(filled ? Color.pink : Color.secondary)
+        VStack(alignment: .center, spacing: 4) {
+            HStack(spacing: 8) {
+                ForEach(0..<adRewardStampGoal, id: \.self) { index in
+                    let filled = index < adRewardStamps
+                    Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(filled ? Color.primary : Color.secondary)
+                }
+                Text("広告を見て特典をゲット")
+                    .font(.body)
+                    .foregroundStyle(Color.primary)
             }
-            Text(adRewardBadgeText)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(
+                Capsule(style: .circular)
+                    .fill(.tertiary)
+            )
+            
+            Text("動画広告を3回視聴すると送信が1回無料になります")
                 .font(.caption)
-                .foregroundStyle(hasAdRewardTicket ? Color.primary : Color.secondary)
+                .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 8)
-        .background(
-            Capsule(style: .continuous)
-                .fill(hasAdRewardTicket ? Color.pink.opacity(0.16) : Color(uiColor: .tertiarySystemFill))
-        )
+        .frame(maxWidth: .infinity) // 中央寄せのために必要
     }
 
-    private var adRewardBadgeText: String {
-        let capped = min(adRewardStamps, adRewardStampGoal)
-        let progressFormat = String(localized: "特典アイコン: %lld/%lld")
-        // 進捗の表記もローカライズされた書式に載せてから組み立てる
-        let progressText = String(format: progressFormat, capped, adRewardStampGoal)
-        if hasAdRewardTicket {
-            let rewardedFormat = String(localized: "チャッピー送信に使える特典が貯まりました (%@)")
-            // String(format:)で組み立てて型不一致を回避する
-            return String(format: rewardedFormat, progressText)
-        }
-        let remaining = adRewardStampGoal - capped
-        let remainingFormat = String(localized: "あと%lld個でチャッピー送信が1回無料になります (%@)")
-        // 残り個数と進捗テキストを別々に差し込むことで可読性を確保
-        return String(format: remainingFormat, remaining, progressText)
-    }
+//    private var adRewardBadgeText: String {
+//        let capped = min(adRewardStamps, adRewardStampGoal)
+//        let progressFormat = String(localized: "特典アイコン: %lld/%lld")
+//        // 進捗の表記もローカライズされた書式に載せてから組み立てる
+//        let progressText = String(format: progressFormat, capped, adRewardStampGoal)
+//        if hasAdRewardTicket {
+//            let rewardedFormat = String(localized: "チャッピー送信に使える特典が貯まりました (%@)")
+//            // String(format:)で組み立てて型不一致を回避する
+//            return String(format: rewardedFormat, progressText)
+//        }
+//        let remaining = adRewardStampGoal - capped
+//        let remainingFormat = String(localized: "あと%lld個でチャッピー送信が1回無料になります (%@)")
+//        // 残り個数と進捗テキストを別々に差し込むことで可読性を確保
+//        return String(format: remainingFormat, remaining, progressText)
+//    }
     
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {

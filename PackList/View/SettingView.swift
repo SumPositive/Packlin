@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 import Foundation
 
 
-let SettingView_HEIGHT: CGFloat = 610.0 // シート表示時の高さ指定
+let SettingView_HEIGHT: CGFloat = 620.0 // シート表示時の高さ指定
 
 /// 新規追加する位置
 enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
@@ -170,7 +170,7 @@ struct SettingView: View {
         guard let supportId = supportUserId else {
             return "Version \(appVersion)"
         }
-        return "Version \(appVersion)  SupportID \(supportId)"
+        return "Version \(appVersion)  Support \(supportId)"
     }
 
     private var appVersion: String? {

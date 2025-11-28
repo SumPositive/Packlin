@@ -25,14 +25,14 @@ let ADMOB_REWARD_1_UnitID  = "ca-app-pub-3940256099942544/1712485313"
 // アダプティブ バナー テスト用
 let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 // インタースティシャル（全画面動画）テスト用
-let ADMOB_VIDEO_UnitID  = "ca-app-pub-3940256099942544/4411468910"
+//let ADMOB_VIDEO_UnitID  = "ca-app-pub-3940256099942544/4411468910"
 #else
 // リワード型
 let ADMOB_REWARD_1_UnitID  = "ca-app-pub-7576639777972199/1661712828"
 // アダプティブ バナー 本番用
 let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 // インタースティシャル（全画面動画）本番用
-let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
+//let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
 #endif
 
 
@@ -48,10 +48,6 @@ struct AdMobAdSheetView: View {
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
-//        AdMobBannerConfiguration(
-//            adUnitID: ADMOB_BANNER_UnitID, // 広告ユニット名：PackList V3 Banner
-//            size: CGSize(width: 320, height: 50)
-//        ),
         AdMobBannerConfiguration(
             adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 320, height: 100)
@@ -176,10 +172,10 @@ struct AdMobAdSheetView: View {
         adRewardStamps = nextValue
 
         let filled = min(nextValue, rewardStampGoal)
-        let format = String(localized: "特典アイコン: %lld/%lld")
+        let format = String(localized: "視聴回数: %lld/%lld")
         let progressText = String(format: format, filled, rewardStampGoal)
         // 次回の送信に必要な目安も示す
-        let descriptionFormat = String(localized: "ご視聴ありがとうございます。アイコンが増えました。\n%@")
+        let descriptionFormat = String(localized: "ご視聴ありがとうございます。\n%@")
         // String(format:) を介して差し込むことでローカライズされた書式を保持する
         rewardDescription = String(format: descriptionFormat, progressText)
     }
@@ -204,7 +200,7 @@ struct AdMobRewardedContentView: View {
     private var progressText: String {
         // 進捗を数字でも示し、3個貯まるとチャッピー送信できる目安を作る
         let capped = min(adRewardStamps, rewardStampGoal)
-        let format = String(localized: "特典アイコン: %lld/%lld")
+        let format = String(localized: "視聴回数: %lld/%lld")
         return String(format: format, capped, rewardStampGoal)
     }
 
@@ -232,7 +228,7 @@ struct AdMobRewardedContentView: View {
                 }
             }
 
-            Text("最後まで視聴すると開発者をサポートできます")
+            Text("最後まで視聴して特典をお受け取りください")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -240,7 +236,7 @@ struct AdMobRewardedContentView: View {
 
             VStack(spacing: 4) {
                 // 広告視聴によって貯まる特典の進捗を見せる
-                Text(String(localized: "広告を視聴するとアイコンが増えます。3つ集めるとチャッピー送信が1回無料です。"))
+                Text("特典：３回視聴するとチャッピー送信が1回無料になります")
                     .font(.caption)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -249,7 +245,7 @@ struct AdMobRewardedContentView: View {
                 HStack(spacing: 6) {
                     ForEach(0..<rewardStampGoal, id: \.self) { index in
                         let filled = index < adRewardStamps
-                        Image(systemName: filled ? "gift.fill" : "gift")
+                        Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(filled ? Color.pink : Color.secondary)
                     }
