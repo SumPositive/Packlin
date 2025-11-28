@@ -668,6 +668,30 @@ struct AiCreateView: View {
     private func recoverAccessTokenByVerifyingLatestTransactions() async -> Bool {
         // StoreKit履歴から直近の購入をサーバーへ再通知し、トークンの再払い出しを期待する
         let userId = await MainActor.run { creditStore.userId }
+        do {
+            // クレジット残高照会APIは未認証でも受け付けるため、最初にここでトークンを再配布してもらう
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            await MainActor.run {
+                // サーバーの残高でローカル状態も揃え、広告特典の獲得可否も同期しておく
+                creditStore.overwrite(credits: status.balance)
+                if status.adRewardAvailable && adRewardStamps < adRewardStampGoal {
+                    adRewardStamps = adRewardStampGoal
+                }
+            }
+            if AzukiApi.shared.hasValidAccessToken() {
+                // 残高照会だけでアクセストークンが配られた場合はここで復旧完了とする
+                return true
+            }
+        } catch let apiError as AzukiAPIError {
+            // ここで失敗しても購入履歴をたどるリカバリは継続し、通信状況の揺らぎに備える
+            #if DEBUG
+            print("[AzukiApi] credit check for recovery failed: \(apiError)")
+            #endif
+        } catch {
+            #if DEBUG
+            print("[AzukiApi] unexpected error while recovering via credit check: \(error)")
+            #endif
+        }
         var didAttemptVerification = false
         var didRecoverToken = false
 
