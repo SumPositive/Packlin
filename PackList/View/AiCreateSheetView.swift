@@ -492,7 +492,6 @@ struct AiCreateView: View {
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
             var shouldRestoreAdReward = false
-            let usesAdReward = await MainActor.run { hasAdRewardTicket }
             defer {
                 Task {
                     await MainActor.run {
@@ -507,6 +506,15 @@ struct AiCreateView: View {
                     }
                 }
             }
+
+            // 毎回送信前に最新の残高と特典情報をサーバーへ確認し、トークン配布も拾う
+            let didSyncCreditStatus = await refreshCreditStatusBeforeSending(userId: userId)
+            if didSyncCreditStatus == false {
+                return
+            }
+
+            // サーバー結果で特典スタンプが補充されたかもしれないので、最新値を見て特典利用判定を行う
+            let usesAdReward = await MainActor.run { hasAdRewardTicket }
 
             // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
             if usesAdReward == false {
@@ -595,6 +603,37 @@ struct AiCreateView: View {
                 await presentGenerationFailure(message:
                                                     String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください。"))
             }
+        }
+    }
+
+    /// 送信直前にサーバーへ問い合わせ、残高と特典フラグ、トークン配布状況を同期する
+    /// - Parameter userId: アクセス対象のユーザーID
+    /// - Returns: 正常に同期できた場合はtrue
+    private func refreshCreditStatusBeforeSending(userId: String) async -> Bool {
+        do {
+            // トークン未取得でもアクセスできるAPIなので、送信ごとに実行して最新状態を確実に取得する
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            await MainActor.run {
+                // サーバー残高でローカルを上書きし、他端末の消費や無料特典の付与を確実に反映する
+                creditStore.overwrite(credits: status.balance)
+                if status.adRewardAvailable {
+                    if adRewardStamps < adRewardStampGoal {
+                        adRewardStamps = adRewardStampGoal
+                    }
+                }
+            }
+            // fetchCreditStatus 内でトークンが返却されるため、ここでは成功可否のみ返す
+            return true
+        } catch let apiError as AzukiAPIError {
+            // 通信エラーなどで送信前の確認に失敗した場合は、ユーザーへ通知し送信を中断する
+            let message = apiError.errorDescription
+            ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください。")
+            await presentGenerationFailure(message: message)
+            return false
+        } catch {
+            let message = String(localized: "AI利用が可能か確認できません。通信環境をご確認ください。")
+            await presentGenerationFailure(message: message)
+            return false
         }
     }
 
