@@ -179,7 +179,9 @@ struct AdMobAdSheetView: View {
         let format = String(localized: "特典アイコン: %lld/%lld")
         let progressText = String(format: format, filled, rewardStampGoal)
         // 次回の送信に必要な目安も示す
-        rewardDescription = String(localized: "ご視聴ありがとうございます。アイコンが増えました。\n%@", progressText)
+        let descriptionFormat = String(localized: "ご視聴ありがとうございます。アイコンが増えました。\n%@")
+        // String(format:) を介して差し込むことでローカライズされた書式を保持する
+        rewardDescription = String(format: descriptionFormat, progressText)
     }
     #endif
 }
