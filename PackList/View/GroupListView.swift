@@ -363,37 +363,37 @@ struct GroupListView: View {
     struct Section2FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("ボタンの説明")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Group {
-                    HStack(spacing: 8) {
-                        Image(systemName: "square")
-                            .imageScale(.medium)
-                        Text("グループの名称やメモを編集する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "chevron.right")
-                            .imageScale(.medium)
-                            .padding(.leading, 4)
-                            .padding(.trailing, 2)
-                        Text("アイテム一覧を表示する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "hand.point.up.left.and.text")
-                            .imageScale(.medium)
-                        Text("ドラッグドロップで行を移動する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .foregroundStyle(.secondary)
-                .padding(.leading, 16)
+//                Text("ボタンの説明")
+//                    .font(.footnote)
+//                    .foregroundStyle(.secondary)
+//                    .frame(maxWidth: .infinity, alignment: .leading)
+//                Group {
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "square")
+//                            .imageScale(.medium)
+//                        Text("グループの名称やメモを編集する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "chevron.right")
+//                            .imageScale(.medium)
+//                            .padding(.leading, 4)
+//                            .padding(.trailing, 2)
+//                        Text("アイテム一覧を表示する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "hand.point.up.left.and.text")
+//                            .imageScale(.medium)
+//                        Text("ドラッグドロップで行を移動する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                }
+//                .foregroundStyle(.secondary)
+//                .padding(.leading, 16)
 
                 Text("グループの状態")
                     .font(.footnote)

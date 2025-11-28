@@ -11,7 +11,7 @@ import Foundation
 import StoreKit
 
 
-let AiCreateSheetView_HEIGHT: CGFloat = 690.0 // シート表示時の高さ指定
+let AiCreateSheetView_HEIGHT: CGFloat = 670.0 // シート表示時の高さ指定
 
 /// パックをAIで生成　シート
 struct AiCreateSheetView: View {
@@ -215,7 +215,7 @@ struct AiCreateView: View {
             
             VStack(alignment: .leading, spacing: 6) {
                 // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
-                HStack(spacing: 12) {
+                HStack(spacing: 4) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("AI利用券残り \(creditStore.credits) 枚")
                             .font(.subheadline.weight(.semibold))
@@ -223,14 +223,7 @@ struct AiCreateView: View {
                             .padding(.vertical, 4)
                             .padding(.horizontal, 12)
                     }
-
-                    Spacer(minLength: 12)
-
-                    if hasAdRewardTicket {
-                        // 広告視聴で得た無料送信特典がある場合は、送信ボタンの左に分かりやすく表示する
-                        adRewardTicketChip
-                    }
-
+                    Spacer()
                     // 送信
                     Button {
                         // 送信ボタンを押した瞬間にフォーカスを解除し、キーボードを閉じる
@@ -247,6 +240,11 @@ struct AiCreateView: View {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                             }else{
+                                if hasAdRewardTicket {
+                                    Text(String(localized: "1回無料"))
+                                        .font(.body)
+                                        .foregroundStyle(.blue)
+                                }
                                 // 送信アイコン
                                 Image(systemName: "paperplane")
                                     .imageScale(.medium)
@@ -422,23 +420,24 @@ struct AiCreateView: View {
     private var adRewardTicketChip: some View {
         HStack(spacing: 6) {
             // チャッピー送信に使える無料特典が存在することをアイコンで示す
-            Image(systemName: "ticket.fill")
+            Image(systemName: "gift.fill")
                 .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
             // 次の送信が無料であることをテキストで補足する
             Text(String(localized: "特典1回無料"))
-                .font(.callout.weight(.semibold))
+                .font(.caption)
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 10)
-        .background(
-            Capsule(style: .continuous)
-                .fill(Color.accentColor.opacity(0.18))
-        )
-        .overlay(
-            Capsule(style: .continuous)
-                .stroke(Color.accentColor.opacity(0.35), lineWidth: 1)
-        )
-        .foregroundStyle(.primary)
+//        .padding(.vertical, 3)
+        .padding(.horizontal, 4)
+//        .background(
+//            Capsule(style: .continuous)
+//                .fill(Color.brown.opacity(0.18))
+//        )
+//        .overlay(
+//            Capsule(style: .continuous)
+//                .stroke(Color.red, lineWidth: 1)
+//        )
+//        .foregroundStyle(.primary)
     }
 
     /// 広告特典の状態を示すバッジ

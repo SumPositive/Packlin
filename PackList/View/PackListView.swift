@@ -231,36 +231,36 @@ struct PackListView: View {
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("ボタンの説明")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Group {
-                    HStack(spacing: 8) {
-                        Image(systemName: "case")
-                            .imageScale(.medium)
-                        Text("パックの名称やメモを編集する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "chevron.right")
-                            .imageScale(.medium)
-                            .padding(.horizontal, 4)
-                        Text("グループ一覧を表示する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "hand.point.up.left.and.text")
-                            .imageScale(.medium)
-                        Text("ドラッグドロップで行を移動する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .foregroundStyle(.secondary)
-                .padding(.leading, 16)
+//                Text("ボタンの説明")
+//                    .font(.footnote)
+//                    .foregroundStyle(.secondary)
+//                    .frame(maxWidth: .infinity, alignment: .leading)
+//                Group {
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "case")
+//                            .imageScale(.medium)
+//                        Text("パックの名称やメモを編集する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "chevron.right")
+//                            .imageScale(.medium)
+//                            .padding(.horizontal, 4)
+//                        Text("グループ一覧を表示する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "hand.point.up.left.and.text")
+//                            .imageScale(.medium)
+//                        Text("ドラッグドロップで行を移動する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                }
+//                .foregroundStyle(.secondary)
+//                .padding(.leading, 16)
                 
                 Text("パックの状態")
                     .font(.footnote)

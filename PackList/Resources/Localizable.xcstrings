@@ -70,6 +70,9 @@
         }
       }
     },
+    "1回無料" : {
+
+    },
     "AI利用が可能か確認できません。通信環境をご確認ください。" : {
       "localizations" : {
         "en" : {
@@ -362,6 +365,7 @@
       }
     },
     "アイテム一覧を表示する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -372,6 +376,7 @@
       }
     },
     "アイテム明細を表示し編集する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -475,6 +480,7 @@
       }
     },
     "グループの名称やメモを編集する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -515,6 +521,7 @@
       }
     },
     "グループ一覧を表示する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -619,6 +626,7 @@
       }
     },
     "チェックする／しない" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -752,6 +760,7 @@
       }
     },
     "ドラッグドロップで行を移動する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -792,6 +801,7 @@
       }
     },
     "パックの名称やメモを編集する" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -882,6 +892,7 @@
       }
     },
     "ボタンの説明" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1491,6 +1502,22 @@
     "特典：３回視聴するとチャッピー送信が1回無料になります" : {
 
     },
+    "特典1回無料" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One free send reward"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特典1回無料"
+          }
+        }
+      }
+    },
     "特典アイコン: %lld/%lld" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1816,22 +1843,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "音が出ます"
-          }
-        }
-      }
-    },
-    "特典1回無料" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One free send reward"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "特典1回無料"
           }
         }
       }

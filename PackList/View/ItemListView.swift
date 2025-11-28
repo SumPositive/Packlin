@@ -267,37 +267,37 @@ struct ItemListView: View {
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("ボタンの説明")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Group {
-                    HStack(spacing: 8) {
-                        Image(systemName: "circle")
-                            .imageScale(.medium)
-                        Text("チェックする／しない")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "chevron.right")
-                            .imageScale(.medium)
-                            .padding(.leading, 4)
-                            .padding(.trailing, 2)
-                        Text("アイテム明細を表示し編集する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "hand.point.up.left.and.text")
-                            .imageScale(.medium)
-                        Text("ドラッグドロップで行を移動する")
-                            .font(.footnote)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .foregroundStyle(.secondary)
-                .padding(.leading, 16)
+//                Text("ボタンの説明")
+//                    .font(.footnote)
+//                    .foregroundStyle(.secondary)
+//                    .frame(maxWidth: .infinity, alignment: .leading)
+//                Group {
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "circle")
+//                            .imageScale(.medium)
+//                        Text("チェックする／しない")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "chevron.right")
+//                            .imageScale(.medium)
+//                            .padding(.leading, 4)
+//                            .padding(.trailing, 2)
+//                        Text("アイテム明細を表示し編集する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "hand.point.up.left.and.text")
+//                            .imageScale(.medium)
+//                        Text("ドラッグドロップで行を移動する")
+//                            .font(.footnote)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                }
+//                .foregroundStyle(.secondary)
+//                .padding(.leading, 16)
 
                 Text("アイテムの状態（未✔︎順）")
                     .font(.footnote)
