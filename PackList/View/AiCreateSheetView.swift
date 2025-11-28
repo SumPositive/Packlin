@@ -336,8 +336,9 @@ struct AiCreateView: View {
             creditPurchaseMenu
             
             Divider()
+                .padding(.vertical, 8)
             
-            // リワード広告特典
+            // 広告を見て特典をゲット　リワード広告
             adRewardBadge
         }
         .padding(16)
@@ -414,11 +415,11 @@ struct AiCreateView: View {
 
     /// 広告特典の状態を示すバッジ
     private var adRewardBadge: some View {
-        Button {
-            // 1タップで広告シートを開き、動画視聴から特典獲得へつなげる
-            isPresentingAdRewardSheet = true
-        } label: {
-            VStack(alignment: .center, spacing: 4) {
+        VStack(alignment: .center, spacing: 4) {
+            Button {
+                // 1タップで広告シートを開き、動画視聴から特典獲得へつなげる
+                isPresentingAdRewardSheet = true
+            } label: {
                 HStack(spacing: 8) {
                     ForEach(0..<adRewardStampGoal, id: \.self) { index in
                         let filled = index < adRewardStamps
@@ -430,38 +431,18 @@ struct AiCreateView: View {
                         .font(.body)
                         .foregroundStyle(Color.primary)
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background(
-                    Capsule(style: .circular)
-                        .fill(.tertiary)
-                )
-
-                Text("動画広告を3回視聴すると送信が1回無料になります")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
             }
-            .frame(maxWidth: .infinity) // 中央寄せのために必要
+            // ボタンらしさを抑え、既存バッジの見た目を維持する
+            .buttonStyle(.borderedProminent)
+            .tint(.accentColor.opacity(0.3))
+            
+            Text("動画広告を3回視聴すると送信が1回無料になります")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
-        // ボタンらしさを抑え、既存バッジの見た目を維持する
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity) // 中央寄せのために必要
     }
-
-//    private var adRewardBadgeText: String {
-//        let capped = min(adRewardStamps, adRewardStampGoal)
-//        let progressFormat = String(localized: "特典アイコン: %lld/%lld")
-//        // 進捗の表記もローカライズされた書式に載せてから組み立てる
-//        let progressText = String(format: progressFormat, capped, adRewardStampGoal)
-//        if hasAdRewardTicket {
-//            let rewardedFormat = String(localized: "チャッピー送信に使える特典が貯まりました (%@)")
-//            // String(format:)で組み立てて型不一致を回避する
-//            return String(format: rewardedFormat, progressText)
-//        }
-//        let remaining = adRewardStampGoal - capped
-//        let remainingFormat = String(localized: "あと%lld個でチャッピー送信が1回無料になります (%@)")
-//        // 残り個数と進捗テキストを別々に差し込むことで可読性を確保
-//        return String(format: remainingFormat, remaining, progressText)
-//    }
     
     /// azuki-api経由でOpenAIにパック生成を依頼する
     private func generatePackWithOpenAI() {
@@ -929,11 +910,10 @@ struct AiCreateView: View {
                             }
                             Text(option.localizedButtonTitle(for: locale))
                                 .font(.title3.weight(.bold))
-                                .multilineTextAlignment(.leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
                     }
                     .buttonStyle(.bordered)
                     .tint(.accentColor.opacity(1.0))
