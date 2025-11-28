@@ -48,12 +48,7 @@ struct AppMain: App {
     }()
 
     init() {
-        // デバッグビルドではアプリ起動前にユーザー識別子をリセットし、未購入状態の挙動を毎回確認しやすくする
-#if DEBUG
-        CreditStore.resetIdentifiersForDebugLaunch()
-#endif
-
-        // CreditStoreはリセット後のKeychain状態を元に生成する
+        // CreditStoreはKeychainに保持されたユーザーIDを元に生成する
         _creditStore = StateObject(wrappedValue: CreditStore())
 
         // Firebase初期化

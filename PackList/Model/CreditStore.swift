@@ -87,14 +87,6 @@ final class CreditStore: ObservableObject {
         // Keychainに書き込み
         keychain.saveInt(credits, forKey: keychainBalanceKey)
     }
-#if DEBUG
-    /// DEBUGビルドでのアプリ起動前に、ユーザーIDを意図的にリセットするためのヘルパ
-    /// - Parameter keychain: デバッグ時にクリア対象とするKeychainストレージ。指定が無ければ新規を生成する
-    static func resetIdentifiersForDebugLaunch(keychain: KeychainStorage = KeychainStorage()) {
-        // 旧インストールの残骸が残っていても、毎回クリーンな未購入状態で検証できるようにリセットする
-        AzukiUserIdentifier.reset(keychain: keychain)
-    }
-#endif
 }
 
 /// azuki-apiがユーザーを一意に判定するためのIDを管理するヘルパ
@@ -119,10 +111,4 @@ private enum AzukiUserIdentifier {
         return newId
     }
 
-    /// DEBUGモードの初回起動でKeychain上のIDをクリアするためのヘルパ
-    /// - Parameter keychain: 削除対象を保持しているKeychainストレージ
-    static func reset(keychain: KeychainStorage) {
-        // 削除のみを行い、次回以降のloadOrCreateで新規IDが採番されるようにする
-        keychain.deleteItem(forKey: storageKey)
-    }
 }
