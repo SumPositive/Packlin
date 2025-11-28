@@ -91,6 +91,10 @@ struct AiCreateView: View {
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     /// 購入通知済みのトランザクションIDを永続化し、アプリ再起動後も重複アラートを抑止する
     @AppStorage(AppStorageKey.aiPurchaseNotifiedTransactionIds) private var notifiedTransactionIdsBackup: Data = Data()
+    /// 広告視聴で貯まる特典アイコン数（チャッピー送信用のスタンプ）
+    @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
+    /// チャッピー送信に必要な特典アイコンの目安（スタンプ3個で1回無料）
+    private let adRewardStampGoal = 3
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
@@ -104,7 +108,6 @@ struct AiCreateView: View {
     /// 初回表示時にサーバー残高とKeychain残高を同期したかどうかのフラグ
     @State private var didRequestInitialBalance = false
     /// 広告視聴により一時的に利用できる特典があるかどうか
-    @State private var adRewardAvailable = false
     /// StoreKitのトランザクション更新ストリームを監視するためのタスク
     @State private var transactionObservationTask: Task<Void, Never>?
     /// すでにユーザーへ通知済みのトランザクションIDを記録し、同じ購入結果のアラートを連続表示しないようにする
@@ -122,6 +125,14 @@ struct AiCreateView: View {
         CHATGPT_GENERATION_CREDIT_COST <= creditStore.credits
     }
 
+    /// 広告視聴で貯まったスタンプがチャッピー送信に必要な3個へ到達しているか
+    private var hasAdRewardTicket: Bool {
+        if adRewardStamps < adRewardStampGoal {
+            return false
+        }
+        return true
+    }
+
     /// 入力とローディング状態、手持ちの特典から送信可否を算出する
     private var canSendRequest: Bool {
         if isRequirementEmpty {
@@ -130,7 +141,7 @@ struct AiCreateView: View {
         if isGenerating {
             return false
         }
-        if adRewardAvailable {
+        if hasAdRewardTicket {
             return true
         }
         return hasTicketForGeneration
@@ -394,19 +405,32 @@ struct AiCreateView: View {
     /// 広告特典の状態を示すバッジ
     private var adRewardBadge: some View {
         HStack(spacing: 6) {
-            Image(systemName: adRewardAvailable ? "gift.fill" : "gift")
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(adRewardAvailable ? Color.pink : Color.secondary)
-            Text(adRewardAvailable ? String(localized: "広告特典を使用できます") : String(localized: "広告特典は未付与です"))
+            ForEach(0..<adRewardStampGoal, id: \.self) { index in
+                let filled = index < adRewardStamps
+                Image(systemName: filled ? "gift.fill" : "gift")
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(filled ? Color.pink : Color.secondary)
+            }
+            Text(adRewardBadgeText)
                 .font(.caption)
-                .foregroundStyle(adRewardAvailable ? Color.primary : Color.secondary)
+                .foregroundStyle(hasAdRewardTicket ? Color.primary : Color.secondary)
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
         .background(
             Capsule(style: .continuous)
-                .fill(adRewardAvailable ? Color.pink.opacity(0.16) : Color(uiColor: .tertiarySystemFill))
+                .fill(hasAdRewardTicket ? Color.pink.opacity(0.16) : Color(uiColor: .tertiarySystemFill))
         )
+    }
+
+    private var adRewardBadgeText: String {
+        let capped = min(adRewardStamps, adRewardStampGoal)
+        let progressFormat = String(localized: "特典アイコン: %lld/%lld")
+        if hasAdRewardTicket {
+            return String(localized: "チャッピー送信に使える特典が貯まりました (%@)", String(format: progressFormat, capped, adRewardStampGoal))
+        }
+        let remaining = adRewardStampGoal - capped
+        return String(localized: "あと%lld個でチャッピー送信が1回無料になります (%@)", remaining, String(format: progressFormat, capped, adRewardStampGoal))
     }
     
     /// azuki-api経由でOpenAIにパック生成を依頼する
@@ -430,7 +454,7 @@ struct AiCreateView: View {
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
             var shouldRestoreAdReward = false
-            let usesAdReward = await MainActor.run { adRewardAvailable }
+            let usesAdReward = await MainActor.run { hasAdRewardTicket }
             defer {
                 Task {
                     await MainActor.run {
@@ -439,7 +463,7 @@ struct AiCreateView: View {
                             creditStore.add(credits: cost)
                         }
                         if shouldRestoreAdReward {
-                            adRewardAvailable = true
+                            adRewardStamps += adRewardStampGoal
                         }
                         isGenerating = false
                     }
@@ -465,8 +489,13 @@ struct AiCreateView: View {
                 }
             } else {
                 await MainActor.run {
-                    // 広告特典がある場合は優先的に利用し、同時にローカルのフラグを落として重複消費を防ぐ
-                    adRewardAvailable = false
+                    // 広告特典がある場合は優先的に利用し、同時にローカルのスタンプ数を減らして重複消費を防ぐ
+                    let remaining = adRewardStamps - adRewardStampGoal
+                    if remaining < 0 {
+                        adRewardStamps = 0
+                    } else {
+                        adRewardStamps = remaining
+                    }
                 }
                 shouldRestoreAdReward = true
             }
@@ -708,7 +737,12 @@ struct AiCreateView: View {
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             await MainActor.run {
                 creditStore.overwrite(credits: status.balance)
-                adRewardAvailable = status.adRewardAvailable
+                // サーバーが「広告特典を使える」と返した場合はスタンプを3個ぶん確保しておく
+                if status.adRewardAvailable {
+                    if adRewardStamps < adRewardStampGoal {
+                        adRewardStamps = adRewardStampGoal
+                    }
+                }
             }
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {

@@ -41,6 +41,10 @@ let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
 struct AdMobAdSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var creditStore: CreditStore
+    @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
+
+    // チャッピー送信用の特典として必要なアイコン数
+    private let rewardStampGoal = 3
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
@@ -57,10 +61,10 @@ struct AdMobAdSheetView: View {
             size: CGSize(width: 300, height: 250)
         )
     ]
-
+    
     #if canImport(GoogleMobileAds)
     // 報酬型広告を管理するローダー。シート表示中は使い回す。
-    @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_VIDEO_UnitID)
+    @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_REWARD_1_UnitID)
     // 視聴後のメッセージを出し分けるための状態。
     @State private var rewardDescription: String?
     #endif
@@ -93,7 +97,9 @@ struct AdMobAdSheetView: View {
                         AdMobRewardedContentView(
                             loader: loader,
                             rewardDescription: $rewardDescription,
-                            presentAction: presentAd
+                            presentAction: presentAd,
+                            adRewardStamps: $adRewardStamps,
+                            rewardStampGoal: rewardStampGoal
                         )
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -137,7 +143,7 @@ struct AdMobAdSheetView: View {
                 loader.loadAd()
             }
             loader.onRewardEarned = { _ in
-                rewardDescription = String(localized: "ご視聴いただきありがとうございます！")
+                handleRewardStampIncrement()
             }
             loader.onAdLoaded = {
                 rewardDescription = nil
@@ -163,6 +169,18 @@ struct AdMobAdSheetView: View {
         }
         loader.present(from: topController)
     }
+
+    private func handleRewardStampIncrement() {
+        // 動画を最後まで視聴したのでスタンプを1つ追加する
+        let nextValue = adRewardStamps + 1
+        adRewardStamps = nextValue
+
+        let filled = min(nextValue, rewardStampGoal)
+        let format = String(localized: "特典アイコン: %lld/%lld")
+        let progressText = String(format: format, filled, rewardStampGoal)
+        // 次回の送信に必要な目安も示す
+        rewardDescription = String(localized: "ご視聴ありがとうございます。アイコンが増えました。\n%@", progressText)
+    }
     #endif
 }
 
@@ -178,6 +196,15 @@ struct AdMobRewardedContentView: View {
     @ObservedObject var loader: RewardedAdLoader
     @Binding var rewardDescription: String?
     let presentAction: () -> Void
+    @Binding var adRewardStamps: Int
+    let rewardStampGoal: Int
+
+    private var progressText: String {
+        // 進捗を数字でも示し、3個貯まるとチャッピー送信できる目安を作る
+        let capped = min(adRewardStamps, rewardStampGoal)
+        let format = String(localized: "特典アイコン: %lld/%lld")
+        return String(format: format, capped, rewardStampGoal)
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -208,7 +235,29 @@ struct AdMobRewardedContentView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
- 
+
+            VStack(spacing: 4) {
+                // 広告視聴によって貯まる特典の進捗を見せる
+                Text(String(localized: "広告を視聴するとアイコンが増えます。3つ集めるとチャッピー送信が1回無料です。"))
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+
+                HStack(spacing: 6) {
+                    ForEach(0..<rewardStampGoal, id: \.self) { index in
+                        let filled = index < adRewardStamps
+                        Image(systemName: filled ? "gift.fill" : "gift")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(filled ? Color.pink : Color.secondary)
+                    }
+                }
+
+                Text(progressText)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(adRewardStamps < rewardStampGoal ? Color.secondary : Color.pink)
+            }
+
             HStack {
                 Spacer()
 

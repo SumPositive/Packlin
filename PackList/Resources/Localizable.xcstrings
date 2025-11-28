@@ -1690,6 +1690,86 @@
           }
         }
       }
+    },
+    "特典アイコン: %lld/%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reward icons: %lld/%lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特典アイコン: %lld/%lld"
+          }
+        }
+      }
+    },
+    "ご視聴ありがとうございます。アイコンが増えました。\n%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thank you for watching. Your reward icons increased.\n%@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ご視聴ありがとうございます。アイコンが増えました。\n%@"
+          }
+        }
+      }
+    },
+    "広告を視聴するとアイコンが増えます。3つ集めるとチャッピー送信が1回無料です。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watching ads adds icons. Collect three to send one Chappie request for free."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広告を視聴するとアイコンが増えます。3つ集めるとチャッピー送信が1回無料です。"
+          }
+        }
+      }
+    },
+    "チャッピー送信に使える特典が貯まりました (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have enough reward icons to contact Chappie (%@)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チャッピー送信に使える特典が貯まりました (%@)"
+          }
+        }
+      }
+    },
+    "あと%lld個でチャッピー送信が1回無料になります (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collect %lld more icons to send one Chappie request for free (%@)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%lld個でチャッピー送信が1回無料になります (%@)"
+          }
+        }
+      }
     }
   },
   "version": "1.1"
