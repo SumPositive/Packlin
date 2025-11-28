@@ -114,8 +114,8 @@ struct AiCreateView: View {
     @State private var notifiedTransactionIds: Set<String> = []
     /// ビューが画面上に表示されているかどうかを保持し、通知とアラートの出し分けに利用する
     @State private var isViewVisible = true
-    /// 広告特典バッジを押下した際にAI依頼シートを再度開くためのフラグ
-    @State private var isPresentingAiCreateSheetFromBadge = false
+    /// 広告特典バッジからAdMobの広告シートを開くためのフラグ（動画視聴導線を明示）
+    @State private var isPresentingAdRewardSheet = false
 
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
@@ -342,10 +342,10 @@ struct AiCreateView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        // バッジタップでAI依頼シートを重ねて開く
-        .sheet(isPresented: $isPresentingAiCreateSheetFromBadge) {
-            AiCreateSheetView(basePack: basePack)
-                .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
+        // バッジタップでAdMobの広告シートを重ねて開き、特典取得へ誘導する
+        .sheet(isPresented: $isPresentingAdRewardSheet) {
+            AdMobAdSheetView()
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         .onAppear {
@@ -415,8 +415,8 @@ struct AiCreateView: View {
     /// 広告特典の状態を示すバッジ
     private var adRewardBadge: some View {
         Button {
-            // 1タップでAI依頼シートを開けるようにし、広告特典を活用する導線を強化
-            isPresentingAiCreateSheetFromBadge = true
+            // 1タップで広告シートを開き、動画視聴から特典獲得へつなげる
+            isPresentingAdRewardSheet = true
         } label: {
             VStack(alignment: .center, spacing: 4) {
                 HStack(spacing: 8) {
