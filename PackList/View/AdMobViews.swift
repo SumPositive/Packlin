@@ -126,7 +126,8 @@ struct AdMobAdSheetView: View {
         #if canImport(GoogleMobileAds)
         .onAppear {
             // 動画視聴完了後にシートを閉じる・お礼を出す挙動を設定
-            loader.updateUserAdId(creditStore.userAdId)
+            // userIdを広告のSSV customDataにも流用し、ユーザー識別を一本化する
+            loader.updateUserId(creditStore.userId)
             loader.onAdDismissed = {
                 // 次の動画広告を読み込む
                 loader.loadAd()
@@ -268,7 +269,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     var onRewardEarned: ((AdReward) -> Void)?
 
     private let adUnitID: String
-    private var userAdId: String?
+    private var userId: String?
     private var rewardedAd: RewardedAd?
 
     init(adUnitID: String) {
@@ -277,14 +278,14 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         loadAd()
     }
 
-    /// AdMobのSSV customDataへ埋め込むユーザー識別子を更新する
+    /// AdMobのSSV customDataへ埋め込むユーザー識別子を更新する。userIdで統一し、二重管理を避ける
     /// - Parameter id: Keychainで保持している一意なID
-    func updateUserAdId(_ id: String?) {
+    func updateUserId(_ id: String?) {
         guard let id, id.isEmpty == false else {
-            userAdId = nil
+            userId = nil
             return
         }
-        userAdId = id
+        userId = id
     }
 
     func loadAd() {
@@ -314,10 +315,10 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     func present(from root: UIViewController) {
         guard let rewardedAd else { return }
         let ad = rewardedAd
-        if let userAdId, userAdId.isEmpty == false {
+        if let userId, userId.isEmpty == false {
             // SSVでサーバーへ渡すcustomDataに広告用IDを仕込む
             let options = ServerSideVerificationOptions()
-            options.customRewardText = userAdId
+            options.customRewardText = userId
             ad.serverSideVerificationOptions = options
         }
         ad.present(from: root) { [weak self] in

@@ -703,10 +703,9 @@ struct AiCreateView: View {
     /// - Parameter showAlertOnFailure: 失敗時にユーザーへアラート表示するかどうか
     private func refreshCreditStatusFromServer(showAlertOnFailure: Bool) async {
         let userId = await MainActor.run { creditStore.userId }
-        let userAdId = await MainActor.run { creditStore.userAdId }
         do {
             // azuki-apiへ問い合わせて最新残高を受け取り、Keychainに保持している値と揃える
-            let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId, userAdId: userAdId)
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             await MainActor.run {
                 creditStore.overwrite(credits: status.balance)
                 adRewardAvailable = status.adRewardAvailable

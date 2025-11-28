@@ -13,23 +13,18 @@ import Combine
 @MainActor
 final class CreditStore: ObservableObject {
     @Published private(set) var credits: Int
-    /// azuki-api側でユーザーを識別するためのID。必要になるまでは生成を遅延させ、
-    /// DEBUG起動でKeychainを空のまま確認できるようにする
-    private(set) lazy var userId: String = {
-        // 初回アクセス時にのみUUIDを採番し、Keychainへ書き戻す
-        AzukiUserIdentifier.loadOrCreate(keychain: keychain)
-    }()
-    /// AdMobのSSV customDataへ付与する広告識別子。同様に必要になるまで生成を遅らせる
-    private(set) lazy var userAdId: String = {
-        // 広告動画を開くタイミングで初めて作成されるようにし、未購入状態でもKeychainが空のままになる
-        AzukiAdUserIdentifier.loadOrCreate(keychain: keychain)
-    }()
+    /// azuki-api側でユーザーを識別するためのID。StoreKit購入時にも利用するため
+    /// アプリ起動と同時にKeychainへ用意しておく
+    private(set) var userId: String
 
     private let keychain: KeychainStorage
     private let keychainBalanceKey = "azuki.credit.balance"
 
     init(keychain: KeychainStorage = KeychainStorage()) {
         self.keychain = keychain
+        // ユーザーIDは起動時に確定させる。広告用IDを別途管理する必要がなくなったため、userIdのみで統一
+        self.userId = AzukiUserIdentifier.loadOrCreate(keychain: keychain)
+
         if let storedInKeychain = keychain.loadInt(forKey: keychainBalanceKey) {
             // Keychainに保存済みならそのまま採用する
             self.credits = storedInKeychain
@@ -93,12 +88,11 @@ final class CreditStore: ObservableObject {
         keychain.saveInt(credits, forKey: keychainBalanceKey)
     }
 #if DEBUG
-    /// DEBUGビルドでのアプリ起動前に、ユーザーIDと広告用IDを意図的にリセットするためのヘルパ
+    /// DEBUGビルドでのアプリ起動前に、ユーザーIDを意図的にリセットするためのヘルパ
     /// - Parameter keychain: デバッグ時にクリア対象とするKeychainストレージ。指定が無ければ新規を生成する
     static func resetIdentifiersForDebugLaunch(keychain: KeychainStorage = KeychainStorage()) {
         // 旧インストールの残骸が残っていても、毎回クリーンな未購入状態で検証できるようにリセットする
         AzukiUserIdentifier.reset(keychain: keychain)
-        AzukiAdUserIdentifier.reset(keychain: keychain)
     }
 #endif
 }
@@ -129,30 +123,6 @@ private enum AzukiUserIdentifier {
     /// - Parameter keychain: 削除対象を保持しているKeychainストレージ
     static func reset(keychain: KeychainStorage) {
         // 削除のみを行い、次回以降のloadOrCreateで新規IDが採番されるようにする
-        keychain.deleteItem(forKey: storageKey)
-    }
-}
-
-/// AdMob SSV向けに利用する広告用の識別子を管理するヘルパ
-private enum AzukiAdUserIdentifier {
-    private static let storageKey = "azuki.api.userAdId"
-
-    /// Keychainに保存済みであればそれを返し、無ければUUIDから生成する
-    /// - Parameter keychain: セキュアに保持するためのKeychainストレージ
-    /// - Returns: AdMobのcustomDataへ付与する文字列
-    static func loadOrCreate(keychain: KeychainStorage) -> String {
-        if let storedInKeychain = keychain.loadString(forKey: storageKey), storedInKeychain.isEmpty == false {
-            return storedInKeychain
-        }
-        let newId = "ad-" + UUID().uuidString.lowercased()
-        keychain.saveString(newId, forKey: storageKey)
-        return newId
-    }
-
-    /// DEBUGモードの初回起動で広告用IDをリセットするヘルパ
-    /// - Parameter keychain: 削除対象を保持しているKeychainストレージ
-    static func reset(keychain: KeychainStorage) {
-        // customDataに以前の値が残らないよう、Keychainから完全削除しておく
         keychain.deleteItem(forKey: storageKey)
     }
 }

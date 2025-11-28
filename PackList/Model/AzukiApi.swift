@@ -170,11 +170,9 @@ final class AzukiApi {
     }
 
     /// サーバーに保存されている最新のクレジット残高や広告特典の状態を取得する
-    /// - Parameters:
-    ///   - userId: 照会対象のユーザーID
-    ///   - userAdId: AdMobのcustomDataとして送信する広告識別子
+    /// - Parameter userId: 照会対象のユーザーID
     /// - Returns: クレジット残高と広告特典フラグ
-    func fetchCreditStatus(userId: String, userAdId: String?) async throws -> CreditStatus {
+    func fetchCreditStatus(userId: String) async throws -> CreditStatus {
         struct CreditCheckResponse: Decodable {
             let balance: Int
             let adRewardAvailable: Bool?
@@ -184,10 +182,7 @@ final class AzukiApi {
             let refreshTokenExpiresAt: Double?
         }
 
-        var queryItems = [URLQueryItem(name: "userId", value: userId)]
-        if let userAdId, userAdId.isEmpty == false {
-            queryItems.append(URLQueryItem(name: "userAdId", value: userAdId))
-        }
+        let queryItems = [URLQueryItem(name: "userId", value: userId)]
 
         guard let url = makeURL(path: "/api/credit/check", queryItems: queryItems) else {
             throw AzukiAPIError.invalidURL
