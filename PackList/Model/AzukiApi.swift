@@ -190,18 +190,37 @@ final class AzukiApi {
 
         // アクセストークン未取得のユーザーにも発行するため、認証ヘッダは任意付与とする
         let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .optional)
-        let data = try await send(request: request)
+
+        func decodeCreditStatus(from data: Data) throws -> CreditStatus {
+            do {
+                let response = try decoder.decode(CreditCheckResponse.self, from: data)
+                // サーバーから返却されたトークン群をすべて保存し、後続のリクエストで即利用できるようにする
+                storeTokensIfProvided(
+                    accessToken: response.accessToken,
+                    accessTokenExpiresAt: response.accessTokenExpiresAt,
+                    refreshToken: response.refreshToken,
+                    refreshTokenExpiresAt: response.refreshTokenExpiresAt
+                )
+                return CreditStatus(balance: response.balance, adRewardAvailable: response.adRewardAvailable ?? false)
+            } catch {
+                throw AzukiAPIError.decoding
+            }
+        }
+
         do {
-            let response = try decoder.decode(CreditCheckResponse.self, from: data)
-            storeTokensIfProvided(
-                accessToken: response.accessToken,
-                accessTokenExpiresAt: response.accessTokenExpiresAt,
-                refreshToken: response.refreshToken,
-                refreshTokenExpiresAt: response.refreshTokenExpiresAt
-            )
-            return CreditStatus(balance: response.balance, adRewardAvailable: response.adRewardAvailable ?? false)
+            let data = try await send(request: request)
+            return try decodeCreditStatus(from: data)
+        } catch let apiError as AzukiAPIError {
+            // 期限切れや無効なAuthorizationヘッダを送ってしまった場合でも、ヘッダを外して再試行し新規発行を促す
+            if case .unauthorized = apiError {
+                var retryRequest = request
+                retryRequest.setValue(nil, forHTTPHeaderField: "Authorization")
+                let data = try await send(request: retryRequest, allowRetryAfterRefresh: false)
+                return try decodeCreditStatus(from: data)
+            }
+            throw apiError
         } catch {
-            throw AzukiAPIError.decoding
+            throw error
         }
     }
 
