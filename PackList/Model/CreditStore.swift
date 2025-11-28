@@ -18,20 +18,11 @@ final class CreditStore: ObservableObject {
     /// AdMobのSSV customDataへ付与する広告識別子（アプリ内で一意に生成して保持する）
     let userAdId: String
 
-    /// インストール直後かどうかを判定するためのUserDefaults。DEBUG時のID初期化に利用する
-    private let userDefaults: UserDefaults
     private let keychain: KeychainStorage
-    private let storageKey = "azuki.credit.balance"
     private let keychainBalanceKey = "azuki.credit.balance"
 
-    init(userDefaults: UserDefaults = .standard, keychain: KeychainStorage = KeychainStorage()) {
-        // DEBUGビルドではUserDefaultsを保持して初回起動判定に使う
-        self.userDefaults = userDefaults
+    init(keychain: KeychainStorage = KeychainStorage()) {
         self.keychain = keychain
-#if DEBUG
-        // DEBUGモードでインストール直後の初回起動時はユーザー識別IDをクリアし、未購入状態を再現しやすくする
-        resetUserIdentifiersIfNeededForDebug()
-#endif
         // 既存ユーザーであればKeychainから、旧バージョン利用者であればUserDefaultsからIDを復元する
         self.userId = AzukiUserIdentifier.loadOrCreate(keychain: keychain)
         // 広告連携用のIDも同様にKeychainから復元し、無ければ新規に作成する
@@ -98,23 +89,14 @@ final class CreditStore: ObservableObject {
     private func persist() {
         // Keychainに書き込み
         keychain.saveInt(credits, forKey: keychainBalanceKey)
-//        userDefaults.set(credits, forKey: storageKey)
     }
-
 #if DEBUG
-    /// DEBUGモードでの初回起動時にユーザーIDと広告用IDをリセットし、未購入テストを容易にする
-    private func resetUserIdentifiersIfNeededForDebug() {
-        let debugResetFlagKey = "debug.firstLaunch.resetUserIdentifiers"
-        // インストール直後はフラグが未設定。初回だけKeychainをクリアして以後は既存値を保持する
-        let hasAlreadyReset = userDefaults.bool(forKey: debugResetFlagKey)
-        if hasAlreadyReset {
-            return
-        }
-        // KeychainのユーザーIDと広告IDを削除し、起動直後の未購入状態を再現する
+    /// DEBUGビルドでのアプリ起動前に、ユーザーIDと広告用IDを意図的にリセットするためのヘルパ
+    /// - Parameter keychain: デバッグ時にクリア対象とするKeychainストレージ。指定が無ければ新規を生成する
+    static func resetIdentifiersForDebugLaunch(keychain: KeychainStorage = KeychainStorage()) {
+        // 旧インストールの残骸が残っていても、毎回クリーンな未購入状態で検証できるようにリセットする
         AzukiUserIdentifier.reset(keychain: keychain)
         AzukiAdUserIdentifier.reset(keychain: keychain)
-        // 再インストールを繰り返した場合のみ再度リセットされるようフラグを保存する
-        userDefaults.set(true, forKey: debugResetFlagKey)
     }
 #endif
 }

@@ -22,7 +22,7 @@ struct AppMain: App {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var navigationStore = NavigationStore()
     /// ChatGPT生成で利用するクレジット残高。アプリ全体で共有するためStateObject化
-    @StateObject private var creditStore = CreditStore()
+    @StateObject private var creditStore: CreditStore
     /// Undo/Redo を自前で管理する履歴サービス
     @StateObject private var historyService = UndoStackService()
 
@@ -48,6 +48,14 @@ struct AppMain: App {
     }()
 
     init() {
+        // デバッグビルドではアプリ起動前にユーザー識別子をリセットし、未購入状態の挙動を毎回確認しやすくする
+#if DEBUG
+        CreditStore.resetIdentifiersForDebugLaunch()
+#endif
+
+        // CreditStoreはリセット後のKeychain状態を元に生成する
+        _creditStore = StateObject(wrappedValue: CreditStore())
+
         // Firebase初期化
         FirebaseApp.configure()
         // 通常ログレベル
