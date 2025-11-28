@@ -226,6 +226,11 @@ struct AiCreateView: View {
 
                     Spacer(minLength: 12)
 
+                    if hasAdRewardTicket {
+                        // 広告視聴で得た無料送信特典がある場合は、送信ボタンの左に分かりやすく表示する
+                        adRewardTicketChip
+                    }
+
                     // 送信
                     Button {
                         // 送信ボタンを押した瞬間にフォーカスを解除し、キーボードを閉じる
@@ -411,6 +416,29 @@ struct AiCreateView: View {
             return Color(uiColor: .systemGray3)
         }
         return Color(uiColor: .systemGray6)
+    }
+
+    /// 広告視聴で獲得した「1回無料」特典のバッジ
+    private var adRewardTicketChip: some View {
+        HStack(spacing: 6) {
+            // チャッピー送信に使える無料特典が存在することをアイコンで示す
+            Image(systemName: "ticket.fill")
+                .symbolRenderingMode(.hierarchical)
+            // 次の送信が無料であることをテキストで補足する
+            Text(String(localized: "特典1回無料"))
+                .font(.callout.weight(.semibold))
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .background(
+            Capsule(style: .continuous)
+                .fill(Color.accentColor.opacity(0.18))
+        )
+        .overlay(
+            Capsule(style: .continuous)
+                .stroke(Color.accentColor.opacity(0.35), lineWidth: 1)
+        )
+        .foregroundStyle(.primary)
     }
 
     /// 広告特典の状態を示すバッジ
