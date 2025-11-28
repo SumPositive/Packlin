@@ -126,7 +126,7 @@ struct AdMobAdSheetView: View {
         #if canImport(GoogleMobileAds)
         .onAppear {
             // 動画視聴完了後にシートを閉じる・お礼を出す挙動を設定
-            // userIdを広告のSSV customDataにも流用し、ユーザー識別を一本化する
+            // userIdを広告のSSV customRewardStringにも流用し、ユーザー識別を一本化する
             loader.updateUserId(creditStore.userId)
             loader.onAdDismissed = {
                 // 次の動画広告を読み込む
@@ -278,7 +278,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         loadAd()
     }
 
-    /// AdMobのSSV customDataへ埋め込むユーザー識別子を更新する。userIdで統一し、二重管理を避ける
+    /// AdMobのSSV customRewardStringへ埋め込むユーザー識別子を更新する。userIdで統一し、二重管理を避ける
     /// - Parameter id: Keychainで保持している一意なID
     func updateUserId(_ id: String?) {
         guard let id, id.isEmpty == false else {
@@ -318,8 +318,9 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         if let userId, userId.isEmpty == false {
             // SSV経由でサーバーへ渡す識別子はuserIdで統一し、課金と広告視聴の紐づけを一本化する
             let options = ServerSideVerificationOptions()
-            // customDataはアプリ側で自由に設定できる文字列。ここではKeychainに保持しているuserIdをそのまま送る
-            options.customData = userId
+            // customRewardStringはアプリ側で自由に設定できる文字列。ここではKeychainに保持しているuserIdをそのまま送る
+            // （AdMobドキュメント上のcustomDataがSDKではcustomRewardString名称になっている点に注意）
+            options.customRewardString = userId
             ad.serverSideVerificationOptions = options
         }
         ad.present(from: root) { [weak self] in
