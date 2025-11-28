@@ -426,11 +426,17 @@ struct AiCreateView: View {
     private var adRewardBadgeText: String {
         let capped = min(adRewardStamps, adRewardStampGoal)
         let progressFormat = String(localized: "特典アイコン: %lld/%lld")
+        // 進捗の表記もローカライズされた書式に載せてから組み立てる
+        let progressText = String(format: progressFormat, capped, adRewardStampGoal)
         if hasAdRewardTicket {
-            return String(localized: "チャッピー送信に使える特典が貯まりました (%@)", String(format: progressFormat, capped, adRewardStampGoal))
+            let rewardedFormat = String(localized: "チャッピー送信に使える特典が貯まりました (%@)")
+            // String(format:)で組み立てて型不一致を回避する
+            return String(format: rewardedFormat, progressText)
         }
         let remaining = adRewardStampGoal - capped
-        return String(localized: "あと%lld個でチャッピー送信が1回無料になります (%@)", remaining, String(format: progressFormat, capped, adRewardStampGoal))
+        let remainingFormat = String(localized: "あと%lld個でチャッピー送信が1回無料になります (%@)")
+        // 残り個数と進捗テキストを別々に差し込むことで可読性を確保
+        return String(format: remainingFormat, remaining, progressText)
     }
     
     /// azuki-api経由でOpenAIにパック生成を依頼する
