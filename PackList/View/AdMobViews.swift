@@ -368,11 +368,10 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         let ad = rewardedAd
         if let userId, userId.isEmpty == false {
             // SSV経由でサーバーへ渡す識別子はuserIdで統一し、課金と広告視聴の紐づけを一本化する
+            // AdMobのSSVはuserIdentifierを設定しないとuser_idがWebhookに含まれず、/api/admob/ssvでユーザー特定できない
+            // customRewardTextだけではuser_idが空のままになるため、公式ドキュメントに従いuserIdentifierへKeychainのIDを流し込む
             let options = ServerSideVerificationOptions()
-            // customRewardTextはアプリ側で自由に設定できる文字列。ここではKeychainに保持しているuserIdをそのまま送る
-            // （AdMobドキュメント上ではcustomData表記だが、SDKではcustomRewardText名称になっている点に注意）
-            // ここで常にKeychainのIDを流し込むことで、サーバー側でユーザーを一意に認識しやすくなる
-            options.customRewardText = userId
+            options.userIdentifier = userId
             ad.serverSideVerificationOptions = options
         }
         ad.present(from: root) { [weak self] in
