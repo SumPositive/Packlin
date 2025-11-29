@@ -247,13 +247,13 @@ struct AdMobRewardedContentView: View {
                         let filled = index < adRewardStamps
                         Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
                             .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(filled ? Color.pink : Color.secondary)
+                            .foregroundStyle(filled ? Color.blue : Color.secondary)
                     }
                 }
-
+                // 視聴回数
                 Text(progressText)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(adRewardStamps < rewardStampGoal ? Color.secondary : Color.pink)
+                    .foregroundStyle(adRewardStamps < rewardStampGoal ? Color.secondary : Color.blue)
             }
 
             HStack {

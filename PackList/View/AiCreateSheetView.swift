@@ -243,7 +243,7 @@ struct AiCreateView: View {
                                 if hasAdRewardTicket {
                                     Text(String(localized: "1回無料"))
                                         .font(.body)
-                                        .foregroundStyle(.blue)
+                                        .foregroundStyle(.primary)
                                 }
                                 // 送信アイコン
                                 Image(systemName: "paperplane")
@@ -339,7 +339,7 @@ struct AiCreateView: View {
             creditPurchaseMenu
             
             Divider()
-                .padding(.vertical, 8)
+                .padding(.vertical, 4)
             
             // 広告を見て特典をゲット　リワード広告
             adRewardBadge
@@ -452,7 +452,7 @@ struct AiCreateView: View {
                         let filled = index < adRewardStamps
                         Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
                             .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(filled ? Color.primary : Color.secondary)
+                            .foregroundStyle(filled ? Color.blue : Color.secondary)
                     }
                     Text("広告を見て特典をゲット")
                         .font(.body)
