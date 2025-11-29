@@ -372,6 +372,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             // customRewardTextだけではuser_idが空のままになるため、公式ドキュメントに従いuserIdentifierへKeychainのIDを流し込む
             let options = ServerSideVerificationOptions()
             options.userIdentifier = userId
+            options.customRewardText = userId
             ad.serverSideVerificationOptions = options
         }
         ad.present(from: root) { [weak self] in
