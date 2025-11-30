@@ -40,22 +40,21 @@ struct PackEditView: View {
                             checkToggle()
                         } label: {
                             VStack {
-                                ZStack {
-                                    Image(systemName: "case")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                    
-                                    if allItemsChecked {
+                                if allItemsChecked {
+                                    ZStack {
+                                        Image(systemName: "case")
+                                            .imageScale(.large)
+                                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                         Image(systemName: "checkmark")
                                             .imageScale(.small)
                                             .padding(.top, 4)
                                     }
-                                }
-                                if allItemsChecked {
                                     Text("全✔︎ON→OFF")
                                         .font(.caption)
                                 }else{
+                                    Image(systemName: "case")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                     Text("OFF→全✔︎ON")
                                         .font(.caption)
                                 }
