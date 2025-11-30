@@ -452,12 +452,13 @@ struct AdMobBannerView: View {
             if isLoading {
                 ProgressView(String(localized: "広告を読み込み中..."))
                     .font(.caption)
-            } else if let errorMessage {
+            // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する
+            } else if let message = errorMessage {
                 VStack(spacing: 6) {
                     Text(String(localized: "バナー広告の読み込みに失敗しました"))
                         .font(.caption.weight(.semibold))
                         .multilineTextAlignment(.center)
-                    Text(errorMessage)
+                    Text(message)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -465,6 +466,7 @@ struct AdMobBannerView: View {
                         // バナーを作り直して再リクエストする
                         reloadToken = UUID()
                         isLoading = true
+                        // アラート文言をクリアして再試行する
                         errorMessage = nil
                     }
                     .buttonStyle(.borderedProminent)
