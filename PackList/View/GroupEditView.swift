@@ -76,20 +76,20 @@ struct GroupEditView: View {
                         } label: {
                             VStack {
                                 if allItemsChecked {
-                                    Image(systemName: "square")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                    
-                                    Text("全✔︎on→OFF")
-                                        .font(.caption)
-                                }else{
                                     Image(systemName: "checkmark.square")
                                         .imageScale(.large)
                                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                                     
-                                    Text("全✔︎off→ON")
+                                    Text("全✔︎ON→OFF")
+                                        .font(.caption)
+                                }else{
+                                    Image(systemName: "square")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
+                                    
+                                    Text("OFF→全✔︎ON")
                                         .font(.caption)
                                 }
                             }

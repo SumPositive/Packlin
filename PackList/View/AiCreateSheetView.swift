@@ -307,7 +307,7 @@ struct AiCreateView: View {
             )
             
             if isGenerating {
-                Text("チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください。")
+                Text("チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください")
                     .font(.body.weight(.bold))
                     .foregroundStyle(.blue)
             }
@@ -589,11 +589,11 @@ struct AiCreateView: View {
                     await presentCreditShortageFeedback()
                 case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
                     let message = apiError.errorDescription
-                    ?? String(localized: "認証に失敗しました。アプリを再起動して再度お試しください。")
+                    ?? String(localized: "認証に失敗しました。アプリを再起動して再度お試しください")
                     await presentGenerationFailure(message: message)
                 default:
                     let message = apiError.errorDescription
-                    ?? String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください。")
+                    ?? String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください")
                     await presentGenerationFailure(message: message)
                 }
             } catch let localized as LocalizedError {
@@ -601,7 +601,7 @@ struct AiCreateView: View {
                 await presentGenerationFailure(message: message)
             } catch {
                 await presentGenerationFailure(message:
-                                                    String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください。"))
+                                                    String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください"))
             }
         }
     }
@@ -627,11 +627,11 @@ struct AiCreateView: View {
         } catch let apiError as AzukiAPIError {
             // 通信エラーなどで送信前の確認に失敗した場合は、ユーザーへ通知し送信を中断する
             let message = apiError.errorDescription
-            ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください。")
+            ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
             await presentGenerationFailure(message: message)
             return false
         } catch {
-            let message = String(localized: "AI利用が可能か確認できません。通信環境をご確認ください。")
+            let message = String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
             await presentGenerationFailure(message: message)
             return false
         }
@@ -643,7 +643,7 @@ struct AiCreateView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .success(message: String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください。"))
+                inlineGenerationFeedback = .success(message: String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください"))
             }
             return
         }
@@ -668,11 +668,11 @@ struct AiCreateView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .failure(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください。"))
+                inlineGenerationFeedback = .failure(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
             }
             return
         }
-        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください。"))
+        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
     }
 
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
@@ -848,7 +848,7 @@ struct AiCreateView: View {
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {
                 let message = apiError.errorDescription
-                ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください。")
+                ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
                 await MainActor.run {
                     inlineGenerationFeedback = .failure(message: message)
                 }
@@ -859,7 +859,7 @@ struct AiCreateView: View {
         } catch {
             if showAlertOnFailure {
                 await MainActor.run {
-                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用が可能か確認できません。通信環境をご確認ください。"))
+                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用が可能か確認できません。通信環境をご確認ください"))
                 }
             }
             #if DEBUG
@@ -890,7 +890,7 @@ struct AiCreateView: View {
                 processingProductId = productId
             }
 
-            let msgPurchaseCancel = String(localized: "購入を中止しました、課金されません。")
+            let msgPurchaseCancel = String(localized: "購入を中止しました、課金されません")
             
             do {
                 // 実機（Sandbox Apple ID）での挙動確認を前提とし、StoreKit 本番フローをそのまま利用する
@@ -911,7 +911,7 @@ struct AiCreateView: View {
                     case .pending:
                         // ファミリー共有などで承認待ちになる場合
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです、まだ課金されません。承認が完了すると自動で反映されます。"))
+                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです、まだ課金されません。承認が完了すると自動で反映されます"))
                         }
                         
                     case .userCancelled:
@@ -922,13 +922,13 @@ struct AiCreateView: View {
                         
                     @unknown default:
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "想定外の結果が返りました、課金されません。時間をおいて再度お試しください。"))
+                            alertState = .purchaseFailure(message: String(localized: "想定外の結果が返りました、課金されません。時間をおいて再度お試しください"))
                         }
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
                     let message = flowError.errorDescription
-                        ?? String(localized: "AI利用券が購入できませんでした、課金されません。")
+                        ?? String(localized: "AI利用券が購入できませんでした、課金されません")
                     alertState = .purchaseFailure(message: message)
                 }
             } catch StoreKitError.userCancelled {
@@ -955,7 +955,7 @@ struct AiCreateView: View {
                 }
             } catch {
                 await MainActor.run {
-                    alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中に問題が発生しました、課金されません。通信環境をご確認ください。"))
+                    alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中に問題が発生しました、課金されません。通信環境をご確認ください"))
                 }
             }
 
@@ -1020,7 +1020,7 @@ struct AiCreateView: View {
             }
 
             Label {
-                Text("AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。")
+                Text("AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } icon: {
@@ -1048,7 +1048,7 @@ struct AiCreateView: View {
         let currentCredits = creditStore.credits
         if 0 < currentCredits {
             // 購入は残高ゼロ時のみ許可する旨をユーザーへ伝える
-            return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください。")
+            return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
         }
         return nil
     }
@@ -1144,7 +1144,7 @@ struct AiCreateView: View {
         
         // verifyPurchaseに失敗し、購入中止したときのメッセージ
         let fallbackMessage = String(
-            localized: "購入を中止しました、課金されません。")
+            localized: "購入を中止しました、課金されません")
 
 
         do {
@@ -1246,7 +1246,7 @@ struct AiCreateView: View {
         var errorDescription: String? {
             switch self {
             case .productNotFound:
-                return String(localized: "商品情報が見つかりません。")
+                return String(localized: "商品情報が見つかりません")
             case .transactionUnverified(let message):
                 return message
             }
@@ -1366,10 +1366,10 @@ struct AiCreateView: View {
         var title: String {
             switch self {
                 case .purchaseSuccess:
-                    return String(localized: "購入手続きが完了しました。")
+                    return String(localized: "購入手続きが完了しました")
                     // このメッセージの前に出る同様のアラートは、Sandboxでのみ表示される。本番では表示されない
                 case .purchaseAlreadyProcessed:
-                    return String(localized: "既に購入済みです。")
+                    return String(localized: "既に購入済みです")
                 case .purchaseFailure:
                     return String(localized: "購入状況")
                 case .purchaseBlockedByRemaining:
@@ -1380,13 +1380,13 @@ struct AiCreateView: View {
         var message: String {
             switch self {
                 case .purchaseSuccess(let added, _):
-                    return String(localized: "AI利用券を\(added)枚追加しました。")
+                    return String(localized: "AI利用券を\(added)枚追加しました")
                 case .purchaseAlreadyProcessed:
-                    return String(localized: "この購入はすでに完了しています、枚数を更新しました。")
+                    return String(localized: "この購入はすでに完了しています、枚数を更新しました")
                 case .purchaseFailure(let message):
                     return message
                 case .purchaseBlockedByRemaining:
-                    return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください。")
+                    return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
             }
         }
     }

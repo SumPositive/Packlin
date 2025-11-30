@@ -46,17 +46,17 @@ struct PackEditView: View {
                                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                                     
-                                    if !allItemsChecked {
+                                    if allItemsChecked {
                                         Image(systemName: "checkmark")
                                             .imageScale(.small)
                                             .padding(.top, 4)
                                     }
                                 }
                                 if allItemsChecked {
-                                    Text("全✔︎on→OFF")
+                                    Text("全✔︎ON→OFF")
                                         .font(.caption)
                                 }else{
-                                    Text("全✔︎off→ON")
+                                    Text("OFF→全✔︎ON")
                                         .font(.caption)
                                 }
                             }

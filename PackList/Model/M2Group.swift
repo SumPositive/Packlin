@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を付与することになった。"M"はModel
+final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を付与することになった"M"はModel
     typealias ID = String
     @Attribute(.unique) var id: ID
     var order: Int
