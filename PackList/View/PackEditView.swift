@@ -46,6 +46,7 @@ struct PackEditView: View {
                                         Image(systemName: "case")
                                             .imageScale(.large)
                                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                                         Image(systemName: "checkmark")
                                             .imageScale(.small)
                                             .padding(.top, 4)
@@ -56,6 +57,7 @@ struct PackEditView: View {
                                     Image(systemName: "case")
                                         .imageScale(.large)
                                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                                     Text("OFF→全✔︎ON")
                                         .font(.caption)
                                 }
@@ -69,7 +71,7 @@ struct PackEditView: View {
                             }
                         }
                         .frame(width: 88) // on/off変化時に幅が変わらないように
-                        .tint(.purple)
+                        .tint(.accentColor)
                         .disabled(isTogglingCheck) // 進行中はタップを無効化
                         .padding(.horizontal, 8)
                         
@@ -225,7 +227,8 @@ struct PackEditView: View {
         }
     }
 
-    /// チェック・トグルをプログレス付きで開始する
+    /// チェック・トグルが遅延する場合があるのでプログレス付きで開始する
+    ///  起動初期にDB遅延が発生して無反応に見えるためタスク化して終了を待つ
     private func startCheckToggle() {
         // 連打による状態不整合を避けるため、進行中は何もしない
         if isTogglingCheck { return }

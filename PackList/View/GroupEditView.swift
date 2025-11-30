@@ -95,7 +95,7 @@ struct GroupEditView: View {
                             }
                         }
                         .frame(width: 88) // on/off変化時に幅が変わらないように
-                        .tint(.purple)
+                        .tint(.accentColor)
                         .padding(.horizontal, 8)
                         
                         // 複製
