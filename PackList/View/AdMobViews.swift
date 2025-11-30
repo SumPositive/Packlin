@@ -378,6 +378,10 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             options.customRewardText = userId
             ad.serverSideVerificationOptions = options
         }
+        // WebKitプロセスが落ちるとRBSAssertionErrorになることがあるため、開始前に状態を明示的に初期化しておく
+        // （デバイス依存の不安定要因を吸収し、Crashlyticsで再現環境を追いやすくする）
+        isReady = false
+        errorMessage = nil
         ad.present(from: root) { [weak self] in
             guard let self else { return }
             self.onRewardEarned?(ad.adReward)
@@ -405,11 +409,15 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.errorMessage = error.localizedDescription
+            // プロセスが落ちた場合などは広告オブジェクトを破棄して再読込を試みる
             self.isReady = false
             self.rewardedAd = nil
             // 実機のみに現れるエラー内容をCrashlyticsで把握する
             Crashlytics.crashlytics().record(error: error)
+            Crashlytics.crashlytics().log("rewarded_ad_present_failed: \(error.localizedDescription)")
             self.onAdFailedToPresent?(error)
+            // 表示失敗のままではユーザーが操作できないため、新しい広告を取りにいく
+            self.loadAd()
         }
     }
 }
