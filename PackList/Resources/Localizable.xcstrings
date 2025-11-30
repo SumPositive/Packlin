@@ -71,7 +71,20 @@
       }
     },
     "1回無料" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One free use"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1回無料"
+          }
+        }
+      }
     },
     "AI利用が可能か確認できません。通信環境をご確認ください" : {
       "comment" : "Error message shown to the user when an error occurs during the confirmation of whether AI usage is possible before sending.",
@@ -159,7 +172,20 @@
       }
     },
     "AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI tickets are safely stored on this device, but they will be lost if the device is damaged or you delete the app. Please use them soon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください"
+          }
+        }
+      }
     },
     "AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください。" : {
       "extractionState" : "stale",
@@ -590,7 +616,20 @@
       }
     },
     "この購入はすでに完了しています、枚数を更新しました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This purchase is already complete; we updated your ticket count."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この購入はすでに完了しています、枚数を更新しました"
+          }
+        }
+      }
     },
     "この購入はすでに完了しています、枚数を更新しました。" : {
       "extractionState" : "stale",
@@ -760,7 +799,20 @@
       }
     },
     "チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy is thinking. We’ll notify you when suggestions arrive, so you can close this screen. Feel free to keep using the app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください"
+          }
+        }
+      }
     },
     "チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください。" : {
       "extractionState" : "stale",
@@ -1115,7 +1167,20 @@
       }
     },
     "最後まで視聴して特典をお受け取りください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch until the end to claim your reward."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最後まで視聴して特典をお受け取りください"
+          }
+        }
+      }
     },
     "最後まで視聴すると開発者をサポートできます" : {
       "extractionState" : "stale",
@@ -1577,7 +1642,20 @@
       }
     },
     "特典：３回視聴するとチャッピー送信が1回無料になります" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reward: Watch 3 times to get one free Chappy send."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特典：３回視聴するとチャッピー送信が1回無料になります"
+          }
+        }
+      }
     },
     "特典1回無料" : {
       "localizations" : {
@@ -1739,7 +1817,20 @@
       }
     },
     "要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や修正を依頼できます。チャッピーから届いた提案を眺めて修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your request and tap \"Send\" to ask Chappy to create or edit a pack. Review the suggestions and adjust them as you like. One AI ticket lets you send one request."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や修正を依頼できます。チャッピーから届いた提案を眺めて修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。"
+          }
+        }
+      }
     },
     "要望を入力して「送信」ボタンを押せば、チャッピーにパックの新規作成や修正を依頼できます。要望に沿った叩き台を手早く作ってくれる感じです。参考にして修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です。" : {
       "extractionState" : "stale",
@@ -1819,7 +1910,20 @@
       }
     },
     "購入を中止しました、課金されません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase canceled; you haven’t been charged."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入を中止しました、課金されません"
+          }
+        }
+      }
     },
     "購入を中止しました、課金されません。" : {
       "extractionState" : "stale",
@@ -1868,7 +1972,20 @@
       }
     },
     "通信障害が発生しているようです。しばらくしてから再度お試しください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A network issue occurred. Please try again later."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通信障害が発生しているようです。しばらくしてから再度お試しください"
+          }
+        }
+      }
     },
     "通信障害が発生しているようです。しばらくしてから再度お試しください。" : {
       "extractionState" : "stale",

@@ -127,8 +127,9 @@ struct PackListView: View {
 
                     Spacer()
 
+                    // タイトル表示は見出しとして常に同じ大きさで見せたいので、Dynamic Typeの拡大縮小に左右されない固定サイズを指定
                     Text("app.title")
-                        .font(.body)
+                        .font(.system(size: 17))
                         .lineLimit(1)
                         .frame(minWidth: 66)
 
