@@ -252,11 +252,11 @@ struct GroupListView: View {
                         
                         if isBeginnerMode {
                             Text("グループ\n一覧")
-                                .font(.body)
+                                .font(.system(size: 15))
+                                .lineLimit(2)
+                                .frame(minWidth: 50)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .frame(minWidth: 66)
                             Spacer()
                         }
 

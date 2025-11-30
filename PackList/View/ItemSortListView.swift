@@ -244,11 +244,11 @@ struct ItemSortListView: View {
                         
                         if isBeginnerMode {
                             Text("アイテム\n縦覧")
-                                .font(.body)
+                                .font(.system(size: 15))
+                                .lineLimit(2)
+                                .frame(minWidth: 50)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .frame(minWidth: 66)
                             Spacer()
                         }
 
