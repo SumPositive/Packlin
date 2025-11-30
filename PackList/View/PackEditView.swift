@@ -23,6 +23,7 @@ struct PackEditView: View {
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
     @State private var showAiCreateSheet = false
+    @State private var isTogglingCheck = false
     
     private var allItemsChecked: Bool {
         let items = pack.child.flatMap { $0.child }
@@ -36,8 +37,8 @@ struct PackEditView: View {
                     HStack {    // Actions
                         // チェックON/OFF
                         Button {
-                            // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-                            checkToggle()
+                            // チェック・トグル中は多重タップを防ぎ、プログレスを表示する
+                            startCheckToggle()
                         } label: {
                             VStack {
                                 if allItemsChecked {
@@ -60,8 +61,16 @@ struct PackEditView: View {
                                 }
                             }
                         }
+                        .overlay(alignment: .center) {
+                            if isTogglingCheck {
+                                // 起動直後など処理が重い瞬間はスピナーを表示して進捗を見せる
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                        }
                         .frame(width: 88) // on/off変化時に幅が変わらないように
                         .tint(.purple)
+                        .disabled(isTogglingCheck) // 進行中はタップを無効化
                         .padding(.horizontal, 8)
                         
                         // 複製
@@ -215,7 +224,23 @@ struct PackEditView: View {
             }
         }
     }
-    
+
+    /// チェック・トグルをプログレス付きで開始する
+    private func startCheckToggle() {
+        // 連打による状態不整合を避けるため、進行中は何もしない
+        if isTogglingCheck { return }
+        isTogglingCheck = true
+
+        Task { @MainActor in
+            defer {
+                // 処理完了後にスピナーを消す
+                isTogglingCheck = false
+            }
+            // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+            checkToggle()
+        }
+    }
+
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
     private func checkToggle() {
         // Undo grouping BEGIN
