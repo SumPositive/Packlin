@@ -22,17 +22,16 @@ struct PackRowView: View {
     @State private var rowFrame: CGRect?
 
     private let rowHeight: CGFloat = 44
-    private var weightUnit: String {
-        weightDisplayInKg ? String(localized: "kg") : String(localized: "g")
-    }
-
     private var weightLabelText: String? {
         if showNeedWeight {
-            guard pack.stockWeight > 0 || pack.needWeight > 0 else { return nil }
-            return "\(formattedWeight(pack.stockWeight))\(weightUnit)／\(formattedWeight(pack.needWeight))\(weightUnit)"
+            guard 0 < pack.stockWeight || 0 < pack.needWeight else { return nil }
+            // 表示単位は重量ごとに個別判定し、g表示とkg表示の混在を許容する
+            let stockText = formattedWeightWithUnit(pack.stockWeight)
+            let needText  = formattedWeightWithUnit(pack.needWeight)
+            return "\(stockText)／\(needText)"
         } else {
-            guard pack.stockWeight > 0 else { return nil }
-            return "\(formattedWeight(pack.stockWeight))\(weightUnit)"
+            guard 0 < pack.stockWeight else { return nil }
+            return formattedWeightWithUnit(pack.stockWeight)
         }
     }
     // 全チェック済み
@@ -183,14 +182,17 @@ struct PackRowView: View {
 }
 
 private extension PackRowView {
-    func formattedWeight(_ weight: Int) -> String {
+    func formattedWeightWithUnit(_ weight: Int) -> String {
+        // 重量値に応じて単位を切り替え、見やすい表記に整える
         if weightDisplayInKg {
-            // g単位の値をKgへ変換し、Formatterで小数第一位に丸める
+            // 1000g未満は従来どおりgで表示し、1000g以上はkgで丸める
+            if weight < 1000 {
+                return "\(weight.decimalGrouped)\(String(localized: "g"))"
+            }
             let kilogram = Double(weight) / 1000.0
-            return kilogram.oneDecimalGrouped
-        } else {
-            return weight.decimalGrouped
+            return "\(kilogram.oneDecimalGrouped)\(String(localized: "kg"))"
         }
+        return "\(weight.decimalGrouped)\(String(localized: "g"))"
     }
 }
 

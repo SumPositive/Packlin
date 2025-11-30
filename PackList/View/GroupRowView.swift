@@ -25,17 +25,16 @@ struct GroupRowView: View {
 
     private let rowHeight: CGFloat = 44
     private var isNamePlaceholder: Bool { group.name.isEmpty }
-    private var weightUnit: String {
-        weightDisplayInKg ? String(localized: "kg") : String(localized: "g")
-    }
-
     private var weightLabelText: String? {
         if showNeedWeight {
-            guard group.stockWeight > 0 || group.needWeight > 0 else { return nil }
-            return "\(formattedWeight(group.stockWeight))\(weightUnit)／\(formattedWeight(group.needWeight))\(weightUnit)"
+            guard 0 < group.stockWeight || 0 < group.needWeight else { return nil }
+            // 表示単位は重量ごとに決めるため、gとkgが混在するケースにも対応する
+            let stockText = formattedWeightWithUnit(group.stockWeight)
+            let needText  = formattedWeightWithUnit(group.needWeight)
+            return "\(stockText)／\(needText)"
         } else {
-            guard group.stockWeight > 0 else { return nil }
-            return "\(formattedWeight(group.stockWeight))\(weightUnit)"
+            guard 0 < group.stockWeight else { return nil }
+            return formattedWeightWithUnit(group.stockWeight)
         }
     }
     // 全チェック済み
@@ -161,14 +160,19 @@ struct GroupRowView: View {
 }
 
 private extension GroupRowView {
-    func formattedWeight(_ weight: Int) -> String {
+    func formattedWeightWithUnit(_ weight: Int) -> String {
+        // 重量表示の単位を重量値ごとに動的決定する
         if weightDisplayInKg {
-            // g -> Kgへ変換し、NumberFormatter側で小数第一位に丸める
+            // 1000g未満はgのまま表示し、ちょうど1000g以上になったらkgへ変換する
+            if weight < 1000 {
+                return "\(weight.decimalGrouped)\(String(localized: "g"))"
+            }
+            // kg表示時は小数第一位までに丸めて見やすくする
             let kilogram = Double(weight) / 1000.0
-            return kilogram.oneDecimalGrouped
-        } else {
-            return weight.decimalGrouped
+            return "\(kilogram.oneDecimalGrouped)\(String(localized: "kg"))"
         }
+        // 設定オフ時は常にg単位で表示する
+        return "\(weight.decimalGrouped)\(String(localized: "g"))"
     }
 }
 
