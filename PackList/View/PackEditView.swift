@@ -23,9 +23,17 @@ struct PackEditView: View {
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
     @State private var showAiCreateSheet = false
+    // 初回表示時に子データを確実にロードするためのフラグ
+    @State private var hasPreloadedChildren = false
     
     private var allItemsChecked: Bool {
-        let items = pack.child.flatMap { $0.child }
+        // pack.child を直接使うと遅延ロードが完了していないケースで空配列になる可能性があるため、
+        // 事前にロードした child 配列を使って判定する。遅延ロード済みならば通常と同じ動作になる。
+        let items = pack.child.flatMap { group in
+            // group.child に触れることで SwiftData の遅延ロードを明示的に完了させる
+            _ = group.child.count
+            return group.child
+        }
         return !items.isEmpty && items.allSatisfy { $0.check || $0.need == 0 }
     }
 
@@ -170,6 +178,9 @@ struct PackEditView: View {
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
+            // タスクキル直後は遅延ロードが終わる前にボタンを叩かれると checkToggle が空配列を相手にしてしまう。
+            // 子グループとアイテムの配列に一度触れてフェッチを完了させておく。
+            preloadChildRelationships()
         }
         .onDisappear() {
             // 末尾のスペースと改行を除去
@@ -215,7 +226,19 @@ struct PackEditView: View {
             }
         }
     }
-    
+
+    /// Pack配下のグループとアイテムを事前に触って遅延ロードを済ませる
+    private func preloadChildRelationships() {
+        // 毎回フェッチすると余計なコストになるため、初回のみ読み込みを実施する
+        guard hasPreloadedChildren == false else { return }
+        hasPreloadedChildren = true
+
+        // group.child.count にアクセスするだけで SwiftData がリレーションシップをフェッチしてくれる
+        for group in pack.child {
+            _ = group.child.count
+        }
+    }
+
     /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
     private func checkToggle() {
         // Undo grouping BEGIN
