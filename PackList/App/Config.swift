@@ -113,8 +113,8 @@ let FONT_EDIT: Font = .title2
 let DEF_insertionPosition: InsertionPosition = .head
 // 必要重量を表示する
 let DEF_showNeedWeight = true
-// 重量計が1000gを超えると1.0kgで表示
-let DEF_weightDisplayInKg = false
+// 重量計が1000gを超えるとkgで表示
+let DEF_weightDisplayInKg = true
 // チェックで在庫数を満たす
 let DEF_linkCheckWithStock = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
