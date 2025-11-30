@@ -867,6 +867,16 @@
         }
       }
     },
+    "バナー広告の読み込みに失敗しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load banner ad"
+          }
+        }
+      }
+    },
     "最後まで視聴して特典をお受け取りください" : {
       "localizations" : {
         "en" : {

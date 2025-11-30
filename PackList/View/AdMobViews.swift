@@ -15,6 +15,7 @@ import UIKit
 #if canImport(GoogleMobileAds)
 import GoogleMobileAds
 #endif
+import FirebaseCrashlytics
 
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
 
@@ -351,6 +352,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
                 self.isLoading = false
                 if let error {
                     self.errorMessage = error.localizedDescription
+                    // TestFlightでも原因を追いやすいようCrashlyticsへ記録しておく
+                    Crashlytics.crashlytics().record(error: error)
                     self.onAdFailedToLoad?(error)
                     self.rewardedAd = nil
                 } else if let ad {
@@ -404,6 +407,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             self.errorMessage = error.localizedDescription
             self.isReady = false
             self.rewardedAd = nil
+            // 実機のみに現れるエラー内容をCrashlyticsで把握する
+            Crashlytics.crashlytics().record(error: error)
             self.onAdFailedToPresent?(error)
         }
     }
@@ -414,23 +419,78 @@ struct AdMobBannerView: View {
     let adUnitID: String
     let size: CGSize
 
+    @State private var isLoading = true
+    @State private var errorMessage: String?
+    @State private var reloadToken = UUID()
+
     var body: some View {
-        AdMobBannerRepresentable(adUnitID: adUnitID, size: size)
+        VStack(spacing: 8) {
+            AdMobBannerRepresentable(
+                adUnitID: adUnitID,
+                size: size,
+                onReceiveAd: {
+                    // 成功時はエラーメッセージを消しておく
+                    isLoading = false
+                    errorMessage = nil
+                },
+                onFailToReceiveAd: { error in
+                    // 失敗内容を表示し、Crashlyticsにも残す
+                    isLoading = false
+                    errorMessage = error.localizedDescription
+                    Crashlytics.crashlytics().record(error: error)
+                },
+                reloadToken: reloadToken
+            )
+            .id(reloadToken)
             .frame(width: size.width, height: size.height)
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color(uiColor: .tertiarySystemBackground))
             )
+
+            if isLoading {
+                ProgressView(String(localized: "広告を読み込み中..."))
+                    .font(.caption)
+            } else if let errorMessage {
+                VStack(spacing: 6) {
+                    Text(String(localized: "バナー広告の読み込みに失敗しました"))
+                        .font(.caption.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button(String(localized: "再読み込み")) {
+                        // バナーを作り直して再リクエストする
+                        reloadToken = UUID()
+                        isLoading = true
+                        errorMessage = nil
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+        }
+        .onAppear {
+            // 画面再表示時は毎回最新状態を取りにいく
+            isLoading = true
+            errorMessage = nil
+        }
     }
 }
 
 struct AdMobBannerRepresentable: UIViewControllerRepresentable {
     let adUnitID: String
     let size: CGSize
+    let onReceiveAd: () -> Void
+    let onFailToReceiveAd: (Error) -> Void
+    let reloadToken: UUID
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(
+            onReceiveAd: onReceiveAd,
+            onFailToReceiveAd: onFailToReceiveAd
+        )
     }
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -461,6 +521,22 @@ struct AdMobBannerRepresentable: UIViewControllerRepresentable {
 
     final class Coordinator: NSObject, BannerViewDelegate {
         weak var bannerView: BannerView?
+
+        private let onReceiveAd: () -> Void
+        private let onFailToReceiveAd: (Error) -> Void
+
+        init(onReceiveAd: @escaping () -> Void, onFailToReceiveAd: @escaping (Error) -> Void) {
+            self.onReceiveAd = onReceiveAd
+            self.onFailToReceiveAd = onFailToReceiveAd
+        }
+
+        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
+            onReceiveAd()
+        }
+
+        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
+            onFailToReceiveAd(error)
+        }
     }
 }
 #else
