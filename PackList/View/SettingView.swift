@@ -489,7 +489,7 @@ struct SettingView: View {
                 // チェックと在庫を連動
                 Toggle(isOn: $linkCheckWithStock) {
                     Label {
-                        Text("チェックで在庫を満たす")
+                        Text("チェックONで在庫を満たす")
                             .font(.body)
                     } icon: {
                         ZStack{
@@ -504,7 +504,7 @@ struct SettingView: View {
                         Text("チェックOFFで在庫を0にする")
                             .font(.body)
                     } icon: {
-                        Image(systemName: "trash")
+                        Image(systemName: "circle")
                             .symbolRenderingMode(.hierarchical)
                     }
                 }

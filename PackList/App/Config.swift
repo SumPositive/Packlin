@@ -113,9 +113,9 @@ let FONT_EDIT: Font = .title2
 let DEF_insertionPosition: InsertionPosition = .head
 // 必要重量を表示する
 let DEF_showNeedWeight = true
-// 重量計が1000gを超えるとkgで表示
+// 重量計1000gからkg表示
 let DEF_weightDisplayInKg = true
-// チェックで在庫数を満たす
+// チェックONで在庫数を満たす
 let DEF_linkCheckWithStock = false
 // チェックOFFで在庫数を0にする
 let DEF_linkCheckOffWithZero = false
@@ -130,9 +130,9 @@ enum AppStorageKey {
     static let insertionPosition = "setting.insertionPosition"
     // 必要重量を表示する
     static let showNeedWeight = "setting.showNeedWeight"
-    // 重量計が1000gを超えると1.0kgで表示
+    // 重量計1000gからkg表示
     static let weightDisplayInKg = "setting.weightDisplayInKg"
-    // チェックと在庫数を連動させる　　　Link check status with stock quantity
+    // チェックONで在庫数を満たす
     static let linkCheckWithStock = "setting.linkCheckWithStock"
     // チェックOFFで在庫を0にする
     static let linkCheckOffWithZero = "setting.linkCheckOffWithZero"
