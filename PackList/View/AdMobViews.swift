@@ -19,6 +19,9 @@ import FirebaseCrashlytics
 
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
 
+// 利用可能な広告がない場合に共通で表示する文言をまとめておく
+private let adUnavailableMessage = String(localized: "現在、配信できる広告がありません。後ほどお試しください")
+
 // 広告ユニットID
 #if DEBUG
 // リワード型 テスト用
@@ -145,14 +148,16 @@ struct AdMobAdSheetView: View {
             loader.onAdLoaded = {
                 rewardDescription = nil
             }
-            loader.onAdFailedToLoad = { error in
-                rewardDescription = error.localizedDescription
+            loader.onAdFailedToLoad = { _ in
+                // ユーザーには原因ではなく「今は見られない」ことだけを伝える
+                rewardDescription = adUnavailableMessage
             }
             loader.onAdPresented = {
                 rewardDescription = nil
             }
-            loader.onAdFailedToPresent = { error in
-                rewardDescription = error.localizedDescription
+            loader.onAdFailedToPresent = { _ in
+                // 事前読み込み後の表示エラーも同様に案内する
+                rewardDescription = adUnavailableMessage
             }
         }
         #endif
@@ -351,7 +356,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             DispatchQueue.main.async {
                 self.isLoading = false
                 if let error {
-                    self.errorMessage = error.localizedDescription
+                    // 具体的な障害内容はCrashlyticsへ残しつつ、画面には優しい文言を出す
+                    self.errorMessage = adUnavailableMessage
                     // TestFlightでも原因を追いやすいようCrashlyticsへ記録しておく
                     Crashlytics.crashlytics().record(error: error)
                     self.onAdFailedToLoad?(error)
@@ -408,7 +414,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.errorMessage = error.localizedDescription
+            // 実際のエラー内容はログに残し、ユーザーには広告非表示の状況だけを示す
+            self.errorMessage = adUnavailableMessage
             // プロセスが落ちた場合などは広告オブジェクトを破棄して再読込を試みる
             self.isReady = false
             self.rewardedAd = nil
@@ -442,9 +449,10 @@ struct AdMobBannerView: View {
                     errorMessage = nil
                 },
                 onFailToReceiveAd: { error in
-                    // 失敗内容を表示し、Crashlyticsにも残す
+                    // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
                     isLoading = false
-                    errorMessage = error.localizedDescription
+                    errorMessage = adUnavailableMessage
+                    // 技術的な詳細はクラッシュログで追う
                     Crashlytics.crashlytics().record(error: error)
                 },
                 reloadToken: reloadToken
@@ -461,14 +469,10 @@ struct AdMobBannerView: View {
                 ProgressView(String(localized: "広告を読み込み中..."))
                     .font(.caption)
             // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する
-            } else if let message = errorMessage {
+            } else if errorMessage != nil {
                 VStack(spacing: 6) {
-                    Text(String(localized: "バナー広告の読み込みに失敗しました"))
+                    Text(adUnavailableMessage)
                         .font(.caption.weight(.semibold))
-                        .multilineTextAlignment(.center)
-                    Text(message)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                     Button(String(localized: "再読み込み")) {
                         // バナーを作り直して再リクエストする

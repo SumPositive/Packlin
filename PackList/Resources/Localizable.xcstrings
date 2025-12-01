@@ -746,16 +746,6 @@
         }
       }
     },
-    "バナー広告の読み込みに失敗しました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to load banner ad"
-          }
-        }
-      }
-    },
     "メモ" : {
       "localizations" : {
         "en" : {
@@ -1075,6 +1065,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading ad..."
+          }
+        }
+      }
+    },
+    "現在、配信できる広告がありません。後ほどお試しください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ads are available right now. Please try again later."
           }
         }
       }
