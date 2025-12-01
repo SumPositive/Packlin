@@ -17,6 +17,7 @@ struct PackEditView: View {
     @Environment(\.modelContext) private var modelContext
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+    @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
 
     @FocusState private var nameIsFocused: Bool
 
@@ -259,8 +260,8 @@ struct PackEditView: View {
             if toggle {
                 // ON --> OFF
                 item.check = false
-                // チェックと在庫数を連動させる
-                if linkCheckWithStock {
+                if linkCheckOffWithZero {
+                    // チェック解除時の在庫クリアは新フラグで管理
                     item.stock = 0
                 }
             }else{

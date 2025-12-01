@@ -15,6 +15,7 @@ struct GroupEditView: View {
     @Environment(\.modelContext) private var modelContext
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+    @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     // 不揮発保存：移動シート用の最終選択状態
     @AppStorage("groupEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("groupEdit.move.lastInsertPosition") private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
@@ -235,8 +236,8 @@ struct GroupEditView: View {
             if toggle {
                 // ON --> OFF
                 item.check = false
-                // チェックと在庫数を連動させる
-                if linkCheckWithStock {
+                if linkCheckOffWithZero {
+                    // チェックOFF時の在庫クリアは新設フラグで制御
                     item.stock = 0
                 }
             } else {

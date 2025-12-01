@@ -29,6 +29,7 @@ struct ItemEditView: View {
     // 不揮発保存
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+    @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     // 不揮発保存：itemEdit.move用
     @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
     @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
@@ -273,7 +274,7 @@ struct ItemEditView: View {
                                     item.stock = item.need
                                 }
                             }else{
-                                if linkCheckWithStock {
+                                if linkCheckOffWithZero {
                                     // チェックと在庫数を連動させる
                                     item.stock = 0
                                 }

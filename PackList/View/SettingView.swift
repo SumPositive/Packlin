@@ -413,6 +413,7 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.showNeedWeight) private var showNeedWeight: Bool = DEF_showNeedWeight
         @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+        @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
         @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
         // GALoggerのため変更前の設定値を記録する
@@ -420,6 +421,7 @@ struct SettingView: View {
         @State var ona_showNeedWeight: Bool?
         @State var ona_weightDisplayInKg: Bool?
         @State var ona_linkCheckWithStock: Bool?
+        @State var ona_linkCheckOffWithZero: Bool?
         @State var ona_displayMode: DisplayMode?
 
         var body: some View {
@@ -496,6 +498,16 @@ struct SettingView: View {
                         }
                     }
                 }
+                // チェックOFF時の在庫リセット設定
+                Toggle(isOn: $linkCheckOffWithZero) {
+                    Label {
+                        Text("チェックOFFで在庫を0にする")
+                            .font(.body)
+                    } icon: {
+                        Image(systemName: "trash")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
             }
             .onAppear {
                 // GALoggerのため変更前の設定値を記録する
@@ -503,6 +515,7 @@ struct SettingView: View {
                 ona_showNeedWeight     = showNeedWeight
                 ona_weightDisplayInKg  = weightDisplayInKg
                 ona_linkCheckWithStock = linkCheckWithStock
+                ona_linkCheckOffWithZero = linkCheckOffWithZero
                 ona_displayMode        = displayMode
             }
             .onDisappear {
@@ -526,6 +539,11 @@ struct SettingView: View {
                     // チェックと在庫連動の状態変化をログする
                     GALogger.log(.function(name: "setting",
                                            option: "linkCheckWithStock:" + linkCheckWithStock.description))
+                }
+                if let ona = ona_linkCheckOffWithZero, ona != linkCheckOffWithZero {
+                    // チェックOFF時の在庫クリア可否も計測しておく
+                    GALogger.log(.function(name: "setting",
+                                           option: "linkCheckOffWithZero:" + linkCheckOffWithZero.description))
                 }
                 if let ona = ona_displayMode, ona != displayMode {
                     // 表示モード切り替えを初心者・達人それぞれで判定して送信

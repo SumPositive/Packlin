@@ -16,6 +16,7 @@ struct ItemRowView: View {
     @Environment(\.modelContext) private var modelContext
 
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
+    @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
 
@@ -62,15 +63,14 @@ struct ItemRowView: View {
                         item.check.toggle()
                         if item.check {
                             if linkCheckWithStock {
-                                // チェックと在庫数を連動させる
+                                // チェックON時だけ在庫を必要数へ寄せる
                                 item.stock = item.need
                             }
                         }else{
-                            // 0 にはしない
-                            // if linkCheckWithStock {
-                            //     // チェックと在庫数を連動させる
-                            //     item.stock = 0
-                            // }
+                            if linkCheckOffWithZero {
+                                // チェックOFF時は明示的に在庫を0へ戻す
+                                item.stock = 0
+                            }
                         }
                     } label: {
                         Image(systemName

@@ -117,6 +117,8 @@ let DEF_showNeedWeight = true
 let DEF_weightDisplayInKg = true
 // チェックで在庫数を満たす
 let DEF_linkCheckWithStock = false
+// チェックOFFで在庫数を0にする
+let DEF_linkCheckOffWithZero = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
@@ -132,6 +134,8 @@ enum AppStorageKey {
     static let weightDisplayInKg = "setting.weightDisplayInKg"
     // チェックと在庫数を連動させる　　　Link check status with stock quantity
     static let linkCheckWithStock = "setting.linkCheckWithStock"
+    // チェックOFFで在庫を0にする
+    static let linkCheckOffWithZero = "setting.linkCheckOffWithZero"
     // 表示モード（初心者／上級者）
     static let displayMode = "setting.displayMode"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit

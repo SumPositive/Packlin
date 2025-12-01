@@ -531,6 +531,16 @@
         }
       }
     },
+    "チェックOFFで在庫を0にする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set stock to zero when unchecked"
+          }
+        }
+      }
+    },
     "チャッピー" : {
       "localizations" : {
         "en" : {
