@@ -474,10 +474,10 @@ struct SettingView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
-                // 重量計が1000gを超えるとkgで表示
+                // 重量計1000gからkgで表示
                 Toggle(isOn: $weightDisplayInKg) {
                     Label {
-                        Text("重量計1000g超からkg表示")
+                        Text("重量計1000gからkg表示")
                             .font(.body)
                     } icon: {
                         Image(systemName: "scalemass.fill")

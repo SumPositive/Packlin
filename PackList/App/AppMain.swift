@@ -70,12 +70,9 @@ struct AppMain: App {
 
         // AdMob SDKを初期化する
         MobileAds.shared.start()
-        
-//        #if DEBUG
-//            // Test mode
-//            let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
-//            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
-//        #endif
+        // Test mode
+        let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
+        MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
     }
 
     var body: some Scene {

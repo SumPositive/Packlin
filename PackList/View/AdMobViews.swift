@@ -49,10 +49,10 @@ struct AdMobAdSheetView: View {
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
-        AdMobBannerConfiguration(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 320, height: 100)
-        ),
+//        AdMobBannerConfiguration(
+//            adUnitID: ADMOB_BANNER_UnitID,
+//            size: CGSize(width: 320, height: 100)
+//        ),
         AdMobBannerConfiguration(
             adUnitID: ADMOB_BANNER_UnitID,
             size: CGSize(width: 300, height: 250)

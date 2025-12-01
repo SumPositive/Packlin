@@ -31,8 +31,8 @@ struct AiCreateSheetView: View {
 
     var body: some View {
         let title = (basePack == nil || basePack!.name.isEmpty)
-                    ? String(localized:"新しいパック")
-                    : basePack?.name ?? String(localized:"新しいパック")
+                    ? String(localized:"新しいパックを作ってもらう")
+                    : String(localized:"【変更】 ") + (basePack?.name ?? "")
 
         NavigationView {
             ScrollView {
@@ -207,7 +207,7 @@ struct AiCreateView: View {
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
             Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や修正を依頼できます。チャッピーから届いた提案を眺めて修正しながらお楽しみください。AI利用券1枚で1回の送信が可能です
+                要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や変更を依頼できます。チャッピーから届いた提案を眺めて修正しながらご利用ください。AI利用券1枚で1回の送信が可能です
                 """)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -287,9 +287,17 @@ struct AiCreateView: View {
                     // プレースホルダー
                     if isRequirementEmpty {
                         // 入力例。TextEditorの内側余白と揃えて配置
-                        Text("""
-                            訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください（最大\(AI_REQUIREMENT_MAX)文字）
+                        Text((self.basePack == nil || self.basePack!.name.isEmpty) ?
+                            """
+                            訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください
+                            （最大\(AI_REQUIREMENT_MAX)文字）
                             （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
+                            """
+                             :
+                            """
+                            変更の要望をたくさん列記してください
+                            （最大\(AI_REQUIREMENT_MAX)文字）
+                            （例）6泊に変更、ギリシャも訪問、祖父母も参加
                             """)
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 16)
