@@ -1069,16 +1069,6 @@
         }
       }
     },
-    "現在、配信できる広告がありません。後ほどお試しください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No ads are available right now. Please try again later."
-          }
-        }
-      }
-    },
     "必要数" : {
       "localizations" : {
         "en" : {
@@ -1318,6 +1308,20 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You're currently in Beginner mode. Choose \"Expert\" in Settings to switch to the icon-first expert layout."
+          }
+        }
+      }
+    },
+    "現在、特典付きの広告がありません。後ほどお試しください" : {
+
+    },
+    "現在、配信できる広告がありません。後ほどお試しください" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ads are available right now. Please try again later."
           }
         }
       }

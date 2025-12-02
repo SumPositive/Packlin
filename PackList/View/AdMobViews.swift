@@ -20,7 +20,7 @@ import FirebaseCrashlytics
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
 
 // 利用可能な広告がない場合に共通で表示する文言をまとめておく
-private let adUnavailableMessage = String(localized: "現在、配信できる広告がありません。後ほどお試しください")
+private let adUnavailableMessage = String(localized: "現在、特典付きの広告がありません。後ほどお試しください")
 
 // 広告ユニットID
 #if DEBUG
@@ -290,16 +290,11 @@ struct AdMobRewardedContentView: View {
             }
 
             if let errorMessage = loader.errorMessage {
-                VStack(spacing: 8) {
-                    Text(errorMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                    Button(String(localized: "再読み込み")) {
-                        loader.loadAd()
-                    }
-                    .buttonStyle(.borderedProminent)
+                //log(.error, "AdMob rewarded ad loading failed: \(errorMessage)")
+                Button(String(localized: "再読み込み")) {
+                    loader.loadAd()
                 }
+                .buttonStyle(.borderedProminent)
             }
             
             if let rewardDescription {
