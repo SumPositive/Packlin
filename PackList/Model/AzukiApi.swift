@@ -207,8 +207,10 @@ final class AzukiApi {
             }
         }
 
+        // refresh API 経由での再送は不要なため、明示的にリフレッシュリトライを抑止する
+        // 401 が返った場合だけ Authorization を外して再送する意図
         do {
-            let data = try await send(request: request)
+            let data = try await send(request: request, allowRetryAfterRefresh: false)
             return try decodeCreditStatus(from: data)
         } catch let apiError as AzukiAPIError {
             // 期限切れや無効なAuthorizationヘッダを送ってしまった場合でも、ヘッダを外して再試行し新規発行を促す
