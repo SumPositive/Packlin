@@ -140,8 +140,10 @@ enum AppStorageKey {
     static let displayMode = "setting.displayMode"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
     static let autoItemReorder = "setting.autoItemReorder"
-    // AI生成画面での要望テキスト（AppStorageで復元するためのキー）
-    static let aiRequirementText = "aiCreate.requirementText"
+    // AI生成画面での要望テキスト（作成モード用）。モード別に保持して書きかけを分ける
+    static let aiRequirementTextCreate = "aiCreate.requirementText.create"
+    // AI生成画面での要望テキスト（修正モード用）。修正中の入力を作成モードと別枠で保存する
+    static let aiRequirementTextEdit = "aiCreate.requirementText.edit"
     // 購入通知済みのトランザクションIDを永続化するためのキー（重複アラート抑止用）
     static let aiPurchaseNotifiedTransactionIds = "aiCreate.notifiedTransactions"
     // 広告視聴で付与される特典アイコンの個数を保持する

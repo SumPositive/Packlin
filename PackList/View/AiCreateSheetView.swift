@@ -84,9 +84,12 @@ struct AiCreateView: View {
     @Environment(\.locale) private var locale
     @EnvironmentObject private var creditStore: CreditStore
 
-    /// ユーザーからAIへの要望・要件テキスト
-    /// AppStorageを利用してシートを閉じても入力内容を保持する
-    @AppStorage(AppStorageKey.aiRequirementText) private var requirementText: String = ""
+    /// ユーザーからAIへの要望・要件テキスト（作成モード）
+    /// 作成と修正で入力内容を分けて保存するためにモード別のキーを用意する
+    @AppStorage(AppStorageKey.aiRequirementTextCreate) private var requirementTextForCreate: String = ""
+    /// ユーザーからAIへの要望・要件テキスト（修正モード）
+    /// それぞれのモードで書きかけを保持し、切り替えても混ざらないようにする
+    @AppStorage(AppStorageKey.aiRequirementTextEdit) private var requirementTextForEdit: String = ""
     /// 設定画面で選択した「新規パックの追加位置」を参照し、インポート時にも統一した挙動にする
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     /// 購入通知済みのトランザクションIDを永続化し、アプリ再起動後も重複アラートを抑止する
@@ -117,9 +120,26 @@ struct AiCreateView: View {
     /// 広告特典バッジからAdMobの広告シートを開くためのフラグ（動画視聴導線を明示）
     @State private var isPresentingAdRewardSheet = false
 
+    /// パック名が空欄なら作成モード、埋まっていれば修正モードとして扱う
+    private var isCreateMode: Bool {
+        if let basePack {
+            let trimmedName = basePack.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmedName.isEmpty
+        }
+        return true
+    }
+
+    /// モード別に保持している要望テキストを適切なバインディングで取り出す
+    private var requirementText: Binding<String> {
+        if isCreateMode {
+            return $requirementTextForCreate
+        }
+        return $requirementTextForEdit
+    }
+
     /// ユーザー入力が空かどうかを判定し、ボタン活性状態に利用する
     private var isRequirementEmpty: Bool {
-        requirementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        requirementText.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     /// クレジット枚数だけで送信できるかどうか
@@ -267,21 +287,21 @@ struct AiCreateView: View {
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {
                     // 入力欄。カード背景と馴染むよう余白のみを加える
-                    TextEditor(text: $requirementText)
+                    TextEditor(text: requirementText)
                         .frame(height: 200)
                         .padding(2)
                         .focused(requirementFocus)
                         .background(Color.clear)
                         .accessibilityLabel(Text("パックの要望入力"))
                         // 入力文字数をAI_REQUIREMENT_MAX文字以内に抑えるための監視
-                        .onChange(of: requirementText) { newValue, _ in
+                        .onChange(of: requirementText.wrappedValue) { newValue, _ in
                             // 文字数が上限以下ならそのまま利用する
                             if newValue.count <= AI_REQUIREMENT_MAX {
                                 return
                             }
                             // 超えた分は切り捨てて保存し直す
                             let limitedText = String(newValue.prefix(AI_REQUIREMENT_MAX))
-                            requirementText = limitedText
+                            requirementText.wrappedValue = limitedText
                         }
 
                     // プレースホルダー
@@ -487,7 +507,7 @@ struct AiCreateView: View {
         }
         isGenerating = true
 
-        let trimmedRequirement = requirementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedRequirement = requirementText.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
             inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
             isGenerating = false
@@ -572,7 +592,8 @@ struct AiCreateView: View {
                         GALogger.log(.packlin_request(userId: userId,
                                                       requirement: trimmedRequirement))
                         // 生成が成功しクレジット消費も確定したので、次回表示時に空欄から始められるよう保存済みの要望文を消す
-                        requirementText = ""
+                        // 送信したモードの入力欄だけを空にし、別モードの下書きは残す
+                        requirementText.wrappedValue = ""
                         return importedPack.name
                     }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
