@@ -7,9 +7,7 @@
 
 import Foundation
 import UserNotifications
-#if canImport(FirebaseCrashlytics)
 import FirebaseCrashlytics
-#endif
 
 /// AI生成完了をローカル通知で伝えるための管理クラス
 /// UNUserNotificationCenterをラップして、許可確認と通知発行をまとめる役割を持つ
@@ -87,10 +85,8 @@ final class LocalNotificationManager: NSObject {
         do {
             try await add(request: request)
         } catch {
-            #if canImport(FirebaseCrashlytics)
             // 通知登録に失敗した場合はCrashlyticsへ送信して運用保守に役立てる
             Crashlytics.crashlytics().record(error: error)
-            #endif
         }
     }
 

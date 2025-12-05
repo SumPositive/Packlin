@@ -6,15 +6,9 @@
 //
 
 import SwiftUI
-#if canImport(AVKit)
-import AVKit
-#endif
-#if canImport(UIKit)
 import UIKit
-#endif
-#if canImport(GoogleMobileAds)
+
 import GoogleMobileAds
-#endif
 import FirebaseCrashlytics
 
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
@@ -62,12 +56,10 @@ struct AdMobAdSheetView: View {
         )
     ]
     
-    #if canImport(GoogleMobileAds)
     // 報酬型広告を管理するローダー。シート表示中は使い回す。
     @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_REWARD_1_UnitID)
     // 視聴後のメッセージを出し分けるための状態。
     @State private var rewardDescription: String?
-    #endif
 
     var body: some View {
         NavigationView {
@@ -92,7 +84,6 @@ struct AdMobAdSheetView: View {
                                     .fill(Color(uiColor: .tertiarySystemBackground))
                             )
                         }
-#if canImport(GoogleMobileAds)
                         // 動画広告
                         AdMobRewardedContentView(
                             loader: loader,
@@ -107,11 +98,6 @@ struct AdMobAdSheetView: View {
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Color(uiColor: .tertiarySystemBackground))
                         )
-#else
-                        // GoogleMobileAdsが利用できない環境では既存のプレースホルダーを表示
-                        LegacyVideoAdContainerView()
-                            .padding(.vertical, 8)
-#endif
                     }
                     .padding()
                 }
@@ -133,7 +119,6 @@ struct AdMobAdSheetView: View {
                 }
             }
         }
-        #if canImport(GoogleMobileAds)
         .onAppear {
             // 動画視聴完了後にシートを閉じる・お礼を出す挙動を設定
             // userIdを広告のSSV customRewardTextにも流用し、ユーザー識別を一本化する
@@ -160,10 +145,8 @@ struct AdMobAdSheetView: View {
                 rewardDescription = adUnavailableMessage
             }
         }
-        #endif
     }
 
-    #if canImport(GoogleMobileAds)
     private func presentAd() {
         // 画面最上位のViewControllerを取得して広告を表示
         guard let topController = UIApplication.topMostViewController() else {
@@ -185,7 +168,6 @@ struct AdMobAdSheetView: View {
         // String(format:) を介して差し込むことでローカライズされた書式を保持する
         rewardDescription = String(format: descriptionFormat, progressText)
     }
-    #endif
 }
 
 struct AdMobBannerConfiguration: Identifiable {
@@ -194,7 +176,6 @@ struct AdMobBannerConfiguration: Identifiable {
     let size: CGSize
 }
 
-#if canImport(GoogleMobileAds)
 /// 動画広告
 struct AdMobRewardedContentView: View {
     @ObservedObject var loader: RewardedAdLoader
@@ -548,130 +529,8 @@ struct AdMobBannerRepresentable: UIViewControllerRepresentable {
         }
     }
 }
-#else
-/// SwiftUIでAdMobが利用できない場合のプレースホルダービュー
-struct AdMobBannerView: View {
-    let adUnitID: String
-    let size: CGSize
 
-    var body: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color(uiColor: .tertiarySystemFill))
-            .overlay(
-                Text("setting.bannerAdUnavailable")
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-                    .padding(8)
-            )
-            .frame(height: size.height)
-            .frame(maxWidth: .infinity)
-    }
-}
-#endif
 
-#if !canImport(GoogleMobileAds)
-#if canImport(AVKit)
-/// AdMobが利用できない場合の動画広告プレースホルダー
-struct LegacyVideoAdContainerView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        if let adURL = URL(string: String(localized: "ad.video.url")) {
-            LegacyVideoAdView(adURL: adURL)
-        } else {
-            VStack(spacing: 16) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.largeTitle)
-                    .foregroundStyle(.yellow)
-                Text("setting.adUnavailable")
-                    .multilineTextAlignment(.center)
-                    .font(.headline)
-                Button(String(localized: "setting.adClose")) {
-                    dismiss()
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding()
-        }
-    }
-}
-
-struct LegacyVideoAdView: View {
-    let adURL: URL
-    @Environment(\.dismiss) private var dismiss
-    @State private var player: AVPlayer
-
-    init(adURL: URL) {
-        self.adURL = adURL
-        _player = State(initialValue: AVPlayer(url: adURL))
-    }
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 24) {
-                VideoPlayer(player: player)
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal)
-                    .onAppear {
-                        player.play()
-                    }
-                    .onDisappear {
-                        player.pause()
-                    }
-
-                Text("動画を最後まで視聴すると開発者をサポートできます")
-                    .font(.footnote)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
-                Spacer()
-            }
-            .padding(.top, 24)
-            .background(Color(uiColor: .systemBackground))
-            .navigationTitle(Text("動画広告"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        player.pause()
-                        // 閉じる
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .imageScale(.large)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-            }
-        }
-    }
-}
-#else
-/// AVKitが利用できない環境向けの簡易的なプレースホルダー
-struct LegacyVideoAdContainerView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle)
-                .foregroundStyle(.yellow)
-            Text("setting.adUnavailable")
-                .multilineTextAlignment(.center)
-                .font(.headline)
-            Button(String(localized: "閉じる")) {
-                dismiss()
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
-}
-#endif
-#endif
-
-#if canImport(UIKit)
 extension UIApplication {
     static func topMostViewController(base: UIViewController? = UIApplication.shared.connectedScenes
         .compactMap { scene in
@@ -690,4 +549,3 @@ extension UIApplication {
         return base
     }
 }
-#endif
