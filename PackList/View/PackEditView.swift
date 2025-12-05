@@ -221,8 +221,8 @@ struct PackEditView: View {
             .buttonStyle(.bordered)
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
-                AiCreateSheetView(basePack: pack)
-                    .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
+                ChappySheetView(basePack: pack)
+                    .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                     .presentationDragIndicator(.visible)
             }
         }

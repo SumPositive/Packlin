@@ -11,10 +11,10 @@ import Foundation
 import StoreKit
 
 
-let AiCreateSheetView_HEIGHT: CGFloat = 670.0 // シート表示時の高さ指定
+let ChappySheetView_HEIGHT: CGFloat = 670.0 // シート表示時の高さ指定
 
 /// パックをAIで生成　シート
-struct AiCreateSheetView: View {
+struct ChappySheetView: View {
     /// 編集中のパックを保持し、AIへ修正依頼するときの素材にする
     private let basePack: M1Pack?
 
@@ -36,7 +36,7 @@ struct AiCreateSheetView: View {
 
         NavigationView {
             ScrollView {
-                AiCreateView(requirementFocus: $isRequirementFocused,
+                ChappyView(requirementFocus: $isRequirementFocused,
                              basePack: basePack)
             }
             // 背景タップでキーボードを閉じるためのジェスチャ
@@ -72,7 +72,7 @@ struct AiCreateSheetView: View {
 
 
 /// AIで新しいパックを生成するためのビュー
-struct AiCreateView: View {
+struct ChappyView: View {
     /// フォーカス制御を外部（親ビュー）から受け取るためのバインディング
     private let requirementFocus: FocusState<Bool>.Binding
     /// AIへ渡す修正対象パック（nilならAIは新規提案モード）
@@ -1456,7 +1456,7 @@ private extension VerificationResult where SignedType == StoreKit.Transaction {
     }
 }
 
-extension AiCreateView {
+extension ChappyView {
     /// 生成処理に必要なクレジットが十分にあるかを判定し、Keychain保存の残高だけで安全に判断する
     /// - Parameter cost: 必要クレジット数
     /// - Returns: 利用可能ならtrue

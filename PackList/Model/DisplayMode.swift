@@ -12,8 +12,8 @@ enum DisplayMode: String, CaseIterable, Identifiable, Codable {
     // 初期値はConfig.swiftで定義した定数を利用する
     static let `default`: DisplayMode = DEF_displayMode
 
-    case beginner
-    case expert
+    case beginner   // 初心者
+    case expert     // 達人
 
     var id: String { rawValue }
 

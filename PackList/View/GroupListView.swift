@@ -350,8 +350,8 @@ struct GroupListView: View {
         }
         .sheet(isPresented: $showAiCreateSheet) {
             // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
-            AiCreateSheetView(basePack: pack)
-                .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
+            ChappySheetView(basePack: pack)
+                .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
         .safeAreaInset(edge: .bottom) {

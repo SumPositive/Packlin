@@ -1,6 +1,6 @@
 //
 //  PopupView.swift
-//  Calc26
+//  Calclin, Packlin
 //
 //  Created by sumpo/azukid on 2025/08/08.
 //

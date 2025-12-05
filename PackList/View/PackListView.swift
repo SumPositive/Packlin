@@ -222,8 +222,8 @@ struct PackListView: View {
         }
         // 初心者モード時のAI新規作成メニューから遷移するシート
         .sheet(isPresented: $isShowAiCreateSheet) {
-            AiCreateSheetView()
-                .presentationDetents([.height(AiCreateSheetView_HEIGHT), .large])
+            ChappySheetView()
+                .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
     }
