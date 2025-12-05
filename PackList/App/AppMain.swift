@@ -71,7 +71,7 @@ struct AppMain: App {
         // AdMob SDKを初期化する
         MobileAds.shared.start()
         
-        #if DEBUG // TestFlight(RELEASE)時にも有効にしたい
+        #if TESTFLIGHT // Scheme "TestFlight" にて定義が有効になる
             // このデバイスをテストデバイスとして扱う設定
             // TestFlight時、本番ユニットIDでも「安全にテスト広告」が表示されるが、
             // AdMobバックエンドは本番としてのSSVフローが動き、Webhook URLにリクエストが飛びテストできる
