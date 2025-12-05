@@ -596,6 +596,12 @@ struct AiCreateView: View {
                         requirementText.wrappedValue = ""
                         return importedPack.name
                     }
+                    if usesAdReward {
+                        await MainActor.run {
+                            // 無料特典を使い切ったので、次回の視聴状況をゼロから積み上げられるよう明示的にリセットする
+                            adRewardStamps = 0
+                        }
+                    }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
                     await presentGenerationSuccess(packName: packName)
                 } catch {
