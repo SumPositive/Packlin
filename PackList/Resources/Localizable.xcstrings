@@ -1,11 +1,15 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
     "【変更】 " : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated "
+          }
+        }
+      }
     },
     "%@ を取り込みました" : {
       "localizations" : {
@@ -501,7 +505,14 @@
       }
     },
     "ご視聴ありがとうございます" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank you for watching"
+          }
+        }
+      }
     },
     "タップして広告を見て開発者を応援してください" : {
       "localizations" : {
@@ -524,7 +535,14 @@
       }
     },
     "チェックONで在庫を満たす" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill inventory when checked on"
+          }
+        }
+      }
     },
     "チャッピー(AI)に依頼する" : {
       "localizations" : {
@@ -837,7 +855,14 @@
       }
     },
     "最後まで視聴して開発者を応援してください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please watch until the end to support the developer"
+          }
+        }
+      }
     },
     "最終チェック時にご利用ください" : {
       "localizations" : {
@@ -958,9 +983,6 @@
           }
         }
       }
-    },
-    "変更の要望をたくさん列記してください\n（最大%lld文字）\n（例）6泊に変更、ギリシャも訪問、祖父母も参加" : {
-
     },
     "常時並べ替え" : {
       "localizations" : {
@@ -1153,7 +1175,14 @@
       }
     },
     "新しいパックを作ってもらう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask to create a new pack"
+          }
+        }
+      }
     },
     "新しいパックを追加する" : {
       "localizations" : {
@@ -1246,7 +1275,14 @@
       }
     },
     "現在、配信されている広告がありません。後ほどお試しください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ads are available right now. Please try again later."
+          }
+        }
+      }
     },
     "直前の変更にやり直す" : {
       "localizations" : {
@@ -1269,7 +1305,14 @@
       }
     },
     "視聴回数: %lld/%lld" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Views: %lld/%lld"
+          }
+        }
+      }
     },
     "移動" : {
       "localizations" : {
@@ -1342,10 +1385,14 @@
       }
     },
     "要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や変更を依頼できます。チャッピーから届いた提案を眺めて修正しながらご利用ください。AI利用券1枚で1回の送信が可能です" : {
-
-    },
-    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください\n（最大%lld文字）\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your requests and tap \"Send\" to ask Chappy to create or adjust a pack. Review and refine the suggestions Chappy sends. One AI ticket allows one submission."
+          }
+        }
+      }
     },
     "設定" : {
       "localizations" : {
@@ -1468,7 +1515,14 @@
       }
     },
     "重量計1000gからkg表示" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show scale readings in kilograms from 1000 g"
+          }
+        }
+      }
     },
     "開発者を応援する" : {
       "localizations" : {
