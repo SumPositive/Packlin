@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C3D2BB6B2E6A7967002B900A"
-               BuildableName = "PackList.app"
-               BlueprintName = "PackList"
-               ReferencedContainer = "container:PackList.xcodeproj">
+               BuildableName = "Packlin.app"
+               BlueprintName = "Packlin"
+               ReferencedContainer = "container:Packlin.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -36,9 +36,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C3D2BB7A2E6A7969002B900A"
-               BuildableName = "PackListTests.xctest"
-               BlueprintName = "PackListTests"
-               ReferencedContainer = "container:PackList.xcodeproj">
+               BuildableName = "PacklinTests.xctest"
+               BlueprintName = "PacklinTests"
+               ReferencedContainer = "container:Packlin.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C3D2BB842E6A7969002B900A"
-               BuildableName = "PackListUITests.xctest"
-               BlueprintName = "PackListUITests"
-               ReferencedContainer = "container:PackList.xcodeproj">
+               BuildableName = "PacklinUITests.xctest"
+               BlueprintName = "PacklinUITests"
+               ReferencedContainer = "container:Packlin.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -69,9 +69,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C3D2BB6B2E6A7967002B900A"
-            BuildableName = "PackList.app"
-            BlueprintName = "PackList"
-            ReferencedContainer = "container:PackList.xcodeproj">
+            BuildableName = "Packlin.app"
+            BlueprintName = "Packlin"
+            ReferencedContainer = "container:Packlin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -86,9 +86,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C3D2BB6B2E6A7967002B900A"
-            BuildableName = "PackList.app"
-            BlueprintName = "PackList"
-            ReferencedContainer = "container:PackList.xcodeproj">
+            BuildableName = "Packlin.app"
+            BlueprintName = "Packlin"
+            ReferencedContainer = "container:Packlin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -30,20 +30,20 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C3D2BB6C2E6A7967002B900A /* PackList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PackList.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C3D2BB7B2E6A7969002B900A /* PackListTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PackListTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C3D2BB852E6A7969002B900A /* PackListUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PackListUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3D2BB6C2E6A7967002B900A /* Packlin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Packlin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3F132642EE2DF0C00F21FB1 /* PackList copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "PackList copy-Info.plist"; path = "/Users/sumpositive/GitLocal/PackList/PackList copy-Info.plist"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C367576C2E802B9B0098BB22 /* Exceptions for "PackList" folder in "PackList" target */ = {
+		C367576C2E802B9B0098BB22 /* Exceptions for "PackList" folder in "Packlin" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/AppDelegate.swift,
 				Resources/Info.plist,
 			);
-			target = C3D2BB6B2E6A7967002B900A /* PackList */;
+			target = C3D2BB6B2E6A7967002B900A /* Packlin */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -51,7 +51,7 @@
 		C3D2BB6E2E6A7967002B900A /* PackList */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				C367576C2E802B9B0098BB22 /* Exceptions for "PackList" folder in "PackList" target */,
+				C367576C2E802B9B0098BB22 /* Exceptions for "PackList" folder in "Packlin" target */,
 			);
 			path = PackList;
 			sourceTree = "<group>";
@@ -118,9 +118,9 @@
 		C3D2BB6D2E6A7967002B900A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C3D2BB6C2E6A7967002B900A /* PackList.app */,
-				C3D2BB7B2E6A7969002B900A /* PackListTests.xctest */,
-				C3D2BB852E6A7969002B900A /* PackListUITests.xctest */,
+				C3D2BB6C2E6A7967002B900A /* Packlin.app */,
+				C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */,
+				C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -128,9 +128,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C3D2BB6B2E6A7967002B900A /* PackList */ = {
+		C3D2BB6B2E6A7967002B900A /* Packlin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C3D2BB8F2E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackList" */;
+			buildConfigurationList = C3D2BB8F2E6A7969002B900A /* Build configuration list for PBXNativeTarget "Packlin" */;
 			buildPhases = (
 				C3D2BB682E6A7967002B900A /* Sources */,
 				C3D2BB692E6A7967002B900A /* Frameworks */,
@@ -143,19 +143,19 @@
 			fileSystemSynchronizedGroups = (
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 			);
-			name = PackList;
+			name = Packlin;
 			packageProductDependencies = (
 				C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
 				C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */,
 				C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */,
 			);
 			productName = PackList;
-			productReference = C3D2BB6C2E6A7967002B900A /* PackList.app */;
+			productReference = C3D2BB6C2E6A7967002B900A /* Packlin.app */;
 			productType = "com.apple.product-type.application";
 		};
-		C3D2BB7A2E6A7969002B900A /* PackListTests */ = {
+		C3D2BB7A2E6A7969002B900A /* PacklinTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C3D2BB922E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackListTests" */;
+			buildConfigurationList = C3D2BB922E6A7969002B900A /* Build configuration list for PBXNativeTarget "PacklinTests" */;
 			buildPhases = (
 				C3D2BB772E6A7969002B900A /* Sources */,
 				C3D2BB782E6A7969002B900A /* Frameworks */,
@@ -169,16 +169,16 @@
 			fileSystemSynchronizedGroups = (
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 			);
-			name = PackListTests;
+			name = PacklinTests;
 			packageProductDependencies = (
 			);
 			productName = PackListTests;
-			productReference = C3D2BB7B2E6A7969002B900A /* PackListTests.xctest */;
+			productReference = C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		C3D2BB842E6A7969002B900A /* PackListUITests */ = {
+		C3D2BB842E6A7969002B900A /* PacklinUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C3D2BB952E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackListUITests" */;
+			buildConfigurationList = C3D2BB952E6A7969002B900A /* Build configuration list for PBXNativeTarget "PacklinUITests" */;
 			buildPhases = (
 				C3D2BB812E6A7969002B900A /* Sources */,
 				C3D2BB822E6A7969002B900A /* Frameworks */,
@@ -192,11 +192,11 @@
 			fileSystemSynchronizedGroups = (
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
 			);
-			name = PackListUITests;
+			name = PacklinUITests;
 			packageProductDependencies = (
 			);
 			productName = PackListUITests;
-			productReference = C3D2BB852E6A7969002B900A /* PackListUITests.xctest */;
+			productReference = C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -222,7 +222,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C3D2BB672E6A7967002B900A /* Build configuration list for PBXProject "PackList" */;
+			buildConfigurationList = C3D2BB672E6A7967002B900A /* Build configuration list for PBXProject "Packlin" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -241,9 +241,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C3D2BB6B2E6A7967002B900A /* PackList */,
-				C3D2BB7A2E6A7969002B900A /* PackListTests */,
-				C3D2BB842E6A7969002B900A /* PackListUITests */,
+				C3D2BB6B2E6A7967002B900A /* Packlin */,
+				C3D2BB7A2E6A7969002B900A /* PacklinTests */,
+				C3D2BB842E6A7969002B900A /* PacklinUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -299,12 +299,12 @@
 /* Begin PBXTargetDependency section */
 		C3D2BB7D2E6A7969002B900A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C3D2BB6B2E6A7967002B900A /* PackList */;
+			target = C3D2BB6B2E6A7967002B900A /* Packlin */;
 			targetProxy = C3D2BB7C2E6A7969002B900A /* PBXContainerItemProxy */;
 		};
 		C3D2BB872E6A7969002B900A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C3D2BB6B2E6A7967002B900A /* PackList */;
+			target = C3D2BB6B2E6A7967002B900A /* Packlin */;
 			targetProxy = C3D2BB862E6A7969002B900A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -532,7 +532,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PackList.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PackList";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Packlin.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Packlin";
 			};
 			name = Debug;
 		};
@@ -551,7 +551,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PackList.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PackList";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Packlin.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Packlin";
 			};
 			name = Release;
 		};
@@ -706,7 +706,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PackList.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PackList";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Packlin.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Packlin";
 			};
 			name = TestFlight;
 		};
@@ -730,7 +730,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C3D2BB672E6A7967002B900A /* Build configuration list for PBXProject "PackList" */ = {
+		C3D2BB672E6A7967002B900A /* Build configuration list for PBXProject "Packlin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C3D2BB8D2E6A7969002B900A /* Debug */,
@@ -740,7 +740,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C3D2BB8F2E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackList" */ = {
+		C3D2BB8F2E6A7969002B900A /* Build configuration list for PBXNativeTarget "Packlin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C3D2BB902E6A7969002B900A /* Debug */,
@@ -750,7 +750,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C3D2BB922E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackListTests" */ = {
+		C3D2BB922E6A7969002B900A /* Build configuration list for PBXNativeTarget "PacklinTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C3D2BB932E6A7969002B900A /* Debug */,
@@ -760,7 +760,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C3D2BB952E6A7969002B900A /* Build configuration list for PBXNativeTarget "PackListUITests" */ = {
+		C3D2BB952E6A7969002B900A /* Build configuration list for PBXNativeTarget "PacklinUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C3D2BB962E6A7969002B900A /* Debug */,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2600"
-   version = "1.7">
+   LastUpgradeVersion = "1630"
+   version = "2.2">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
@@ -15,11 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C3F132532EE2DF0C00F21FB1"
-               BuildableName = "TestFlight.app"
-               BlueprintName = "TestFlight"
-               ReferencedContainer = "container:PackList.xcodeproj">
+               BlueprintIdentifier = "C3D2BB6B2E6A7967002B900A"
+               BuildableName = "Packlin.app"
+               BlueprintName = "Packlin"
+               ReferencedContainer = "container:Packlin.xcodeproj">
             </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "NO">
+            <AutocreatedTestPlanReference>
+            </AutocreatedTestPlanReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
@@ -29,9 +38,33 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C3D2BB7A2E6A7969002B900A"
+               BuildableName = "PacklinTests.xctest"
+               BlueprintName = "PacklinTests"
+               ReferencedContainer = "container:Packlin.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C3D2BB842E6A7969002B900A"
+               BuildableName = "PacklinUITests.xctest"
+               BlueprintName = "PacklinUITests"
+               ReferencedContainer = "container:Packlin.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "TestFlight"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -44,10 +77,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C3F132532EE2DF0C00F21FB1"
-            BuildableName = "TestFlight.app"
-            BlueprintName = "TestFlight"
-            ReferencedContainer = "container:PackList.xcodeproj">
+            BlueprintIdentifier = "C3D2BB6B2E6A7967002B900A"
+            BuildableName = "Packlin.app"
+            BlueprintName = "Packlin"
+            ReferencedContainer = "container:Packlin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -61,10 +94,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C3F132532EE2DF0C00F21FB1"
-            BuildableName = "TestFlight.app"
-            BlueprintName = "TestFlight"
-            ReferencedContainer = "container:PackList.xcodeproj">
+            BlueprintIdentifier = "C3D2BB6B2E6A7967002B900A"
+            BuildableName = "Packlin.app"
+            BlueprintName = "Packlin"
+            ReferencedContainer = "container:Packlin.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
@@ -72,7 +105,7 @@
       buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "TestFlight"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
