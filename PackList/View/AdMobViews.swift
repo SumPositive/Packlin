@@ -14,7 +14,11 @@ import FirebaseCrashlytics
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
 
 // 利用可能な広告がない場合に共通で表示する文言をまとめておく
+#if DISABLED // V3.1以降に有効化
 private let adUnavailableMessage = String(localized: "現在、特典付きの広告がありません。後ほどお試しください")
+#else
+private let adUnavailableMessage = String(localized: "現在、配信されている広告がありません。後ほどお試しください")
+#endif
 
 // 広告ユニットID
 #if DEBUG
@@ -160,13 +164,17 @@ struct AdMobAdSheetView: View {
         let nextValue = adRewardStamps + 1
         adRewardStamps = nextValue
 
+#if DISABLED // V3.1以降に有効化
         let filled = min(nextValue, rewardStampGoal)
         let format = String(localized: "視聴回数: %lld/%lld")
         let progressText = String(format: format, filled, rewardStampGoal)
         // 次回の送信に必要な目安も示す
-        let descriptionFormat = String(localized: "ご視聴ありがとうございます。\n%@")
+        let descriptionFormat = String(localized: "ご視聴ありがとうございます\n%@")
         // String(format:) を介して差し込むことでローカライズされた書式を保持する
         rewardDescription = String(format: descriptionFormat, progressText)
+#else
+        rewardDescription = String(localized: "ご視聴ありがとうございます")
+#endif
     }
 }
 
@@ -215,12 +223,14 @@ struct AdMobRewardedContentView: View {
                 }
             }
 
-            Text("最後まで視聴して特典をお受け取りください")
+            //Text("最後まで視聴して特典をお受け取りください")
+            Text("最後まで視聴して開発者を応援してください")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
 
+#if DISABLED // V3.1以降に有効化
             VStack(spacing: 4) {
                 // 広告視聴によって貯まる特典の進捗を見せる
                 Text("特典：３回視聴するとチャッピー送信が1回無料になります")
@@ -242,7 +252,8 @@ struct AdMobRewardedContentView: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(adRewardStamps < rewardStampGoal ? Color.secondary : Color.blue)
             }
-
+#endif
+            
             HStack {
                 Spacer()
 

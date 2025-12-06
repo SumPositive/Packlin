@@ -85,6 +85,7 @@ struct GroupListView: View {
                 .frame(maxWidth: .infinity)
 
                 VStack(spacing: 4) {
+#if DISABLED // V3.1以降に有効化
                     Button {
                         // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
                         showAiCreateSheet = true
@@ -124,6 +125,7 @@ struct GroupListView: View {
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
                     }
+#endif
                 }
                 .frame(maxWidth: .infinity)
             }

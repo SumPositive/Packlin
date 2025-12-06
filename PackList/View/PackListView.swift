@@ -161,6 +161,7 @@ struct PackListView: View {
 
                     // 新しいパック追加と説明
                     VStack(spacing: 6) {
+#if DISABLED // V3.1以降に有効化
                         // メニューからAI依頼と手動作成を選べるようにする
                         Menu {
                             Button {
@@ -190,6 +191,24 @@ struct PackListView: View {
                         .menuStyle(.button)
                         .buttonStyle(.borderless)
                         .disabled(isShowingEditSheet)
+#else
+                        Button {
+                            // これまで通り自分で項目を入力して作成するパターン
+                            addPack()
+                        } label: {
+                            ZStack {
+                                Image(systemName: "case")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical)
+                                Image(systemName: "plus")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .padding(.top, 4)
+                            }
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(isShowingEditSheet)
+#endif
 
                         if isBeginnerMode {
                             // 初心者向け：新規パック追加の説明
@@ -232,37 +251,6 @@ struct PackListView: View {
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-//                Text("ボタンの説明")
-//                    .font(.footnote)
-//                    .foregroundStyle(.secondary)
-//                    .frame(maxWidth: .infinity, alignment: .leading)
-//                Group {
-//                    HStack(spacing: 8) {
-//                        Image(systemName: "case")
-//                            .imageScale(.medium)
-//                        Text("パックの名称やメモを編集する")
-//                            .font(.footnote)
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//                    HStack(spacing: 8) {
-//                        Image(systemName: "chevron.right")
-//                            .imageScale(.medium)
-//                            .padding(.horizontal, 4)
-//                        Text("グループ一覧を表示する")
-//                            .font(.footnote)
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//                    HStack(spacing: 8) {
-//                        Image(systemName: "hand.point.up.left.and.text")
-//                            .imageScale(.medium)
-//                        Text("ドラッグドロップで行を移動する")
-//                            .font(.footnote)
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//                }
-//                .foregroundStyle(.secondary)
-//                .padding(.leading, 16)
-                
                 Text("パックの状態")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
