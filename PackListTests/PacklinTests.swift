@@ -7,9 +7,9 @@
 
 import Testing
 import SwiftData
-@testable import PackList
+@testable import Packlin
 
-struct PackListTests {
+struct PacklinTests {
 
     @Test("normalizeGroupOrder は order の乱れを解消して連番を維持する")
     func normalizeGroupOrderKeepsDisplaySequence() async throws {
