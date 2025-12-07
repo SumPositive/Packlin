@@ -162,15 +162,28 @@ struct SettingView: View {
     }
 
     private var versionLineText: String? {
-        // Info.plistからアプリバージョンを取得する
+        // Info.plistからアプリバージョンとビルド番号を合成する
+        guard let versionText else {
+            return nil
+        }
+        // サポート用IDが取得できなければVersionだけを表示する
+        guard let supportId = supportUserId else {
+            return "Version \(versionText)"
+        }
+        // ビルド番号付きバージョンとサポートIDの両方を表示する
+        return "Version \(versionText)  Support \(supportId)"
+    }
+
+    private var versionText: String? {
+        // アプリの表示用バージョンとビルド番号をドット区切りで繋ぐ
         guard let appVersion else {
             return nil
         }
-        // サポート用IDが取得できなければ表示を行わない
-        guard let supportId = supportUserId else {
-            return "Version \(appVersion)"
+        // CFBundleVersionが取得できた場合のみ末尾に連結する
+        guard let buildVersion, buildVersion.isEmpty == false else {
+            return appVersion
         }
-        return "Version \(appVersion)  Support \(supportId)"
+        return "\(appVersion).\(buildVersion)"
     }
 
     private var appVersion: String? {
@@ -181,12 +194,21 @@ struct SettingView: View {
         return bundleVersion
     }
 
+    private var buildVersion: String? {
+        // ビルド番号をInfo.plistから取得し、存在しない場合はnilを返す
+        guard let bundleBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String else {
+            return nil
+        }
+        return bundleBuild
+    }
+
     private var supportUserId: String? {
         // userIdは通信周りで生成されるため、空文字の場合は表示しない
         let rawId = creditStore.userId.trimmingCharacters(in: .whitespacesAndNewlines)
         if rawId.isEmpty {
             return nil
         }
+        // userIdはKeychainに保存されるUUIDでプレースホルダー値は存在しないため、そのまま表示対象とする
         // 先頭8文字だけを抜き出してサポート用識別子に使う
         if rawId.count < 8 {
             return rawId
