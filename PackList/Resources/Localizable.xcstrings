@@ -208,13 +208,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "https://docs.azukid.com/sumpo/packlin"
+            "value" : "https://docs.azukid.com/en/sumpo/Packlin/packlin"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "https://docs.azukid.com/sumpo/jp/packlin"
+            "state" : "translated",
+            "value" : "https://docs.azukid.com/jp/sumpo/Packlin/packlin"
           }
         }
       }
