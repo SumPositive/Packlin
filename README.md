@@ -2,7 +2,15 @@
 
 ## Codex
 
-- V2 Objective-C から Swift/SwiftUI 変換に Codex を利用したのを手始めに Codex を徹底利用する方針とし、System prompt や指示方法などのノウハウを蓄積している
+V2 Objective-C から Swift/SwiftUI 変換に Codex を利用したのを手始めに Codex を徹底利用する方針とし、System prompt や指示方法などのノウハウを蓄積している
+
+
+## azuki-api
+
+アプリ単体では困難なことを実現するためにバックエンドを設けた
+- 認証：ログイン不要で個人を特定しないデバイス認証を行うため
+- 購入：アプリ内課金によりチケット購入してもらうため
+- 広告：リワード広告を視聴してもらい特典を付与するため
 
 
 ## StoreKit 購入テスト環境について
