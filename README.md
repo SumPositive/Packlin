@@ -1,5 +1,10 @@
 # モチメモ/Packlin V3
 
+## Codex
+
+- V2 Objective-C から Swift/SwiftUI 変換に Codex を利用したのを手始めに Codex を徹底利用する方針とし、System prompt や指示方法などのノウハウを蓄積している
+
+
 ## StoreKit 購入テスト環境について
 
 - シミュレータ向けの StoreKit Test Session 自動化は廃止しました。課金フローの検証は実機 + Sandbox Apple ID で行ってください
