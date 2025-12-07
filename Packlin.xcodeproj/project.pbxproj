@@ -33,7 +33,6 @@
 		C3D2BB6C2E6A7967002B900A /* Packlin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Packlin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C3F132642EE2DF0C00F21FB1 /* PackList copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "PackList copy-Info.plist"; path = "/Users/sumpositive/GitLocal/PackList/PackList copy-Info.plist"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -110,7 +109,6 @@
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
 				C36757AB2E80330F0098BB22 /* Frameworks */,
-				C3F132642EE2DF0C00F21FB1 /* PackList copy-Info.plist */,
 				C3D2BB6D2E6A7967002B900A /* Products */,
 			);
 			sourceTree = "<group>";
