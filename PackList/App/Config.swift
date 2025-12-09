@@ -32,6 +32,8 @@ let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
 // ヘッダーの高さ
 let APP_HEADER_HEIGHT_BEG : CGFloat = 100.0  // 初心者モード
 let APP_HEADER_HEIGHT_EXP : CGFloat =  56.0  // 達人モード
+// iPadのマルチウィンドウ時に左上のシステムボタンとヘッダーが重ならないようにする余白
+let IPAD_WINDOW_CONTROL_INSET : CGFloat = 64.0
 
 //-------------------------------------- MAX関係
 

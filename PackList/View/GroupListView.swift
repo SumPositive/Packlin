@@ -316,6 +316,8 @@ struct GroupListView: View {
                         itemAction: nil
                     )
                 }
+                // iPadマルチウィンドウ時の左上システムアイコンを避けるため、ヘッダーをわずかに右へ寄せる
+                .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)

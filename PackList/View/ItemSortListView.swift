@@ -288,6 +288,8 @@ struct ItemSortListView: View {
                         itemAction: nil
                     )
                 }
+                // iPadマルチウィンドウの左上システムアイコンに押し込まれないよう、ヘッダーを右へオフセットする
+                .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)

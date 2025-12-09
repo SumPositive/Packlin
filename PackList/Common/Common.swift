@@ -8,6 +8,14 @@
 import UIKit
 import Combine
 
+// iPadのマルチウィンドウでタイトルバー左上のシステムボタンがヘッダーを覆うのを避けるための余白を返す
+func ipadWindowControlInset() -> CGFloat {
+    if UIDevice.current.userInterfaceIdiom == .pad {
+        return IPAD_WINDOW_CONTROL_INSET
+    }
+    return 0
+}
+
 
 var popoverBottom: CGFloat = 0
 

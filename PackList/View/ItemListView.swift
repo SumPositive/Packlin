@@ -204,6 +204,8 @@ struct ItemListView: View {
                         itemAction: nil
                     )
                 }
+                // iPadマルチウィンドウ時の左上システムアイコンに隠れないよう、ヘッダー全体を右へずらす
+                .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)

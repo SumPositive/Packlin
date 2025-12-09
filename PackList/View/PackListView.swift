@@ -221,6 +221,8 @@ struct PackListView: View {
                     .frame(width: 66)
                     .padding(.horizontal, 6)
                 }
+                // iPadのマルチウィンドウで左上のシステムアイコンに隠れないよう、ヘッダー全体を右へずらす
+                .padding(.leading, ipadWindowControlInset())
                 .tint(.primary) // ヘッダ部は.accentColorにしない
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)
