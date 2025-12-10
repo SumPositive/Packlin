@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import SwiftData
 import UIKit
+import ObjectiveC
 
 import FirebaseCore
 import FirebaseAnalytics
@@ -69,6 +70,8 @@ struct AppMain: App {
         loadSamplePacksIfNeeded()
 
         // 端末言語が日本語でない場合は、アプリの優先言語を英語に固定する
+        // UserDefaultsのAppleLanguagesだけでは起動後のUIに即時反映されなかったため、
+        // BundleのlocalizedStringを英語に差し替えるハックを併用する
         updatePreferredLanguageToEnglishIfNeeded()
 
         // AdMob SDKを初期化する
@@ -231,7 +234,10 @@ struct AppMain: App {
             return
         }
 
-        // AppleLanguagesを英語優先に並び替える（英語が先頭でない場合のみ）
+        // AppleLanguagesを書き換えて英語を先頭に固定する
+        // iOSは起動時のAppleLanguagesを参照するため、起動直後に実行しても
+        // それ以降のlocalizedString評価は必ずしも英語にならない
+        // そこでBundleのlocalizedStringを英語バンドルへ強制的にフォールバックする
         let userDefaults = UserDefaults.standard
         let currentLanguages = userDefaults.array(forKey: "AppleLanguages") as? [String] ?? []
 
@@ -242,6 +248,9 @@ struct AppMain: App {
 
         userDefaults.set(updatedLanguages, forKey: "AppleLanguages")
         userDefaults.synchronize()
+
+        // Bundleハックで実際のローカライズ解決を英語に誘導
+        Bundle.forceLocalization(to: "en")
     }
 
 }
@@ -264,4 +273,43 @@ struct AppMain: App {
 //        return hasLimitation == false
 //    }
 //}
+
+/// Bundle.mainのlocalizedString解決を任意言語に差し替えるためのラッパー
+private final class ForcedLocalizationBundle: Bundle {
+    /// 強制するロケールの言語コード
+    static var forcedLanguageCode: String = "en"
+
+    override func localizedString(forKey key: String,
+                                  value: String?,
+                                  table tableName: String?) -> String {
+        // 強制言語の.lprojを優先的に探す
+        if let path = Bundle.main.path(forResource: Self.forcedLanguageCode, ofType: "lproj"),
+           let forcedBundle = Bundle(path: path) {
+            let localized = forcedBundle.localizedString(forKey: key, value: value, table: tableName)
+            if localized != key {
+                // 対応がある場合は即返却（英語を最優先）
+                return localized
+            }
+        }
+
+        // 英語に存在しないキーの場合は、従来の解決にフォールバック
+        return super.localizedString(forKey: key, value: value, table: tableName)
+    }
+}
+
+extension Bundle {
+    /// localizedStringの解決を指定言語に強制する
+    /// - Parameter languageCode: 使用したい言語コード（例: "en"）
+    static func forceLocalization(to languageCode: String) {
+        // 既に適用済みなら何もしない
+        if object_getClass(Bundle.main) === ForcedLocalizationBundle.self,
+           ForcedLocalizationBundle.forcedLanguageCode == languageCode {
+            return
+        }
+
+        // 一度だけクラスを差し替え、強制言語を記録
+        ForcedLocalizationBundle.forcedLanguageCode = languageCode
+        object_setClass(Bundle.main, ForcedLocalizationBundle.self)
+    }
+}
 
