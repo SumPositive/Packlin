@@ -68,6 +68,9 @@ struct AppMain: App {
         // M1Packが空ならばサンプルを読み込む
         loadSamplePacksIfNeeded()
 
+        // 端末言語が日本語でない場合は、アプリの優先言語を英語に固定する
+        updatePreferredLanguageToEnglishIfNeeded()
+
         // AdMob SDKを初期化する
         MobileAds.shared.start()
         
@@ -214,6 +217,31 @@ struct AppMain: App {
                 Crashlytics.crashlytics().record(error: error)
             }
         }
+    }
+
+    /// 日本語以外のデバイス設定ではアプリ内部の優先言語を英語に寄せる
+    private func updatePreferredLanguageToEnglishIfNeeded() {
+        // 端末設定が日本語かどうかを判定
+        let prefersJapanese = Locale.preferredLanguages.contains { languageCode in
+            languageCode.hasPrefix("ja")
+        }
+
+        guard prefersJapanese == false else {
+            // 日本語設定なら既定のまま
+            return
+        }
+
+        // AppleLanguagesを英語優先に並び替える（英語が先頭でない場合のみ）
+        let userDefaults = UserDefaults.standard
+        let currentLanguages = userDefaults.array(forKey: "AppleLanguages") as? [String] ?? []
+
+        var updatedLanguages = currentLanguages.filter { languageCode in
+            languageCode.hasPrefix("en") == false
+        }
+        updatedLanguages.insert("en", at: 0)
+
+        userDefaults.set(updatedLanguages, forKey: "AppleLanguages")
+        userDefaults.synchronize()
     }
 
 }
