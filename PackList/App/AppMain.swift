@@ -153,6 +153,13 @@ struct AppMain: App {
                 localizationCandidates.append(developmentLocalization)
             }
         }
+        // 端末の言語設定が日本語でない場合は、英語を最優先にする
+        let preferredLanguages = Locale.preferredLanguages
+        let prefersJapanese = preferredLanguages.contains { $0.hasPrefix("ja") }
+        if prefersJapanese == false, let enIndex = localizationCandidates.firstIndex(of: "en") {
+            localizationCandidates.remove(at: enIndex)
+            localizationCandidates.insert("en", at: 0)
+        }
 
         var nextOrder = existingPacks.map { $0.order }.max() ?? -ORDER_SPARSE
         for fileName in sampleFileNames {
