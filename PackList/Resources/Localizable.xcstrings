@@ -988,7 +988,14 @@
       }
     },
     "変更の要望をたくさん列記してください\n（最大%lld文字）\n（例）6泊に変更、ギリシャも訪問、祖父母も参加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List the changes you want\n(up to %lld chars)\n(e.g., switch to 6 nights, visit Greece, include grandparents)"
+          }
+        }
+      }
     },
     "常時並べ替え" : {
       "localizations" : {
@@ -1081,7 +1088,14 @@
       }
     },
     "戻した変更をやり直す" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo the reverted changes"
+          }
+        }
+      }
     },
     "挿入位置" : {
       "localizations" : {
@@ -1405,7 +1419,14 @@
       }
     },
     "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください\n（最大%lld文字）\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List places, dates, plans, people, weather, and activities\n(up to %lld chars)\n(e.g., 5-night trip to Italy & Spain, family of 4, plan for rain, pack first aid)"
+          }
+        }
+      }
     },
     "設定" : {
       "localizations" : {
