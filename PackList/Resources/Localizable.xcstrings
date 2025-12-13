@@ -992,7 +992,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "List the changes you want\n(up to %lld chars)\n(e.g., switch to 6 nights, visit Greece, include grandparents)"
+            "value" : "Jot your tweaks\n(up to %lld chars)\n(e.g., 6 nights, swing by Greece, grandparents too)"
           }
         }
       }
@@ -1092,7 +1092,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Redo the reverted changes"
+            "value" : "Reapply what you undid"
           }
         }
       }
@@ -1423,7 +1423,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "List places, dates, plans, people, weather, and activities\n(up to %lld chars)\n(e.g., 5-night trip to Italy & Spain, family of 4, plan for rain, pack first aid)"
+            "value" : "List spots, dates, goals, crew, weather, fun plans\n(up to %lld chars)\n(e.g., 5-night Italy & Spain, family of 4, plan for rain, pack first aid)"
           }
         }
       }
