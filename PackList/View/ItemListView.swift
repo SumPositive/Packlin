@@ -164,7 +164,7 @@ struct ItemListView: View {
                             .disabled(!canRedo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("直前の変更にやり直す")
+                                Text("戻した変更をやり直す")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)

@@ -150,7 +150,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：Redoの役割を説明
-                            Text("直前の変更にやり直す")
+                            Text("戻した変更をやり直す")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)

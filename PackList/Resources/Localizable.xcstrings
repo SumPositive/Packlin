@@ -1080,6 +1080,9 @@
         }
       }
     },
+    "戻した変更をやり直す" : {
+
+    },
     "挿入位置" : {
       "localizations" : {
         "en" : {
@@ -1291,6 +1294,7 @@
       }
     },
     "直前の変更にやり直す" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

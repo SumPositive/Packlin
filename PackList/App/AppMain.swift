@@ -71,13 +71,13 @@ struct AppMain: App {
         // AdMob SDKを初期化する
         MobileAds.shared.start()
         
-        #if TESTFLIGHT // Scheme "TestFlight" にて定義が有効になる
-            // このデバイスをテストデバイスとして扱う設定
-            // TestFlight時、本番ユニットIDでも「安全にテスト広告」が表示されるが、
-            // AdMobバックエンドは本番としてのSSVフローが動き、Webhook URLにリクエストが飛びテストできる
-            let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
-            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
-        #endif
+//        #if TESTFLIGHT // Scheme "TestFlight" にて定義が有効になる
+//            // このデバイスをテストデバイスとして扱う設定
+//            // TestFlight時、本番ユニットIDでも「安全にテスト広告」が表示されるが、
+//            // AdMobバックエンドは本番としてのSSVフローが動き、Webhook URLにリクエストが飛びテストできる
+//            let testDeviceIdentifiers = ["2077ef9a63d2b398840261c8221a0c9b"]
+//            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
+//        #endif
     }
 
     var body: some Scene {
