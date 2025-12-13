@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
+                C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
 		C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
 		C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */

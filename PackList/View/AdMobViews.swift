@@ -8,6 +8,60 @@
 import SwiftUI
 import UIKit
 
+#if targetEnvironment(macCatalyst)
+
+// Mac CatalystではGoogle Mobile Ads SDKが利用できず起動時にクラッシュするため、
+// 代わりにシンプルな案内ビューを表示して広告機能を無効化する
+struct AdMobAdSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 16) {
+                Image(systemName: "ipad.badge.play")
+                    .imageScale(.large)
+                    .symbolRenderingMode(.multicolor)
+                    .font(.system(size: 44))
+                Text("Mac版では広告機能を提供していません")
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                Text("iPhoneやiPadで応援いただけると助かります！")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Button {
+                    // クラッシュ回避のため広告SDKを呼び出さず閉じるだけにする
+                    dismiss()
+                } label: {
+                    Label("閉じる", systemImage: "xmark")
+                        .font(.body.weight(.semibold))
+                        .padding(.horizontal, 12)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .navigationTitle(Text("広告を見て寄付"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        // ナビゲーションバーの閉じるボタンも用意してUXを維持する
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+    }
+}
+
+#else
+
 import GoogleMobileAds
 import FirebaseCrashlytics
 
@@ -560,3 +614,5 @@ extension UIApplication {
         return base
     }
 }
+
+#endif

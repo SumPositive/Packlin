@@ -13,7 +13,9 @@ import UIKit
 import FirebaseCore
 import FirebaseAnalytics
 import FirebaseCrashlytics
+#if canImport(GoogleMobileAds) && !targetEnvironment(macCatalyst)
 import GoogleMobileAds
+#endif
 
 
 @main
@@ -69,7 +71,11 @@ struct AppMain: App {
         loadSamplePacksIfNeeded()
 
         // AdMob SDKを初期化する
+#if canImport(GoogleMobileAds) && !targetEnvironment(macCatalyst)
+        // Mac CatalystではGoogle Mobile Ads SDKがサポートされず起動時クラッシュの原因となるため、
+        // Macビルドでは初期化を行わずiOSのみ有効化する
         MobileAds.shared.start()
+#endif
         
 //        #if TESTFLIGHT // Scheme "TestFlight" にて定義が有効になる
 //            // このデバイスをテストデバイスとして扱う設定
