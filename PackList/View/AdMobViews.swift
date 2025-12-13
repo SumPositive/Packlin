@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-import GoogleMobileAds
+import GoogleMobileAds  // iOSのみ、MacやVisionには対応せずエラーになる
 import FirebaseCrashlytics
 
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
