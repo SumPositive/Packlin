@@ -1350,17 +1350,6 @@
         }
       }
     },
-    "直前の変更にやり直す" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redo the last change"
-          }
-        }
-      }
-    },
     "直前の変更を元に戻す" : {
       "localizations" : {
         "en" : {
@@ -1427,17 +1416,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display mode"
-          }
-        }
-      }
-    },
-    "表示行数" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lines"
           }
         }
       }
