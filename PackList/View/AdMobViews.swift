@@ -281,7 +281,7 @@ struct AdMobRewardedContentView: View {
                 Spacer()
             }
 
-            if let errorMessage = loader.errorMessage {
+            if loader.errorMessage != nil {
                 //log(.error, "AdMob rewarded ad loading failed: \(errorMessage)")
                 Button(String(localized: "再読み込み")) {
                     loader.loadAd()

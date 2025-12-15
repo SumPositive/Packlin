@@ -89,7 +89,7 @@ struct PackRowView: View {
                 .buttonStyle(BorderlessButtonStyle())
                 // 名称
                 pack.name.placeholderText("新しいパック")
-                    .lineLimit(3)
+                    .lineLimit(3, reservesSpace: false)
                     .font(FONT_NAME)
                     .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
                 Spacer()
@@ -125,7 +125,7 @@ struct PackRowView: View {
                         .padding(.horizontal, 8)
                 }else{
                     Text(pack.memo)
-                        .lineLimit(3)
+                        .lineLimit(3, reservesSpace: false)
                         .font(FONT_MEMO)
                         .foregroundStyle(COLOR_MEMO)
                         .padding(.horizontal, 8)

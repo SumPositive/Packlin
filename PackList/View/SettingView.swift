@@ -473,14 +473,14 @@ struct SettingView: View {
                 // 行の表示行数を切り替える
                 HStack(spacing: 8) {
                     Label {
-                        Text("表示行数")
+                        Text("明細表示")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "text.justify")
                             .symbolRenderingMode(.hierarchical)
                     }
 
-                    Picker("表示行数", selection: $rowTextLines) {
+                    Picker("明細表示", selection: $rowTextLines) {
                         ForEach(RowTextLines.allCases) { setting in
                             Text(setting.localizedKey)
                                 .tag(setting)

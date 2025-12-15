@@ -152,7 +152,7 @@ struct PackEditView: View {
                                 .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
                         }
                     }
-                    .frame(height: 80)
+                    .frame(minHeight: 80, maxHeight: .infinity)
                 }
                 
                 Section("メモ") {
@@ -166,7 +166,7 @@ struct PackEditView: View {
                                 }
                             }
                     }
-                    .frame(height: 140)
+                    .frame(minHeight: 80, maxHeight: .infinity)
                 }
             }
             .toolbar {

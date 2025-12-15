@@ -49,9 +49,9 @@ struct ItemEditView: View {
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
 
-    private var nameFieldMinHeight: CGFloat {
-        UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
-    }
+//    private var nameFieldMinHeight: CGFloat {
+//        UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
+//    }
 
     private var canSelectPreviousItem: Bool {
         adjacentItem(offset: -1) != nil
@@ -229,7 +229,7 @@ struct ItemEditView: View {
                         .lineLimit(6)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 12)
-                        .frame(minHeight: nameFieldMinHeight, alignment: .top)
+                        .frame(minHeight: 80, maxHeight: .infinity)
                         .background(COLOR_BACK_INPUT)
                         .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                         .onChange(of: item.name) { newValue, _ in
@@ -243,7 +243,7 @@ struct ItemEditView: View {
                     TextEditor(text: $item.memo)
                         .font(FONT_MEMO)
                         .focused($focusedField, equals: .memo)
-                        .frame(minHeight: 120)
+                        .frame(minHeight: 80, maxHeight: .infinity)
                         .scrollContentBackground(.hidden)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 8)

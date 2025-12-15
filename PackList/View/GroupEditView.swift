@@ -167,7 +167,7 @@ struct GroupEditView: View {
                             }
                         }
                         .focused($nameIsFocused) // フォーカス状態とバインド
-                        .frame(height: 80)
+                        .frame(minHeight: 80, maxHeight: .infinity)
                 }
                 Section("メモ") {
                     TextEditor(text: $group.memo)
@@ -178,7 +178,7 @@ struct GroupEditView: View {
                                 group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
                             }
                         }
-                        .frame(height: 140)
+                        .frame(minHeight: 80, maxHeight: .infinity)
                 }
                 .padding(.top, -20)
             }

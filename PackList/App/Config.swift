@@ -104,10 +104,10 @@ let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
 //Text("キャプション").font(.caption)
 //Text("脚注").font(.footnote)
 
-let FONT_NAME: Font = .title2
-let FONT_MEMO: Font = .body
+let FONT_NAME: Font = .body
+let FONT_MEMO: Font = .caption
 let FONT_WEIGHT: Font = .body
-let FONT_STOCK: Font = .title2
+let FONT_STOCK: Font = .body
 
 let FONT_EDIT: Font = .title2
 
@@ -128,7 +128,7 @@ let DEF_linkCheckOffWithZero = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
 // 行の最大表示行数（name／memo）
-let DEF_rowTextLines: RowTextLines = .oneLine
+let DEF_rowTextLines: RowTextLines = .minimal
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
 let DEF_autoItemReorder = true
 

@@ -110,13 +110,13 @@ struct GroupRowView: View {
                 .font(FONT_NAME)
                 .multilineTextAlignment(.leading)
                 // 行数上限までは折り返し、それ以降は標準の末尾トランケートに任せる
-                .lineLimit(nameLineLimit)
+                .lineLimit(nameLineLimit, reservesSpace: false)
                 .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                 Spacer()
                 // 最小表示時は重量を右側へ寄せる
                 if showWeightOnNameLine, let weightLabelText {
                     weightLabel(weightLabelText)
-                        .padding(.leading, 8)
+                        .padding(.horizontal, 8)
                 }
             }
 
@@ -151,7 +151,7 @@ struct GroupRowView: View {
                                 .font(FONT_MEMO)
                                 .multilineTextAlignment(.leading)
                                 // 改行で指定行数まで切り、残りは末尾トランケートに任せる
-                                .lineLimit(memoLineLimit)
+                                .lineLimit(memoLineLimit, reservesSpace: false)
                                 .foregroundStyle(COLOR_MEMO)
                                 .padding(.horizontal, 8)
                         }

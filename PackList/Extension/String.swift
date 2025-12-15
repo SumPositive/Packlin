@@ -44,7 +44,7 @@ extension String {
 
     /// 指定行数までで文字列を切り、末尾の改行を取り除く
     /// - Parameter maxLines: 上限とする行数（0以下なら空文字を返す）
-    /// - Returns: 改行区切りで上限行までを残した文字列
+    /// - Returns: スペース区切りで上限行までを残した文字列
     func limitedByNewlines(maxLines: Int) -> String {
         if maxLines <= 0 { return "" }
 
@@ -65,9 +65,8 @@ extension String {
                 break
             }
         }
-
-        // 取得した行を改行で再結合し、末尾の余計な改行は含めない
-        return collected.joined(separator: "\n")
+        // 取得した行をスペース"  "で再結合し、末尾の改行は含めない
+        return collected.joined(separator: "  ") //\n")
     }
 
 }

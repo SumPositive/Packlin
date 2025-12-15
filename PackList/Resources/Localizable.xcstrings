@@ -84,6 +84,36 @@
         }
       }
     },
+    "1行" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 line"
+          }
+        }
+      }
+    },
+    "2行" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 lines"
+          }
+        }
+      }
+    },
+    "3行" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 lines"
+          }
+        }
+      }
+    },
     "AI利用が可能か確認できません。通信環境をご確認ください" : {
       "localizations" : {
         "en" : {
@@ -857,6 +887,16 @@
         }
       }
     },
+    "最小" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mini"
+          }
+        }
+      }
+    },
     "最後まで視聴して開発者を応援してください" : {
       "localizations" : {
         "en" : {
@@ -1237,6 +1277,9 @@
         }
       }
     },
+    "明細表示" : {
+
+    },
     "未 ✔︎ 順" : {
       "localizations" : {
         "en" : {
@@ -1384,6 +1427,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display mode"
+          }
+        }
+      }
+    },
+    "表示行数" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lines"
           }
         }
       }
@@ -1554,56 +1608,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show scale readings in kilograms from 1000 g"
-          }
-        }
-      }
-    },
-    "表示行数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lines"
-          }
-        }
-      }
-    },
-    "3行" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3 lines"
-          }
-        }
-      }
-    },
-    "2行" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2 lines"
-          }
-        }
-      }
-    },
-    "1行" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 line"
-          }
-        }
-      }
-    },
-    "最小" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mini"
           }
         }
       }

@@ -72,7 +72,7 @@ struct ItemRowView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // グループ縦線
+            // グループ縦線（透明スペース）
             Rectangle()
                 .fill(.clear)
                 .frame(width: 12)
@@ -122,7 +122,7 @@ struct ItemRowView: View {
                     .font(FONT_NAME)
                     .multilineTextAlignment(.leading)
                     // 指定行数まで折り返し、それ以上は末尾トランケートに任せる
-                    .lineLimit(nameLineLimit)
+                    .lineLimit(nameLineLimit, reservesSpace: false)
                     .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                     Spacer()
                     // 最小表示時は数量カプセルをname行の右端へ寄せる
@@ -159,7 +159,7 @@ struct ItemRowView: View {
                                     .font(FONT_MEMO)
                                     .multilineTextAlignment(.leading)
                                     // 改行を優先して指定行数に収め、超過はlineLimitに任せる
-                                    .lineLimit(memoLineLimit)
+                                    .lineLimit(memoLineLimit, reservesSpace: false)
                                     .foregroundStyle(COLOR_MEMO)
                                     .padding(.leading, 4)
                             }
