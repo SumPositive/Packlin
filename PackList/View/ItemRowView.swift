@@ -106,15 +106,17 @@ struct ItemRowView: View {
                     .padding(.trailing, 8)
                     // 名称
                     item.name.placeholderText("新しいアイテム")
+                        // 名前が長い場合でも折り返して全体を見せる
                         .lineLimit(nameLineLimit)
+                        .fixedSize(horizontal: false, vertical: true)
                         .font(FONT_NAME)
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                    Spacer()
                     // 最小表示時は数量カプセルをname行の右端へ寄せる
                     if showQuantityOnNameLine {
                         quantityButton()
                             .padding(.leading, 8)
                     }
-                    Spacer()
                 }
 
                 if detailRowNeeded {

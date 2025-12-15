@@ -128,7 +128,7 @@ let DEF_linkCheckOffWithZero = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
 // 行の最大表示行数（name／memo）
-let DEF_rowTextLines: RowTextLines = .threeLines
+let DEF_rowTextLines: RowTextLines = .oneLine
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
 let DEF_autoItemReorder = true
 

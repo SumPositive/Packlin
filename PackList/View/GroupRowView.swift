@@ -93,15 +93,17 @@ struct GroupRowView: View {
                 .buttonStyle(BorderlessButtonStyle())
                 // 名称
                 group.name.placeholderText("新しいグループ")
+                    // 長い名称も折り返しで見せる
                     .lineLimit(nameLineLimit)
+                    .fixedSize(horizontal: false, vertical: true)
                     .font(FONT_NAME)
                     .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                Spacer()
                 // 最小表示時は重量を右側へ寄せる
                 if showWeightOnNameLine, let weightLabelText {
                     weightLabel(weightLabelText)
                         .padding(.leading, 8)
                 }
-                Spacer()
             }
 
             if detailRowNeeded {
