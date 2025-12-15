@@ -115,6 +115,8 @@ struct ItemRowView: View {
                     item.name.placeholderText("新しいアイテム")
                         // 名前が長い場合でも折り返して全体を見せる
                         .font(FONT_NAME)
+                        .lineLimit(nameLineLimit)
+                        .truncationMode(.clip)
                         .frame(maxHeight: nameMaxHeight, alignment: .leading)
                         .clipped()
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
@@ -143,6 +145,8 @@ struct ItemRowView: View {
                             if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
                                 Text("アイテムとは、持ち物そのもの。最小単位です")
                                     .font(FONT_MEMO)
+                                    .lineLimit(memoLineLimit)
+                                    .truncationMode(.clip)
                                     .frame(maxHeight: memoMaxHeight, alignment: .leading)
                                     .clipped()
                                     .foregroundStyle(.secondary)
@@ -150,6 +154,8 @@ struct ItemRowView: View {
                             }else{
                                 Text(item.memo)
                                     .font(FONT_MEMO)
+                                    .lineLimit(memoLineLimit)
+                                    .truncationMode(.clip)
                                     .frame(maxHeight: memoMaxHeight, alignment: .leading)
                                     .clipped()
                                     .foregroundStyle(COLOR_MEMO)

@@ -102,6 +102,8 @@ struct GroupRowView: View {
                 group.name.placeholderText("新しいグループ")
                     // 長い名称は行数上限まで折り返し、それ以上はクリップで非表示にする
                     .font(FONT_NAME)
+                    .lineLimit(nameLineLimit)
+                    .truncationMode(.clip)
                     .frame(maxHeight: nameMaxHeight, alignment: .leading)
                     .clipped()
                     .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
@@ -134,6 +136,8 @@ struct GroupRowView: View {
                         if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
                             Text("グループとは、持ち物をポーチなどで小分けにしたものです")
                                 .font(FONT_MEMO)
+                                .lineLimit(memoLineLimit)
+                                .truncationMode(.clip)
                                 .frame(maxHeight: memoMaxHeight, alignment: .leading)
                                 .clipped()
                                 .foregroundStyle(.secondary)
@@ -141,6 +145,8 @@ struct GroupRowView: View {
                         }else{
                             Text(group.memo)
                                 .font(FONT_MEMO)
+                                .lineLimit(memoLineLimit)
+                                .truncationMode(.clip)
                                 .frame(maxHeight: memoMaxHeight, alignment: .leading)
                                 .clipped()
                                 .foregroundStyle(COLOR_MEMO)
