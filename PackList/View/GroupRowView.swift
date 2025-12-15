@@ -56,14 +56,14 @@ struct GroupRowView: View {
     private var nameLineLimit: Int { rowTextLines.nameLineLimit }
     private var memoLineLimit: Int { rowTextLines.memoLineLimit }
     private var showMemo: Bool { 0 < memoLineLimit }
-    // 表示高さを計算し、行上限を超える分はクリップで隠す（末尾の"..."を出さない）
-    private var nameMaxHeight: CGFloat {
-        CGFloat(nameLineLimit) * UIFont.preferredFont(forTextStyle: .title2).lineHeight
-    }
-    private var memoMaxHeight: CGFloat {
-        CGFloat(memoLineLimit) * UIFont.preferredFont(forTextStyle: .body).lineHeight
-    }
     private var showWeightOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
+    private var limitedName: String {
+        // 改行を基準に上限行だけ残し、末尾は標準のトランケートに任せる
+        group.name.limitedByNewlines(maxLines: nameLineLimit)
+    }
+    private var limitedMemo: String {
+        group.memo.limitedByNewlines(maxLines: memoLineLimit)
+    }
     private var detailRowNeeded: Bool {
         // memo表示の有無と重量表示位置で二段目を出すか判定する
         if showMemo {
@@ -99,15 +99,19 @@ struct GroupRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 // 名称
-                group.name.placeholderText("新しいグループ")
-                    // 長い名称は行数上限まで折り返し、それ以上はクリップで非表示にする
-                    .font(FONT_NAME)
-                    // lineLimitを使わず高さで制限し、末尾の省略記号を防ぐ
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxHeight: nameMaxHeight, alignment: .leading)
-                    .clipped()
-                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                Group {
+                    if group.name.isEmpty {
+                        // プレースホルダもlineLimitの挙動を合わせる
+                        Text("新しいグループ")
+                    }else{
+                        Text(verbatim: limitedName)
+                    }
+                }
+                .font(FONT_NAME)
+                .multilineTextAlignment(.leading)
+                // 行数上限までは折り返し、それ以降は標準の末尾トランケートに任せる
+                .lineLimit(nameLineLimit)
+                .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                 Spacer()
                 // 最小表示時は重量を右側へ寄せる
                 if showWeightOnNameLine, let weightLabelText {
@@ -137,20 +141,17 @@ struct GroupRowView: View {
                         if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
                             Text("グループとは、持ち物をポーチなどで小分けにしたものです")
                                 .font(FONT_MEMO)
-                                // 行数上限は高さで管理し、省略記号を出さない
+                                // 行数上限はlineLimitに任せ、改行で切った分だけを表示する
                                 .multilineTextAlignment(.leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxHeight: memoMaxHeight, alignment: .leading)
-                                .clipped()
+                                .lineLimit(memoLineLimit)
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 8)
                         }else{
-                            Text(group.memo)
+                            Text(verbatim: limitedMemo)
                                 .font(FONT_MEMO)
                                 .multilineTextAlignment(.leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxHeight: memoMaxHeight, alignment: .leading)
-                                .clipped()
+                                // 改行で指定行数まで切り、残りは末尾トランケートに任せる
+                                .lineLimit(memoLineLimit)
                                 .foregroundStyle(COLOR_MEMO)
                                 .padding(.horizontal, 8)
                         }

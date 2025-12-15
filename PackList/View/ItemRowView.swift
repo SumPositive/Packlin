@@ -33,12 +33,12 @@ struct ItemRowView: View {
     private var memoLineLimit: Int { rowTextLines.memoLineLimit }
     private var showMemo: Bool { 0 < memoLineLimit }
     private var showQuantityOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
-    // Textが行上限を越えた際に末尾のドットを出さず、超過分をクリップで隠すための高さ
-    private var nameMaxHeight: CGFloat {
-        CGFloat(nameLineLimit) * UIFont.preferredFont(forTextStyle: .title2).lineHeight
+    private var limitedName: String {
+        // 改行数で切ってから標準の末尾トランケートに任せる
+        item.name.limitedByNewlines(maxLines: nameLineLimit)
     }
-    private var memoMaxHeight: CGFloat {
-        CGFloat(memoLineLimit) * UIFont.preferredFont(forTextStyle: .body).lineHeight
+    private var limitedMemo: String {
+        item.memo.limitedByNewlines(maxLines: memoLineLimit)
     }
     private var detailRowNeeded: Bool {
         // memo行か数量行を残す必要があるかを判定する
@@ -112,15 +112,18 @@ struct ItemRowView: View {
                     .padding(.leading, 0)
                     .padding(.trailing, 8)
                     // 名称
-                    item.name.placeholderText("新しいアイテム")
-                        // 名前が長い場合でも折り返して全体を見せる
-                        .font(FONT_NAME)
-                        // lineLimitを外し高さで抑えることで省略記号を防ぐ
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxHeight: nameMaxHeight, alignment: .leading)
-                        .clipped()
-                        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                    Group {
+                        if item.name.isEmpty {
+                            Text("新しいアイテム")
+                        }else{
+                            Text(verbatim: limitedName)
+                        }
+                    }
+                    .font(FONT_NAME)
+                    .multilineTextAlignment(.leading)
+                    // 指定行数まで折り返し、それ以上は末尾トランケートに任せる
+                    .lineLimit(nameLineLimit)
+                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                     Spacer()
                     // 最小表示時は数量カプセルをname行の右端へ寄せる
                     if showQuantityOnNameLine {
@@ -146,20 +149,17 @@ struct ItemRowView: View {
                             if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
                                 Text("アイテムとは、持ち物そのもの。最小単位です")
                                     .font(FONT_MEMO)
-                                    // 行高さで上限を決め、末尾ドットを抑止する
+                                    // 改行で行数を切り、lineLimitで末尾トランケートする
                                     .multilineTextAlignment(.leading)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxHeight: memoMaxHeight, alignment: .leading)
-                                    .clipped()
+                                    .lineLimit(memoLineLimit)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 4)
                             }else{
-                                Text(item.memo)
+                                Text(verbatim: limitedMemo)
                                     .font(FONT_MEMO)
                                     .multilineTextAlignment(.leading)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxHeight: memoMaxHeight, alignment: .leading)
-                                    .clipped()
+                                    // 改行を優先して指定行数に収め、超過はlineLimitに任せる
+                                    .lineLimit(memoLineLimit)
                                     .foregroundStyle(COLOR_MEMO)
                                     .padding(.leading, 4)
                             }
