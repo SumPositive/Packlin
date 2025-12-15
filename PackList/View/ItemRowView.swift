@@ -33,6 +33,13 @@ struct ItemRowView: View {
     private var memoLineLimit: Int { rowTextLines.memoLineLimit }
     private var showMemo: Bool { 0 < memoLineLimit }
     private var showQuantityOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
+    // Textが行上限を越えた際に末尾のドットを出さず、超過分をクリップで隠すための高さ
+    private var nameMaxHeight: CGFloat {
+        CGFloat(nameLineLimit) * UIFont.preferredFont(forTextStyle: .title2).lineHeight
+    }
+    private var memoMaxHeight: CGFloat {
+        CGFloat(memoLineLimit) * UIFont.preferredFont(forTextStyle: .body).lineHeight
+    }
     private var detailRowNeeded: Bool {
         // memo行か数量行を残す必要があるかを判定する
         if showMemo {
@@ -107,9 +114,9 @@ struct ItemRowView: View {
                     // 名称
                     item.name.placeholderText("新しいアイテム")
                         // 名前が長い場合でも折り返して全体を見せる
-                        .lineLimit(nameLineLimit)
-                        .fixedSize(horizontal: false, vertical: true)
                         .font(FONT_NAME)
+                        .frame(maxHeight: nameMaxHeight, alignment: .leading)
+                        .clipped()
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                     Spacer()
                     // 最小表示時は数量カプセルをname行の右端へ寄せる
@@ -135,14 +142,16 @@ struct ItemRowView: View {
                         if showMemo {
                             if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
                                 Text("アイテムとは、持ち物そのもの。最小単位です")
-                                    .lineLimit(memoLineLimit)
                                     .font(FONT_MEMO)
+                                    .frame(maxHeight: memoMaxHeight, alignment: .leading)
+                                    .clipped()
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 4)
                             }else{
                                 Text(item.memo)
-                                    .lineLimit(memoLineLimit)
                                     .font(FONT_MEMO)
+                                    .frame(maxHeight: memoMaxHeight, alignment: .leading)
+                                    .clipped()
                                     .foregroundStyle(COLOR_MEMO)
                                     .padding(.leading, 4)
                             }

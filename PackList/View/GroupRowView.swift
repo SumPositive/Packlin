@@ -56,6 +56,13 @@ struct GroupRowView: View {
     private var nameLineLimit: Int { rowTextLines.nameLineLimit }
     private var memoLineLimit: Int { rowTextLines.memoLineLimit }
     private var showMemo: Bool { 0 < memoLineLimit }
+    // 表示高さを計算し、行上限を超える分はクリップで隠す（末尾の"..."を出さない）
+    private var nameMaxHeight: CGFloat {
+        CGFloat(nameLineLimit) * UIFont.preferredFont(forTextStyle: .title2).lineHeight
+    }
+    private var memoMaxHeight: CGFloat {
+        CGFloat(memoLineLimit) * UIFont.preferredFont(forTextStyle: .body).lineHeight
+    }
     private var showWeightOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
     private var detailRowNeeded: Bool {
         // memo表示の有無と重量表示位置で二段目を出すか判定する
@@ -93,10 +100,10 @@ struct GroupRowView: View {
                 .buttonStyle(BorderlessButtonStyle())
                 // 名称
                 group.name.placeholderText("新しいグループ")
-                    // 長い名称も折り返しで見せる
-                    .lineLimit(nameLineLimit)
-                    .fixedSize(horizontal: false, vertical: true)
+                    // 長い名称は行数上限まで折り返し、それ以上はクリップで非表示にする
                     .font(FONT_NAME)
+                    .frame(maxHeight: nameMaxHeight, alignment: .leading)
+                    .clipped()
                     .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
                 Spacer()
                 // 最小表示時は重量を右側へ寄せる
@@ -126,14 +133,16 @@ struct GroupRowView: View {
                     if showMemo {
                         if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
                             Text("グループとは、持ち物をポーチなどで小分けにしたものです")
-                                .lineLimit(memoLineLimit)
                                 .font(FONT_MEMO)
+                                .frame(maxHeight: memoMaxHeight, alignment: .leading)
+                                .clipped()
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 8)
                         }else{
                             Text(group.memo)
-                                .lineLimit(memoLineLimit)
                                 .font(FONT_MEMO)
+                                .frame(maxHeight: memoMaxHeight, alignment: .leading)
+                                .clipped()
                                 .foregroundStyle(COLOR_MEMO)
                                 .padding(.horizontal, 8)
                         }
