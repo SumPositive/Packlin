@@ -20,6 +20,7 @@ struct GroupRowView: View {
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
     // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var rowFrame: CGRect?
 
@@ -51,8 +52,23 @@ struct GroupRowView: View {
     }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // 行数設定をまとめた補助値
+    private var nameLineLimit: Int { rowTextLines.nameLineLimit }
+    private var memoLineLimit: Int { rowTextLines.memoLineLimit }
+    private var showMemo: Bool { 0 < memoLineLimit }
+    private var showWeightOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
+    private var detailRowNeeded: Bool {
+        // memo表示の有無と重量表示位置で二段目を出すか判定する
+        if showMemo {
+            return true
+        }
+        if showWeightOnNameLine {
+            return false
+        }
+        return weightLabelText != nil
+    }
 
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
@@ -77,51 +93,54 @@ struct GroupRowView: View {
                 .buttonStyle(BorderlessButtonStyle())
                 // 名称
                 group.name.placeholderText("新しいグループ")
-                    .lineLimit(3)
+                    .lineLimit(nameLineLimit)
                     .font(FONT_NAME)
                     .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                // 最小表示時は重量を右側へ寄せる
+                if showWeightOnNameLine, let weightLabelText {
+                    weightLabel(weightLabelText)
+                        .padding(.leading, 8)
+                }
                 Spacer()
             }
-            
-            HStack(spacing: 0) {
-                // インデント
-                Rectangle()
-                    .frame(width: 30, height: 1)
-                    .foregroundStyle(.clear)
-                
-                if let weightLabelText = weightLabelText {
-                    Text(verbatim: weightLabelText)
-                        .font(FONT_WEIGHT)
-                        .foregroundStyle(COLOR_WEIGHT)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP)
-                        )
-                }else{
+
+            if detailRowNeeded {
+                HStack(spacing: 0) {
+                    // インデント
                     Rectangle()
-                        .frame(width: 24, height: 1)
+                        .frame(width: 30, height: 1)
                         .foregroundStyle(.clear)
-                }
-                // メモ
-                if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
-                    Text("グループとは、持ち物をポーチなどで小分けにしたものです")
-                        .lineLimit(3)
-                        .font(FONT_MEMO)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                }else{
-                    Text(group.memo)
-                        .lineLimit(3)
-                        .font(FONT_MEMO)
-                        .foregroundStyle(COLOR_MEMO)
-                        .padding(.horizontal, 8)
-                }
-                Spacer()
-                
-                if isHeader {
-                    // セクションヘッダになる場合
+
+                    let weightOnSecondRow = !showWeightOnNameLine && weightLabelText != nil
+
+                    if weightOnSecondRow, let weightLabelText {
+                        weightLabel(weightLabelText)
+                    }else{
+                        Rectangle()
+                            .frame(width: 24, height: 1)
+                            .foregroundStyle(.clear)
+                    }
+                    // メモ
+                    if showMemo {
+                        if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
+                            Text("グループとは、持ち物をポーチなどで小分けにしたものです")
+                                .lineLimit(memoLineLimit)
+                                .font(FONT_MEMO)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 8)
+                        }else{
+                            Text(group.memo)
+                                .lineLimit(memoLineLimit)
+                                .font(FONT_MEMO)
+                                .foregroundStyle(COLOR_MEMO)
+                                .padding(.horizontal, 8)
+                        }
+                    }
+                    Spacer()
+
+                    if isHeader {
+                        // セクションヘッダになる場合
+                    }
                 }
             }
             // DEBUG Line
@@ -173,6 +192,20 @@ private extension GroupRowView {
         }
         // 設定オフ時は常にg単位で表示する
         return "\(weight.decimalGrouped)\(String(localized: "g"))"
+    }
+
+    /// 重量カプセルの共通ビュー
+    @ViewBuilder
+    func weightLabel(_ text: String) -> some View {
+        Text(verbatim: text)
+            .font(FONT_WEIGHT)
+            .foregroundStyle(COLOR_WEIGHT)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 3)
+            .background(
+                Capsule()
+                    .fill(isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP)
+            )
     }
 }
 

@@ -437,6 +437,7 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
         @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
         @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+        @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
         // GALoggerのため変更前の設定値を記録する
         @State var ona_insertionPosition: InsertionPosition?
@@ -445,6 +446,7 @@ struct SettingView: View {
         @State var ona_linkCheckWithStock: Bool?
         @State var ona_linkCheckOffWithZero: Bool?
         @State var ona_displayMode: DisplayMode?
+        @State var ona_rowTextLines: RowTextLines?
 
         var body: some View {
 
@@ -463,6 +465,25 @@ struct SettingView: View {
                         ForEach(DisplayMode.allCases) { mode in
                             Text(mode.localizedKey)
                                 .tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                // 行の表示行数を切り替える
+                HStack(spacing: 8) {
+                    Label {
+                        Text("表示行数")
+                            .font(.callout)
+                    } icon: {
+                        Image(systemName: "text.justify")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+
+                    Picker("表示行数", selection: $rowTextLines) {
+                        ForEach(RowTextLines.allCases) { setting in
+                            Text(setting.localizedKey)
+                                .tag(setting)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -539,6 +560,7 @@ struct SettingView: View {
                 ona_linkCheckWithStock = linkCheckWithStock
                 ona_linkCheckOffWithZero = linkCheckOffWithZero
                 ona_displayMode        = displayMode
+                ona_rowTextLines       = rowTextLines
             }
             .onDisappear {
                 // 変更あればGALogger送信する
@@ -571,6 +593,11 @@ struct SettingView: View {
                     // 表示モード切り替えを初心者・達人それぞれで判定して送信
                     GALogger.log(.function(name: "setting",
                                            option: "displayMode:" + displayMode.rawValue))
+                }
+                if let ona = ona_rowTextLines, ona != rowTextLines {
+                    // 行数設定の変更を計測してUI調整の傾向を知る
+                    GALogger.log(.function(name: "setting",
+                                           option: "rowTextLines:" + rowTextLines.rawValue))
                 }
             }
         }

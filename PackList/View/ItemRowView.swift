@@ -19,6 +19,7 @@ struct ItemRowView: View {
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var rowFrame: CGRect?
 
@@ -27,6 +28,21 @@ struct ItemRowView: View {
     private var weightUnit: String { String(localized: "g") }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // 行数設定をまとめた補助値
+    private var nameLineLimit: Int { rowTextLines.nameLineLimit }
+    private var memoLineLimit: Int { rowTextLines.memoLineLimit }
+    private var showMemo: Bool { 0 < memoLineLimit }
+    private var showQuantityOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
+    private var detailRowNeeded: Bool {
+        // memo行か数量行を残す必要があるかを判定する
+        if showMemo {
+            return true
+        }
+        if showQuantityOnNameLine {
+            return false
+        }
+        return true
+    }
 
     
     init(item: M3Item,
@@ -90,53 +106,47 @@ struct ItemRowView: View {
                     .padding(.trailing, 8)
                     // 名称
                     item.name.placeholderText("新しいアイテム")
-                        .lineLimit(3)
+                        .lineLimit(nameLineLimit)
                         .font(FONT_NAME)
                         .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+                    // 最小表示時は数量カプセルをname行の右端へ寄せる
+                    if showQuantityOnNameLine {
+                        quantityButton()
+                            .padding(.leading, 8)
+                    }
                     Spacer()
                 }
 
-                HStack(spacing: 0) {
-                    // インデント
-                    Rectangle()
-                        .frame(width: 30, height: 1)
-                        .foregroundStyle(.clear)
+                if detailRowNeeded {
+                    HStack(spacing: 0) {
+                        // インデント
+                        Rectangle()
+                            .frame(width: 30, height: 1)
+                            .foregroundStyle(.clear)
 
-                    // 数量編集
-                    Button {
-                        guard let rf = rowFrame else { return }
-                        let po = CGPoint(x: rf.width / 2.0,
-                                         y: rf.minY)
-                        onEdit(item, po)
-                    } label: {
-                        // 数量表示
-                        Text(quantityLabelText)
-                            .font(FONT_WEIGHT)
-                            .foregroundStyle(COLOR_WEIGHT)
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 3)
-                    .background(
-                        Capsule()
-                            .fill(COLOR_ROW_GROUP)
-                    )
+                        // 数量編集（最小以外は2段目に配置）
+                        if !showQuantityOnNameLine {
+                            quantityButton()
+                        }
 
-                    // メモ
-                    if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
-                        Text("アイテムとは、持ち物そのもの。最小単位です")
-                            .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 4)
-                    }else{
-                        Text(item.memo)
-                            .lineLimit(3)
-                            .font(FONT_MEMO)
-                            .foregroundStyle(COLOR_MEMO)
-                            .padding(.leading, 4)
+                        // メモ
+                        if showMemo {
+                            if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
+                                Text("アイテムとは、持ち物そのもの。最小単位です")
+                                    .lineLimit(memoLineLimit)
+                                    .font(FONT_MEMO)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.leading, 4)
+                            }else{
+                                Text(item.memo)
+                                    .lineLimit(memoLineLimit)
+                                    .font(FONT_MEMO)
+                                    .foregroundStyle(COLOR_MEMO)
+                                    .padding(.leading, 4)
+                            }
+                        }
+                        Spacer()
                     }
-                    Spacer()
                 }
 
                 if DEBUG_SHOW_ORDER_ID {
@@ -191,4 +201,29 @@ struct ItemRowView: View {
 
 }
 
+private extension ItemRowView {
+    /// 数量カプセルを1か所にまとめる
+    @ViewBuilder
+    func quantityButton() -> some View {
+        Button {
+            // 行全体のフレーム中心を渡してポップアップ位置を決める
+            guard let rf = rowFrame else { return }
+            let po = CGPoint(x: rf.width / 2.0,
+                             y: rf.minY)
+            onEdit(item, po)
+        } label: {
+            // 数量表示
+            Text(quantityLabelText)
+                .font(FONT_WEIGHT)
+                .foregroundStyle(COLOR_WEIGHT)
+        }
+        .buttonStyle(BorderlessButtonStyle())
+        .padding(.horizontal, 5)
+        .padding(.vertical, 3)
+        .background(
+            Capsule()
+                .fill(COLOR_ROW_GROUP)
+        )
+    }
+}
 

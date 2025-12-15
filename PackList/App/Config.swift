@@ -127,6 +127,8 @@ let DEF_linkCheckWithStock = false
 let DEF_linkCheckOffWithZero = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
+// 行の最大表示行数（name／memo）
+let DEF_rowTextLines: RowTextLines = .threeLines
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
 let DEF_autoItemReorder = true
 
@@ -144,6 +146,8 @@ enum AppStorageKey {
     static let linkCheckOffWithZero = "setting.linkCheckOffWithZero"
     // 表示モード（初心者／上級者）
     static let displayMode = "setting.displayMode"
+    // 行の表示行数（name／memo）
+    static let rowTextLines = "setting.rowTextLines"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
     static let autoItemReorder = "setting.autoItemReorder"
     // AI生成画面での要望テキスト（作成モード用）。モード別に保持して書きかけを分ける
