@@ -224,6 +224,7 @@ struct AdMobRewardedContentView: View {
             }
 
             //Text("最後まで視聴して特典をお受け取りください")
+            // ローカライズ済みの案内文で、動画完了後に閉じるボタンが出ることを知らせる
             Text("最後まで視聴すると閉じる【×】ボタンが現れます")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
