@@ -200,7 +200,7 @@ struct AdMobRewardedContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 16) {
             HStack(spacing: 66) {
                 Label {
                     Text("動画広告")
@@ -224,10 +224,10 @@ struct AdMobRewardedContentView: View {
             }
 
             //Text("最後まで視聴して特典をお受け取りください")
-            Text("最後まで視聴して開発者を応援してください")
+            Text("最後まで視聴すると閉じる【×】ボタンが現れます")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
                 .padding(.horizontal)
 
 #if DISABLED // V3.1以降に有効化
