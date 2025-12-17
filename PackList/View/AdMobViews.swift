@@ -156,21 +156,36 @@ struct AdMobAdSheetView: View {
     }
 
     private func handleRewardStampRefresh() {
-        // ローカル加算ではなくサーバー残高で同期することで、複数端末での視聴状況を正確に共有する
+        // Webhook で残高が反映されるまでにタイムラグがあるため、少し待ってから取得する
+        // 以前の値と変わらなければ短時間だけ再取得して見逃しを防ぐ
+        let previousStamps = adRewardStamps
         Task {
-            do {
-                let status = try await AzukiApi.shared.fetchCreditStatus(userId: creditStore.userId)
-                await MainActor.run {
-                    // クレジット残高も併せて最新化し、ローカル値との乖離を防ぐ
-                    creditStore.overwrite(credits: status.balance)
-                    adRewardStamps = status.adRewardBalance
-                    rewardDescription = makeRewardDescription(stamps: status.adRewardBalance)
-                }
-            } catch {
-                await MainActor.run {
-                    // 通信エラー時は優しいメッセージのみを提示し、再試行を促す
-                    rewardDescription = String(localized: "視聴結果の反映に失敗しました。通信環境をご確認のうえ、少し時間をおいてお試しください")
-                }
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            await fetchRewardStampWithRetry(previousStamps: previousStamps, remainingRetry: 1)
+        }
+    }
+
+    private func fetchRewardStampWithRetry(previousStamps: Int, remainingRetry: Int) async {
+        do {
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: creditStore.userId)
+            let fetchedStamps = status.adRewardBalance
+            await MainActor.run {
+                // クレジット残高も併せて最新化し、ローカル値との乖離を防ぐ
+                creditStore.overwrite(credits: status.balance)
+                adRewardStamps = fetchedStamps
+                rewardDescription = makeRewardDescription(stamps: fetchedStamps)
+            }
+
+            let noIncrementYet = fetchedStamps <= previousStamps
+            if noIncrementYet, 0 < remainingRetry {
+                // まだ反映されていない場合はごく短時間だけ再取得し、連続視聴でも漏れないようにする
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                await fetchRewardStampWithRetry(previousStamps: previousStamps, remainingRetry: remainingRetry - 1)
+            }
+        } catch {
+            await MainActor.run {
+                // 通信エラー時は優しいメッセージのみを提示し、再試行を促す
+                rewardDescription = String(localized: "視聴結果の反映に失敗しました。通信環境をご確認のうえ、少し時間をおいてお試しください")
             }
         }
     }
