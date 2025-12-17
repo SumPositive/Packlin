@@ -128,7 +128,7 @@ struct AdMobAdSheetView: View {
                 loader.loadAd()
             }
             loader.onRewardEarned = { _ in
-                handleRewardStampIncrement()
+                handleRewardStampRefresh()
             }
             loader.onAdLoaded = {
                 rewardDescription = nil
@@ -155,18 +155,49 @@ struct AdMobAdSheetView: View {
         loader.present(from: topController)
     }
 
-    private func handleRewardStampIncrement() {
-        // 動画を最後まで視聴したのでスタンプを1つ追加する
-        let nextValue = adRewardStamps + 1
-        adRewardStamps = nextValue
+    private func handleRewardStampRefresh() {
+        // Webhook で残高が反映されるまでにタイムラグがあるため、少し待ってから取得する
+        // 以前の値と変わらなければ短時間だけ再取得して見逃しを防ぐ
+        let previousStamps = adRewardStamps
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            await fetchRewardStampWithRetry(previousStamps: previousStamps, remainingRetry: 1)
+        }
+    }
 
-        let filled = min(nextValue, rewardStampGoal)
+    private func fetchRewardStampWithRetry(previousStamps: Int, remainingRetry: Int) async {
+        do {
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: creditStore.userId)
+            let fetchedStamps = status.adRewardBalance
+            await MainActor.run {
+                // クレジット残高も併せて最新化し、ローカル値との乖離を防ぐ
+                creditStore.overwrite(credits: status.balance)
+                adRewardStamps = fetchedStamps
+                rewardDescription = makeRewardDescription(stamps: fetchedStamps)
+            }
+
+            let noIncrementYet = fetchedStamps <= previousStamps
+            if noIncrementYet, 0 < remainingRetry {
+                // まだ反映されていない場合はごく短時間だけ再取得し、連続視聴でも漏れないようにする
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                await fetchRewardStampWithRetry(previousStamps: previousStamps, remainingRetry: remainingRetry - 1)
+            }
+        } catch {
+            await MainActor.run {
+                // 通信エラー時は優しいメッセージのみを提示し、再試行を促す
+                rewardDescription = String(localized: "視聴結果の反映に失敗しました。通信環境をご確認のうえ、少し時間をおいてお試しください")
+            }
+        }
+    }
+
+    private func makeRewardDescription(stamps: Int) -> String {
+        // サーバーから返った残高を使って進捗を整形し、現在の到達度を案内する
+        let filled = min(stamps, rewardStampGoal)
         let format = String(localized: "視聴回数: %lld/%lld")
         let progressText = String(format: format, filled, rewardStampGoal)
-        // 次回の送信に必要な目安も示す
-        let descriptionFormat = String(localized: "ご視聴ありがとうございます\n%@")
         // String(format:) を介して差し込むことでローカライズされた書式を保持する
-        rewardDescription = String(format: descriptionFormat, progressText)
+        let descriptionFormat = String(localized: "ご視聴ありがとうございます\n%@")
+        return String(format: descriptionFormat, progressText)
     }
 }
 
