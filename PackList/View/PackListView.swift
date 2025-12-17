@@ -161,7 +161,6 @@ struct PackListView: View {
 
                     // 新しいパック追加と説明
                     VStack(spacing: 6) {
-#if DISABLED // V3.1以降に有効化
                         // メニューからAI依頼と手動作成を選べるようにする
                         Menu {
                             Button {
@@ -191,24 +190,6 @@ struct PackListView: View {
                         .menuStyle(.button)
                         .buttonStyle(.borderless)
                         .disabled(isShowingEditSheet)
-#else
-                        Button {
-                            // これまで通り自分で項目を入力して作成するパターン
-                            addPack()
-                        } label: {
-                            ZStack {
-                                Image(systemName: "case")
-                                    .imageScale(.large)
-                                    .symbolRenderingMode(.hierarchical)
-                                Image(systemName: "plus")
-                                    .imageScale(.small)
-                                    .symbolRenderingMode(.hierarchical)
-                                    .padding(.top, 4)
-                            }
-                        }
-                        .buttonStyle(.borderless)
-                        .disabled(isShowingEditSheet)
-#endif
 
                         if isBeginnerMode {
                             // 初心者向け：新規パック追加の説明

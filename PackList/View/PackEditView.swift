@@ -204,7 +204,6 @@ struct PackEditView: View {
                     .symbolRenderingMode(.hierarchical)
             }
         }
-#if DISABLED // V3.1以降に有効化
         ToolbarItem(placement: .navigationBarTrailing) {
             Button {
                 // AI生成用シートを表示（設定画面から移動）
@@ -227,7 +226,6 @@ struct PackEditView: View {
                     .presentationDragIndicator(.visible)
             }
         }
-#endif
     }
 
     /// チェック・トグルが遅延する場合があるのでプログレス付きで開始する
