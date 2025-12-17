@@ -11,7 +11,7 @@ import Foundation
 import StoreKit
 
 
-let ChappySheetView_HEIGHT: CGFloat = 670.0 // シート表示時の高さ指定
+let ChappySheetView_HEIGHT: CGFloat = 710.0 // シート表示時の高さ指定
 
 /// パックをAIで生成　シート
 struct ChappySheetView: View {
@@ -311,13 +311,13 @@ struct ChappyView: View {
                             """
                             訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください
                             （最大\(AI_REQUIREMENT_MAX)文字）
-                            （例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参
+                            （例）海外旅行5泊6日、イタリア、スペイン、家族4人、8月の気候に配慮して
                             """
                              :
                             """
                             変更の要望をたくさん列記してください
                             （最大\(AI_REQUIREMENT_MAX)文字）
-                            （例）6泊に変更、ギリシャも訪問、祖父母も参加
+                            （例）6泊に変更、ギリシャも訪問、祖父母も参加、雨天も想定
                             """)
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 16)
@@ -482,7 +482,7 @@ struct ChappyView: View {
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(filled ? Color.blue : Color.secondary)
                     }
-                    Text("広告を見て特典をゲット")
+                    Text("広告を見て無料で送信")
                         .font(.body)
                         .foregroundStyle(Color.primary)
                 }
@@ -492,9 +492,9 @@ struct ChappyView: View {
             .buttonStyle(.borderedProminent)
             .tint(.accentColor.opacity(0.3))
             
-            Text("動画広告を3回視聴すると送信が1回無料になります")
+            Text("動画広告を最後まで3回視聴するとAI利用券を1枚プレゼント")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity) // 中央寄せのために必要
     }
@@ -651,11 +651,7 @@ struct ChappyView: View {
             await MainActor.run {
                 // サーバー残高でローカルを上書きし、他端末の消費や無料特典の付与を確実に反映する
                 creditStore.overwrite(credits: status.balance)
-                if status.adRewardAvailable {
-                    if adRewardStamps < adRewardStampGoal {
-                        adRewardStamps = adRewardStampGoal
-                    }
-                }
+                adRewardStamps = status.adRewardBalance
             }
             // fetchCreditStatus 内でトークンが返却されるため、ここでは成功可否のみ返す
             return true
@@ -773,11 +769,9 @@ struct ChappyView: View {
             // クレジット残高照会APIは未認証でも受け付けるため、最初にここでトークンを再配布してもらう
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             await MainActor.run {
-                // サーバーの残高でローカル状態も揃え、広告特典の獲得可否も同期しておく
+                // サーバーの残高でローカル状態も揃え、広告視聴数も同期しておく
                 creditStore.overwrite(credits: status.balance)
-                if status.adRewardAvailable && adRewardStamps < adRewardStampGoal {
-                    adRewardStamps = adRewardStampGoal
-                }
+                adRewardStamps = status.adRewardBalance
             }
             if AzukiApi.shared.hasValidAccessToken() {
                 // 残高照会だけでアクセストークンが配られた場合はここで復旧完了とする
@@ -872,13 +866,9 @@ struct ChappyView: View {
             // azuki-apiへ問い合わせて最新残高を受け取り、Keychainに保持している値と揃える
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             await MainActor.run {
+                // サーバーの残高でローカル状態も揃え、広告視聴数も同期しておく
                 creditStore.overwrite(credits: status.balance)
-                // サーバーが「広告特典を使える」と返した場合はスタンプを3個ぶん確保しておく
-                if status.adRewardAvailable {
-                    if adRewardStamps < adRewardStampGoal {
-                        adRewardStamps = adRewardStampGoal
-                    }
-                }
+                adRewardStamps = status.adRewardBalance
             }
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {

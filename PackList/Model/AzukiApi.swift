@@ -89,7 +89,7 @@ final class AzukiApi {
     /// /api/credit/check が返すクレジット状況
     struct CreditStatus {
         let balance: Int
-        let adRewardAvailable: Bool
+        let adRewardBalance: Int
     }
 
     private let session: URLSession
@@ -175,7 +175,7 @@ final class AzukiApi {
     func fetchCreditStatus(userId: String) async throws -> CreditStatus {
         struct CreditCheckResponse: Decodable {
             let balance: Int
-            let adRewardAvailable: Bool?
+            let adRewardBalance: Int?
             let accessToken: String?
             let accessTokenExpiresAt: Double?
             let refreshToken: String?
@@ -201,7 +201,7 @@ final class AzukiApi {
                     refreshToken: response.refreshToken,
                     refreshTokenExpiresAt: response.refreshTokenExpiresAt
                 )
-                return CreditStatus(balance: response.balance, adRewardAvailable: response.adRewardAvailable ?? false)
+                return CreditStatus(balance: response.balance, adRewardBalance: response.adRewardBalance ?? 0)
             } catch {
                 throw AzukiAPIError.decoding
             }

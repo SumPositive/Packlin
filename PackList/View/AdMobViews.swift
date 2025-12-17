@@ -225,7 +225,7 @@ struct AdMobRewardedContentView: View {
 
             VStack(spacing: 4) {
                 // 広告視聴によって貯まる特典の進捗を見せる
-                Text("特典：３回視聴するとチャッピー送信が1回無料になります")
+                Text("動画広告を最後まで3回視聴すると\nAI利用券を1枚プレゼント")
                     .font(.caption)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
