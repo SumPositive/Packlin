@@ -40,6 +40,10 @@ struct AdMobAdSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var creditStore: CreditStore
     @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
+    /// 3回視聴→1枚プレゼントの達成時に知らせるためのアラートメッセージ
+    @State private var adRewardGiftAlertMessage: String?
+    /// AI利用券付与をユーザーへ知らせるアラート表示フラグ
+    @State private var isShowingAdRewardGiftAlert = false
 
     // チャッピー送信用の特典として必要なアイコン数
     private let rewardStampGoal = 3
@@ -145,6 +149,16 @@ struct AdMobAdSheetView: View {
                 rewardDescription = adUnavailableMessage
             }
         }
+        // AI利用券プレゼントの到達時にわかりやすく通知する
+        .alert(
+            String(localized: "AI利用券を受け取りました"),
+            isPresented: $isShowingAdRewardGiftAlert,
+            presenting: adRewardGiftAlertMessage
+        ) { _ in
+            Button(String(localized: "OK")) {}
+        } message: { message in
+            Text(message)
+        }
     }
 
     private func presentAd() {
@@ -160,27 +174,54 @@ struct AdMobAdSheetView: View {
         // 以前の値と変わらなければ短時間だけ再取得して見逃しを防ぐ
         let previousStamps = adRewardStamps
         Task {
+            // サーバー応答でAI利用券が増えたかどうかを判別するため、視聴前の残高を控えておく
+            let previousCredits = await MainActor.run { creditStore.credits }
             try? await Task.sleep(nanoseconds: 2_000_000_000)
-            await fetchRewardStampWithRetry(previousStamps: previousStamps, remainingRetry: 1)
+            await fetchRewardStampWithRetry(
+                previousStamps: previousStamps,
+                previousCredits: previousCredits,
+                remainingRetry: 1
+            )
         }
     }
 
-    private func fetchRewardStampWithRetry(previousStamps: Int, remainingRetry: Int) async {
+    private func fetchRewardStampWithRetry(
+        previousStamps: Int,
+        previousCredits: Int,
+        remainingRetry: Int
+    ) async {
         do {
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: creditStore.userId)
             let fetchedStamps = status.adRewardBalance
+            let creditGain = status.balance - previousCredits
+            // 3回目の視聴でサーバーからAI利用券が1枚増えた場合だけアラートを出す
+            let reachedThirdViewing = previousStamps == rewardStampGoal - 1
+            let receivedGift = reachedThirdViewing && creditGain == 1
             await MainActor.run {
                 // クレジット残高も併せて最新化し、ローカル値との乖離を防ぐ
                 creditStore.overwrite(credits: status.balance)
                 adRewardStamps = fetchedStamps
                 rewardDescription = makeRewardDescription(stamps: fetchedStamps)
+                if receivedGift, isShowingAdRewardGiftAlert == false {
+                    // サーバー応答で増加を確認できたタイミングでのみ、プレゼント完了を明示する
+                    adRewardGiftAlertMessage = String(localized: "広告の視聴ありがとう！AI利用券を1枚追加しました")
+                    isShowingAdRewardGiftAlert = true
+                }
+            }
+
+            if receivedGift {
+                return
             }
 
             let noIncrementYet = fetchedStamps <= previousStamps
             if noIncrementYet, 0 < remainingRetry {
                 // まだ反映されていない場合はごく短時間だけ再取得し、連続視聴でも漏れないようにする
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
-                await fetchRewardStampWithRetry(previousStamps: previousStamps, remainingRetry: remainingRetry - 1)
+                await fetchRewardStampWithRetry(
+                    previousStamps: previousStamps,
+                    previousCredits: previousCredits,
+                    remainingRetry: remainingRetry - 1
+                )
             }
         } catch {
             await MainActor.run {
