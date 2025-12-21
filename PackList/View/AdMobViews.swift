@@ -265,9 +265,9 @@ struct AdMobRewardedContentView: View {
                 HStack(spacing: 6) {
                     ForEach(0..<rewardStampGoal, id: \.self) { index in
                         let filled = index < adRewardStamps
-                        Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
-                            .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(filled ? Color.blue : Color.secondary)
+                        Image(systemName: filled ? "\(1+index).circle.fill" : "\(1+index).circle")
+                            //.symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(filled ? Color.accentColor : Color.secondary)
                     }
                 }
                 // 視聴回数

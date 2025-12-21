@@ -96,7 +96,7 @@ struct ChappyView: View {
     @AppStorage(AppStorageKey.aiPurchaseNotifiedTransactionIds) private var notifiedTransactionIdsBackup: Data = Data()
     /// 広告視聴で貯まる特典アイコン数（チャッピー送信用のスタンプ）
     @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
-    /// チャッピー送信に必要な特典アイコンの目安（スタンプ3個で1回無料）
+    /// チャッピー送信に必要な特典数（リワード視聴3回でAI利用券1枚プレゼント）
     private let adRewardStampGoal = 3
     /// インポート処理やプロンプト転送の状態を伝えるためのアラート（課金系など通知しづらい内容に限定）
     @State private var alertState: AlertState?
@@ -147,14 +147,6 @@ struct ChappyView: View {
         CHATGPT_GENERATION_CREDIT_COST <= creditStore.credits
     }
 
-    /// 広告視聴で貯まったスタンプがチャッピー送信に必要な3個へ到達しているか
-    private var hasAdRewardTicket: Bool {
-        if adRewardStamps < adRewardStampGoal {
-            return false
-        }
-        return true
-    }
-
     /// 入力とローディング状態、手持ちの特典から送信可否を算出する
     private var canSendRequest: Bool {
         if isRequirementEmpty {
@@ -162,9 +154,6 @@ struct ChappyView: View {
         }
         if isGenerating {
             return false
-        }
-        if hasAdRewardTicket {
-            return true
         }
         return hasTicketForGeneration
     }
@@ -260,11 +249,6 @@ struct ChappyView: View {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                             }else{
-                                if hasAdRewardTicket {
-                                    Text(String(localized: "1回無料"))
-                                        .font(.body)
-                                        .foregroundStyle(.primary)
-                                }
                                 // 送信アイコン
                                 Image(systemName: "paperplane")
                                     .imageScale(.medium)
@@ -478,9 +462,9 @@ struct ChappyView: View {
                 HStack(spacing: 8) {
                     ForEach(0..<adRewardStampGoal, id: \.self) { index in
                         let filled = index < adRewardStamps
-                        Image(systemName: filled ? "movieclapper.fill" : "movieclapper")
-                            .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(filled ? Color.blue : Color.secondary)
+                        Image(systemName: filled ? "\(1+index).circle.fill" : "\(1+index).circle")
+                            //.symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(filled ? Color.accentColor : Color.secondary)
                     }
                     Text("広告を見て無料で送信")
                         .font(.body)
@@ -541,11 +525,11 @@ struct ChappyView: View {
                 return
             }
 
-            // サーバー結果で特典スタンプが補充されたかもしれないので、最新値を見て特典利用判定を行う
-            let usesAdReward = await MainActor.run { hasAdRewardTicket }
+//            // サーバー結果で特典スタンプが補充されたかもしれないので、最新値を見て特典利用判定を行う
+//            let usesAdReward = await MainActor.run { hasAdRewardTicket }
 
             // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
-            if usesAdReward == false {
+//            if usesAdReward == false {
                 let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
                 if hasEnoughCredits == false {
                     await presentCreditShortageFeedback()
@@ -561,18 +545,18 @@ struct ChappyView: View {
                     await presentCreditShortageFeedback()
                     return
                 }
-            } else {
-                await MainActor.run {
-                    // 広告特典がある場合は優先的に利用し、同時にローカルのスタンプ数を減らして重複消費を防ぐ
-                    let remaining = adRewardStamps - adRewardStampGoal
-                    if remaining < 0 {
-                        adRewardStamps = 0
-                    } else {
-                        adRewardStamps = remaining
-                    }
-                }
-                shouldRestoreAdReward = true
-            }
+//            } else {
+//                await MainActor.run {
+//                    // 広告特典がある場合は優先的に利用し、同時にローカルのスタンプ数を減らして重複消費を防ぐ
+//                    let remaining = adRewardStamps - adRewardStampGoal
+//                    if remaining < 0 {
+//                        adRewardStamps = 0
+//                    } else {
+//                        adRewardStamps = remaining
+//                    }
+//                }
+//                shouldRestoreAdReward = true
+//            }
 
             do {
                 let basePackDTO = await exportBasePackIfAvailable()
@@ -596,12 +580,12 @@ struct ChappyView: View {
                         requirementText.wrappedValue = ""
                         return importedPack.name
                     }
-                    if usesAdReward {
-                        await MainActor.run {
-                            // 無料特典を使い切ったので、次回の視聴状況をゼロから積み上げられるよう明示的にリセットする
-                            adRewardStamps = 0
-                        }
-                    }
+//                    if usesAdReward {
+//                        await MainActor.run {
+//                            // 無料特典を使い切ったので、次回の視聴状況をゼロから積み上げられるよう明示的にリセットする
+//                            adRewardStamps = 0
+//                        }
+//                    }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
                     await presentGenerationSuccess(packName: packName)
                 } catch {

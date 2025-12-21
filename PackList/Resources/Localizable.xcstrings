@@ -75,6 +75,7 @@
       }
     },
     "1回無料" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
