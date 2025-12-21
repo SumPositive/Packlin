@@ -1,7 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {},
+    "" : {
+
+    },
     "【変更】 " : {
       "localizations" : {
         "en" : {
@@ -68,17 +70,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Checked regardless of count."
-          }
-        }
-      }
-    },
-    "1回無料" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One free"
           }
         }
       }
@@ -199,17 +190,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Added %lld AI tickets."
-          }
-        }
-      }
-    },
-    "AI利用券を受け取りました" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Got your AI ticket"
           }
         }
       }
@@ -1013,17 +993,6 @@
         }
       }
     },
-    "動画広告を3回視聴すると送信が1回無料になります" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch 3 ads to send once for free."
-          }
-        }
-      }
-    },
     "動画広告を最後まで3回視聴すると\nAI利用券を1枚プレゼント" : {
       "localizations" : {
         "en" : {
@@ -1106,23 +1075,12 @@
         }
       }
     },
-    "変更の要望をたくさん列記してください\n（最大%lld文字）\n（例）6泊に変更、ギリシャも訪問、祖父母も参加" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "List the tweaks you want.\n(up to %lld chars)\n(e.g., 6 nights, add Greece, grandparents join)"
-          }
-        }
-      }
-    },
     "変更の要望をたくさん列記してください\n（最大%lld文字）\n（例）6泊に変更、ギリシャも訪問、祖父母も参加、雨天も想定" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "List the changes you want.\n(up to %lld chars)\n(e.g., 6 nights, add Greece, grandparents join, plan for rain)"
+            "value" : "List the changes you want.\n(up to %lld chars)\n(e.g.) 6 nights, add Greece, grandparents join, plan for rain"
           }
         }
       }
@@ -1175,17 +1133,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Watch an ad to send free"
-          }
-        }
-      }
-    },
-    "広告を見て特典をゲット" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch an ad for a perk"
           }
         }
       }
@@ -1470,17 +1417,6 @@
         }
       }
     },
-    "現在、配信されている広告がありません。後ほどお試しください" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No ads right now. Please try later."
-          }
-        }
-      }
-    },
     "直前の変更を元に戻す" : {
       "localizations" : {
         "en" : {
@@ -1578,7 +1514,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Duplicate"
+            "value" : "Copy"
           }
         }
       }
@@ -1588,7 +1524,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Duplicate it"
+            "value" : "Copy it"
           }
         }
       }
@@ -1608,18 +1544,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "List places, dates, purpose, crew, weather, plans.\n(up to %lld chars)\n(e.g., 5-night Italy & Spain, 4 people, summer heat aware)"
-          }
-        }
-      }
-    },
-    "訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください\n（最大%lld文字）\n（例）海外旅行5泊6日、イタリア、スペイン、家族4人、雨天も想定、救急用品も持参" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "List places, dates, purpose, crew, weather, and plans.\n(up to %lld chars)\n(e.g., 5-night Italy & Spain, 4 people, rain-ready, pack first aid)"
+            "value" : "List places, dates, purpose, crew, weather, plans.\n(up to %lld chars)\n(e.g.) 5-night Italy & Spain, 4 people, summer heat aware"
           }
         }
       }
