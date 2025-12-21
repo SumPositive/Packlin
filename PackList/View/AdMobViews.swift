@@ -45,6 +45,10 @@ struct AdMobAdSheetView: View {
 
     // チャッピー送信用の特典として必要なアイコン数
     private let rewardStampGoal = 3
+    /// SSV反映待ちでステータス取得をやり直す上限回数（初回＋この回数ぶん）
+    private let rewardStatusRetryLimit = 3
+    /// ステータス再取得までの待機時間（ナノ秒）
+    private let rewardStatusRetryInterval: UInt64 = 2_000_000_000
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
@@ -174,11 +178,11 @@ struct AdMobAdSheetView: View {
         Task {
             // サーバー応答でAI利用券が増えたかどうかを判別するため、視聴前の残高を控えておく
             let previousCredits = await MainActor.run { creditStore.credits }
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: rewardStatusRetryInterval)
             await fetchRewardStampWithRetry(
                 previousStamps: previousStamps,
                 previousCredits: previousCredits,
-                remainingRetry: 1
+                remainingRetry: rewardStatusRetryLimit
             )
         }
     }
@@ -192,8 +196,11 @@ struct AdMobAdSheetView: View {
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: creditStore.userId)
             let fetchedStamps = status.adRewardBalance
             let creditGain = status.balance - previousCredits
+            // サーバー側で3回目に到達したと判断できるパターンを広く拾う（巻き戻しやゼロリセットも含める）
+            let stampsWrapped = fetchedStamps < previousStamps
+            let reachedOrResetGoal = rewardStampGoal <= fetchedStamps || fetchedStamps == 0
             // 3回目の視聴でサーバーからAI利用券が1枚増えた場合だけアラートを出す
-            let reachedThirdViewing = previousStamps == rewardStampGoal - 1
+            let reachedThirdViewing = previousStamps == rewardStampGoal - 1 || stampsWrapped || reachedOrResetGoal
             let receivedGift = reachedThirdViewing && creditGain == 1
             await MainActor.run {
                 // クレジット残高も併せて最新化し、ローカル値との乖離を防ぐ
@@ -210,10 +217,11 @@ struct AdMobAdSheetView: View {
                 return
             }
 
-            let noIncrementYet = fetchedStamps <= previousStamps
+            let expectingGift = rewardStampGoal - 1 <= previousStamps || stampsWrapped
+            let noIncrementYet = fetchedStamps <= previousStamps || (expectingGift && creditGain <= 0)
             if noIncrementYet, 0 < remainingRetry {
                 // まだ反映されていない場合はごく短時間だけ再取得し、連続視聴でも漏れないようにする
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                try? await Task.sleep(nanoseconds: rewardStatusRetryInterval)
                 await fetchRewardStampWithRetry(
                     previousStamps: previousStamps,
                     previousCredits: previousCredits,

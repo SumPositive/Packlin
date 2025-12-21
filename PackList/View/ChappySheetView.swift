@@ -108,8 +108,6 @@ struct ChappyView: View {
     @State private var processingProductId: String?
     /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
     @State private var storeProducts: [Product] = []
-    /// 初回表示時にサーバー残高とKeychain残高を同期したかどうかのフラグ
-    @State private var didRequestInitialBalance = false
     /// 広告視聴により一時的に利用できる特典があるかどうか
     /// StoreKitのトランザクション更新ストリームを監視するためのタスク
     @State private var transactionObservationTask: Task<Void, Never>?
@@ -377,10 +375,8 @@ struct ChappyView: View {
             await AzukiApi.shared.registerTokenRecoveryHandler {
                 await recoverAccessTokenByVerifyingLatestTransactions()
             }
-            // 初回表示時に商品情報を取得しつつ、サーバー残高との同期も直ちに行う
+            // 初回表示時に商品情報を取得して、購入導線の準備だけを済ませる
             await loadProductsIfNeeded()
-            // サーバー残高との同期は一度だけ実行し、Keychainの値と揃えておく
-            await syncCreditStatusIfNeeded()
             // 購入完了後にViewがフォアグラウンドでなくても反映できるよう、トランザクション更新を監視する
             if transactionObservationTask == nil {
                 transactionObservationTask = Task {
@@ -824,22 +820,6 @@ struct ChappyView: View {
             return false
         }
         return false
-    }
-
-    /// Keychainに保持している残高とサーバーの残高を初回表示時に同期する
-    private func syncCreditStatusIfNeeded() async {
-        let shouldFetch = await MainActor.run { () -> Bool in
-            if didRequestInitialBalance {
-                // すでに同期済みであれば追加のサーバーアクセスは避ける
-                return false
-            }
-            didRequestInitialBalance = true
-            return true
-        }
-        if shouldFetch == false {
-            return
-        }
-        await refreshCreditStatusFromServer(showAlertOnFailure: false)
     }
 
     /// サーバーに保存されている残高を取得してKeychainへ反映する
