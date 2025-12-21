@@ -40,8 +40,6 @@ struct AdMobAdSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var creditStore: CreditStore
     @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
-    /// 3回視聴→1枚プレゼントの達成時に知らせるためのアラートメッセージ
-    @State private var adRewardGiftAlertMessage: String?
     /// AI利用券付与をユーザーへ知らせるアラート表示フラグ
     @State private var isShowingAdRewardGiftAlert = false
 
@@ -151,9 +149,9 @@ struct AdMobAdSheetView: View {
         }
         // AI利用券プレゼントの到達時にわかりやすく通知する
         .alert(
-            String(localized: "AI利用券を受け取りました"),
+            String(localized: "AI利用券プレゼント"),
             isPresented: $isShowingAdRewardGiftAlert,
-            presenting: adRewardGiftAlertMessage
+            presenting: String(localized: "広告の視聴ありがとう！AI利用券を1枚追加しました")
         ) { _ in
             Button(String(localized: "OK")) {}
         } message: { message in
@@ -204,7 +202,6 @@ struct AdMobAdSheetView: View {
                 rewardDescription = makeRewardDescription(stamps: fetchedStamps)
                 if receivedGift, isShowingAdRewardGiftAlert == false {
                     // サーバー応答で増加を確認できたタイミングでのみ、プレゼント完了を明示する
-                    adRewardGiftAlertMessage = String(localized: "広告の視聴ありがとう！AI利用券を1枚追加しました")
                     isShowingAdRewardGiftAlert = true
                 }
             }
@@ -232,13 +229,7 @@ struct AdMobAdSheetView: View {
     }
 
     private func makeRewardDescription(stamps: Int) -> String {
-        // サーバーから返った残高を使って進捗を整形し、現在の到達度を案内する
-        let filled = min(stamps, rewardStampGoal)
-        let format = String(localized: "視聴回数: %lld/%lld")
-        let progressText = String(format: format, filled, rewardStampGoal)
-        // String(format:) を介して差し込むことでローカライズされた書式を保持する
-        let descriptionFormat = String(localized: "ご視聴ありがとうございます\n%@")
-        return String(format: descriptionFormat, progressText)
+        return String(localized: "ご視聴ありがとうございます")
     }
 }
 
