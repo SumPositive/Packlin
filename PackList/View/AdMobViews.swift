@@ -43,6 +43,11 @@ struct AdMobAdSheetView: View {
     /// AI利用券付与をユーザーへ知らせるアラート表示フラグ
     @State private var isShowingAdRewardGiftAlert = false
 
+    /// 視聴完了時の親ビュー向け通知ハンドラー
+    let onRewardEarned: (() -> Void)?
+    /// シート表示開始時に最初から見せたい案内文（例：お試し説明など）
+    let rewardTrialDescription: String?
+
     // チャッピー送信用の特典として必要なアイコン数
     private let rewardStampGoal = 3
     /// SSV反映待ちでステータス取得をやり直す上限回数（初回＋この回数ぶん）
@@ -66,6 +71,16 @@ struct AdMobAdSheetView: View {
     @StateObject private var loader = RewardedAdLoader(adUnitID: ADMOB_REWARD_1_UnitID)
     // 視聴後のメッセージを出し分けるための状態。
     @State private var rewardDescription: String?
+
+    init(
+        onRewardEarned: (() -> Void)? = nil,
+        rewardTrialDescription: String? = nil
+    ) {
+        self.onRewardEarned = onRewardEarned
+        self.rewardTrialDescription = rewardTrialDescription
+        // 受け取った案内文を初期表示としてセットし、シートを開いた瞬間からユーザーへ理由を伝える
+        _rewardDescription = State(initialValue: rewardTrialDescription)
+    }
 
     var body: some View {
         NavigationView {
@@ -135,6 +150,8 @@ struct AdMobAdSheetView: View {
             }
             loader.onRewardEarned = { _ in
                 handleRewardStampRefresh()
+                // 視聴完了を親側でも検知できるようにする
+                onRewardEarned?()
             }
             loader.onAdLoaded = {
                 rewardDescription = nil
