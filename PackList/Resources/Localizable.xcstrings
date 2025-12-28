@@ -232,6 +232,7 @@
       }
     },
     "GPT-4o-miniでお試し送信" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -428,6 +429,9 @@
         }
       }
     },
+    "お試し特典！" : {
+
+    },
     "クリア" : {
       "localizations" : {
         "en" : {
@@ -560,6 +564,7 @@
       }
     },
     "タップして広告を見て開発者を応援してください" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -602,6 +607,7 @@
       }
     },
     "チャッピー mini が提案をまとめました。お試しとして気軽に眺めてみてください" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1165,7 +1171,11 @@
         }
       }
     },
+    "広告を見て無料で送信！\n　動画広告を最後まで視聴すると送信が始まります。チャッピー mini に依頼しますので少し情報量は減るかも知れませんがお試しください" : {
+
+    },
     "広告を見て無料で送信！　動画広告を最後まで視聴すれば、無料でお試し送信できます。チャッピー mini に依頼しますので少し情報量は減るかも知れませんがお試しください。AI利用券で依頼するときは、通常のチャッピーになります" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1197,6 +1207,9 @@
           }
         }
       }
+    },
+    "広告視聴ありがとう！チャッピー mini へ依頼します" : {
+
     },
     "必要数" : {
       "localizations" : {

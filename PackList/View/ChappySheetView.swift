@@ -276,14 +276,16 @@ struct ChappyView: View {
                     startRewardedGenerationFlow()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "sparkles.tv.fill")
-                            .symbolRenderingMode(.hierarchical)
-                        VStack(alignment: .leading, spacing: 2) {
+                        Text(String(localized: "お試し特典！"))
+                            .font(.callout.weight(.regular))
+                        Image(systemName: "paperplane")
+                            .imageScale(.medium)
+                        VStack(alignment: .leading, spacing: 0) {
                             Text(String(localized: "広告を見て無料で送信"))
-                                .font(.callout.weight(.semibold))
-                            Text(String(localized: "GPT-4o-miniでお試し送信"))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.callout.weight(.regular))
+                            //Text(String(localized: "チャッピー mini に依頼できます"))
+                            //    .font(.caption)
+                            //    .foregroundStyle(.primary)
                         }
                         Spacer()
                         if isGenerating && isGeneratingFromReward {
@@ -291,13 +293,14 @@ struct ChappyView: View {
                                 .progressViewStyle(.circular)
                         }
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
+                    .padding(.vertical, -4)
+                    .padding(.horizontal, 4)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Color.accentColor.opacity(0.45))
                 .disabled(isRequirementEmpty || isGenerating)
-                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .contentShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .padding(.horizontal, 20)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {
@@ -388,7 +391,7 @@ struct ChappyView: View {
         .sheet(isPresented: $isPresentingAdRewardSheet) {
             AdMobAdSheetView(
                 onRewardEarned: handleRewardedAdCompletion,
-                rewardTrialDescription: String(localized: "広告を見て無料で送信！　動画広告を最後まで視聴すれば、無料でお試し送信できます。チャッピー mini に依頼しますので少し情報量は減るかも知れませんがお試しください。AI利用券で依頼するときは、通常のチャッピーになります")
+                rewardTrialDescription: String(localized: "広告を見て無料で送信！\n　動画広告を最後まで視聴すると送信が始まります。チャッピー mini に依頼しますので少し情報量は減るかも知れませんがお試しください")
             )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
@@ -477,7 +480,7 @@ struct ChappyView: View {
         }
         // シートを閉じて送信開始を明示する
         isPresentingAdRewardSheet = false
-        inlineGenerationFeedback = .success(message: String(localized: "広告視聴ありがとう！チャッピー mini で送信を始めます"))
+        inlineGenerationFeedback = .success(message: String(localized: "広告視聴ありがとう！チャッピー mini へ依頼します"))
         // GPT-4o-mini向けに送信し、通常のクレジット消費を伴わないことを明示する
         generatePackWithOpenAI(requirementOverride: requirement, isTrial: true)
         pendingRewardRequirement = nil
@@ -641,12 +644,7 @@ struct ChappyView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                let message: String
-                if isTrial {
-                    message = String(localized: "チャッピー mini が提案をまとめました。お試しとして気軽に眺めてみてください")
-                } else {
-                    message = String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください")
-                }
+                let message = String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください")
                 inlineGenerationFeedback = .success(message: message)
             }
             return

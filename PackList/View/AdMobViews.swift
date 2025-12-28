@@ -65,17 +65,10 @@ struct AdMobAdSheetView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 0) {
-                    Text("タップして広告を見て開発者を応援してください")
-                        .font(.footnote)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-
-                    // 新しいトライアル送信の説明文
-                    Text(rewardTrialDescription)
-                        .font(.callout)
-                        .multilineTextAlignment(.leading)
-                        .foregroundStyle(.primary)
-                        .padding(.vertical, 4)
+                    //Text("タップして広告を見て開発者を応援してください")
+                    //    .font(.footnote)
+                    //    .multilineTextAlignment(.center)
+                    //    .foregroundStyle(.secondary)
 
                     VStack(alignment: .leading, spacing: 16) {
                         // バナー広告
@@ -91,6 +84,14 @@ struct AdMobAdSheetView: View {
                                     .fill(Color(uiColor: .tertiarySystemBackground))
                             )
                         }
+
+                        // 新しいトライアル送信の説明文
+                        Text(rewardTrialDescription)
+                            .font(.callout)
+                            .multilineTextAlignment(.leading)
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, 24)
+                        
                         // 動画広告
                         AdMobRewardedContentView(
                             loader: loader,
@@ -109,7 +110,7 @@ struct AdMobAdSheetView: View {
                 .padding(.vertical, 8)
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("広告を見て寄付"))
+            //.navigationTitle(Text("広告を見て寄付"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
