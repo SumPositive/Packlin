@@ -39,16 +39,10 @@ let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 struct AdMobAdSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var creditStore: CreditStore
-    @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
-    /// AI利用券付与をユーザーへ知らせるアラート表示フラグ
-    @State private var isShowingAdRewardGiftAlert = false
-
-    // チャッピー送信用の特典として必要なアイコン数
-    private let rewardStampGoal = 3
-    /// SSV反映待ちでステータス取得をやり直す上限回数（初回＋この回数ぶん）
-    private let rewardStatusRetryLimit = 3
-    /// ステータス再取得までの待機時間（ナノ秒）
-    private let rewardStatusRetryInterval: UInt64 = 2_000_000_000
+    /// 広告視聴後にトライアル送信を開始するためのコールバック
+    let onRewardEarned: () -> Void
+    /// 広告シート内に表示する説明文
+    let rewardTrialDescription: String
 
     // バナーのサイズバリエーションを配列で保持しておく
     private let bannerConfigs = [
@@ -76,6 +70,13 @@ struct AdMobAdSheetView: View {
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)
 
+                    // 新しいトライアル送信の説明文
+                    Text(rewardTrialDescription)
+                        .font(.callout)
+                        .multilineTextAlignment(.leading)
+                        .foregroundStyle(.primary)
+                        .padding(.vertical, 4)
+
                     VStack(alignment: .leading, spacing: 16) {
                         // バナー広告
                         ForEach(bannerConfigs) { config in
@@ -94,9 +95,7 @@ struct AdMobAdSheetView: View {
                         AdMobRewardedContentView(
                             loader: loader,
                             rewardDescription: $rewardDescription,
-                            presentAction: presentAd,
-                            adRewardStamps: $adRewardStamps,
-                            rewardStampGoal: rewardStampGoal
+                            presentAction: presentAd
                         )
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -134,7 +133,9 @@ struct AdMobAdSheetView: View {
                 loader.loadAd()
             }
             loader.onRewardEarned = { _ in
-                handleRewardStampRefresh()
+                // 視聴完了直後にトライアル送信を開始する
+                rewardDescription = String(localized: "広告視聴ありがとう！チャッピー mini で送信を始めます")
+                onRewardEarned()
             }
             loader.onAdLoaded = {
                 rewardDescription = nil
@@ -151,16 +152,6 @@ struct AdMobAdSheetView: View {
                 rewardDescription = adUnavailableMessage
             }
         }
-        // AI利用券プレゼントの到達時にわかりやすく通知する
-        .alert(
-            String(localized: "AI利用券プレゼント"),
-            isPresented: $isShowingAdRewardGiftAlert,
-            presenting: String(localized: "広告の視聴ありがとう！AI利用券を1枚追加しました")
-        ) { _ in
-            Button(String(localized: "OK")) {}
-        } message: { message in
-            Text(message)
-        }
     }
 
     private func presentAd() {
@@ -169,75 +160,6 @@ struct AdMobAdSheetView: View {
             return
         }
         loader.present(from: topController)
-    }
-
-    private func handleRewardStampRefresh() {
-        // Webhook で残高が反映されるまでにタイムラグがあるため、少し待ってから取得する
-        // 以前の値と変わらなければ短時間だけ再取得して見逃しを防ぐ
-        let previousStamps = adRewardStamps
-        Task {
-            // サーバー応答でAI利用券が増えたかどうかを判別するため、視聴前の残高を控えておく
-            let previousCredits = await MainActor.run { creditStore.credits }
-            try? await Task.sleep(nanoseconds: rewardStatusRetryInterval)
-            await fetchRewardStampWithRetry(
-                previousStamps: previousStamps,
-                previousCredits: previousCredits,
-                remainingRetry: rewardStatusRetryLimit
-            )
-        }
-    }
-
-    private func fetchRewardStampWithRetry(
-        previousStamps: Int,
-        previousCredits: Int,
-        remainingRetry: Int
-    ) async {
-        do {
-            let status = try await AzukiApi.shared.fetchCreditStatus(userId: creditStore.userId)
-            let fetchedStamps = status.adRewardBalance
-            let creditGain = status.balance - previousCredits
-            // サーバー側で3回目に到達したと判断できるパターンを広く拾う（巻き戻しやゼロリセットも含める）
-            let stampsWrapped = fetchedStamps < previousStamps
-            let reachedOrResetGoal = rewardStampGoal <= fetchedStamps || fetchedStamps == 0
-            // 3回目の視聴でサーバーからAI利用券が1枚増えた場合だけアラートを出す
-            let reachedThirdViewing = previousStamps == rewardStampGoal - 1 || stampsWrapped || reachedOrResetGoal
-            let receivedGift = reachedThirdViewing && creditGain == 1
-            await MainActor.run {
-                // クレジット残高も併せて最新化し、ローカル値との乖離を防ぐ
-                creditStore.overwrite(credits: status.balance)
-                adRewardStamps = fetchedStamps
-                rewardDescription = makeRewardDescription(stamps: fetchedStamps)
-                if receivedGift, isShowingAdRewardGiftAlert == false {
-                    // サーバー応答で増加を確認できたタイミングでのみ、プレゼント完了を明示する
-                    isShowingAdRewardGiftAlert = true
-                }
-            }
-
-            if receivedGift {
-                return
-            }
-
-            let expectingGift = rewardStampGoal - 1 <= previousStamps || stampsWrapped
-            let noIncrementYet = fetchedStamps <= previousStamps || (expectingGift && creditGain <= 0)
-            if noIncrementYet, 0 < remainingRetry {
-                // まだ反映されていない場合はごく短時間だけ再取得し、連続視聴でも漏れないようにする
-                try? await Task.sleep(nanoseconds: rewardStatusRetryInterval)
-                await fetchRewardStampWithRetry(
-                    previousStamps: previousStamps,
-                    previousCredits: previousCredits,
-                    remainingRetry: remainingRetry - 1
-                )
-            }
-        } catch {
-            await MainActor.run {
-                // 通信エラー時は優しいメッセージのみを提示し、再試行を促す
-                rewardDescription = String(localized: "視聴結果の反映に失敗しました。通信環境をご確認のうえ、少し時間をおいてお試しください")
-            }
-        }
-    }
-
-    private func makeRewardDescription(stamps: Int) -> String {
-        return String(localized: "ご視聴ありがとうございます")
     }
 }
 
@@ -252,15 +174,6 @@ struct AdMobRewardedContentView: View {
     @ObservedObject var loader: RewardedAdLoader
     @Binding var rewardDescription: String?
     let presentAction: () -> Void
-    @Binding var adRewardStamps: Int
-    let rewardStampGoal: Int
-
-    private var progressText: String {
-        // 進捗を数字でも示し、3個貯まるとチャッピー送信できる目安を作る
-        let capped = min(adRewardStamps, rewardStampGoal)
-        let format = String(localized: "視聴回数: %lld/%lld")
-        return String(format: format, capped, rewardStampGoal)
-    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -294,28 +207,6 @@ struct AdMobRewardedContentView: View {
                 .foregroundStyle(.primary)
                 .padding(.horizontal)
 
-            VStack(spacing: 4) {
-                // 広告視聴によって貯まる特典の進捗を見せる
-                Text("動画広告を最後まで3回視聴すると\nAI利用券を1枚プレゼント")
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
-
-                HStack(spacing: 6) {
-                    ForEach(0..<rewardStampGoal, id: \.self) { index in
-                        let filled = index < adRewardStamps
-                        Image(systemName: filled ? "\(1+index).circle.fill" : "\(1+index).circle")
-                            //.symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(filled ? Color.accentColor : Color.secondary)
-                    }
-                }
-                // 視聴回数
-                Text(progressText)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(adRewardStamps < rewardStampGoal ? Color.secondary : Color.blue)
-            }
-            
             HStack {
                 Spacer()
 

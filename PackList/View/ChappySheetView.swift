@@ -102,6 +102,10 @@ struct ChappyView: View {
     @State private var alertState: AlertState?
     /// azuki-apiリクエスト中であることを示すフラグ
     @State private var isGenerating = false
+    /// 広告経由の送信を進行中かどうかを示し、メッセージ切り替えに利用する
+    @State private var isGeneratingFromReward = false
+    /// 「広告を見て無料で送信」ボタンで送ろうとしている依頼文の控え
+    @State private var pendingRewardRequirement: String?
     /// 生成処理の結果を画面内に表示して利用者へ知らせるためのフィードバック
     @State private var inlineGenerationFeedback: GenerationFeedback?
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
@@ -266,6 +270,35 @@ struct ChappyView: View {
                 }
                 .padding(.horizontal, 8)
 
+                // リワード広告経由の無料送信ボタン
+                Button {
+                    // 送信前に広告視聴導線を開く
+                    startRewardedGenerationFlow()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sparkles.tv.fill")
+                            .symbolRenderingMode(.hierarchical)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(String(localized: "広告を見て無料で送信"))
+                                .font(.callout.weight(.semibold))
+                            Text(String(localized: "GPT-4o-miniでお試し送信"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if isGenerating && isGeneratingFromReward {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.accentColor.opacity(0.45))
+                .disabled(isRequirementEmpty || isGenerating)
+                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {
                     // 入力欄。カード背景と馴染むよう余白のみを加える
@@ -347,18 +380,16 @@ struct ChappyView: View {
 
             // AI利用券購入
             creditPurchaseMenu
-            
-            Divider()
-                .padding(.vertical, 4)
-            
-            // 広告を見て特典をゲット　リワード広告
-            adRewardBadge
+
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         // バッジタップでAdMobの広告シートを重ねて開き、特典取得へ誘導する
         .sheet(isPresented: $isPresentingAdRewardSheet) {
-            AdMobAdSheetView()
+            AdMobAdSheetView(
+                onRewardEarned: handleRewardedAdCompletion,
+                rewardTrialDescription: String(localized: "広告を見て無料で送信！　動画広告を最後まで視聴すれば、無料でお試し送信できます。チャッピー mini に依頼しますので少し情報量は減るかも知れませんがお試しください。AI利用券で依頼するときは、通常のチャッピーになります")
+            )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
@@ -424,73 +455,49 @@ struct ChappyView: View {
         return Color(uiColor: .systemGray6)
     }
 
-    /// 広告視聴で獲得した「1回無料」特典のバッジ
-    private var adRewardTicketChip: some View {
-        HStack(spacing: 6) {
-            // チャッピー送信に使える無料特典が存在することをアイコンで示す
-            Image(systemName: "gift.fill")
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.secondary)
-            // 次の送信が無料であることをテキストで補足する
-            Text(String(localized: "特典1回無料"))
-                .font(.caption)
+    /// 広告視聴から始めるお試し送信の導線を開く
+    private func startRewardedGenerationFlow() {
+        // 送信前に入力済みかどうか確認し、未入力なら既存のエラーメッセージを再利用する
+        let trimmedRequirement = requirementText.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedRequirement.isEmpty {
+            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            return
         }
-//        .padding(.vertical, 3)
-        .padding(.horizontal, 4)
-//        .background(
-//            Capsule(style: .continuous)
-//                .fill(Color.brown.opacity(0.18))
-//        )
-//        .overlay(
-//            Capsule(style: .continuous)
-//                .stroke(Color.red, lineWidth: 1)
-//        )
-//        .foregroundStyle(.primary)
+        // キーボードを閉じ、広告シートを提示する
+        requirementFocus.wrappedValue = false
+        inlineGenerationFeedback = nil
+        pendingRewardRequirement = trimmedRequirement
+        isPresentingAdRewardSheet = true
     }
 
-    /// 広告特典の状態を示すバッジ
-    private var adRewardBadge: some View {
-        VStack(alignment: .center, spacing: 4) {
-            Button {
-                // 1タップで広告シートを開き、動画視聴から特典獲得へつなげる
-                isPresentingAdRewardSheet = true
-            } label: {
-                HStack(spacing: 8) {
-                    ForEach(0..<adRewardStampGoal, id: \.self) { index in
-                        let filled = index < adRewardStamps
-                        Image(systemName: filled ? "\(1+index).circle.fill" : "\(1+index).circle")
-                            //.symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(filled ? Color.accentColor : Color.secondary)
-                    }
-                    Text("広告を見て無料で送信")
-                        .font(.body)
-                        .foregroundStyle(Color.primary)
-                }
-                .padding(.horizontal, 8)
-            }
-            // ボタンらしさを抑え、既存バッジの見た目を維持する
-            .buttonStyle(.borderedProminent)
-            .tint(.accentColor.opacity(0.3))
-            
-            Text("動画広告を最後まで3回視聴するとAI利用券を1枚プレゼント")
-                .font(.caption)
-                .foregroundStyle(.primary)
+    /// 広告視聴完了後にGPT-4o-miniで送信を始める
+    private func handleRewardedAdCompletion() {
+        guard let requirement = pendingRewardRequirement else {
+            return
         }
-        .frame(maxWidth: .infinity) // 中央寄せのために必要
+        // シートを閉じて送信開始を明示する
+        isPresentingAdRewardSheet = false
+        inlineGenerationFeedback = .success(message: String(localized: "広告視聴ありがとう！チャッピー mini で送信を始めます"))
+        // GPT-4o-mini向けに送信し、通常のクレジット消費を伴わないことを明示する
+        generatePackWithOpenAI(requirementOverride: requirement, usingTrialModel: true)
+        pendingRewardRequirement = nil
     }
-    
+
     /// azuki-api経由でOpenAIにパック生成を依頼する
-    private func generatePackWithOpenAI() {
+    private func generatePackWithOpenAI(requirementOverride: String? = nil, usingTrialModel: Bool = false) {
         // 進行中の生成リクエストがあれば新しい処理を開始せず、送信ボタンの連打を抑止する
         if isGenerating {
             return
         }
         isGenerating = true
+        isGeneratingFromReward = usingTrialModel
 
-        let trimmedRequirement = requirementText.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let requirementSource = requirementOverride ?? requirementText.wrappedValue
+        let trimmedRequirement = requirementSource.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
             inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
             isGenerating = false
+            isGeneratingFromReward = false
             return
         }
 
@@ -499,7 +506,6 @@ struct ChappyView: View {
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
-            var shouldRestoreAdReward = false
             defer {
                 Task {
                     await MainActor.run {
@@ -507,10 +513,8 @@ struct ChappyView: View {
                             // サーバー側で消費されなかったと推定される場合はローカル残高を戻す
                             creditStore.add(credits: cost)
                         }
-                        if shouldRestoreAdReward {
-                            adRewardStamps += adRewardStampGoal
-                        }
                         isGenerating = false
+                        isGeneratingFromReward = false
                     }
                 }
             }
@@ -521,11 +525,9 @@ struct ChappyView: View {
                 return
             }
 
-//            // サーバー結果で特典スタンプが補充されたかもしれないので、最新値を見て特典利用判定を行う
-//            let usesAdReward = await MainActor.run { hasAdRewardTicket }
-
-            // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
-//            if usesAdReward == false {
+            // トライアル送信の場合はクレジット消費を伴わない
+            if usingTrialModel == false {
+                // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
                 let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
                 if hasEnoughCredits == false {
                     await presentCreditShortageFeedback()
@@ -541,18 +543,7 @@ struct ChappyView: View {
                     await presentCreditShortageFeedback()
                     return
                 }
-//            } else {
-//                await MainActor.run {
-//                    // 広告特典がある場合は優先的に利用し、同時にローカルのスタンプ数を減らして重複消費を防ぐ
-//                    let remaining = adRewardStamps - adRewardStampGoal
-//                    if remaining < 0 {
-//                        adRewardStamps = 0
-//                    } else {
-//                        adRewardStamps = remaining
-//                    }
-//                }
-//                shouldRestoreAdReward = true
-//            }
+            }
 
             do {
                 let basePackDTO = await exportBasePackIfAvailable()
@@ -560,11 +551,11 @@ struct ChappyView: View {
                     userId: userId,
                     requirement: trimmedRequirement,
                     basePack: basePackDTO,
-                    canAttemptRecovery: true
+                    canAttemptRecovery: true,
+                    useMiniModel: usingTrialModel
                 )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
-                shouldRestoreAdReward = false
                 do {
                     let packName = try await MainActor.run { () -> String in
                         let importedPack = try createPack(from: dto)
@@ -576,14 +567,8 @@ struct ChappyView: View {
                         requirementText.wrappedValue = ""
                         return importedPack.name
                     }
-//                    if usesAdReward {
-//                        await MainActor.run {
-//                            // 無料特典を使い切ったので、次回の視聴状況をゼロから積み上げられるよう明示的にリセットする
-//                            adRewardStamps = 0
-//                        }
-//                    }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
-                    await presentGenerationSuccess(packName: packName)
+                    await presentGenerationSuccess(packName: packName, usingTrialModel: usingTrialModel)
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -649,12 +634,20 @@ struct ChappyView: View {
     }
 
     /// 生成成功をユーザーへ伝える。画面表示中は画面内メッセージ、閉じていればローカル通知で知らせる
-    /// - Parameter packName: 生成に成功したパック名
-    private func presentGenerationSuccess(packName: String) async {
+    /// - Parameters:
+    ///   - packName: 生成に成功したパック名
+    ///   - usingTrialModel: GPT-4o-miniで生成したかどうか
+    private func presentGenerationSuccess(packName: String, usingTrialModel: Bool) async {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .success(message: String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください"))
+                let message: String
+                if usingTrialModel {
+                    message = String(localized: "チャッピー mini が提案をまとめました。お試しとして気軽に眺めてみてください")
+                } else {
+                    message = String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください")
+                }
+                inlineGenerationFeedback = .success(message: message)
             }
             return
         }
@@ -695,11 +688,13 @@ struct ChappyView: View {
     private func requestPackFromServer(userId: String,
                                        requirement: String,
                                        basePack: PackJsonDTO?,
-                                       canAttemptRecovery: Bool) async throws -> PackJsonDTO {
+                                       canAttemptRecovery: Bool,
+                                       useMiniModel: Bool) async throws -> PackJsonDTO {
         do {
             return try await AzukiApi.shared.generatePack(userId: userId,
                                                           requirement: requirement,
-                                                          basePack: basePack)
+                                                          basePack: basePack,
+                                                          usingTrialModel: useMiniModel)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
@@ -708,7 +703,8 @@ struct ChappyView: View {
                         userId: userId,
                         requirement: requirement,
                         basePack: basePack,
-                        canAttemptRecovery: false
+                        canAttemptRecovery: false,
+                        useMiniModel: useMiniModel
                     )
                 }
             }
