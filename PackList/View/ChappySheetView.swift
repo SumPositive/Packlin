@@ -589,7 +589,13 @@ struct ChappyView: View {
                     shouldRestoreCredits = false
                     // サーバーの残高を参照してKeychainを最新化し、複数端末での消費にも追随させる
                     await refreshCreditStatusFromServer(showAlertOnFailure: false)
-                    await presentCreditShortageFeedback()
+                    if isTrial {
+                        // 広告の完走がサーバーで確認できず無料送信が無効になったケースを明示する
+                        await presentGenerationFailure(message: String(localized: "広告視聴完了が確認んできませんでした"))
+                    } else {
+                        // 通常送信は残高不足として案内し、購入導線へ誘導する
+                        await presentCreditShortageFeedback()
+                    }
                 case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
                     let message = apiError.errorDescription
                     ?? String(localized: "認証に失敗しました。アプリを再起動して再度お試しください")

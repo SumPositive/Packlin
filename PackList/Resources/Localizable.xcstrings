@@ -124,6 +124,16 @@
         }
       }
     },
+    "広告視聴完了が確認んできませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't confirm ad finish."
+          }
+        }
+      }
+    },
     "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください" : {
       "localizations" : {
         "en" : {
