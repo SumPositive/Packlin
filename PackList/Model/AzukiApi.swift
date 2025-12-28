@@ -146,17 +146,19 @@ final class AzukiApi {
     /// - Parameters:
     ///   - userId: クレジット消費対象となるユーザーID
     ///   - requirement: ユーザーが入力した要件
+    ///   - basePack: 修正時、元になるPack
+    ///   - isTrial: true=リワード広告視聴後の無料送信
     /// - Returns: PackListへそのまま取り込めるDTO
     func generatePack(userId: String,
                      requirement: String,
                      basePack: PackJsonDTO?,
-                     usingTrialModel: Bool = false) async throws -> PackJsonDTO {
+                     isTrial: Bool = false) async throws -> PackJsonDTO {
         struct GenerateRequest: Encodable {
             let userId: String
             let requirement: String
             let basePack: PackJsonDTO?
             // リワード視聴後のお試し送信かどうかを示すフラグ。サーバー側でモデルを選択する
-            let usingTrialModel: Bool
+            let isTrial: Bool
         }
 
         guard let url = makeURL(path: "/api/openai") else {
@@ -166,7 +168,7 @@ final class AzukiApi {
         let requestBody = GenerateRequest(userId: userId,
                                           requirement: requirement,
                                           basePack: basePack,
-                                          usingTrialModel: usingTrialModel)
+                                          isTrial: isTrial)
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
             return try decoder.decode(PackJsonDTO.self, from: data)

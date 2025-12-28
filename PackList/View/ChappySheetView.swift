@@ -479,18 +479,18 @@ struct ChappyView: View {
         isPresentingAdRewardSheet = false
         inlineGenerationFeedback = .success(message: String(localized: "広告視聴ありがとう！チャッピー mini で送信を始めます"))
         // GPT-4o-mini向けに送信し、通常のクレジット消費を伴わないことを明示する
-        generatePackWithOpenAI(requirementOverride: requirement, usingTrialModel: true)
+        generatePackWithOpenAI(requirementOverride: requirement, isTrial: true)
         pendingRewardRequirement = nil
     }
 
     /// azuki-api経由でOpenAIにパック生成を依頼する
-    private func generatePackWithOpenAI(requirementOverride: String? = nil, usingTrialModel: Bool = false) {
+    private func generatePackWithOpenAI(requirementOverride: String? = nil, isTrial: Bool = false) {
         // 進行中の生成リクエストがあれば新しい処理を開始せず、送信ボタンの連打を抑止する
         if isGenerating {
             return
         }
         isGenerating = true
-        isGeneratingFromReward = usingTrialModel
+        isGeneratingFromReward = isTrial
 
         let requirementSource = requirementOverride ?? requirementText.wrappedValue
         let trimmedRequirement = requirementSource.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -526,7 +526,7 @@ struct ChappyView: View {
             }
 
             // トライアル送信の場合はクレジット消費を伴わない
-            if usingTrialModel == false {
+            if isTrial == false {
                 // ローカル残高が不足している場合に限り不足フィードバックを出す（Keychain保存なので通信不要）
                 let hasEnoughCredits = await ensureSufficientCreditsForGeneration(cost: cost)
                 if hasEnoughCredits == false {
@@ -552,7 +552,7 @@ struct ChappyView: View {
                     requirement: trimmedRequirement,
                     basePack: basePackDTO,
                     canAttemptRecovery: true,
-                    useMiniModel: usingTrialModel
+                    useMiniModel: isTrial
                 )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
@@ -568,7 +568,7 @@ struct ChappyView: View {
                         return importedPack.name
                     }
                     // シート表示中は画面内メッセージ、閉じた後はローカル通知と使い分けて知らせる
-                    await presentGenerationSuccess(packName: packName, usingTrialModel: usingTrialModel)
+                    await presentGenerationSuccess(packName: packName, isTrial: isTrial)
                 } catch {
                     let message: String
                     if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -636,13 +636,13 @@ struct ChappyView: View {
     /// 生成成功をユーザーへ伝える。画面表示中は画面内メッセージ、閉じていればローカル通知で知らせる
     /// - Parameters:
     ///   - packName: 生成に成功したパック名
-    ///   - usingTrialModel: GPT-4o-miniで生成したかどうか
-    private func presentGenerationSuccess(packName: String, usingTrialModel: Bool) async {
+    ///   - isTrial: GPT-4o-miniで生成したかどうか
+    private func presentGenerationSuccess(packName: String, isTrial: Bool) async {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
                 let message: String
-                if usingTrialModel {
+                if isTrial {
                     message = String(localized: "チャッピー mini が提案をまとめました。お試しとして気軽に眺めてみてください")
                 } else {
                     message = String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください")
@@ -694,7 +694,7 @@ struct ChappyView: View {
             return try await AzukiApi.shared.generatePack(userId: userId,
                                                           requirement: requirement,
                                                           basePack: basePack,
-                                                          usingTrialModel: useMiniModel)
+                                                          isTrial: useMiniModel)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
