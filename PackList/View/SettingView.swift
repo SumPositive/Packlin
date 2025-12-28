@@ -607,6 +607,7 @@ struct SettingView: View {
         @State private var showAd = false
         @State private var showAdMovie = false
         @State private var showDonate = false
+        @State private var showRewardThankYou = false // 広告視聴後にお礼アラートを出すためのフラグ
 
         var body: some View {
             VStack(alignment: .leading, spacing: 20) {
@@ -635,8 +636,23 @@ struct SettingView: View {
                     .padding(.horizontal, 32)
                     .sheet(isPresented: $showAd) {
                         // バナーも動画もまとめて閲覧できる新しいシートを表示
-                        AdMobAdSheetView()
+                        AdMobAdSheetView(
+                            onRewardEarned: {
+                                // 広告の視聴完了を検知してお礼を伝える
+                                showRewardThankYou = true
+                            },
+                            rewardTrialDescription: String(localized: "広告を最後まで見れば、開発者を直接応援できます！無理のない範囲でご協力いただけると嬉しいです")
+                        )
                     }
+                }
+                // 視聴完了後にささやかな感謝を伝える
+                .alert(
+                    String(localized: "広告視聴ありがとう！"),
+                    isPresented: $showRewardThankYou
+                ) {
+                    Button(String(localized: "OK")) {}
+                } message: {
+                    Text(String(localized: "応援いただき感謝しています。これからも改善を続けますので、よければまたのぞいてみてください！"))
                 }
             }
         }
