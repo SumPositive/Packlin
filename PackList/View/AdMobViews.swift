@@ -17,7 +17,7 @@ import FirebaseCrashlytics
 private let adUnavailableMessage = String(localized: "現在、特典付きの広告がありません。後ほどお試しください")
 
 // 広告ユニットID
-#if DEBUG
+#if xxDEBUG
 // リワード型 テスト用
 let ADMOB_REWARD_1_UnitID  = "ca-app-pub-3940256099942544/1712485313"
 // アダプティブ バナー テスト用
@@ -33,6 +33,9 @@ let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 //let ADMOB_VIDEO_UnitID  = "ca-app-pub-7576639777972199/3403625868"
 #endif
 
+// AdMob.reward_1 サーバーサイドの検証 WebHook URL
+// 本番：https://azuki-api.azukid.com/api/admob/ssv
+// 検証：https://muriel-chestnutty-unprecedentedly.ngrok-free.dev/api/admob/ssv
 
 
 /// バナー広告と動画広告をまとめて確認できるシートビュー

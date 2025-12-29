@@ -260,7 +260,7 @@ struct ChappyView: View {
                             Text(isGenerating ? "提案を考え中" : "送信")
                                 .font(.callout.weight(.semibold))
                         }
-                        .padding(.vertical, -4)
+                        .padding(.vertical, -2)
                         .padding(.horizontal, 4)
                     }
                     .disabled(canSendRequest == false)
@@ -276,12 +276,13 @@ struct ChappyView: View {
                     startRewardedGenerationFlow()
                 } label: {
                     HStack(spacing: 8) {
+                        Spacer()
                         Text(String(localized: "お試し特典！"))
                             .font(.callout.weight(.regular))
                         Image(systemName: "paperplane")
                             .imageScale(.medium)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(String(localized: "広告を見て無料で送信"))
+                            Text(String(localized: "広告を見て送信"))
                                 .font(.callout.weight(.regular))
                             //Text(String(localized: "チャッピー mini に依頼できます"))
                             //    .font(.caption)
@@ -293,14 +294,14 @@ struct ChappyView: View {
                                 .progressViewStyle(.circular)
                         }
                     }
-                    .padding(.vertical, -4)
+                    .padding(.vertical, -2)
                     .padding(.horizontal, 4)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Color.accentColor.opacity(0.45))
                 .disabled(isRequirementEmpty || isGenerating)
                 .contentShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 10)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {
@@ -591,7 +592,7 @@ struct ChappyView: View {
                     await refreshCreditStatusFromServer(showAlertOnFailure: false)
                     if isTrial {
                         // 広告の完走がサーバーで確認できず無料送信が無効になったケースを明示する
-                        await presentGenerationFailure(message: String(localized: "広告視聴完了が確認んできませんでした"))
+                        await presentGenerationFailure(message: String(localized: "広告視聴完了が確認できませんでした"))
                     } else {
                         // 通常送信は残高不足として案内し、購入導線へ誘導する
                         await presentCreditShortageFeedback()
