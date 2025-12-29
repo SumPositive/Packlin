@@ -161,24 +161,6 @@ struct ChappyView: View {
         return nil
     }
 
-    /// 端末の言語設定を示す指示文を要望に付け足す
-    /// - Parameter requirement: ユーザーが入力した要望文
-    /// - Returns: 言語指定が付与された要望文
-    private func appendDeviceLanguageInstruction(to requirement: String) -> String {
-        guard let languageCode = deviceLanguageCode() else {
-            return requirement
-        }
-        // "JSON Valueの言語は%@で作成すること"
-        let instruction = String(format: "JSON Value language should be created using %@.", languageCode)
-        if requirement.contains(instruction) {
-            return requirement
-        }
-        if requirement.isEmpty {
-            return instruction
-        }
-        return requirement + " " + instruction
-    }
-
     /// クレジット枚数だけで送信できるかどうか
     private var hasTicketForGeneration: Bool {
         CHATGPT_GENERATION_CREDIT_COST <= creditStore.credits
@@ -541,7 +523,8 @@ struct ChappyView: View {
         }
 
         let userId = creditStore.userId
-        let requirementForServer = appendDeviceLanguageInstruction(to: trimmedRequirement)
+        // APIへは端末の言語コードをパラメータとして渡し、プロンプトの文面を汚さない
+        let languageCode = deviceLanguageCode()
         Task {
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
@@ -589,10 +572,11 @@ struct ChappyView: View {
                 let basePackDTO = await exportBasePackIfAvailable()
                 let dto = try await requestPackFromServer(
                     userId: userId,
-                    requirement: requirementForServer,
+                    requirement: trimmedRequirement,
                     basePack: basePackDTO,
                     canAttemptRecovery: true,
-                    useMiniModel: isTrial
+                    useMiniModel: isTrial,
+                    languageCode: languageCode
                 )
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
@@ -601,7 +585,7 @@ struct ChappyView: View {
                         let importedPack = try createPack(from: dto)
 
                         GALogger.log(.packlin_request(userId: userId,
-                                                      requirement: requirementForServer))
+                                                      requirement: trimmedRequirement))
                         // 生成が成功しクレジット消費も確定したので、次回表示時に空欄から始められるよう保存済みの要望文を消す
                         // 送信したモードの入力欄だけを空にし、別モードの下書きは残す
                         requirementText.wrappedValue = ""
@@ -730,12 +714,14 @@ struct ChappyView: View {
                                        requirement: String,
                                        basePack: PackJsonDTO?,
                                        canAttemptRecovery: Bool,
-                                       useMiniModel: Bool) async throws -> PackJsonDTO {
+                                       useMiniModel: Bool,
+                                       languageCode: String?) async throws -> PackJsonDTO {
         do {
             return try await AzukiApi.shared.generatePack(userId: userId,
                                                           requirement: requirement,
                                                           basePack: basePack,
-                                                          isTrial: useMiniModel)
+                                                          isTrial: useMiniModel,
+                                                          languageCode: languageCode)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
@@ -745,7 +731,8 @@ struct ChappyView: View {
                         requirement: requirement,
                         basePack: basePack,
                         canAttemptRecovery: false,
-                        useMiniModel: useMiniModel
+                        useMiniModel: useMiniModel,
+                        languageCode: languageCode
                     )
                 }
             }

@@ -152,13 +152,16 @@ final class AzukiApi {
     func generatePack(userId: String,
                      requirement: String,
                      basePack: PackJsonDTO?,
-                     isTrial: Bool = false) async throws -> PackJsonDTO {
+                     isTrial: Bool = false,
+                     languageCode: String?) async throws -> PackJsonDTO {
         struct GenerateRequest: Encodable {
             let userId: String
             let requirement: String
             let basePack: PackJsonDTO?
             // リワード視聴後のお試し送信かどうかを示すフラグ。サーバー側でモデルを選択する
             let isTrial: Bool
+            /// ユーザーの端末言語コード（プロンプトに埋め込まずパラメータで渡す）
+            let languageCode: String?
         }
 
         guard let url = makeURL(path: "/api/openai") else {
@@ -168,7 +171,8 @@ final class AzukiApi {
         let requestBody = GenerateRequest(userId: userId,
                                           requirement: requirement,
                                           basePack: basePack,
-                                          isTrial: isTrial)
+                                          isTrial: isTrial,
+                                          languageCode: languageCode)
         let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         do {
             return try decoder.decode(PackJsonDTO.self, from: data)
