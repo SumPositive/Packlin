@@ -34,6 +34,16 @@
         }
       }
     },
+    "値の言語は%@で作成すること" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep values in %@."
+          }
+        }
+      }
+    },
     "＞" : {
       "localizations" : {
         "en" : {
