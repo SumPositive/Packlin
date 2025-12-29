@@ -168,8 +168,8 @@ struct ChappyView: View {
         guard let languageCode = deviceLanguageCode() else {
             return requirement
         }
-        let instructionFormat = String(localized: "値の言語は%@で作成すること")
-        let instruction = String(format: instructionFormat, languageCode)
+        // "JSON Valueの言語は%@で作成すること"
+        let instruction = String(format: "JSON Value language should be created using %@.", languageCode)
         if requirement.contains(instruction) {
             return requirement
         }

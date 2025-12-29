@@ -34,16 +34,6 @@
         }
       }
     },
-    "値の言語は%@で作成すること" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep values in %@."
-          }
-        }
-      }
-    },
     "＞" : {
       "localizations" : {
         "en" : {
@@ -895,6 +885,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weight per item"
+          }
+        }
+      }
+    },
+    "値の言語は%@で作成すること" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep values in %@."
           }
         }
       }
