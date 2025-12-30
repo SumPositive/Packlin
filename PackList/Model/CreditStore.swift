@@ -52,6 +52,19 @@ final class CreditStore: ObservableObject {
         persist()
     }
 
+    /// AdMobのSSVでuserIdが欠けた場合にも、即座に再発行してKeychainへ保存する
+    /// - Returns: 確実にKeychainへ保存された最新のuserId
+    @discardableResult
+    func regenerateUserIdIfNeeded() -> String {
+        // Keychain削除後などで空文字になった場合に備え、ここで新規発行する
+        if userId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let regeneratedId = AzukiUserIdentifier.loadOrCreate(keychain: keychain)
+            // 発行直後にPublished経由でUIへ流すため、メモリ上も更新しておく
+            userId = regeneratedId
+        }
+        return userId
+    }
+
     /// 指定数だけクレジットを消費する
     func consume(credits amount: Int) throws {
         if amount < 1 {

@@ -131,7 +131,9 @@ struct AdMobAdSheetView: View {
         .onAppear {
             // 動画視聴完了後にシートを閉じる・お礼を出す挙動を設定
             // userIdを広告のSSV customRewardTextにも流用し、ユーザー識別を一本化する
-            loader.updateUserId(creditStore.userId)
+            // デバッグ操作などでKeychainのuserIdが消えていた場合はここで再発行し、以後も使い回す
+            let ensuredUserId = creditStore.regenerateUserIdIfNeeded()
+            loader.updateUserId(ensuredUserId)
             loader.onAdDismissed = {
                 // 次の動画広告を読み込む
                 loader.loadAd()
