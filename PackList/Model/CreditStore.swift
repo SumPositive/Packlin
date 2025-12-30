@@ -104,6 +104,9 @@ final class CreditStore: ObservableObject {
         // クレジットも同時にクリアし、Keychainから削除してからメモリ上の値を0にそろえる
         keychain.deleteItem(forKey: keychainBalanceKey)
         credits = 0
+        // デバッグでuserIdを空にすると旧ユーザー向けのアクセストークンが残ってしまうため、
+        // サーバーの認証エラーを避ける目的でアクセストークンとリフレッシュトークンも破棄する
+        AzukiApi.shared.clearAuthenticationStateForUserReset()
         // Publishedを通じてUIへ即座に反映させるため空文字を反映
         userId = ""
     }
