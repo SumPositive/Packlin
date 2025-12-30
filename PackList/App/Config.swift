@@ -122,7 +122,7 @@ let DEF_showNeedWeight = true
 // 重量計1000gからkg表示
 let DEF_weightDisplayInKg = true
 // チェックONで在庫数を満たす
-let DEF_linkCheckWithStock = false
+let DEF_linkCheckWithStock = true
 // チェックOFFで在庫数を0にする
 let DEF_linkCheckOffWithZero = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
