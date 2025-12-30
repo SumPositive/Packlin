@@ -949,9 +949,17 @@ struct ChappyView: View {
                 // 複数ボタンが並ぶため、購入中の選択肢のみローディング表示へ切り替える
                 processingProductId = productId
             }
+            // 中断や失敗の後でも必ずボタンを再有効化するための保険
+            defer {
+                Task { @MainActor in
+                    processingProductId = nil
+                }
+            }
 
             let msgPurchaseCancel = String(localized: "購入を中止しました、課金されません")
-            
+            // StoreKitフローが途中で止まった場合でも復旧できるよう、成功したかの判定を保持する
+            var didCompletePurchase = false
+
             do {
                 // 実機（Sandbox Apple ID）での挙動確認を前提とし、StoreKit 本番フローをそのまま利用する
                 // シミュレータ用のテストセッションはあえて起動せず、実運用と同じ購入体験を得る
@@ -967,7 +975,9 @@ struct ChappyView: View {
                         // 3. トランザクション署名を検証し、正規購入であればサーバーへ伝えて残高を加算する
                         let (transaction, storekitJws) = try await resolveVerifiedTransaction(from: verificationResult)
                         await finalizePurchase(option: option, productId: productId, transaction: transaction, storekitJws: storekitJws)
-                        
+                        // 正常完了したのでリカバリ処理は不要
+                        didCompletePurchase = true
+
                     case .pending:
                         // ファミリー共有などで承認待ちになる場合
                         await MainActor.run {
@@ -984,6 +994,7 @@ struct ChappyView: View {
                         await MainActor.run {
                             alertState = .purchaseFailure(message: String(localized: "想定外の結果が返りました、課金されません。時間をおいて再度お試しください"))
                         }
+                        didCompletePurchase = false
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
@@ -991,6 +1002,7 @@ struct ChappyView: View {
                         ?? String(localized: "AI利用券が購入できませんでした、課金されません")
                     alertState = .purchaseFailure(message: message)
                 }
+                didCompletePurchase = false
             } catch StoreKitError.userCancelled {
                 await MainActor.run {
                     // StoreKitが返すユーザーキャンセルはここで一元的に処理し、二重アラートの発生を確実に抑止する
@@ -1003,6 +1015,7 @@ struct ChappyView: View {
                         ?? storekitError.localizedDescription
                     alertState = .purchaseFailure(message: message)
                 }
+                didCompletePurchase = false
             } catch is CancellationError {
                 await MainActor.run {
                     // Taskキャンセル（StoreKit購入ダイアログを閉じる等）もユーザーによる中断として扱い、二重アラートを避ける
@@ -1013,14 +1026,17 @@ struct ChappyView: View {
                     let message = localized.errorDescription ?? localized.localizedDescription
                     alertState = .purchaseFailure(message: message)
                 }
+                didCompletePurchase = false
             } catch {
                 await MainActor.run {
                     alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中に問題が発生しました、課金されません。通信環境をご確認ください"))
                 }
+                didCompletePurchase = false
             }
 
-            await MainActor.run {
-                processingProductId = nil
+            // エラー後は未処理トランザクションの消化を試み、再購買できない状態を避ける
+            if didCompletePurchase == false {
+                await recoverUnfinishedTransactionsForPurchase()
             }
         }
     }
@@ -1111,6 +1127,25 @@ struct ChappyView: View {
             return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
         }
         return nil
+    }
+
+    /// Apple推奨のリカバリとして、未完了トランザクションをまとめて再取得する
+    private func recoverUnfinishedTransactionsForPurchase() async {
+        // `Transaction.unfinished` 経由で購入フローが途中停止した取引を拾い直す
+        for await unfinished in Transaction.unfinished {
+            if Task.isCancelled {
+                break
+            }
+            await handleTransactionUpdate(unfinished)
+        }
+
+        // currentEntitlements からも取りこぼしがないか確認し、必要に応じて finish する
+        for await entitlement in Transaction.currentEntitlements {
+            if Task.isCancelled {
+                break
+            }
+            await handleTransactionUpdate(entitlement)
+        }
     }
 
     /// StoreKit 2 から商品情報を取得し、`storeProducts` へキャッシュする
