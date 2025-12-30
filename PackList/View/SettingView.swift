@@ -99,7 +99,7 @@ struct SettingView: View {
                                     HStack(spacing: 6) {
                                         Image(systemName: "trash")
                                             .symbolRenderingMode(.hierarchical)
-                                        Text(String(localized: "SupportIDとクレジットを削除する"))
+                                        Text(String(localized: "UserIDとAI利用券を削除する"))
                                     }
                                     .font(.footnote.weight(.semibold))
                                     .frame(maxWidth: .infinity)
@@ -136,7 +136,7 @@ struct SettingView: View {
                 }
             }
             #if DEBUG
-            .alert(String(localized: "SupportIDとクレジットを削除しました"), isPresented: $showDebugUserIdAlert) {
+            .alert(String(localized: "UserIDとAI利用券を削除しました"), isPresented: $showDebugUserIdAlert) {
                 Button(role: .cancel) {
                     // 閉じるだけで処理は完了。画面はPublished経由で更新される
                 } label: {
@@ -144,7 +144,7 @@ struct SettingView: View {
                 }
             } message: {
                 // 次回利用時に自動で再発行されることを知らせつつ、クレジット初期化も明示する
-                Text(String(localized: "SupportIDは必要に応じて再発行され、クレジットは0になります"))
+                Text(String(localized: "UserIDは必要に応じて再発行されます"))
             }
             #endif
         }
