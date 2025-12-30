@@ -49,6 +49,9 @@ struct SettingView: View {
     @EnvironmentObject private var creditStore: CreditStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    #if DEBUG
+    @State private var showDebugUserIdAlert = false
+    #endif
 
     var body: some View {
         NavigationStack {
@@ -78,15 +81,36 @@ struct SettingView: View {
 
                         // Version - SupportID
                         if let versionLineText {
-                            HStack {
-                                Spacer()
-                                // 画面最下部でアプリバージョンとサポート用ID(userIdの先頭8桁)を一緒に表示する
-                                Text(versionLineText)
-                                    .font(.footnote.monospaced())
-                                    .foregroundStyle(.secondary)
-                                    .padding(.bottom, 12)
-                                Spacer()
+                            VStack(spacing: 10) {
+                                HStack {
+                                    Spacer()
+                                    // 画面最下部でアプリバージョンとサポート用ID(userIdの先頭8桁)を一緒に表示する
+                                    Text(versionLineText)
+                                        .font(.footnote.monospaced())
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                }
+                                #if DEBUG
+                                Button {
+                                    // デバッグ中にKeychainへ保存されたSupportID(userId)を削除し、純粋な初期状態へ戻す
+                                    creditStore.deleteUserIdForDebug()
+                                    showDebugUserIdAlert = true
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "trash")
+                                            .symbolRenderingMode(.hierarchical)
+                                        Text(String(localized: "SupportIDとクレジットを削除する"))
+                                    }
+                                    .font(.footnote.weight(.semibold))
+                                    .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.red.opacity(0.7))
+                                .controlSize(.small)
+                                .padding(.bottom, 4)
+                                #endif
                             }
+                            .padding(.bottom, 12)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -111,6 +135,18 @@ struct SettingView: View {
                     }
                 }
             }
+            #if DEBUG
+            .alert(String(localized: "SupportIDとクレジットを削除しました"), isPresented: $showDebugUserIdAlert) {
+                Button(role: .cancel) {
+                    // 閉じるだけで処理は完了。画面はPublished経由で更新される
+                } label: {
+                    Text("OK")
+                }
+            } message: {
+                // 次回利用時に自動で再発行されることを知らせつつ、クレジット初期化も明示する
+                Text(String(localized: "SupportIDは必要に応じて再発行され、クレジットは0になります"))
+            }
+            #endif
         }
     }
     
@@ -210,6 +246,13 @@ struct SettingView: View {
         }
         // userIdはKeychainに保存されるUUIDでプレースホルダー値は存在しないため、そのまま表示対象とする
         // 先頭8文字だけを抜き出してサポート用識別子に使う
+        return abbreviatedSupportId(from: rawId)
+    }
+
+    /// SupportIDとして短縮したuserIdの先頭8文字を返す
+    /// - Parameter rawId: Keychainなどに保存された元のuserId
+    /// - Returns: 8文字に短縮したSupportID（元の長さが不足する場合はそのまま返す）
+    private func abbreviatedSupportId(from rawId: String) -> String {
         if rawId.count < 8 {
             return rawId
         }

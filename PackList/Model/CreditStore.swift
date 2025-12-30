@@ -14,8 +14,8 @@ import Combine
 final class CreditStore: ObservableObject {
     @Published private(set) var credits: Int
     /// azuki-api側でユーザーを識別するためのID。StoreKit購入時にも利用するため
-    /// アプリ起動と同時にKeychainへ用意しておく
-    private(set) var userId: String
+    /// アプリ起動と同時にKeychainへ用意しておく。デバッグ時の即時更新に備えてPublishedで公開する
+    @Published private(set) var userId: String
 
     private let keychain: KeychainStorage
     private let keychainBalanceKey = "azuki.credit.balance"
@@ -83,6 +83,19 @@ final class CreditStore: ObservableObject {
         persist()
     }
 
+    #if DEBUG
+    /// Keychainに保存されたユーザーIDとクレジット残高を削除して初期状態に戻す（デバッグ専用）
+    func deleteUserIdForDebug() {
+        // ここでは再発行せずに純粋な初期状態へ戻す
+        AzukiUserIdentifier.delete(keychain: keychain)
+        // クレジットも同時にクリアし、Keychainから削除してからメモリ上の値を0にそろえる
+        keychain.deleteItem(forKey: keychainBalanceKey)
+        credits = 0
+        // Publishedを通じてUIへ即座に反映させるため空文字を反映
+        userId = ""
+    }
+    #endif
+
     private func persist() {
         // Keychainに書き込み
         keychain.saveInt(credits, forKey: keychainBalanceKey)
@@ -91,7 +104,7 @@ final class CreditStore: ObservableObject {
 
 /// azuki-apiがユーザーを一意に判定するためのIDを管理するヘルパ
 private enum AzukiUserIdentifier {
-    private static let storageKey = "azuki.api.userId"
+    fileprivate static let storageKey = "azuki.api.userId"
 
     /// Keychainに保存済みであればそれを返し、無ければ新たにUUIDを生成して保存する
     /// - Parameters:
@@ -110,5 +123,14 @@ private enum AzukiUserIdentifier {
         keychain.saveString(newId, forKey: storageKey)
         return newId
     }
+
+    #if DEBUG
+    /// Keychainに保存されたユーザーIDを削除する（デバッグ専用）
+    /// - Parameter keychain: 削除先となるKeychain
+    static func delete(keychain: KeychainStorage) {
+        // SecItemDeleteに任せ、存在しない場合でもエラーとしない
+        keychain.deleteItem(forKey: storageKey)
+    }
+    #endif
 
 }
