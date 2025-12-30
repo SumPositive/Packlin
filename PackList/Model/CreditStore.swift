@@ -84,10 +84,13 @@ final class CreditStore: ObservableObject {
     }
 
     #if DEBUG
-    /// Keychainに保存されたユーザーIDを削除して初期状態に戻す（デバッグ専用）
+    /// Keychainに保存されたユーザーIDとクレジット残高を削除して初期状態に戻す（デバッグ専用）
     func deleteUserIdForDebug() {
         // ここでは再発行せずに純粋な初期状態へ戻す
         AzukiUserIdentifier.delete(keychain: keychain)
+        // クレジットも同時にクリアし、Keychainから削除してからメモリ上の値を0にそろえる
+        keychain.deleteItem(forKey: keychainBalanceKey)
+        credits = 0
         // Publishedを通じてUIへ即座に反映させるため空文字を反映
         userId = ""
     }

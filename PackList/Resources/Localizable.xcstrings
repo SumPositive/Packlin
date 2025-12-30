@@ -1780,32 +1780,32 @@
         }
       }
     },
-    "SupportIDを削除する": {
+    "SupportIDとクレジットを削除する": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remove Support ID"
+            "value": "Reset Support ID & credits"
           }
         }
       }
     },
-    "SupportIDを削除しました": {
+    "SupportIDとクレジットを削除しました": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Support ID cleared."
+            "value": "Support ID & credits cleared."
           }
         }
       }
     },
-    "SupportIDは必要に応じて再発行されます": {
+    "SupportIDは必要に応じて再発行され、クレジットは0になります": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Support ID will refresh when needed"
+            "value": "Support ID will refresh, credits go to 0"
           }
         }
       }
