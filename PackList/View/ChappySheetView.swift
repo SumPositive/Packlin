@@ -567,10 +567,11 @@ struct ChappyView: View {
             return
         }
 
-        let userId = creditStore.userId
         // APIへは端末の言語コードをパラメータとして渡し、プロンプトの文面を汚さない
         let languageCode = deviceLanguageCode()
         Task {
+            // サーバー送信前にuserIdの欠落を必ず埋め、デバッグ操作で消えた場合もここで再発行して連携を成功させる
+            let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
             let cost = CHATGPT_GENERATION_CREDIT_COST
             var shouldRestoreCredits = false
