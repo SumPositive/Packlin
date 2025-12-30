@@ -768,7 +768,8 @@ struct ChappyView: View {
     @discardableResult
     private func recoverAccessTokenByVerifyingLatestTransactions() async -> Bool {
         // StoreKit履歴から直近の購入をサーバーへ再通知し、トークンの再払い出しを期待する
-        let userId = await MainActor.run { creditStore.userId }
+        // デバッグ操作などでuserIdが空になっていてもサーバー連携できるよう、ここで確実に発行・保存する
+        let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
         do {
             // クレジット残高照会APIは未認証でも受け付けるため、最初にここでトークンを再配布してもらう
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
@@ -849,7 +850,8 @@ struct ChappyView: View {
     /// サーバーに保存されている残高を取得してKeychainへ反映する
     /// - Parameter showAlertOnFailure: 失敗時にユーザーへアラート表示するかどうか
     private func refreshCreditStatusFromServer(showAlertOnFailure: Bool) async {
-        let userId = await MainActor.run { creditStore.userId }
+        // StoreKit検証とサーバー検証の両方で userId が必要になるため、欠落時はここで新規発行してKeychainへ反映する
+        let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
         do {
             // azuki-apiへ問い合わせて最新残高を受け取り、Keychainに保持している値と揃える
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
