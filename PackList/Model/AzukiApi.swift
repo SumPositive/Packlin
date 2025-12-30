@@ -640,6 +640,14 @@ final class AzukiApi {
         await tokenRecoveryHandlerBox.update(handler: nil)
     }
 
+    /// userId が再発行されたときに、古いユーザーに紐づく認証情報を捨てる
+    /// - Note: Keychain を手動削除したあとに新しい userId で購入すると、旧トークンが残っていると `401-forbiddenUser` に繋がるため、明示的にリセットする
+    func clearAuthenticationStateForUserReset() {
+        // 購入直前に userId が空から復旧した場合は、古いユーザー向けのトークンを持っていても再利用しない
+        accessTokenStore.clear()
+        refreshTokenStore.clear()
+    }
+
     /// 実際の通信と共通エラーハンドリングを一箇所へ集約
     private func send(request: URLRequest, allowRetryAfterRefresh: Bool = true) async throws -> Data {
         do {

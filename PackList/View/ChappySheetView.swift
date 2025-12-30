@@ -815,7 +815,15 @@ struct ChappyView: View {
     private func recoverAccessTokenByVerifyingLatestTransactions() async -> Bool {
         // StoreKit履歴から直近の購入をサーバーへ再通知し、トークンの再払い出しを期待する
         // デバッグ操作などでuserIdが空になっていてもサーバー連携できるよう、ここで確実に発行・保存する
-        let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
+        let userId = await MainActor.run {
+            let before = creditStore.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+            let regenerated = creditStore.regenerateUserIdIfNeeded()
+            if before.isEmpty {
+                // userId が空のままサーバーへ問い合わせると旧トークンが混ざるので、ここで認証情報を初期化する
+                AzukiApi.shared.clearAuthenticationStateForUserReset()
+            }
+            return regenerated
+        }
         do {
             // クレジット残高照会APIは未認証でも受け付けるため、最初にここでトークンを再配布してもらう
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
@@ -897,7 +905,15 @@ struct ChappyView: View {
     /// - Parameter showAlertOnFailure: 失敗時にユーザーへアラート表示するかどうか
     private func refreshCreditStatusFromServer(showAlertOnFailure: Bool) async {
         // StoreKit検証とサーバー検証の両方で userId が必要になるため、欠落時はここで新規発行してKeychainへ反映する
-        let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
+        let userId = await MainActor.run {
+            let before = creditStore.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+            let regenerated = creditStore.regenerateUserIdIfNeeded()
+            if before.isEmpty {
+                // Keychain から userId が消えていた場合は、旧ユーザーのトークンを持ち越さないように破棄する
+                AzukiApi.shared.clearAuthenticationStateForUserReset()
+            }
+            return regenerated
+        }
         do {
             // azuki-apiへ問い合わせて最新残高を受け取り、Keychainに保持している値と揃える
             let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
@@ -1232,7 +1248,13 @@ struct ChappyView: View {
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
         //    デバッグ操作などで一時的に空になっていても、ここで再発行してサーバー連携を確実に成功させる
         let userId = await MainActor.run {
-            creditStore.regenerateUserIdIfNeeded()
+            let before = creditStore.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+            let regenerated = creditStore.regenerateUserIdIfNeeded()
+            if before.isEmpty {
+                // userId が空だった場合は旧ユーザーのトークンが残っていると混同されるのでリセットする
+                AzukiApi.shared.clearAuthenticationStateForUserReset()
+            }
+            return regenerated
         }
         let transactionId = transactionIdentifier
         // StoreKitのトランザクションはJSON Dataとして取得し、Base64で安全に送信する
