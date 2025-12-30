@@ -1229,7 +1229,10 @@ struct ChappyView: View {
         //    検証に失敗したケースではfinishを呼ばずに中断できるようにする
 
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
-        let userId = await MainActor.run { creditStore.userId }
+        //    デバッグ操作などで一時的に空になっていても、ここで再発行してサーバー連携を確実に成功させる
+        let userId = await MainActor.run {
+            creditStore.regenerateUserIdIfNeeded()
+        }
         let transactionId = transactionIdentifier
         // StoreKitのトランザクションはJSON Dataとして取得し、Base64で安全に送信する
         let receiptData = transaction.jsonRepresentation
