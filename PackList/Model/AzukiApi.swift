@@ -39,7 +39,7 @@ enum AzukiAPIError: LocalizedError {
             case .server(let statusCode): // サーバーエラー
                 return errorMsg("statusCode-\(statusCode)")
             case .serverError(let message): // サーバーエラー
-                return errorMsg("serverError-\(message)")
+                return errorMsg("serverError") //-\(message)")
             case .decoding: // サーバーから受信したデータを解析できません
                 return errorMsg("decoding")
             case .encoding: // 送信データの準備に失敗しました
