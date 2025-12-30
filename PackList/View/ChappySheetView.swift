@@ -94,6 +94,8 @@ struct ChappyView: View {
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     /// 購入通知済みのトランザクションIDを永続化し、アプリ再起動後も重複アラートを抑止する
     @AppStorage(AppStorageKey.aiPurchaseNotifiedTransactionIds) private var notifiedTransactionIdsBackup: Data = Data()
+    /// 購入失敗を一度案内したトランザクションIDを保持し、同じ失敗を連打しないようにする
+    @AppStorage(AppStorageKey.aiPurchaseFailedTransactionIds) private var failedTransactionIdsBackup: Data = Data()
     /// 広告視聴で貯まる特典アイコン数（チャッピー送信用のスタンプ）
     @AppStorage(AppStorageKey.aiAdRewardStamps) private var adRewardStamps: Int = 0
     /// チャッピー送信に必要な特典数（リワード視聴3回でAI利用券1枚プレゼント）
@@ -117,6 +119,8 @@ struct ChappyView: View {
     @State private var transactionObservationTask: Task<Void, Never>?
     /// すでにユーザーへ通知済みのトランザクションIDを記録し、同じ購入結果のアラートを連続表示しないようにする
     @State private var notifiedTransactionIds: Set<String> = []
+    /// サーバー検証などで失敗案内済みのトランザクションIDを保持し、同じ警告が繰り返し出ないようにする
+    @State private var failedTransactionIds: Set<String> = []
     /// ビューが画面上に表示されているかどうかを保持し、通知とアラートの出し分けに利用する
     @State private var isViewVisible = true
     /// 広告特典バッジからAdMobの広告シートを開くためのフラグ（動画視聴導線を明示）
@@ -212,6 +216,43 @@ struct ChappyView: View {
     private func markTransactionAsNotified(_ identifier: String) {
         notifiedTransactionIds.insert(identifier)
         persistNotifiedTransactionIds()
+    }
+
+    /// すでに失敗アラートを出したトランザクションをメモリへ復元する
+    /// - Note: データ破損時は空として扱い、重複アラートだけを防ぐ役割に徹する
+    private func loadFailedTransactionIdsIfNeeded() {
+        // メモリに読み込んでいれば追加処理は不要
+        if failedTransactionIds.isEmpty == false {
+            return
+        }
+        do {
+            if failedTransactionIdsBackup.isEmpty {
+                return
+            }
+            let decoded = try JSONDecoder().decode(Set<String>.self, from: failedTransactionIdsBackup)
+            failedTransactionIds = decoded
+        } catch {
+            // 破損を握りつぶし、次回の保存でクリーンなJSONへ置き換える
+            failedTransactionIds = []
+        }
+    }
+
+    /// 失敗済みトランザクションIDを永続化し、再表示時にも重複アラートを抑止する
+    private func persistFailedTransactionIds() {
+        do {
+            let data = try JSONEncoder().encode(failedTransactionIds)
+            failedTransactionIdsBackup = data
+        } catch {
+            // 保存に失敗しても致命的でないため、ログのみ残す
+            print("failed to persist failedTransactionIds: \(error)")
+        }
+    }
+
+    /// 失敗案内済みのトランザクションとして記録する
+    /// - Parameter identifier: StoreKitトランザクションID
+    private func markTransactionAsFailed(_ identifier: String) {
+        failedTransactionIds.insert(identifier)
+        persistFailedTransactionIds()
     }
 
     /// 親ビューからフォーカス制御のバインディングを受け取るためのイニシャライザ
@@ -421,6 +462,8 @@ struct ChappyView: View {
             inlineGenerationFeedback = nil
             // アプリ再起動後でも重複アラートを抑止できるよう、保存しておいたトランザクションIDを復元する
             loadNotifiedTransactionIdsIfNeeded()
+            // 購入失敗の重複通知を防ぐため、過去に案内済みのIDも復元する
+            loadFailedTransactionIdsIfNeeded()
         }
         .task {
             // AzukiApiへトークン復旧ロジックを注入しておくことで、Keychainが空でも即座に復旧できるようにする
@@ -450,6 +493,8 @@ struct ChappyView: View {
             }
             // メモリ上の通知済みリストを保存し、アプリ再起動後も同じ購入でアラートが重複しないようにする
             persistNotifiedTransactionIds()
+            // 失敗案内済みリストも保存しておき、復旧時に不要なアラートが続かないようにする
+            persistFailedTransactionIds()
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -1175,6 +1220,11 @@ struct ChappyView: View {
             await MainActor.run {
                 // 4. サーバーが返した残高でKeychainを上書きし、UIへ成功メッセージを表示
                 creditStore.overwrite(credits: verification.balance)
+                // 以前に同じトランザクションで失敗案内していた場合はクリアし、成功へ置き換える
+                if failedTransactionIds.contains(transactionIdentifier) {
+                    failedTransactionIds.remove(transactionIdentifier)
+                    persistFailedTransactionIds()
+                }
                 if notifiedTransactionIds.contains(transactionIdentifier) == false {
                     // ユーザーへはまだ案内していない購入なので、このタイミングでアラートを掲示する
                     markTransactionAsNotified(transactionIdentifier)
@@ -1193,6 +1243,11 @@ struct ChappyView: View {
             if case .duplicateTransaction = apiError {
                 await refreshCreditStatusFromServer(showAlertOnFailure: false)
                 await MainActor.run {
+                    // duplicateは成功として扱えるので失敗履歴をクリアしておく
+                    if failedTransactionIds.contains(transactionIdentifier) {
+                        failedTransactionIds.remove(transactionIdentifier)
+                        persistFailedTransactionIds()
+                    }
                     if notifiedTransactionIds.contains(transactionIdentifier) == false {
                         // サーバー側で既に処理済みだった購入についても、一度だけ状況を知らせる
                         markTransactionAsNotified(transactionIdentifier)
@@ -1205,14 +1260,22 @@ struct ChappyView: View {
             }
             await MainActor.run {
                 // サーバー検証で失敗した場合はトランザクションを完了させず、ユーザーにも購入を中止した旨を案内する
-                let detailed = apiError.errorDescription ?? "verifyPurchase.error"
-                alertState = .purchaseFailure(message: fallbackMessage + "\n\n" + detailed)
+                let alreadyNotified = failedTransactionIds.contains(transactionIdentifier)
+                markTransactionAsFailed(transactionIdentifier)
+                if alreadyNotified == false {
+                    let detailed = apiError.errorDescription ?? "verifyPurchase.error"
+                    alertState = .purchaseFailure(message: fallbackMessage + "\n\n" + detailed)
+                }
             }
             return
         } catch {
             await MainActor.run {
                 // 不明なエラーでもトランザクションを消化しないことで、後から再処理できるようにする
-                alertState = .purchaseFailure(message: fallbackMessage)
+                let alreadyNotified = failedTransactionIds.contains(transactionIdentifier)
+                markTransactionAsFailed(transactionIdentifier)
+                if alreadyNotified == false {
+                    alertState = .purchaseFailure(message: fallbackMessage)
+                }
             }
             return
         }

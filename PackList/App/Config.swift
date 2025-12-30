@@ -156,6 +156,8 @@ enum AppStorageKey {
     static let aiRequirementTextEdit = "aiCreate.requirementText.edit"
     // 購入通知済みのトランザクションIDを永続化するためのキー（重複アラート抑止用）
     static let aiPurchaseNotifiedTransactionIds = "aiCreate.notifiedTransactions"
+    // 購入失敗のアラートを重複表示しないためのキー（失敗ごとに一度だけ案内する）
+    static let aiPurchaseFailedTransactionIds = "aiCreate.failedTransactions"
     // 広告視聴で付与される特典アイコンの個数を保持する
     static let aiAdRewardStamps = "aiCreate.adRewardStamps"
 }
