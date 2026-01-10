@@ -352,7 +352,7 @@ struct ChappyView: View {
                                 .progressViewStyle(.circular)
                         }
                     }
-                    .padding(.vertical, -2)
+                    .padding(.vertical, 4)
                     .padding(.horizontal, 4)
                 }
                 // 非活性でも文字色をアクセントカラーで保ち、視認性を確保する
@@ -1557,16 +1557,16 @@ private struct RewardAccentButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             // 文字色は常にアクセントカラーで統一する
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(isEnabled ? Color.white : Color.accentColor)
             // 角丸背景でボタンのタップ領域を明確にする
             .background(
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
                     // 無効時は背景を薄くして、押せない状態を示す
-                    .fill(Color.accentColor.opacity(isEnabled ? 0.45 : 0.2))
+                    .fill(Color.accentColor.opacity(isEnabled ? 0.5 : 0.2))
             )
             // 押下中はわずかに透明にして反応を伝える
             .opacity(configuration.isPressed ? 0.92 : 1)
             // 背景と同じ角丸をヒット領域にも適用する
-            .contentShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
