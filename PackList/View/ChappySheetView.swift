@@ -110,6 +110,8 @@ struct ChappyView: View {
     @State private var pendingRewardRequirement: String?
     /// 生成処理の結果を画面内に表示して利用者へ知らせるためのフィードバック
     @State private var inlineGenerationFeedback: GenerationFeedback?
+    /// 要望未入力アラートを閉じたら入力欄へフォーカスを戻すためのフラグ
+    @State private var shouldFocusRequirementAfterAlert = false
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
     @State private var processingProductId: String?
     /// StoreKit 2 で取得した商品情報をキャッシュしておき、複数回の購入ボタンタップで再利用する
@@ -168,17 +170,6 @@ struct ChappyView: View {
     /// クレジット枚数だけで送信できるかどうか
     private var hasTicketForGeneration: Bool {
         CHATGPT_GENERATION_CREDIT_COST <= creditStore.credits
-    }
-
-    /// 入力とローディング状態、手持ちの特典から送信可否を算出する
-    private var canSendRequest: Bool {
-        if isRequirementEmpty {
-            return false
-        }
-        if isGenerating {
-            return false
-        }
-        return hasTicketForGeneration
     }
 
     /// 端末に保存済みの通知済みトランザクションIDをStateへ復元する
@@ -295,6 +286,20 @@ struct ChappyView: View {
                     Spacer()
                     // 送信
                     Button {
+                        // 送信前に入力チェックを行い、未入力ならアラートで案内する
+                        if isRequirementEmpty {
+                            presentRequirementMissingAlert()
+                            return
+                        }
+                        // 生成中の連打は受け付けず、既存の処理に任せる
+                        if isGenerating {
+                            return
+                        }
+                        // AI利用券が足りない場合は購入案内を出す
+                        if hasTicketForGeneration == false {
+                            presentCreditRequiredAlert()
+                            return
+                        }
                         // 送信ボタンを押した瞬間にフォーカスを解除し、キーボードを閉じる
                         // TextEditorのバインディングフォーカスに直接アクセスして明示的に外す
                         requirementFocus.wrappedValue = false
@@ -321,7 +326,6 @@ struct ChappyView: View {
                         .padding(.vertical, -2)
                         .padding(.horizontal, 4)
                     }
-                    .disabled(canSendRequest == false)
                     .buttonStyle(.borderedProminent)
                     .tint(.accentColor)
                     .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -330,6 +334,15 @@ struct ChappyView: View {
 
                 // リワード広告経由の無料送信ボタン
                 Button {
+                    // 広告送信も入力チェックを行い、未入力ならアラートで案内する
+                    if isRequirementEmpty {
+                        presentRequirementMissingAlert()
+                        return
+                    }
+                    // 生成中は新しい広告導線を開かない
+                    if isGenerating {
+                        return
+                    }
                     // 送信前に広告視聴導線を開く
                     startRewardedGenerationFlow()
                 } label: {
@@ -355,9 +368,9 @@ struct ChappyView: View {
                     .padding(.vertical, 4)
                     .padding(.horizontal, 4)
                 }
-                // 非活性でも文字色をアクセントカラーで保ち、視認性を確保する
-                .buttonStyle(RewardAccentButtonStyle())
-                .disabled(isRequirementEmpty || isGenerating)
+                // 通常ボタンとして表示し、常にタップ可能にする
+                .buttonStyle(.bordered)
+                .tint(.accentColor)
                 .padding(.horizontal, 10)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
@@ -507,7 +520,14 @@ struct ChappyView: View {
             Alert(
                 title: Text(alert.title),
                 message: Text(alert.message),
-                dismissButton: .default(Text("OK"))
+                dismissButton: .default(Text("OK"), action: {
+                    // 要望未入力アラートなら、閉じた直後に入力欄へフォーカスを戻す
+                    if shouldFocusRequirementAfterAlert {
+                        requirementFocus.wrappedValue = true
+                    }
+                    // 次回以降に影響しないようフラグをリセットする
+                    shouldFocusRequirementAfterAlert = false
+                })
             )
         }
     }
@@ -522,10 +542,11 @@ struct ChappyView: View {
 
     /// 広告視聴から始めるお試し送信の導線を開く
     private func startRewardedGenerationFlow() {
-        // 送信前に入力済みかどうか確認し、未入力なら既存のエラーメッセージを再利用する
+        // 送信前に入力済みかどうか確認し、未入力ならアラートで案内する
         let trimmedRequirement = requirementText.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            // 未入力時はアラートを出して入力欄へ戻す
+            presentRequirementMissingAlert()
             return
         }
         // キーボードを閉じ、広告シートを提示する
@@ -679,6 +700,20 @@ struct ChappyView: View {
                                                     String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください"))
             }
         }
+    }
+
+    /// 要望未入力のアラートを表示し、閉じたら入力欄へフォーカスを戻す
+    private func presentRequirementMissingAlert() {
+        // すでに別のアラートが出ている場合でも上書きして案内する
+        alertState = .requirementMissing
+        shouldFocusRequirementAfterAlert = true
+    }
+
+    /// AI利用券が無いときのアラートを表示する
+    private func presentCreditRequiredAlert() {
+        // 要望未入力アラートとは別扱いなのでフォーカス戻しは無効化する
+        shouldFocusRequirementAfterAlert = false
+        alertState = .creditRequired
     }
 
     /// 送信直前にサーバーへ問い合わせ、残高と特典フラグ、トークン配布状況を同期する
@@ -1463,6 +1498,10 @@ struct ChappyView: View {
         case purchaseFailure(message: String)
         /// 残高が残っているため購入できない場合
         case purchaseBlockedByRemaining
+        /// 要望が未入力のため送信できない場合
+        case requirementMissing
+        /// AI利用券が不足して送信できない場合
+        case creditRequired
 
         var id: String {
             switch self {
@@ -1474,6 +1513,10 @@ struct ChappyView: View {
                 return "ai-purchaseFailure-\(message)"
             case .purchaseBlockedByRemaining:
                 return "ai-purchaseBlockedByRemaining"
+            case .requirementMissing:
+                return "ai-requirementMissing"
+            case .creditRequired:
+                return "ai-creditRequired"
             }
         }
 
@@ -1488,6 +1531,10 @@ struct ChappyView: View {
                     return String(localized: "購入状況")
                 case .purchaseBlockedByRemaining:
                     return String(localized: "購入状況")
+                case .requirementMissing:
+                    return String(localized: "送信できません")
+                case .creditRequired:
+                    return String(localized: "送信できません")
             }
         }
 
@@ -1501,6 +1548,10 @@ struct ChappyView: View {
                     return message
                 case .purchaseBlockedByRemaining:
                     return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
+                case .requirementMissing:
+                    return String(localized: "先に要望を入力してください")
+                case .creditRequired:
+                    return String(localized: "AI利用券を購入してください")
             }
         }
     }
@@ -1543,30 +1594,5 @@ extension ChappyView {
         // MainActor上のCreditStoreから現在の残高を安全に読み取り、必要数と比較する
         let currentCredits = await MainActor.run { creditStore.credits }
         return cost <= currentCredits
-    }
-}
-
-// MARK: - 広告送信ボタンの見た目調整
-
-/// リワード広告送信ボタン専用のスタイル
-/// 非活性でも文字色はアクセントカラーのまま維持し、視認性を落とさない
-private struct RewardAccentButtonStyle: ButtonStyle {
-    /// ボタンの有効状態を受け取り、背景の透明度に反映する
-    @Environment(\.isEnabled) private var isEnabled
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            // 文字色は常にアクセントカラーで統一する
-            .foregroundStyle(isEnabled ? Color.white : Color.accentColor)
-            // 角丸背景でボタンのタップ領域を明確にする
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    // 無効時は背景を薄くして、押せない状態を示す
-                    .fill(Color.accentColor.opacity(isEnabled ? 0.5 : 0.2))
-            )
-            // 押下中はわずかに透明にして反応を伝える
-            .opacity(configuration.isPressed ? 0.92 : 1)
-            // 背景と同じ角丸をヒット領域にも適用する
-            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
