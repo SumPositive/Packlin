@@ -355,10 +355,9 @@ struct ChappyView: View {
                     .padding(.vertical, -2)
                     .padding(.horizontal, 4)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.accentColor.opacity(0.45))
+                // 非活性でも文字色をアクセントカラーで保ち、視認性を確保する
+                .buttonStyle(RewardAccentButtonStyle())
                 .disabled(isRequirementEmpty || isGenerating)
-                .contentShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 .padding(.horizontal, 10)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
@@ -1544,5 +1543,30 @@ extension ChappyView {
         // MainActor上のCreditStoreから現在の残高を安全に読み取り、必要数と比較する
         let currentCredits = await MainActor.run { creditStore.credits }
         return cost <= currentCredits
+    }
+}
+
+// MARK: - 広告送信ボタンの見た目調整
+
+/// リワード広告送信ボタン専用のスタイル
+/// 非活性でも文字色はアクセントカラーのまま維持し、視認性を落とさない
+private struct RewardAccentButtonStyle: ButtonStyle {
+    /// ボタンの有効状態を受け取り、背景の透明度に反映する
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            // 文字色は常にアクセントカラーで統一する
+            .foregroundStyle(Color.accentColor)
+            // 角丸背景でボタンのタップ領域を明確にする
+            .background(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    // 無効時は背景を薄くして、押せない状態を示す
+                    .fill(Color.accentColor.opacity(isEnabled ? 0.45 : 0.2))
+            )
+            // 押下中はわずかに透明にして反応を伝える
+            .opacity(configuration.isPressed ? 0.92 : 1)
+            // 背景と同じ角丸をヒット領域にも適用する
+            .contentShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
     }
 }
