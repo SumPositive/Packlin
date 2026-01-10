@@ -286,11 +286,6 @@ struct ChappyView: View {
                     Spacer()
                     // 送信
                     Button {
-                        // 送信前に入力チェックを行い、未入力ならアラートで案内する
-                        if isRequirementEmpty {
-                            presentRequirementMissingAlert()
-                            return
-                        }
                         // 生成中の連打は受け付けず、既存の処理に任せる
                         if isGenerating {
                             return
@@ -298,6 +293,11 @@ struct ChappyView: View {
                         // AI利用券が足りない場合は購入案内を出す
                         if hasTicketForGeneration == false {
                             presentCreditRequiredAlert()
+                            return
+                        }
+                        // 送信前に入力チェックを行い、未入力ならアラートで案内する
+                        if isRequirementEmpty {
+                            presentRequirementMissingAlert()
                             return
                         }
                         // 送信ボタンを押した瞬間にフォーカスを解除し、キーボードを閉じる
@@ -328,9 +328,9 @@ struct ChappyView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.accentColor)
-                    .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                .padding(.horizontal, 8)
+                //.padding(.horizontal, 8)
 
                 // リワード広告経由の無料送信ボタン
                 Button {
@@ -365,13 +365,14 @@ struct ChappyView: View {
                                 .progressViewStyle(.circular)
                         }
                     }
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 4)
+                    .padding(.vertical, -2)
+                    .padding(.horizontal, 0)
                 }
                 // 通常ボタンとして表示し、常にタップ可能にする
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
                 .tint(.accentColor)
-                .padding(.horizontal, 10)
+                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                //.padding(.horizontal, 8)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {
@@ -1532,9 +1533,9 @@ struct ChappyView: View {
                 case .purchaseBlockedByRemaining:
                     return String(localized: "購入状況")
                 case .requirementMissing:
-                    return String(localized: "送信できません")
+                    return String(localized: "先に要望を入力してください")
                 case .creditRequired:
-                    return String(localized: "送信できません")
+                    return String(localized: "AI利用券を購入してください")
             }
         }
 
@@ -1549,9 +1550,9 @@ struct ChappyView: View {
                 case .purchaseBlockedByRemaining:
                     return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
                 case .requirementMissing:
-                    return String(localized: "先に要望を入力してください")
+                    return "" //String(localized: "先に要望を入力してください")
                 case .creditRequired:
-                    return String(localized: "AI利用券を購入してください")
+                    return "" //String(localized: "AI利用券を購入してください")
             }
         }
     }

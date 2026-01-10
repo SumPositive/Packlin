@@ -184,6 +184,16 @@
         }
       }
     },
+    "AI利用券を購入してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please buy an AI ticket"
+          }
+        }
+      }
+    },
     "AI利用券残り %lld 枚" : {
       "localizations" : {
         "en" : {
@@ -858,6 +868,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enough"
+          }
+        }
+      }
+    },
+    "先に要望を入力してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type your request first"
           }
         }
       }
@@ -1614,42 +1634,12 @@
         }
       }
     },
-    "先に要望を入力してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type your request first"
-          }
-        }
-      }
-    },
-    "送信できません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Can't send"
-          }
-        }
-      }
-    },
     "送信" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send"
-          }
-        }
-      }
-    },
-    "AI利用券を購入してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please buy an AI ticket"
           }
         }
       }
