@@ -370,7 +370,7 @@ struct ChappyView: View {
                 }
                 // 通常ボタンとして表示し、常にタップ可能にする
                 .buttonStyle(.borderedProminent)
-                .tint(.accentColor)
+                .tint(.brown)
                 .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 //.padding(.horizontal, 8)
 
