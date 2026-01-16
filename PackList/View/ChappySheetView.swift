@@ -110,6 +110,10 @@ struct ChappyView: View {
     @State private var pendingRewardRequirement: String?
     /// 生成処理の結果を画面内に表示して利用者へ知らせるためのフィードバック
     @State private var inlineGenerationFeedback: GenerationFeedback?
+    /// トーストで表示する送信結果（短時間で消えるため別Stateで保持）
+    @State private var toastFeedback: GenerationFeedback?
+    /// トーストの自動クローズを管理するタスク
+    @State private var toastDismissTask: Task<Void, Never>?
     /// 要望未入力アラートを閉じたら入力欄へフォーカスを戻すためのフラグ
     @State private var shouldFocusRequirementAfterAlert = false
     /// アプリ内でクレジット購入を行う際の進行中商品ID（nilなら待機中）
@@ -127,6 +131,8 @@ struct ChappyView: View {
     @State private var isViewVisible = true
     /// 広告特典バッジからAdMobの広告シートを開くためのフラグ（動画視聴導線を明示）
     @State private var isPresentingAdRewardSheet = false
+    /// トースト表示時間（短すぎないように固定しておく）
+    private let toastDurationSeconds: UInt64 = 3
 
     /// パック名が空欄なら作成モード、埋まっていれば修正モードとして扱う
     private var isCreateMode: Bool {
@@ -500,6 +506,10 @@ struct ChappyView: View {
             isViewVisible = false
             // 画面を閉じるときに表示中のメッセージも消去して、再表示時に新鮮な状態で始められるようにする
             inlineGenerationFeedback = nil
+            // トーストが残らないように、表示と自動消去タスクをリセットする
+            toastFeedback = nil
+            toastDismissTask?.cancel()
+            toastDismissTask = nil
             // ビューが消えた後は復旧ハンドラを解除し、不要な保持を避ける
             Task {
                 await AzukiApi.shared.clearTokenRecoveryHandler()
@@ -517,6 +527,13 @@ struct ChappyView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.2), lineWidth: 0.5)
         )
+        .overlay(alignment: .top) {
+            // 送信結果をトーストで表示し、ユーザーに確実に届くようにする
+            if let feedback = toastFeedback {
+                toastView(for: feedback)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
         .alert(item: $alertState) { alert in
             Alert(
                 title: Text(alert.title),
@@ -753,7 +770,10 @@ struct ChappyView: View {
         if viewVisible {
             await MainActor.run {
                 let message = String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください")
-                inlineGenerationFeedback = .success(message: message)
+                let feedback = GenerationFeedback.success(message: message)
+                inlineGenerationFeedback = feedback
+                // 画面内表示とあわせてトーストでも結果を案内する
+                showToast(feedback)
             }
             return
         }
@@ -766,7 +786,10 @@ struct ChappyView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .failure(message: message)
+                let feedback = GenerationFeedback.failure(message: message)
+                inlineGenerationFeedback = feedback
+                // 画面内表示だけだと見逃しやすいのでトーストも重ねる
+                showToast(feedback)
             }
             return
         }
@@ -778,7 +801,10 @@ struct ChappyView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .failure(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
+                let feedback = GenerationFeedback.failure(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
+                inlineGenerationFeedback = feedback
+                // 送信できなかった事実を明確に伝えるためトーストを併用する
+                showToast(feedback)
             }
             return
         }
@@ -946,7 +972,10 @@ struct ChappyView: View {
                 let message = apiError.errorDescription
                 ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
                 await MainActor.run {
-                    inlineGenerationFeedback = .failure(message: message)
+                    let feedback = GenerationFeedback.failure(message: message)
+                    inlineGenerationFeedback = feedback
+                    // 送信直前のエラーなのでトーストでも知らせる
+                    showToast(feedback)
                 }
             }
             #if DEBUG
@@ -955,7 +984,10 @@ struct ChappyView: View {
         } catch {
             if showAlertOnFailure {
                 await MainActor.run {
-                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用が可能か確認できません。通信環境をご確認ください"))
+                    let feedback = GenerationFeedback.failure(message: String(localized: "AI利用が可能か確認できません。通信環境をご確認ください"))
+                    inlineGenerationFeedback = feedback
+                    // 通信不調は見逃されやすいのでトーストも重ねる
+                    showToast(feedback)
                 }
             }
             #if DEBUG
@@ -1485,6 +1517,57 @@ struct ChappyView: View {
                 return "checkmark.circle.fill"
             case .failure:
                 return "exclamationmark.triangle.fill"
+            }
+        }
+    }
+
+    /// トースト表示の内容を組み立てる
+    private func toastView(for feedback: GenerationFeedback) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: feedback.iconName)
+                .foregroundStyle(feedback.tintColor)
+                .accessibilityHidden(true)
+            Text(feedback.message)
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(.primary)
+                .lineLimit(3)
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(uiColor: .systemBackground))
+                .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(feedback.tintColor.opacity(0.4), lineWidth: 1)
+        )
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        // 重要な結果が読めるように幅を制御する
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    /// トーストを表示し、一定時間で自動的に閉じる
+    private func showToast(_ feedback: GenerationFeedback) {
+        // すでに表示中のトーストがある場合は即座に置き換える
+        toastDismissTask?.cancel()
+        toastDismissTask = nil
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+            toastFeedback = feedback
+        }
+        toastDismissTask = Task {
+            // 表示時間を固定で確保し、短すぎないようにする
+            let duration = toastDurationSeconds * 1_000_000_000
+            try? await Task.sleep(nanoseconds: duration)
+            if Task.isCancelled {
+                return
+            }
+            await MainActor.run {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    toastFeedback = nil
+                }
             }
         }
     }
