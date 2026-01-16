@@ -207,7 +207,7 @@ struct SettingView: View {
             return "Version \(versionText)"
         }
         // ビルド番号付きバージョンとサポートIDの両方を表示する
-        return "Version \(versionText)  Support \(supportId)"
+        return "Version \(versionText).\(supportId)"
     }
 
     private var versionText: String? {
