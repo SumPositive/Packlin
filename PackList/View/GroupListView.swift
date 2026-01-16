@@ -309,6 +309,7 @@ struct GroupListView: View {
                         packName: pack.name.placeholder("新しいパック"),
                         groupName: nil,
                         itemName: nil,
+                        rootAction: { navigationStore.path = NavigationPath() },
                         packAction: { navigationStore.path = NavigationPath() },
                         groupAction: nil,
                         itemAction: nil

@@ -13,6 +13,7 @@ struct BreadcrumbView: View {
     let groupName: String?
     let itemName: String?
     // 各階層をタップしたときに戻るためのアクション（不要ならnilで非活性表示）
+    let rootAction: (() -> Void)?
     let packAction: (() -> Void)?
     let groupAction: (() -> Void)?
     let itemAction: (() -> Void)?
@@ -20,6 +21,11 @@ struct BreadcrumbView: View {
     // 各パンくずの最大幅を画面の1/3以内にする
     private var maxNameWidth: CGFloat {
         (UIScreen.main.bounds.width - 36.0*2) / 3.0
+    }
+
+    // アプリ名はローカライズ文字列から取得し、常にパンくずの先頭に置く
+    private var appTitle: String {
+        String(localized: "app.title")
     }
 
     // footnoteフォントでの実測幅を取得し、最大幅を超えないようにする
@@ -33,7 +39,13 @@ struct BreadcrumbView: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            // 先頭のパック名を左寄せ・省略付きで表示し、タップでパック一覧へ戻れるようにする
+            // アプリ名を最初のパンくずとして表示し、トップ画面へ戻れるようにする
+            crumb(for: appTitle, action: rootAction)
+
+            // アプリ名とパック名の間にも区切りを入れて視覚的に階層を表す
+            separator
+
+            // パック名を左寄せ・省略付きで表示し、タップでパック一覧へ戻れるようにする
             crumb(for: packName, action: packAction)
 
             if let groupName = groupName {
@@ -100,9 +112,9 @@ struct BreadcrumbView: View {
 
 #Preview {
     VStack(spacing: 16) {
-        BreadcrumbView(packName: "とても長いパック名をテストするためのダミー文字列です", groupName: nil, itemName: nil, packAction: nil, groupAction: nil, itemAction: nil)
-        BreadcrumbView(packName: "短いパック", groupName: "とても長いグループ名をテスト", itemName: nil, packAction: nil, groupAction: nil, itemAction: nil)
-        BreadcrumbView(packName: "短いパック", groupName: "短いグループ", itemName: "とても長いアイテム名をテスト", packAction: nil, groupAction: nil, itemAction: nil)
+        BreadcrumbView(packName: "とても長いパック名をテストするためのダミー文字列です", groupName: nil, itemName: nil, rootAction: nil, packAction: nil, groupAction: nil, itemAction: nil)
+        BreadcrumbView(packName: "短いパック", groupName: "とても長いグループ名をテスト", itemName: nil, rootAction: nil, packAction: nil, groupAction: nil, itemAction: nil)
+        BreadcrumbView(packName: "短いパック", groupName: "短いグループ", itemName: "とても長いアイテム名をテスト", rootAction: nil, packAction: nil, groupAction: nil, itemAction: nil)
     }
     .padding()
 }

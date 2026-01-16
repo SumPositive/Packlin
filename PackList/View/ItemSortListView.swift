@@ -283,6 +283,7 @@ struct ItemSortListView: View {
                         packName: pack.name.placeholder("新しいパック"),
                         groupName: nil,
                         itemName: sortOption.title,
+                        rootAction: { navigationStore.path = NavigationPath() },
                         packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
                         groupAction: nil,
                         itemAction: nil

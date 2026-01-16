@@ -420,6 +420,7 @@ struct ItemEditView: View {
                     packName: pack.name.placeholder("新しいパック"),
                     groupName: group.name.placeholder("新しいグループ"),
                     itemName: item.name.placeholder("新しいアイテム"),
+                    rootAction: { navigationStore.path = NavigationPath() },
                     packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
                     groupAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id), AppDestination.itemList(packID: pack.id, groupID: group.id)]) },
                     itemAction: nil
