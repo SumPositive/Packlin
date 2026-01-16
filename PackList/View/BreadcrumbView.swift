@@ -40,7 +40,8 @@ struct BreadcrumbView: View {
     var body: some View {
         HStack(spacing: 2) {
             // アプリ名を最初のパンくずとして表示し、トップ画面へ戻れるようにする
-            crumb(for: appTitle, action: rootAction)
+            // ただし省略時は先頭が区切りから始まっても良いので、アプリ名は詰めやすくする
+            crumb(for: appTitle, action: rootAction, allowTightCompression: true)
 
             // アプリ名とパック名の間にも区切りを入れて視覚的に階層を表す
             separator
@@ -70,22 +71,32 @@ struct BreadcrumbView: View {
 
     // 1要素分のテキストを最大幅付きで描画し、末尾に自動省略記号を付ける
     @ViewBuilder
-    private func breadcrumbText(for name: String) -> some View {
+    private func breadcrumbText(for name: String, allowTightCompression: Bool = false) -> some View {
+        // 先頭要素だけは詰めやすくし、区切り記号が消えないようにする
+        let minWidth: CGFloat = allowTightCompression ? 0 : nameWidth(for: name)
+        let maxWidth: CGFloat = nameWidth(for: name)
         Text(name)
             // 視認性を保ちつつもヘッダー内の高さを抑えるためcaptionサイズを採用
             .font(.footnote)
             .lineLimit(1)
             .truncationMode(.tail)
             // 左寄せで幅は文字列ぶんの最小限にしつつ、最大幅を超えないように制限
-            .frame(width: nameWidth(for: name), alignment: .leading)
+            // 先頭要素は詰められる余地を残す
+            .frame(minWidth: minWidth, maxWidth: maxWidth, alignment: .leading)
+            // 先頭要素を優先的に縮めて、区切り記号を残す
+            .layoutPriority(allowTightCompression ? -1 : 0)
     }
 
     // タップ可能なパンくず要素を生成する
     @ViewBuilder
-    private func crumb(for name: String, action: (() -> Void)?) -> some View {
+    private func crumb(
+        for name: String,
+        action: (() -> Void)?,
+        allowTightCompression: Bool = false
+    ) -> some View {
         if let action = action {
             Button(action: action) {
-                breadcrumbText(for: name)
+                breadcrumbText(for: name, allowTightCompression: allowTightCompression)
             }
             // ヘッダー内ではリンク風の見た目を避け、通常テキストのまま押しやすくする
             .buttonStyle(.plain)
@@ -95,18 +106,22 @@ struct BreadcrumbView: View {
             //        .fill(Color.secondary.opacity(0.2))
             //)
         } else {
-            breadcrumbText(for: name)
+            breadcrumbText(for: name, allowTightCompression: allowTightCompression)
         }
     }
 
     // パンくずの区切り記号
     private var separator: some View {
-        Text("＞")
+        Text(">")
             // 文字サイズを合わせ、余白を最小限にして密度を高める
             .font(.footnote)
             .foregroundStyle(.secondary)
             // 左右の余白を同じ幅にそろえて、左右で均等な間隔にする
             .padding(.horizontal, 1)
+            // 区切り記号は極力縮めず、消えないように固定する
+            .fixedSize(horizontal: true, vertical: false)
+            // 区切り記号の表示を優先して確実に見せる
+            .layoutPriority(1)
     }
 }
 
