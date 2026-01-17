@@ -71,6 +71,12 @@ enum GAEvent {
     case purchase(productId: String, price: Double, currency: String)
     case credit_balance(remaining: Int)
     case error_occured(domain: String, code: Int, message: String?)
+    /// API呼び出しの成否を集計するためのイベント
+    case api_result(name: String, method: String, isSuccess: Bool, statusCode: Int?, errorDomain: String?, errorCode: String?, message: String?, retryCount: Int)
+    /// チャッピー送信の結果を観測するイベント
+    case chappy_send_result(source: String, isSuccess: Bool, requestTokens: Int?, responseTokens: Int?, errorDomain: String?, errorCode: String?, message: String?)
+    /// AI利用券の購入検証の状況を観測するイベント
+    case purchase_verify_result(status: String, isSuccess: Bool, productId: String, transactionId: String, balance: Int?, duplicate: Bool?, errorDomain: String?, errorCode: String?, message: String?)
     case screen_view(name: String) // SwiftUI手動トラッキング用
 }
 
@@ -116,6 +122,45 @@ struct GALogger {
                     "error_code": code,
                     "error_message": message ?? ""
                 ])
+
+            case let .api_result(name, method, isSuccess, statusCode, errorDomain, errorCode, message, retryCount):
+                // API単位の成功・失敗を集計する
+                Analytics.logEvent("api_result", parameters: [
+                    "api_name": name,
+                    "method": method,
+                    "success": isSuccess,
+                    "status_code": statusCode ?? -1,
+                    "error_domain": errorDomain ?? "",
+                    "error_code": errorCode ?? "",
+                    "error_message": message ?? "",
+                    "retry_count": retryCount
+                ])
+
+            case let .chappy_send_result(source, isSuccess, requestTokens, responseTokens, errorDomain, errorCode, message):
+                // チャッピー送信が広告視聴か購入券かを含めて記録する
+                Analytics.logEvent("chappy_send_result", parameters: [
+                    "source": source,
+                    "success": isSuccess,
+                    "request_tokens": requestTokens ?? -1,
+                    "response_tokens": responseTokens ?? -1,
+                    "error_domain": errorDomain ?? "",
+                    "error_code": errorCode ?? "",
+                    "error_message": message ?? ""
+                ])
+
+            case let .purchase_verify_result(status, isSuccess, productId, transactionId, balance, duplicate, errorDomain, errorCode, message):
+                // 購入検証の状態と成功/失敗を記録する
+                Analytics.logEvent("purchase_verify_result", parameters: [
+                    "status": status,
+                    "success": isSuccess,
+                    "product_id": productId,
+                    "transaction_id": transactionId,
+                    "balance": balance ?? -1,
+                    "duplicate": duplicate ?? false,
+                    "error_domain": errorDomain ?? "",
+                    "error_code": errorCode ?? "",
+                    "error_message": message ?? ""
+                ])
                 
             case let .screen_view(name):
                 // GA4は自動スクリーン計測もあるが、SwiftUIは明示送信が安定
@@ -125,4 +170,3 @@ struct GALogger {
         }
     }
 }
-

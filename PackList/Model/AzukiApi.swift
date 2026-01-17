@@ -173,10 +173,37 @@ final class AzukiApi {
                                           basePack: basePack,
                                           isTrial: isTrial,
                                           languageCode: languageCode)
-        let data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
+        let requestTokens = tokenLength(for: requirement)
+        let data: Data
         do {
-            return try decoder.decode(PackJsonDTO.self, from: data)
+            data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
         } catch {
+            // チャッピー送信の失敗を記録する（送信元も含める）
+            logChappySendFailure(source: isTrial ? "ad_reward" : "credit",
+                                 requestTokens: requestTokens,
+                                 error: error)
+            throw error
+        }
+        do {
+            let response = try decoder.decode(PackJsonDTO.self, from: data)
+            // 成功時は入出力の文字数を記録して、送信元とあわせて可視化する
+            GALogger.log(
+                .chappy_send_result(
+                    source: isTrial ? "ad_reward" : "credit",
+                    isSuccess: true,
+                    requestTokens: requestTokens,
+                    responseTokens: tokenLength(for: response),
+                    errorDomain: nil,
+                    errorCode: nil,
+                    message: nil
+                )
+            )
+            return response
+        } catch {
+            // デコード失敗もチャッピー送信失敗として記録する
+            logChappySendFailure(source: isTrial ? "ad_reward" : "credit",
+                                 requestTokens: requestTokens,
+                                 error: AzukiAPIError.decoding)
             throw AzukiAPIError.decoding
         }
     }
@@ -258,6 +285,20 @@ final class AzukiApi {
                         receipt: String,
                         storekitJws: String,
                         grantCredits: Int) async throws -> VerifyPurchaseResult {
+        // 購入検証の開始を記録し、進行状況を確認できるようにする
+        GALogger.log(
+            .purchase_verify_result(
+                status: "started",
+                isSuccess: false,
+                productId: productId,
+                transactionId: transactionId,
+                balance: nil,
+                duplicate: nil,
+                errorDomain: nil,
+                errorCode: nil,
+                message: nil
+            )
+        )
         struct VerifyRequest: Encodable {
             let userId: String
             let productId: String
@@ -281,57 +322,79 @@ final class AzukiApi {
             let refreshTokenExpiresAt: Double?
         }
 
-        guard let url = makeURL(path: "/api/iap/verify") else {
-            throw AzukiAPIError.invalidURL
-        }
-
-        // App Attest を通過した端末情報を取得し、サーバーへ同封する
-        let identity: AzukiDeviceAuthenticator.DeviceIdentity
         do {
-            identity = try await deviceAuthenticator.ensureIdentity()
-        } catch let error as AzukiDeviceAuthenticator.AuthenticatorError {
-            switch error {
-            case .unsupported:
-                throw AzukiAPIError.deviceSecurityUnavailable
-            default:
+            guard let url = makeURL(path: "/api/iap/verify") else {
+                throw AzukiAPIError.invalidURL
+            }
+
+            // App Attest を通過した端末情報を取得し、サーバーへ同封する
+            let identity: AzukiDeviceAuthenticator.DeviceIdentity
+            do {
+                identity = try await deviceAuthenticator.ensureIdentity()
+            } catch let error as AzukiDeviceAuthenticator.AuthenticatorError {
+                switch error {
+                case .unsupported:
+                    throw AzukiAPIError.deviceSecurityUnavailable
+                default:
+                    throw AzukiAPIError.deviceSignatureFailed
+                }
+            } catch {
                 throw AzukiAPIError.deviceSignatureFailed
             }
-        } catch {
-            throw AzukiAPIError.deviceSignatureFailed
-        }
-        
-        // ログイン/ユーザー判明時や状態変化時に設定
-        Analytics.setUserID(userId)                 // 任意のユーザーID
-        //Analytics.setUserProperty("pro", forName: "plan") // "free"/"pro"
-        //Analytics.setUserProperty("ja-JP", forName: "locale")
-        Analytics.setUserProperty("ios", forName: "platform")
-        
-        let body = VerifyRequest(
-            userId: userId,
-            productId: productId,
-            transactionId: transactionId,
-            receipt: receipt,
-            storekitJws: storekitJws,
-            grantCredits: grantCredits,
-            deviceId: identity.deviceId,
-            devicePublicKey: identity.devicePublicKey,
-            attestKeyId: identity.attestKeyId,
-            attestation: identity.attestation,
-            attestationChallenge: identity.attestationChallenge
-        )
-        let data = try await sendJSONRequest(url: url, body: body, authorization: .optional)
-        do {
-            let response = try decoder.decode(VerifyResponse.self, from: data)
-            // サーバーが返却するトークン群をまとめて保存し、後続の API リクエストに備える
-            storeTokensIfProvided(
-                accessToken: response.accessToken,
-                accessTokenExpiresAt: response.accessTokenExpiresAt,
-                refreshToken: response.refreshToken,
-                refreshTokenExpiresAt: response.refreshTokenExpiresAt
+            
+            // ログイン/ユーザー判明時や状態変化時に設定
+            Analytics.setUserID(userId)                 // 任意のユーザーID
+            //Analytics.setUserProperty("pro", forName: "plan") // "free"/"pro"
+            //Analytics.setUserProperty("ja-JP", forName: "locale")
+            Analytics.setUserProperty("ios", forName: "platform")
+            
+            let body = VerifyRequest(
+                userId: userId,
+                productId: productId,
+                transactionId: transactionId,
+                receipt: receipt,
+                storekitJws: storekitJws,
+                grantCredits: grantCredits,
+                deviceId: identity.deviceId,
+                devicePublicKey: identity.devicePublicKey,
+                attestKeyId: identity.attestKeyId,
+                attestation: identity.attestation,
+                attestationChallenge: identity.attestationChallenge
             )
-            return VerifyPurchaseResult(balance: response.balance, duplicate: response.duplicate ?? false)
+            let data = try await sendJSONRequest(url: url, body: body, authorization: .optional)
+            do {
+                let response = try decoder.decode(VerifyResponse.self, from: data)
+                // サーバーが返却するトークン群をまとめて保存し、後続の API リクエストに備える
+                storeTokensIfProvided(
+                    accessToken: response.accessToken,
+                    accessTokenExpiresAt: response.accessTokenExpiresAt,
+                    refreshToken: response.refreshToken,
+                    refreshTokenExpiresAt: response.refreshTokenExpiresAt
+                )
+                let isDuplicate = response.duplicate ?? false
+                GALogger.log(
+                    .purchase_verify_result(
+                        status: isDuplicate ? "duplicate" : "success",
+                        isSuccess: true,
+                        productId: productId,
+                        transactionId: transactionId,
+                        balance: response.balance,
+                        duplicate: isDuplicate,
+                        errorDomain: nil,
+                        errorCode: nil,
+                        message: nil
+                    )
+                )
+                return VerifyPurchaseResult(balance: response.balance, duplicate: isDuplicate)
+            } catch {
+                throw AzukiAPIError.decoding
+            }
         } catch {
-            throw AzukiAPIError.decoding
+            // 購入検証の失敗を記録して原因追跡に役立てる
+            logPurchaseVerifyFailure(productId: productId,
+                                     transactionId: transactionId,
+                                     error: error)
+            throw error
         }
     }
 
@@ -355,6 +418,13 @@ final class AzukiApi {
         do {
             payload = try encoder.encode(body)
         } catch {
+            // エンコード失敗もAPI失敗として記録する
+            logApiFailure(url: url,
+                          method: "POST",
+                          statusCode: nil,
+                          serverErrorCode: nil,
+                          error: AzukiAPIError.encoding,
+                          retryCount: 0)
             throw AzukiAPIError.encoding
         }
 
@@ -495,10 +565,22 @@ final class AzukiApi {
             do {
                 firstResult = try await self.session.data(for: firstRequest)
             } catch {
+                // 第1段階の通信失敗も記録する
+                self.logApiFailure(request: firstRequest,
+                                   statusCode: nil,
+                                   serverErrorCode: nil,
+                                   error: error,
+                                   retryCount: 0)
                 throw error
             }
 
             guard let firstHTTP = firstResult.response as? HTTPURLResponse else {
+                // レスポンス形式の異常もAPI失敗として記録する
+                self.logApiFailure(request: firstRequest,
+                                   statusCode: nil,
+                                   serverErrorCode: nil,
+                                   error: AzukiAPIError.invalidResponse,
+                                   retryCount: 0)
                 throw AzukiAPIError.invalidResponse
             }
             let firstStatus = firstHTTP.statusCode
@@ -534,8 +616,24 @@ final class AzukiApi {
                 return decoded.accessToken
             }
 
-            func handleFailure(status: Int, data: Data) async throws -> String? {
+            func handleFailure(status: Int, data: Data, request: URLRequest) async throws -> String? {
                 let serverErrorCode = self.decodeServerErrorCode(from: data)
+                let logError: Error
+                if status == 401 {
+                    logError = AzukiAPIError.unauthorized
+                } else if status == 400 {
+                    logError = AzukiAPIError.server(statusCode: status)
+                } else if status == 403 {
+                    logError = AzukiAPIError.forbiddenUser
+                } else {
+                    logError = AzukiAPIError.server(statusCode: status)
+                }
+                // リフレッシュAPIの失敗もAPI失敗として記録する
+                self.logApiFailure(request: request,
+                                   statusCode: status,
+                                   serverErrorCode: serverErrorCode,
+                                   error: logError,
+                                   retryCount: 0)
                 if status == 401 || status == 400 {
                     if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
                         self.refreshTokenStore.clear()
@@ -562,6 +660,8 @@ final class AzukiApi {
             }
 
             if 199 < firstStatus && firstStatus < 300 {
+                // 第1段階の成功を記録する
+                self.logApiSuccess(request: firstRequest, statusCode: firstStatus, retryCount: 0)
                 if let challenge = try? self.decoder.decode(RefreshChallengeEnvelope.self, from: firstResult.data), challenge.stage == "challenge" {
                     let signaturePayload: AzukiDeviceAuthenticator.RefreshSignaturePayload
                     do {
@@ -611,21 +711,34 @@ final class AzukiApi {
                     do {
                         secondResult = try await self.session.data(for: secondRequest)
                     } catch {
+                        // 通信エラーもAPI失敗として記録する
+                        self.logApiFailure(request: secondRequest,
+                                           statusCode: nil,
+                                           serverErrorCode: nil,
+                                           error: error,
+                                           retryCount: 0)
                         throw error
                     }
                     guard let secondHTTP = secondResult.response as? HTTPURLResponse else {
+                        self.logApiFailure(request: secondRequest,
+                                           statusCode: nil,
+                                           serverErrorCode: nil,
+                                           error: AzukiAPIError.invalidResponse,
+                                           retryCount: 0)
                         throw AzukiAPIError.invalidResponse
                     }
                     let secondStatus = secondHTTP.statusCode
                     if 199 < secondStatus && secondStatus < 300 {
+                        // 第2段階の成功を記録する
+                        self.logApiSuccess(request: secondRequest, statusCode: secondStatus, retryCount: 0)
                         return try handleSuccess(data: secondResult.data)
                     }
-                    return try await handleFailure(status: secondStatus, data: secondResult.data)
+                    return try await handleFailure(status: secondStatus, data: secondResult.data, request: secondRequest)
                 }
                 return try handleSuccess(data: firstResult.data)
             }
 
-            return try await handleFailure(status: firstStatus, data: firstResult.data)
+            return try await handleFailure(status: firstStatus, data: firstResult.data, request: firstRequest)
         }
     }
 
@@ -649,15 +762,26 @@ final class AzukiApi {
     }
 
     /// 実際の通信と共通エラーハンドリングを一箇所へ集約
-    private func send(request: URLRequest, allowRetryAfterRefresh: Bool = true) async throws -> Data {
+    private func send(request: URLRequest, allowRetryAfterRefresh: Bool = true, retryCount: Int = 0) async throws -> Data {
         do {
             // URLSession.data(for:) は内部でTask.cancelledを投げることがあるため、do-catchでまとめて扱う
             let (data, response) = try await session.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
+                // レスポンス形式の異常もAPI失敗として扱う
+                logApiFailure(request: request,
+                              statusCode: nil,
+                              serverErrorCode: nil,
+                              error: AzukiAPIError.invalidResponse,
+                              retryCount: retryCount)
                 throw AzukiAPIError.invalidResponse
             }
             let status = httpResponse.statusCode
             if status == 402 {
+                logApiFailure(request: request,
+                              statusCode: status,
+                              serverErrorCode: nil,
+                              error: AzukiAPIError.insufficientCredits,
+                              retryCount: retryCount)
                 throw AzukiAPIError.insufficientCredits
             }
             if status == 401 {
@@ -670,7 +794,7 @@ final class AzukiApi {
                    let refreshed = try await refreshAccessTokenIfPossible() {
                     var retriedRequest = request
                     retriedRequest.setValue("Bearer \(refreshed)", forHTTPHeaderField: "Authorization")
-                    return try await send(request: retriedRequest, allowRetryAfterRefresh: false)
+                    return try await send(request: retriedRequest, allowRetryAfterRefresh: false, retryCount: retryCount + 1)
                 }
                 // サーバー側でアクセストークンが拒否されたため、Keychainに残っている値も破棄する
                 accessTokenStore.clear()
@@ -683,42 +807,94 @@ final class AzukiApi {
                     await deviceAuthenticator.invalidateIdentity()
                 }
                 if serverErrorCode == "token_expired" {
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.tokenExpired,
+                                  retryCount: retryCount)
                     throw AzukiAPIError.tokenExpired
                 }
+                logApiFailure(request: request,
+                              statusCode: status,
+                              serverErrorCode: serverErrorCode,
+                              error: AzukiAPIError.unauthorized,
+                              retryCount: retryCount)
                 throw AzukiAPIError.unauthorized
             }
             if status == 403 {
                 let serverErrorCode = decodeServerErrorCode(from: data)
                 if serverErrorCode == "receipt_belongs_to_other_user" {
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.receiptBelongsToOtherUser,
+                                  retryCount: retryCount)
                     throw AzukiAPIError.receiptBelongsToOtherUser
                 }
+                logApiFailure(request: request,
+                              statusCode: status,
+                              serverErrorCode: serverErrorCode,
+                              error: AzukiAPIError.forbiddenUser,
+                              retryCount: retryCount)
                 throw AzukiAPIError.forbiddenUser
             }
             // Hono（Cloudflare Workers）からの2xxレスポンスのみ成功扱いとし、それ以外は個別にハンドリングする
             if 199 < status && status < 300 {
+                logApiSuccess(request: request, statusCode: status, retryCount: retryCount)
                 return data
             }
 
             let serverErrorCode = decodeServerErrorCode(from: data)
             if status == 409 && serverErrorCode == "duplicate_transaction" {
+                logApiFailure(request: request,
+                              statusCode: status,
+                              serverErrorCode: serverErrorCode,
+                              error: AzukiAPIError.duplicateTransaction,
+                              retryCount: retryCount)
                 throw AzukiAPIError.duplicateTransaction
             }
             if status == 400 {
                 if serverErrorCode == "unknown_product" {
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.unknownProduct,
+                                  retryCount: retryCount)
                     throw AzukiAPIError.unknownProduct
                 }
                 else if serverErrorCode == "mismatched_grant" {
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.purchaseMismatch,
+                                  retryCount: retryCount)
                     throw AzukiAPIError.purchaseMismatch
                 }
             }
             if let msg = serverErrorCode {
+                logApiFailure(request: request,
+                              statusCode: status,
+                              serverErrorCode: serverErrorCode,
+                              error: AzukiAPIError.serverError(message: msg),
+                              retryCount: retryCount)
                 throw AzukiAPIError.serverError(message: msg)
             }
             //throw AzukiAPIError.server(statusCode: status)
+            logApiFailure(request: request,
+                          statusCode: status,
+                          serverErrorCode: nil,
+                          error: AzukiAPIError.serverError(message: "(\(status))" + httpResponse.description),
+                          retryCount: retryCount)
             throw AzukiAPIError.serverError(message: "(\(status))" + httpResponse.description)
         } catch let error as AzukiAPIError {
             throw error
         } catch {
+            // 想定外エラーもAPI失敗として記録する
+            logApiFailure(request: request,
+                          statusCode: nil,
+                          serverErrorCode: nil,
+                          error: error,
+                          retryCount: retryCount)
             throw error
         }
     }
@@ -738,6 +914,155 @@ final class AzukiApi {
             return fallback.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return nil
+    }
+
+    /// API成功時のログ送信をまとめる
+    private func logApiSuccess(request: URLRequest, statusCode: Int, retryCount: Int) {
+        let apiName = request.url?.path ?? "unknown"
+        let method = request.httpMethod ?? "unknown"
+        GALogger.log(
+            .api_result(
+                name: apiName,
+                method: method,
+                isSuccess: true,
+                statusCode: statusCode,
+                errorDomain: nil,
+                errorCode: nil,
+                message: nil,
+                retryCount: retryCount
+            )
+        )
+    }
+
+    /// API失敗時のログ送信をまとめる
+    private func logApiFailure(request: URLRequest,
+                               statusCode: Int?,
+                               serverErrorCode: String?,
+                               error: Error,
+                               retryCount: Int) {
+        let apiName = request.url?.path ?? "unknown"
+        let method = request.httpMethod ?? "unknown"
+        let info = analyticsErrorInfo(from: error)
+        GALogger.log(
+            .api_result(
+                name: apiName,
+                method: method,
+                isSuccess: false,
+                statusCode: statusCode,
+                errorDomain: info.domain,
+                errorCode: serverErrorCode ?? info.code,
+                message: info.message,
+                retryCount: retryCount
+            )
+        )
+    }
+
+    /// URLだけある場合に失敗ログを記録する
+    private func logApiFailure(url: URL,
+                               method: String,
+                               statusCode: Int?,
+                               serverErrorCode: String?,
+                               error: Error,
+                               retryCount: Int) {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        logApiFailure(request: request,
+                      statusCode: statusCode,
+                      serverErrorCode: serverErrorCode,
+                      error: error,
+                      retryCount: retryCount)
+    }
+
+    /// エラーからAnalyticsに載せる情報を生成する
+    private func analyticsErrorInfo(from error: Error) -> (domain: String, code: String, message: String) {
+        if let apiError = error as? AzukiAPIError {
+            switch apiError {
+            case .invalidURL:
+                return ("AzukiAPIError", "invalid_url", apiError.localizedDescription)
+            case .invalidResponse:
+                return ("AzukiAPIError", "invalid_response", apiError.localizedDescription)
+            case .server(let statusCode):
+                return ("AzukiAPIError", "status_code_\(statusCode)", apiError.localizedDescription)
+            case .serverError(let message):
+                return ("AzukiAPIError", "server_error", message)
+            case .decoding:
+                return ("AzukiAPIError", "decoding", apiError.localizedDescription)
+            case .encoding:
+                return ("AzukiAPIError", "encoding", apiError.localizedDescription)
+            case .insufficientCredits:
+                return ("AzukiAPIError", "insufficient_credits", apiError.localizedDescription)
+            case .missingAuthToken:
+                return ("AzukiAPIError", "missing_auth_token", apiError.localizedDescription)
+            case .unauthorized:
+                return ("AzukiAPIError", "unauthorized", apiError.localizedDescription)
+            case .forbiddenUser:
+                return ("AzukiAPIError", "forbidden_user", apiError.localizedDescription)
+            case .duplicateTransaction:
+                return ("AzukiAPIError", "duplicate_transaction", apiError.localizedDescription)
+            case .unknownProduct:
+                return ("AzukiAPIError", "unknown_product", apiError.localizedDescription)
+            case .purchaseMismatch:
+                return ("AzukiAPIError", "purchase_mismatch", apiError.localizedDescription)
+            case .tokenExpired:
+                return ("AzukiAPIError", "token_expired", apiError.localizedDescription)
+            case .receiptBelongsToOtherUser:
+                return ("AzukiAPIError", "receipt_other_user", apiError.localizedDescription)
+            case .deviceSecurityUnavailable:
+                return ("AzukiAPIError", "device_security_unavailable", apiError.localizedDescription)
+            case .deviceSignatureFailed:
+                return ("AzukiAPIError", "device_signature_failed", apiError.localizedDescription)
+            case .notFound:
+                return ("AzukiAPIError", "not_found", apiError.localizedDescription)
+            }
+        }
+        return ("Error", "unknown", String(describing: error))
+    }
+
+    /// チャッピー送信失敗のログを記録する
+    private func logChappySendFailure(source: String, requestTokens: Int, error: Error) {
+        let info = analyticsErrorInfo(from: error)
+        GALogger.log(
+            .chappy_send_result(
+                source: source,
+                isSuccess: false,
+                requestTokens: requestTokens,
+                responseTokens: nil,
+                errorDomain: info.domain,
+                errorCode: info.code,
+                message: info.message
+            )
+        )
+    }
+
+    /// 購入検証失敗のログを記録する
+    private func logPurchaseVerifyFailure(productId: String, transactionId: String, error: Error) {
+        let info = analyticsErrorInfo(from: error)
+        GALogger.log(
+            .purchase_verify_result(
+                status: "failed",
+                isSuccess: false,
+                productId: productId,
+                transactionId: transactionId,
+                balance: nil,
+                duplicate: nil,
+                errorDomain: info.domain,
+                errorCode: info.code,
+                message: info.message
+            )
+        )
+    }
+
+    /// 入出力文字数を簡易的にトークン長として扱う
+    private func tokenLength(for text: String) -> Int {
+        text.count
+    }
+
+    /// 生成結果のJSON文字数を概算のトークン長として返す
+    private func tokenLength(for dto: PackJsonDTO) -> Int? {
+        guard let data = try? encoder.encode(dto) else {
+            return nil
+        }
+        return String(data: data, encoding: .utf8)?.count
     }
 }
 
