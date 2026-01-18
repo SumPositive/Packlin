@@ -10,6 +10,7 @@
 		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
 		C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
 		C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */; };
+		C3F1A1A62E90F10000ABCD00 /* GoogleAppMeasurementIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A72E90F10000ABCD00 /* GoogleAppMeasurementIdentitySupport */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,7 @@
 				C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
 				C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */,
 				C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */,
+				C3F1A1A62E90F10000ABCD00 /* GoogleAppMeasurementIdentitySupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +148,7 @@
 				C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
 				C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */,
 				C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */,
+				C3F1A1A72E90F10000ABCD00 /* GoogleAppMeasurementIdentitySupport */,
 			);
 			productName = PackList;
 			productReference = C3D2BB6C2E6A7967002B900A /* Packlin.app */;
@@ -233,6 +236,7 @@
 			packageReferences = (
 				C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C3F1A1A82E90F10000ABCD00 /* XCRemoteSwiftPackageReference "GoogleAppMeasurement" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C3D2BB6D2E6A7967002B900A /* Products */;
@@ -814,6 +818,14 @@
 				minimumVersion = 10.19.0;
 			};
 		};
+		C3F1A1A82E90F10000ABCD00 /* XCRemoteSwiftPackageReference "GoogleAppMeasurement" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleAppMeasurement.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.28.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -831,6 +843,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCrashlytics;
+		};
+		C3F1A1A72E90F10000ABCD00 /* GoogleAppMeasurementIdentitySupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3F1A1A82E90F10000ABCD00 /* XCRemoteSwiftPackageReference "GoogleAppMeasurement" */;
+			productName = GoogleAppMeasurementIdentitySupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
