@@ -51,16 +51,24 @@ struct AppMain: App {
         // CreditStoreはKeychainに保持されたユーザーIDを元に生成する
         _creditStore = StateObject(wrappedValue: CreditStore())
 
-        // Firebase初期化
-        FirebaseApp.configure()
-        // 通常ログレベル
-        FirebaseConfiguration.shared.setLoggerLevel(.notice)
-        // Crashlyticsを有効化
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
-        // AnalyticsEventAppOpenでアプリ起動を追跡
-        Analytics.setAnalyticsCollectionEnabled(true)
-        Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
-        GALogger.log(.app_launch)
+        // 実行環境を取得してFirebase初期化の可否を判定する
+        let environment = ProcessInfo.processInfo.environment
+        let processArguments = ProcessInfo.processInfo.arguments
+        let isFirebaseAllowed = Self.shouldEnableFirebase(environment: environment, processArguments: processArguments)
+        if isFirebaseAllowed {
+            // FirebaseAppが未設定の場合のみ初期化する
+            if FirebaseApp.app() == nil {
+                FirebaseApp.configure()
+            }
+            // 通常ログレベル
+            FirebaseConfiguration.shared.setLoggerLevel(.notice)
+            // Crashlyticsを有効化
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+            // AnalyticsEventAppOpenでアプリ起動を追跡
+            Analytics.setAnalyticsCollectionEnabled(true)
+            Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
+            GALogger.log(.app_launch)
+        }
 
         // Migrate： V2-CoreData --> V3-SwiftData
         MigratingFromV2toV3().migrateIfNeeded(modelContainer: sharedModelContainer)
@@ -211,22 +219,21 @@ struct AppMain: App {
 
 }
 
-//extension AppMain {
-//    /// Firebaseなどの通信系SDKを安全に初期化できるか判定するヘルパー
-//    static func shouldEnableFirebase(environment: [String: String], processArguments: [String]) -> Bool {
-//        // UIテスト中は通信系SDKを抑止する
-//        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
-//        // Xcode Previewsはネットワークを伴う処理が利用できないことが多い
-//        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
-//        #if targetEnvironment(simulator)
-//        // シミュレータでは未実装APIが多くエラーを誘発するため無効化
-//        let isSimulator = true
-//        #else
-//        let isSimulator = environment["SIMULATOR_UDID"] != nil
-//        #endif
-//        // いずれかの制限がある場合は初期化を避ける
-//        let hasLimitation = isRunningForUITest || isRunningForPreview || isSimulator
-//        return hasLimitation == false
-//    }
-//}
-
+extension AppMain {
+    /// Firebaseなどの通信系SDKを安全に初期化できるか判定するヘルパー
+    static func shouldEnableFirebase(environment: [String: String], processArguments: [String]) -> Bool {
+        // UIテスト中は通信系SDKを抑止する
+        let isRunningForUITest = environment["XCTestConfigurationFilePath"] != nil
+        // Xcode Previewsはネットワークを伴う処理が利用できないことが多い
+        let isRunningForPreview = processArguments.contains("XCODE_RUNNING_FOR_PREVIEWS")
+        #if targetEnvironment(simulator)
+        // シミュレータでは未実装APIが多くエラーを誘発するため無効化
+        let isSimulator = true
+        #else
+        let isSimulator = environment["SIMULATOR_UDID"] != nil
+        #endif
+        // いずれかの制限がある場合は初期化を避ける
+        let hasLimitation = isRunningForUITest || isRunningForPreview || isSimulator
+        return hasLimitation == false
+    }
+}
