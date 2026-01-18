@@ -80,6 +80,9 @@ struct AppMain: App {
         // M1Packが空ならばサンプルを読み込む
         loadSamplePacksIfNeeded()
 
+        // AdMob SDKを初期化する前に、テスト端末の設定を反映する
+        // テスト端末のIDはアンインストールで変わることがあるため、環境変数で上書きできるようにする
+        configureAdMobTestDevices()
         // AdMob SDKを初期化する
         MobileAds.shared.start()
         
@@ -218,6 +221,30 @@ struct AppMain: App {
                 // DB保存失敗をCrashlyticsへ送信
                 Crashlytics.crashlytics().record(error: error)
             }
+        }
+    }
+
+    /// AdMobテスト端末のIDを環境変数から読み込み、必要なら設定する
+    /// - Note: ADMOB_TEST_DEVICE_IDS="id1,id2" のように指定する
+    private func configureAdMobTestDevices() {
+        // シミュレータはGoogle提供の固定IDを使う
+        var testDeviceIdentifiers: [String] = []
+        #if targetEnvironment(simulator)
+        testDeviceIdentifiers.append(GADSimulatorID)
+        #endif
+
+        // 環境変数から追加のIDを取り込む（カンマ区切り）
+        if let rawIdentifiers = ProcessInfo.processInfo.environment["ADMOB_TEST_DEVICE_IDS"] {
+            let extraIdentifiers = rawIdentifiers
+                .split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { $0.isEmpty == false }
+            testDeviceIdentifiers.append(contentsOf: extraIdentifiers)
+        }
+
+        // 空なら設定しない（本番配信時の挙動を維持）
+        if testDeviceIdentifiers.isEmpty == false {
+            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = testDeviceIdentifiers
         }
     }
 
