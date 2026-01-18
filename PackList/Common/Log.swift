@@ -6,6 +6,14 @@
 //
 
 import Foundation
+import FirebaseAnalytics
+import FirebaseCore
+
+/// Firebaseが初期化済みかを確認するヘルパー
+private func isFirebaseConfigured() -> Bool {
+    // FirebaseAppが登録済みなら初期化済みとみなす
+    return FirebaseApp.app() != nil
+}
 
 
 enum LogLevel: Int, Comparable {
@@ -50,18 +58,18 @@ func log(_ level: LogLevel,
     
     switch level {
         case .error, .fatal:
-            Analytics.logEvent("error_occured", parameters: [
-                "error_domain": function,
-                "error_code": -1,
-                "error_message": printOut
-            ])
+            // Firebase未初期化の場合はAnalytics送信を行わない
+            if isFirebaseConfigured() {
+                Analytics.logEvent("error_occured", parameters: [
+                    "error_domain": function,
+                    "error_code": -1,
+                    "error_message": printOut
+                ])
+            }
         default:
             break
     }
 }
-
-
-import FirebaseAnalytics
 
 enum GAEvent {
     case app_launch
@@ -82,6 +90,10 @@ enum GAEvent {
 
 struct GALogger {
     static func log(_ event: GAEvent) {
+        // Firebase未初期化時は警告ログを避ける
+        if isFirebaseConfigured() == false {
+            return
+        }
         switch event {
             case .app_launch:
                 Analytics.logEvent("app_launch", parameters: nil)
