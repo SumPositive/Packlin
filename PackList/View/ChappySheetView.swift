@@ -320,10 +320,10 @@ struct ChappyView: View {
                                     .symbolRenderingMode(.hierarchical)
                             }
 
-                            Text(isGenerating ? "提案を考え中" : "送信")
+                            Text(isGenerating ? "AI処理中" : "送信")
                                 .font(.callout.weight(.semibold))
                         }
-                        .padding(.vertical, -2)
+                        .padding(.vertical, 2)
                         .padding(.horizontal, 4)
                     }
                     .buttonStyle(.borderedProminent)
@@ -348,7 +348,7 @@ struct ChappyView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Spacer()
-                        Text(String(localized: "お試し特典！"))
+                        Text(String(localized: "無料！"))
                             .font(.callout.weight(.regular))
                         Image(systemName: "paperplane")
                             .imageScale(.medium)
@@ -365,14 +365,14 @@ struct ChappyView: View {
                                 .progressViewStyle(.circular)
                         }
                     }
-                    .padding(.vertical, -2)
-                    .padding(.horizontal, 0)
+                    .padding(.vertical, 2)
+                    .padding(.horizontal, 4)
                 }
                 // 通常ボタンとして表示し、常にタップ可能にする
                 .buttonStyle(.borderedProminent)
                 .tint(.brown)
                 .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                //.padding(.horizontal, 8)
+                .padding(.trailing, 40)
 
                 // 入力欄とプレースホルダーをカード調レイアウトに収める
                 ZStack(alignment: .topLeading) {

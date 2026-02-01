@@ -106,6 +106,16 @@
         }
       }
     },
+    "AI処理中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI is working"
+          }
+        }
+      }
+    },
     "AI利用が可能か確認できません。通信環境をご確認ください" : {
       "localizations" : {
         "en" : {
@@ -431,6 +441,7 @@
       }
     },
     "お試し特典！" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1257,6 +1268,7 @@
       }
     },
     "提案を考え中" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1432,6 +1444,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erase"
+          }
+        }
+      }
+    },
+    "無料！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free!"
           }
         }
       }

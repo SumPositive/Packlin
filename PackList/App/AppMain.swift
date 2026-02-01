@@ -230,7 +230,7 @@ struct AppMain: App {
         // シミュレータはGoogle提供の固定IDを使う
         var testDeviceIdentifiers: [String] = []
         #if targetEnvironment(simulator)
-        testDeviceIdentifiers.append(GADSimulatorID)
+        testDeviceIdentifiers.append("SIMULATOR")
         #endif
 
         // 環境変数から追加のIDを取り込む（カンマ区切り）
