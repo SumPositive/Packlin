@@ -171,7 +171,7 @@ struct GroupEditView: View {
                 }
                 Section("メモ") {
                     TextEditor(text: $group.memo)
-                        .font(FONT_MEMO)
+                        .font(FONT_EDIT)
                         .onChange(of: group.memo) { oldValue, newValue in
                             // 最大文字数制限
                             if APP_MAX_MEMO_LEN < newValue.count {
@@ -180,7 +180,6 @@ struct GroupEditView: View {
                         }
                         .frame(minHeight: 80, maxHeight: .infinity)
                 }
-                .padding(.top, -20)
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

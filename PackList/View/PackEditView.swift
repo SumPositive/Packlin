@@ -158,7 +158,7 @@ struct PackEditView: View {
                 Section("メモ") {
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $pack.memo)
-                            .font(FONT_MEMO)
+                            .font(FONT_EDIT)
                             .onChange(of: pack.memo) { oldValue, newValue in
                                 // 最大文字数制限（こちらも < の形で統一）
                                 if APP_MAX_MEMO_LEN < newValue.count {
