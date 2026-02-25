@@ -241,7 +241,7 @@ struct ItemEditView: View {
                 // メモ
                 EditorSection(title: "メモ") {
                     TextEditor(text: $item.memo)
-                        .font(FONT_MEMO)
+                        .font(FONT_EDIT)
                         .focused($focusedField, equals: .memo)
                         .frame(minHeight: 80, maxHeight: .infinity)
                         .scrollContentBackground(.hidden)
@@ -851,7 +851,7 @@ private struct ItemQuantityEditor: View {
 
     private func numberField(for field: FieldConfig, width: CGFloat) -> some View {
         TextField("", value: field.binding, format: .number)
-            .font(FONT_EDIT)
+            .font(.title2)
             .keyboardType(.numberPad)
             .multilineTextAlignment(.trailing)
             .frame(width: width)

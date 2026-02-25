@@ -67,8 +67,8 @@ let AI_REQUIREMENT_MAX: Int = 1000     // 要望の最大文字数
 let COLOR_TITLE: Color = .secondary         // App Name
 let COLOR_NAME: Color = .primary
 let COLOR_NAME_EMPTY: Color = .secondary
-let COLOR_MEMO: Color = .primary
-let COLOR_WEIGHT: Color = .primary
+let COLOR_MEMO: Color = .secondary
+let COLOR_WEIGHT: Color = .secondary
 
 // View背景
 let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)
@@ -104,12 +104,12 @@ let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
 //Text("キャプション").font(.caption)
 //Text("脚注").font(.footnote)
 
-let FONT_NAME: Font = .body
+let FONT_NAME: Font = .title2
 let FONT_MEMO: Font = .caption
 let FONT_WEIGHT: Font = .body
 let FONT_STOCK: Font = .body
 
-let FONT_EDIT: Font = .title2
+let FONT_EDIT: Font = .body
 
 
 
