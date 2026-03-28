@@ -89,7 +89,11 @@ final class UndoStackService: ObservableObject {
         }
         transactionDepth += 1
         if transactionDepth == 1 {
-            transactionBefore = try? captureSnapshot(context: context)
+            do {
+                transactionBefore = try captureSnapshot(context: context)
+            } catch {
+                log(.error, "スナップショット取得失敗（beginTransaction）: \(error)")
+            }
         }
     }
 
@@ -109,7 +113,11 @@ final class UndoStackService: ObservableObject {
                 transactionBefore = nil
                 return
             }
-            guard let after = try? captureSnapshot(context: context) else {
+            let after: Snapshot
+            do {
+                after = try captureSnapshot(context: context)
+            } catch {
+                log(.error, "スナップショット取得失敗（commitTransaction）: \(error)")
                 transactionBefore = nil
                 return
             }
@@ -229,7 +237,11 @@ final class UndoStackService: ObservableObject {
             transactionBefore = nil
             isRestoring = false
         }
-        guard let existingPacks = try? context.fetch(FetchDescriptor<M1Pack>()) else {
+        let existingPacks: [M1Pack]
+        do {
+            existingPacks = try context.fetch(FetchDescriptor<M1Pack>())
+        } catch {
+            log(.error, "パック取得失敗（restore）: \(error)")
             return
         }
         var packDictionary: [M1Pack.ID: M1Pack] = Dictionary(uniqueKeysWithValues: existingPacks.map { ($0.id, $0) })
