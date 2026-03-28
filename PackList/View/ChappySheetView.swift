@@ -485,6 +485,8 @@ struct ChappyView: View {
             }
             // 初回表示時に商品情報を取得して、購入導線の準備だけを済ませる
             await loadProductsIfNeeded()
+            // onDisappear より先に suspend していた場合、キャンセル済みのまま Task B を生成しないよう確認する
+            guard !Task.isCancelled else { return }
             // 購入完了後にViewがフォアグラウンドでなくても反映できるよう、トランザクション更新を監視する
             if transactionObservationTask == nil {
                 transactionObservationTask = Task {
