@@ -32,7 +32,18 @@ struct AppMain: App {
 //    /// UIテストやシミュレータ・プレビューではAdMob初期化を抑止するフラグ
 //    private let isAdMobEnabled: Bool
 
-    var sharedModelContainer: ModelContainer = {
+    // パックが消えた場合は、バックアップから復元してください。
+    // ※ 全パックを一括して JSON ファイルにエクスポート／インポートする機能を追加予定。
+    var sharedModelContainer: ModelContainer?
+    private var containerError: Error?
+    /// SQLite ストアファイルの URL（リカバリ時のリネームに使用）
+    private let storeURL: URL
+
+    init() {
+        // CreditStoreはKeychainに保持されたユーザーIDを元に生成する
+        _creditStore = StateObject(wrappedValue: CreditStore())
+
+        // ModelContainer の初期化
         let schema = Schema([
             M1Pack.self,
             M2Group.self,
@@ -40,17 +51,15 @@ struct AppMain: App {
         ])
         let modelConfiguration = ModelConfiguration(schema: schema,
                                                     isStoredInMemoryOnly: false)
+        storeURL = modelConfiguration.url
         do {
-            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
-            return container
+            sharedModelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            containerError = nil
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // 初期化失敗時はエラー画面を表示し、ユーザーがリセットを選択できるようにする
+            sharedModelContainer = nil
+            containerError = error
         }
-    }()
-
-    init() {
-        // CreditStoreはKeychainに保持されたユーザーIDを元に生成する
-        _creditStore = StateObject(wrappedValue: CreditStore())
 
         // 実行環境を取得してFirebase初期化の可否を判定する
         let environment = ProcessInfo.processInfo.environment
@@ -74,18 +83,19 @@ struct AppMain: App {
         // Firebase/AdMobがIDFAへアクセスできるようにATTの許可を確認する
         requestTrackingAuthorizationIfNeeded()
 
-        // Migrate： V2-CoreData --> V3-SwiftData
-        MigratingFromV2toV3().migrateIfNeeded(modelContainer: sharedModelContainer)
-
-        // M1Packが空ならばサンプルを読み込む
-        loadSamplePacksIfNeeded()
+        if let container = sharedModelContainer {
+            // Migrate： V2-CoreData --> V3-SwiftData
+            MigratingFromV2toV3().migrateIfNeeded(modelContainer: container)
+            // M1Packが空ならばサンプルを読み込む
+            loadSamplePacksIfNeeded()
+        }
 
         // AdMob SDKを初期化する前に、テスト端末の設定を反映する
         // テスト端末のIDはアンインストールで変わることがあるため、環境変数で上書きできるようにする
         configureAdMobTestDevices()
         // AdMob SDKを初期化する
         MobileAds.shared.start()
-        
+
 //        #if TESTFLIGHT // Scheme "TestFlight" にて定義が有効になる
 //            // このデバイスをテストデバイスとして扱う設定
 //            // TestFlight時、本番ユニットIDでも「安全にテスト広告」が表示されるが、
@@ -97,40 +107,47 @@ struct AppMain: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $navigationStore.path) {
-                PackListView()
-                    .navigationDestination(for: AppDestination.self) { destination in
-                        switch destination {
-                        case .groupList(let packID):
-                            GroupListScene(packID: packID)
-                        case .itemList(let packID, let groupID):
-                            ItemListScene(packID: packID, groupID: groupID)
-                        case .itemEdit(let packID, let groupID, let itemID, let sort):
-                            ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
-                        case .itemSortList(let packID, let sort):
-                            ItemSortListScene(packID: packID, sort: sort)
+            if let container = sharedModelContainer {
+                NavigationStack(path: $navigationStore.path) {
+                    PackListView()
+                        .navigationDestination(for: AppDestination.self) { destination in
+                            switch destination {
+                            case .groupList(let packID):
+                                GroupListScene(packID: packID)
+                            case .itemList(let packID, let groupID):
+                                ItemListScene(packID: packID, groupID: groupID)
+                            case .itemEdit(let packID, let groupID, let itemID, let sort):
+                                ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
+                            case .itemSortList(let packID, let sort):
+                                ItemSortListScene(packID: packID, sort: sort)
+                            }
+                        }
+                }
+                .onAppear {
+                    // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる
+                    let context = container.mainContext
+                    if let existing = context.undoManager as? UndoStackManager {
+                        existing.history = historyService
+                    } else {
+                        context.undoManager = UndoStackManager(context: context, history: historyService)
                     }
                 }
-            }
-            .onAppear {
-                // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる
-                let context = sharedModelContainer.mainContext
-                if let existing = context.undoManager as? UndoStackManager {
-                    existing.history = historyService
-                } else {
-                    context.undoManager = UndoStackManager(context: context, history: historyService)
+                .modelContainer(container)
+            } else {
+                DatabaseErrorView(error: containerError) {
+                    renameStoreForRecovery()
                 }
             }
         }
-        .modelContainer(sharedModelContainer)
         .environmentObject(creditStore)
         .environmentObject(historyService)
         // NavigationStackのパスを共有し、画面入れ替え制御を全画面で行えるようにする
         .environmentObject(navigationStore)
         .onChange(of: scenePhase) { _, newPhase in
-            guard newPhase == .background else { return }
+            guard newPhase == .background,
+                  let container = sharedModelContainer else { return }
             // バックグラウンドへ遷移するタイミングでのみ保存処理を試みる
-            let context = sharedModelContainer.mainContext
+            let context = container.mainContext
             do {
                 // アプリ終了に備えて未保存の差分を反映しておく
                 if context.hasChanges {
@@ -144,9 +161,27 @@ struct AppMain: App {
 
     }
 
+    /// 破損した SQLite ストアを .bak にリネームし、次回起動時にクリーンな状態で起動できるようにする
+    /// - Note: リネーム後はアプリを強制終了する。次回起動時に空のストアが新規作成される。
+    private func renameStoreForRecovery() {
+        let fm = FileManager.default
+        // メインストア (.store → .store.bak)
+        let bakURL = storeURL.appendingPathExtension("bak")
+        try? fm.moveItem(at: storeURL, to: bakURL)
+        // SQLite WAL モードのサイドカーファイルも退避する
+        for suffix in ["-shm", "-wal"] {
+            let sidecar = URL(fileURLWithPath: storeURL.path + suffix)
+            let sidecarBak = URL(fileURLWithPath: bakURL.path + suffix)
+            try? fm.moveItem(at: sidecar, to: sidecarBak)
+        }
+        // リネーム後はアプリを終了して次回起動時にクリーンな状態にする
+        exit(0)
+    }
+
     /// M1Packが空ならばサンプルを読み込む
     private func loadSamplePacksIfNeeded() {
-        let context = sharedModelContainer.mainContext
+        guard let container = sharedModelContainer else { return }
+        let context = container.mainContext
         let descriptor = FetchDescriptor<M1Pack>()
         guard let existingPacks = try? context.fetch(descriptor), existingPacks.isEmpty else {
             // M1Packが空でない
