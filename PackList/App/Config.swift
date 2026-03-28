@@ -169,6 +169,7 @@ let PACK_JSON_DTO_VERSION   = "3.0" // マイグレーション用
 let PACK_FILE_EXTENSION = "packlin" // 共有するファイルの拡張子
 let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data // ファイルピッカーで使用
 
+
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
 #if DEBUG

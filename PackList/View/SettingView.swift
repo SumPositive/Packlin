@@ -65,6 +65,9 @@ struct SettingView: View {
                         }
                         
                         SettingSection {
+                            // 全パックを書き出す（バックアップ）
+                            BackupExportView()
+                            Divider()
                             // 保存パックを読み込む
                             ShareView()
                         }
@@ -292,7 +295,105 @@ struct SettingView: View {
         }
     }
 
-    /// *.packlin 読み込み
+    /// 全パックを1つのバックアップファイルに書き出す
+    struct BackupExportView: View {
+        @Environment(\.modelContext) private var modelContext
+        @State private var shareURL: URL?
+        @State private var isPresentingShare = false
+        @State private var errorAlert: String?
+        @State private var isExporting = false
+
+        var body: some View {
+            Button(action: startExport) {
+                Label {
+                    HStack(spacing: 8) {
+                        Text(isExporting ? "書き出し中..." : "全パックを書き出す（バックアップ）")
+                            .font(.body.weight(.bold))
+                            .foregroundColor(isExporting ? .secondary : .accentColor)
+                        if isExporting {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                    }
+                } icon: {
+                    Image(systemName: "square.and.arrow.up")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .disabled(isExporting)
+            .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
+                if let shareURL {
+                    ActivityView(activityItems: [shareURL])
+                        .ignoresSafeArea()
+                }
+            }
+            .alert(String(localized: "書き出しに失敗しました"), isPresented: Binding(
+                get: { errorAlert != nil },
+                set: { if !$0 { errorAlert = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(errorAlert ?? "")
+            }
+        }
+
+        private func startExport() {
+            guard !isExporting else { return }
+            isExporting = true
+
+            Task {
+                do {
+                    // modelContext はメインアクターのため、ここで fetch する
+                    let descriptor = FetchDescriptor<M1Pack>(sortBy: [SortDescriptor(\.order)])
+                    let packs = try modelContext.fetch(descriptor)
+                    let backup = BackupJsonDTO(
+                        productName: PACK_JSON_DTO_PRODUCT_NAME,
+                        copyright: PACK_JSON_DTO_COPYRIGHT,
+                        version: PACK_JSON_DTO_VERSION,
+                        exportedAt: Date(),
+                        packs: packs.map { $0.backupRepresentation() }
+                    )
+
+                    // JSON エンコードとファイル書き込みをバックグラウンドで実行
+                    let fileURL = try await Task.detached(priority: .userInitiated) {
+                        let encoder = JSONEncoder()
+                        encoder.outputFormatting = [.prettyPrinted]
+                        let data = try encoder.encode(backup)
+
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyyMMdd_HHmmss"
+                        let dateStr = formatter.string(from: Date())
+                        let url = FileManager.default.temporaryDirectory
+                            .appendingPathComponent("Backup_\(dateStr)")
+                            .appendingPathExtension(PACK_FILE_EXTENSION)
+                        try data.write(to: url, options: [.atomic])
+                        return url
+                    }.value
+
+                    // メインアクターでシートを表示
+                    shareURL = fileURL
+                    isPresentingShare = true
+                } catch {
+                    log(.error, "バックアップ書き出し失敗: \(error)")
+                    errorAlert = error.localizedDescription
+                }
+                isExporting = false
+            }
+        }
+
+        private func cleanupShareResource() {
+            guard let shareURL else {
+                shareURL = nil
+                return
+            }
+            try? FileManager.default.removeItem(at: shareURL)
+            self.shareURL = nil
+        }
+    }
+
+    /// *.packlin / *.packlinbackup 読み込み
     struct ShareView: View {
         @Environment(\.modelContext) private var modelContext
 
@@ -300,42 +401,40 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
         @State private var isPresentingImporter = false
         @State private var importAlert: ImportAlert?
-        
+
         var body: some View {
-            // 共有 *.packlin を読み込む
             Button(action: {
                 isPresentingImporter = true
                 GALogger.log(.function(name: "settings", option: "tap_import"))
             }) {
                 Label {
-                    Text("パックを読み込む")
+                    Text("パックを読み込む（同パックは上書き）")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
                     Image(systemName: "square.and.arrow.down")
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        .symbolRenderingMode(.hierarchical)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
-            .fileImporter( // ファイル読み込み
+            .fileImporter(
                 isPresented: $isPresentingImporter,
                 allowedContentTypes: [PACK_FILE_UTTYPE],
                 allowsMultipleSelection: false
             ) { result in
                 switch result {
-                    case .success(let urls):
-                        guard let url = urls.first else { return }
-                        do {
-                            let importedPack = try importPack(from: url)
-                            importAlert = .success(packName: importedPack.name)
-                        } catch {
-                            debugPrint("Failed to import pack: \(error)")
-                            importAlert = .failure(message: error.localizedDescription)
-                        }
-                    case .failure(let error):
-                        debugPrint("Failed to import pack: \(error)")
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    do {
+                        importAlert = try importFile(from: url)
+                    } catch {
+                        log(.error, "取り込み失敗: \(error)")
                         importAlert = .failure(message: error.localizedDescription)
+                    }
+                case .failure(let error):
+                    log(.error, "ファイル選択失敗: \(error)")
+                    importAlert = .failure(message: error.localizedDescription)
                 }
             }
             .alert(item: $importAlert) { alert in
@@ -346,124 +445,181 @@ struct SettingView: View {
                 )
             }
         }
-        /// URLより.packlinファイルをPackExportDTO形式で読み取る
-        private func importPack(from url: URL) throws -> M1Pack {
+
+        // MARK: - ファイル読み込みエントリポイント
+
+        /// JSONの最上位キーでディスパッチして単体またはバックアップとして読み込む
+        /// - `packs` キーを持つ → BackupJsonDTO（全パックバックアップ）
+        /// - `groups` キーを持つ → PackJsonDTO（単体パック）
+        /// - いずれも持たない → フォーマットエラー
+        private func importFile(from url: URL) throws -> ImportAlert {
+            let data = try readData(from: url)
+            guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw ImportError.invalidFormat
+            }
+            if root["packs"] != nil {
+                return try importBackup(data: data)
+            } else if root["groups"] != nil {
+                return try importSinglePack(data: data)
+            } else {
+                throw ImportError.invalidFormat
+            }
+        }
+
+        /// NSFileCoordinator 経由でファイルデータを読み出す
+        private func readData(from url: URL) throws -> Data {
             let shouldStopAccessing = url.startAccessingSecurityScopedResource()
             defer {
-                if shouldStopAccessing {
-                    url.stopAccessingSecurityScopedResource()
-                }
+                if shouldStopAccessing { url.stopAccessingSecurityScopedResource() }
             }
-
-            // 外部ストレージ上の実体が未ダウンロードでも確実に読み取れるよう、一時ファイルへコピーしてから読み込む
             let fileManager = FileManager.default
             let temporaryURL = fileManager.temporaryDirectory
                 .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("packlin")
-            // 読み込み後に一時ファイルを削除してクリーンアップする
-            defer {
-                try? fileManager.removeItem(at: temporaryURL)
-            }
+                .appendingPathExtension(url.pathExtension)
+            defer { try? fileManager.removeItem(at: temporaryURL) }
 
             var coordinatorError: NSError?
             var copyError: Error?
             let coordinator = NSFileCoordinator()
             coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatorError) { readingURL in
                 do {
-                    // 一時ファイルが残っていた場合は削除し、安全にコピーできる状態にする
                     if fileManager.fileExists(atPath: temporaryURL.path) {
                         try fileManager.removeItem(at: temporaryURL)
                     }
-                    // ファイルプロバイダに存在する実体をダウンロードしながら一時ディレクトリへコピーする
                     try fileManager.copyItem(at: readingURL, to: temporaryURL)
                 } catch {
                     copyError = error
                 }
             }
-
-            if let coordinatorError {
-                throw coordinatorError
-            }
-            if let copyError {
-                throw copyError
-            }
-
-            let data = try Data(contentsOf: temporaryURL)
-            let decoder = JSONDecoder()
-            let dto = try decoder.decode(PackJsonDTO.self, from: data)
-
-            // チェック
-            if dto.productName != PACK_JSON_DTO_PRODUCT_NAME {
-                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product name mismatch."])
-            }
-            if dto.copyright != PACK_JSON_DTO_COPYRIGHT {
-                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Copyright mismatch."])
-            }
-            if dto.version != PACK_JSON_DTO_VERSION {
-                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Version mismatch."])
-            }
-            
-            return try createPack(from: dto)
+            if let coordinatorError { throw coordinatorError }
+            if let copyError { throw copyError }
+            return try Data(contentsOf: temporaryURL)
         }
 
-        /// DTOよりPackを追加する
-        private func createPack(from dto: PackJsonDTO) throws -> M1Pack {
-            let descriptor = FetchDescriptor<M1Pack>()
-            let packs = (try? modelContext.fetch(descriptor)) ?? []
-            let orderedPacks = packs.sorted { $0.order < $1.order }
-            let insertionIndex: Int = {
-                switch insertionPosition {
-                case .head:
-                    // 先頭挿入を選択している場合は index 0 を採用
-                    return 0
-                case .tail:
-                    // 末尾へ追加する設定なら既存数と同じ位置に挿入
-                    return orderedPacks.count
-                }
-            }()
+        // MARK: - 単体パック (.packlin)
+
+        private func importSinglePack(data: Data) throws -> ImportAlert {
+            let dto = try JSONDecoder().decode(PackJsonDTO.self, from: data)
+            try validateHeader(productName: dto.productName, copyright: dto.copyright, version: dto.version)
+
+            var existingPacks = (try? modelContext.fetch(FetchDescriptor<M1Pack>())) ?? []
+            modelContext.undoManager?.groupingBegin()
+            defer { modelContext.undoManager?.groupingEnd() }
+
+            let (pack, wasOverwritten) = upsertPack(dto: dto, existingPacks: &existingPacks)
+            return .success(packName: pack.name, wasOverwritten: wasOverwritten)
+        }
+
+        // MARK: - 全パックバックアップ (.packlinbackup)
+
+        private func importBackup(data: Data) throws -> ImportAlert {
+            let backup = try JSONDecoder().decode(BackupJsonDTO.self, from: data)
+            try validateHeader(productName: backup.productName, copyright: backup.copyright, version: backup.version)
+
+            var existingPacks = (try? modelContext.fetch(FetchDescriptor<M1Pack>())) ?? []
+            modelContext.undoManager?.groupingBegin()
+            defer { modelContext.undoManager?.groupingEnd() }
+
+            var added = 0, overwritten = 0
+            for dto in backup.packs {
+                let (_, wasOverwritten) = upsertPack(dto: dto, existingPacks: &existingPacks)
+                if wasOverwritten { overwritten += 1 } else { added += 1 }
+            }
+            return .successBatch(added: added, overwritten: overwritten)
+        }
+
+        // MARK: - 共通ヘルパー
+
+        /// ヘッダーの整合性チェック
+        private func validateHeader(productName: String, copyright: String, version: String) throws {
+            if productName != PACK_JSON_DTO_PRODUCT_NAME {
+                throw ImportError.productNameMismatch
+            }
+            if copyright != PACK_JSON_DTO_COPYRIGHT {
+                throw ImportError.copyrightMismatch
+            }
+            if version != PACK_JSON_DTO_VERSION {
+                throw ImportError.versionMismatch
+            }
+        }
+
+        /// IDまたは名前でパックを照合して上書き、なければ挿入位置に新規作成する
+        @discardableResult
+        private func upsertPack(dto: PackJsonDTO, existingPacks: inout [M1Pack]) -> (pack: M1Pack, wasOverwritten: Bool) {
+            // IDが含まれている場合（バックアップ）はIDで照合する
+            if let dtoId = dto.id,
+               let existing = existingPacks.first(where: { $0.id == dtoId }) {
+                return (PackImporter.overwrite(pack: existing, with: dto, in: modelContext), true)
+            }
+            // IDなし（単体パック共有）は名前で照合する
+            if dto.id == nil,
+               let existing = existingPacks.first(where: { $0.name == dto.name }) {
+                return (PackImporter.overwrite(pack: existing, with: dto, in: modelContext), true)
+            }
+            // 存在しなければ挿入位置設定に従って新規作成
+            let orderedPacks = existingPacks.sorted { $0.order < $1.order }
+            let insertionIndex = (insertionPosition == .head) ? 0 : orderedPacks.count
             let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
-                // 挿入余白が尽きた際には正規化して順位を維持
                 normalizeSparseOrders(orderedPacks)
             }
-            // Undo grouping BEGIN
-            modelContext.undoManager?.groupingBegin()
-            defer {
-                // Undo grouping END
-                modelContext.undoManager?.groupingEnd()
-            }
-            // PackJsonDTO をDBへインポートする
-            return PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
+            let newPack = PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
+            existingPacks.append(newPack)
+            return (newPack, false)
         }
 
+        // MARK: - Alert / Error
+
         private enum ImportAlert: Identifiable {
-            case success(packName: String)
+            case success(packName: String, wasOverwritten: Bool)
+            case successBatch(added: Int, overwritten: Int)
             case failure(message: String)
 
             var id: String {
                 switch self {
-                case .success(let packName):
-                    return "success-\(packName)"
-                case .failure:
-                    return "failure"
+                case .success(let packName, _): return "success-\(packName)"
+                case .successBatch(let a, let o): return "batch-\(a)-\(o)"
+                case .failure: return "failure"
                 }
             }
 
             var title: String {
                 switch self {
-                case .success:
-                    return String(localized: "取り込み完了")
-                case .failure:
-                    return String(localized: "取り込みに失敗しました")
+                case .success, .successBatch: return String(localized: "取り込み完了")
+                case .failure: return String(localized: "取り込みに失敗しました")
                 }
             }
 
             var message: String {
                 switch self {
-                case .success(let packName):
-                    let format = String(localized: "%@ を取り込みました")
+                case .success(let packName, let wasOverwritten):
+                    let format = wasOverwritten
+                        ? String(localized: "%@ を上書きしました")
+                        : String(localized: "%@ を取り込みました")
                     return String(format: format, packName)
+                case .successBatch(let added, let overwritten):
+                    var parts: [String] = []
+                    if added > 0 {
+                        parts.append(String(format: String(localized: "新規 %d 件"), added))
+                    }
+                    if overwritten > 0 {
+                        parts.append(String(format: String(localized: "上書き %d 件"), overwritten))
+                    }
+                    return parts.joined(separator: "・")
                 case .failure(let message):
                     return message
+                }
+            }
+        }
+
+        private enum ImportError: LocalizedError {
+            case productNameMismatch, copyrightMismatch, versionMismatch, invalidFormat
+
+            var errorDescription: String? {
+                switch self {
+                case .productNameMismatch: return "Product name mismatch."
+                case .copyrightMismatch:   return "Copyright mismatch."
+                case .versionMismatch:     return "Version mismatch."
+                case .invalidFormat:       return String(localized: "対応していないファイル形式です。")
                 }
             }
         }

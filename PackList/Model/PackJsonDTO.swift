@@ -7,6 +7,23 @@
 
 import Foundation
 
+/// 全パックをまとめたバックアップ用DTO
+struct BackupJsonDTO: Codable {
+    let productName: String
+    let copyright: String
+    let version: String
+    let exportedAt: Date
+    let packs: [PackJsonDTO]
+
+    enum CodingKeys: String, CodingKey {
+        case productName = "ProductName"
+        case copyright
+        case version
+        case exportedAt
+        case packs
+    }
+}
+
 struct PackJsonDTO: Codable {
     /// グループやアイテム構造を内包するDTO
     struct Group: Codable {
@@ -64,6 +81,23 @@ extension M1Pack {
             version: PACK_JSON_DTO_VERSION, // Load時に差異チェックしてマイグレション
             id: nil, // 読み込み側で生成
             order: nil, // 読み込み側で決定
+            name: name,
+            memo: memo,
+            createdAt: createdAt,
+            groups: child
+                .sorted { $0.order < $1.order }
+                .map { $0.exportRepresentation() }
+        )
+    }
+
+    /// バックアップ用。IDを含めてエクスポートすることで、インポート時にIDで同一パックを照合できる
+    func backupRepresentation() -> PackJsonDTO {
+        PackJsonDTO(
+            productName: PACK_JSON_DTO_PRODUCT_NAME,
+            copyright: PACK_JSON_DTO_COPYRIGHT,
+            version: PACK_JSON_DTO_VERSION,
+            id: id, // バックアップではIDを保持してインポート側の重複判定に使う
+            order: nil,
             name: name,
             memo: memo,
             createdAt: createdAt,
