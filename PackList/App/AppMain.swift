@@ -291,7 +291,7 @@ struct AppMain: App {
             // 既に許可/拒否が決まっていれば何もしない
             if status == .notDetermined {
                 // 画面表示はメインスレッドで実行する
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     ATTrackingManager.requestTrackingAuthorization { _ in
                         // 結果はSDK側で処理されるため、ここでは追加処理を行わない
                     }

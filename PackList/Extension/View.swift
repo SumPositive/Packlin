@@ -15,12 +15,12 @@ extension View {
                 Color.clear
                     .allowsHitTesting(false)
                     .onAppear {
-                        DispatchQueue.main.async {
+                        Task { @MainActor in
                             onChange(proxy.size)
                         }
                     }
                     .onChange(of: proxy.size) { oldSize, newSize in
-                        DispatchQueue.main.async {
+                        Task { @MainActor in
                             onChange(newSize)
                         }
                     }

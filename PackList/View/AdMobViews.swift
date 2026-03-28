@@ -300,7 +300,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         let request = Request()
         RewardedAd.load(with: adUnitID, request: request) { [weak self] ad, error in
             guard let self else { return }
-            DispatchQueue.main.async {
+            Task { @MainActor [self] in
                 self.isLoading = false
                 if let error {
                     // 具体的な障害内容はCrashlyticsへ残しつつ、画面には優しい文言を出す
@@ -342,7 +342,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     }
 
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             self.isReady = false
             self.rewardedAd = nil
@@ -352,14 +352,14 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     }
 
     func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             self.onAdPresented?()
         }
     }
 
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        DispatchQueue.main.async { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             // 実際のエラー内容はログに残し、ユーザーには広告非表示の状況だけを示す
             self.errorMessage = adUnavailableMessage
