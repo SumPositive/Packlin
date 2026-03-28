@@ -36,7 +36,10 @@ struct KeychainStorage {
             kSecAttrAccount as String: key,
             kSecValueData as String: Data(value.utf8)
         ]
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            log(.error, "SecItemAdd failed: key=\(key) status=\(status)")
+        }
     }
 
     /// 指定したキーから文字列を読み出す
@@ -87,6 +90,9 @@ struct KeychainStorage {
             kSecAttrService as String: service,
             kSecAttrAccount as String: key
         ]
-        SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(query as CFDictionary)
+        if status != errSecSuccess && status != errSecItemNotFound {
+            log(.error, "SecItemDelete failed: key=\(key) status=\(status)")
+        }
     }
 }
