@@ -13,7 +13,7 @@ import SwiftData
 
 final class UndoStackManager: UndoManager {
     // SwiftData の ModelContext と履歴サービスを橋渡しするためのクラス
-    private unowned let context: ModelContext
+    private weak var context: ModelContext?
     weak var history: UndoStackService?
 
     init(context: ModelContext, history: UndoStackService) {
@@ -23,7 +23,7 @@ final class UndoStackManager: UndoManager {
     }
 
     override func beginUndoGrouping() {
-        guard let history else { return }
+        guard let history, let context else { return }
         // 親クラスの状態も同期しておかないとUndoスタックの階層管理が破綻するため、必ずsuperを呼び出す
         super.beginUndoGrouping()
         // begin が呼ばれたタイミングでスナップショットを保存する
@@ -32,7 +32,7 @@ final class UndoStackManager: UndoManager {
     }
 
     override func endUndoGrouping() {
-        guard let history else { return }
+        guard let history, let context else { return }
         // beginでsuperを呼んだ場合はendでも対応するsuper呼び出しを行わないと整合性が崩れる
         super.endUndoGrouping()
         // end では差分があれば履歴スタックへ積む
@@ -45,7 +45,7 @@ final class UndoStackManager: UndoManager {
     }
 
     override func undo() {
-        guard let history else { return }
+        guard let history, let context else { return }
         // Undo 実行後にUIを更新するため通知を送る
         history.undo(context: context)
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
@@ -56,7 +56,7 @@ final class UndoStackManager: UndoManager {
     }
 
     override func redo() {
-        guard let history else { return }
+        guard let history, let context else { return }
         // Redo も同様に履歴サービスへ委譲する
         history.redo(context: context)
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
