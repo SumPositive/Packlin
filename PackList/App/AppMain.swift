@@ -291,10 +291,9 @@ struct AppMain: App {
             // 既に許可/拒否が決まっていれば何もしない
             if status == .notDetermined {
                 // 画面表示はメインスレッドで実行する
-                Task { @MainActor in
-                    ATTrackingManager.requestTrackingAuthorization { _ in
-                        // 結果はSDK側で処理されるため、ここでは追加処理を行わない
-                    }
+                Task {
+                    // 結果はSDK側で処理されるため、ここでは追加処理を行わない
+                    _ = await ATTrackingManager.requestTrackingAuthorization()
                 }
             }
         }
