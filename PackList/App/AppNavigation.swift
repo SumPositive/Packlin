@@ -102,17 +102,16 @@ struct ItemListScene: View {
     let groupID: M2Group.ID
 
     @Query private var packs: [M1Pack]
-    @Query private var groups: [M2Group]
 
     init(packID: M1Pack.ID, groupID: M2Group.ID) {
         self.packID = packID
         self.groupID = groupID
         _packs = Query(filter: #Predicate<M1Pack> { $0.id == packID })
-        _groups = Query(filter: #Predicate<M2Group> { $0.id == groupID })
     }
 
     var body: some View {
-        if let pack = packs.first, let group = groups.first {
+        if let pack = packs.first,
+           let group = pack.child.first(where: { $0.id == groupID }) {
             ItemListView(pack: pack, group: group)
         } else {
             Text("グループが見つかりません")
@@ -127,7 +126,6 @@ struct ItemEditScene: View {
 
     @Environment(\.dismiss) private var dismiss
     @Query private var packs: [M1Pack]
-    @Query private var groups: [M2Group]
     @Query private var groupItems: [M3Item]
     @State private var currentItemID: M3Item.ID
 
@@ -136,7 +134,6 @@ struct ItemEditScene: View {
         self.groupID = groupID
         self.sort = sort
         _packs = Query(filter: #Predicate<M1Pack> { $0.id == packID })
-        _groups = Query(filter: #Predicate<M2Group> { $0.id == groupID })
         _groupItems = Query(
             filter: #Predicate<M3Item> { $0.parent?.id == groupID },
             sort: [SortDescriptor(\M3Item.order)]
@@ -147,7 +144,7 @@ struct ItemEditScene: View {
     var body: some View {
         if let pack = packs.first,
            let item = resolvedItem,
-           let group = item.parent ?? groups.first {
+           let group = item.parent ?? pack.child.first(where: { $0.id == groupID }) {
             ItemEditView(
                 pack: pack,
                 group: group,
