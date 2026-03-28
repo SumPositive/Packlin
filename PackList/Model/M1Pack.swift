@@ -180,11 +180,21 @@ private func sparseOrderValue(
         // gap を二等分した位置を採用することで、両側の順序を壊さずに挿入する
         return prev + gap / 2
     } else if let prev = previous() {
-        // 末尾への追加。スパース間隔を維持するため固定幅を加算
-        return prev + ORDER_SPARSE
+        // 末尾への追加。オーバーフロー時は正規化して再計算する
+        let (result, overflow) = prev.addingReportingOverflow(ORDER_SPARSE)
+        if overflow {
+            normalize()
+            return sparseOrderValue(previous: previous, next: next, normalize: normalize)
+        }
+        return result
     } else if let nextValue = next() {
-        // 先頭への追加。負方向へ間隔を確保
-        return nextValue - ORDER_SPARSE
+        // 先頭への追加。アンダーフロー時は正規化して再計算する
+        let (result, overflow) = nextValue.subtractingReportingOverflow(ORDER_SPARSE)
+        if overflow {
+            normalize()
+            return sparseOrderValue(previous: previous, next: next, normalize: normalize)
+        }
+        return result
     } else {
         // 要素が存在しない場合は 0 を基点にする
         return 0
@@ -223,13 +233,23 @@ func assignSparseOrders<T: SparseOrderable>(
     } else if let previous = previousOrder {
         var current = previous
         for index in lower...upper {
-            current += ORDER_SPARSE
+            let (next, overflow) = current.addingReportingOverflow(ORDER_SPARSE)
+            if overflow {
+                normalize()
+                return
+            }
+            current = next
             nodes[index].order = current
         }
     } else if let next = nextOrder {
         var current = next
         for index in stride(from: upper, through: lower, by: -1) {
-            current -= ORDER_SPARSE
+            let (prev, overflow) = current.subtractingReportingOverflow(ORDER_SPARSE)
+            if overflow {
+                normalize()
+                return
+            }
+            current = prev
             nodes[index].order = current
         }
     } else {
