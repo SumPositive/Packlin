@@ -67,6 +67,8 @@ actor AzukiDeviceAuthenticator {
     private let identityStorageKey = "com.azukid.azuki-api.device.identity"
     /// アテステーション日時を保存する Keychain キー（再アテストの判断材料として保持）
     private let attestedAtKey = "com.azukid.azuki-api.device.attestedAt"
+    /// /api/device/register 完了フラグを保存する Keychain キー
+    private let registeredKey = "com.azukid.azuki-api.device.registered"
     /// ISO8601 フォーマッタを毎回生成するとコストが高いため、インスタンスを使い回す
     private let isoFormatter: ISO8601DateFormatter
 
@@ -148,6 +150,42 @@ actor AzukiDeviceAuthenticator {
         cachedIdentity = nil
         keychain.deleteItem(forKey: identityStorageKey)
         keychain.deleteItem(forKey: attestedAtKey)
+        keychain.deleteItem(forKey: registeredKey)
+    }
+
+    /// /api/device/register への送信が完了したことを Keychain へ記録する
+    func confirmDeviceRegistration() {
+        keychain.saveString("1", forKey: registeredKey)
+    }
+
+    /// サーバーへの端末登録が完了しているかを返す
+    func isDeviceRegistered() -> Bool {
+        return keychain.loadString(forKey: registeredKey) == "1"
+    }
+
+    /// 購入検証用のアサーションを生成する
+    /// - Parameter transactionId: StoreKit のトランザクション ID。署名のクライアントデータとして使用する。
+    /// - Returns: サーバーへ送信するデバイス ID とアサーション（Base64）
+    func generatePurchaseAssertion(transactionId: String) async throws -> (deviceId: String, assertion: String) {
+        guard let identity = cachedIdentity ?? loadIdentityFromKeychain() else {
+            throw AuthenticatorError.identityUnavailable
+        }
+        // clientDataHash = SHA-256(transactionId.utf8)  ←サーバー側と同じ計算
+        let clientDataHash = Data(SHA256.hash(data: Data(transactionId.utf8)))
+        let assertionData = try await generateAssertion(keyId: identity.attestKeyId, messageHash: clientDataHash)
+        return (deviceId: identity.deviceId, assertion: assertionData.base64EncodedString())
+    }
+
+    /// 復旧リクエスト用のアサーションを生成する
+    /// - Parameter userId: ユーザー ID。署名のクライアントデータとして使用する。
+    /// - Returns: サーバーへ送信するデバイス ID とアサーション（Base64）
+    func generateRecoverAssertion(userId: String) async throws -> (deviceId: String, assertion: String) {
+        guard let identity = cachedIdentity ?? loadIdentityFromKeychain() else {
+            throw AuthenticatorError.identityUnavailable
+        }
+        let clientDataHash = Data(SHA256.hash(data: Data(userId.utf8)))
+        let assertionData = try await generateAssertion(keyId: identity.attestKeyId, messageHash: clientDataHash)
+        return (deviceId: identity.deviceId, assertion: assertionData.base64EncodedString())
     }
 
     /// リフレッシュチャレンジへ応答する署名を生成する

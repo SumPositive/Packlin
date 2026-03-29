@@ -180,7 +180,7 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 //   % npx wrangler dev --local
 // 実機接続するため ngrok により localhost を公開する
 //   $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
-let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")!
+let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")! // ← ngrok の URL に差し替える
 #else
 //------------------------- RELEASEモード（ArchiveでAppStoreにアップする）
 // TestFlightでは、RELEASEモードで本番同様だが、購入はSandboxテストモードで動作するので課金されない！

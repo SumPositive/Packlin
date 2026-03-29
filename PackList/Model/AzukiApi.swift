@@ -279,6 +279,48 @@ final class AzukiApi {
     ///   - receipt: StoreKitトランザクションのJWS等、サーバーでハッシュ化する生データ
     ///   - grantCredits: 付与予定のクレジット数（サーバー側の定義と一致する必要がある）
     /// - Returns: サーバーが更新した最新残高
+    /// デバイスがまだサーバーへ登録されていない場合に /api/device/register を呼び出す
+    /// - Parameter userId: 登録に紐づけるユーザー ID
+    private func registerDeviceIfNeeded(userId: String) async throws {
+        guard await deviceAuthenticator.isDeviceRegistered() == false else { return }
+
+        let identity: AzukiDeviceAuthenticator.DeviceIdentity
+        do {
+            identity = try await deviceAuthenticator.ensureIdentity()
+        } catch let error as AzukiDeviceAuthenticator.AuthenticatorError {
+            switch error {
+            case .unsupported:
+                throw AzukiAPIError.deviceSecurityUnavailable
+            default:
+                throw AzukiAPIError.deviceSignatureFailed
+            }
+        } catch {
+            throw AzukiAPIError.deviceSignatureFailed
+        }
+
+        struct RegisterRequest: Encodable {
+            let userId: String
+            let deviceId: String
+            let attestKeyId: String
+            let devicePublicKey: String
+            let attestation: String
+            let attestationChallenge: String
+        }
+        guard let url = makeURL(path: "/api/device/register") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let body = RegisterRequest(
+            userId: userId,
+            deviceId: identity.deviceId,
+            attestKeyId: identity.attestKeyId,
+            devicePublicKey: identity.devicePublicKey,
+            attestation: identity.attestation,
+            attestationChallenge: identity.attestationChallenge
+        )
+        _ = try await sendJSONRequest(url: url, body: body, authorization: .optional)
+        await deviceAuthenticator.confirmDeviceRegistration()
+    }
+
     func verifyPurchase(userId: String,
                         productId: String,
                         transactionId: String,
@@ -307,10 +349,7 @@ final class AzukiApi {
             let storekitJws: String
             let grantCredits: Int
             let deviceId: String
-            let devicePublicKey: String
-            let attestKeyId: String
-            let attestation: String
-            let attestationChallenge: String
+            let assertion: String
         }
 
         struct VerifyResponse: Decodable {
@@ -327,10 +366,9 @@ final class AzukiApi {
                 throw AzukiAPIError.invalidURL
             }
 
-            // App Attest を通過した端末情報を取得し、サーバーへ同封する
-            let identity: AzukiDeviceAuthenticator.DeviceIdentity
+            // 初回のみ /api/device/register で端末公開鍵を登録する（以降は assertion のみ）
             do {
-                identity = try await deviceAuthenticator.ensureIdentity()
+                try await registerDeviceIfNeeded(userId: userId)
             } catch let error as AzukiDeviceAuthenticator.AuthenticatorError {
                 switch error {
                 case .unsupported:
@@ -338,16 +376,26 @@ final class AzukiApi {
                 default:
                     throw AzukiAPIError.deviceSignatureFailed
                 }
+            } catch let error as AzukiAPIError {
+                throw error
             } catch {
                 throw AzukiAPIError.deviceSignatureFailed
             }
-            
+
+            // 購入トランザクション ID を署名して assertion を生成する
+            let assertionPayload: (deviceId: String, assertion: String)
+            do {
+                assertionPayload = try await deviceAuthenticator.generatePurchaseAssertion(transactionId: transactionId)
+            } catch {
+                throw AzukiAPIError.deviceSignatureFailed
+            }
+            let deviceId = assertionPayload.deviceId
+            let assertion = assertionPayload.assertion
+
             // ログイン/ユーザー判明時や状態変化時に設定
-            Analytics.setUserID(userId)                 // 任意のユーザーID
-            //Analytics.setUserProperty("pro", forName: "plan") // "free"/"pro"
-            //Analytics.setUserProperty("ja-JP", forName: "locale")
+            Analytics.setUserID(userId)
             Analytics.setUserProperty("ios", forName: "platform")
-            
+
             let body = VerifyRequest(
                 userId: userId,
                 productId: productId,
@@ -355,11 +403,8 @@ final class AzukiApi {
                 receipt: receipt,
                 storekitJws: storekitJws,
                 grantCredits: grantCredits,
-                deviceId: identity.deviceId,
-                devicePublicKey: identity.devicePublicKey,
-                attestKeyId: identity.attestKeyId,
-                attestation: identity.attestation,
-                attestationChallenge: identity.attestationChallenge
+                deviceId: deviceId,
+                assertion: assertion
             )
             let data = try await sendJSONRequest(url: url, body: body, authorization: .optional)
             do {
@@ -760,6 +805,13 @@ final class AzukiApi {
         accessTokenStore.clear()
         refreshTokenStore.clear()
     }
+
+    #if DEBUG
+    /// Keychain にキャッシュされた App Attest 証明書を破棄し、次回アクセス時に再 Attest させる（デバッグ専用）
+    func invalidateDeviceIdentityForDebug() {
+        Task { await deviceAuthenticator.invalidateIdentity() }
+    }
+    #endif
 
     /// 実際の通信と共通エラーハンドリングを一箇所へ集約
     private func send(request: URLRequest, allowRetryAfterRefresh: Bool = true, retryCount: Int = 0) async throws -> Data {

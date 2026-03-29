@@ -107,6 +107,8 @@ final class CreditStore: ObservableObject {
         // デバッグでuserIdを空にすると旧ユーザー向けのアクセストークンが残ってしまうため、
         // サーバーの認証エラーを避ける目的でアクセストークンとリフレッシュトークンも破棄する
         AzukiApi.shared.clearAuthenticationStateForUserReset()
+        // Keychain にキャッシュされた App Attest 証明書も破棄し、次回購入時に再 Attest させる
+        AzukiApi.shared.invalidateDeviceIdentityForDebug()
         // Publishedを通じてUIへ即座に反映させるため空文字を反映
         userId = ""
     }
