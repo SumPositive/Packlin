@@ -30,7 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C3713ACE2F7A2BAE00DF8BB3 /* Packlin.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Packlin.entitlements; sourceTree = "<group>"; };
+		C3713ACE2F7A2BAE00DF8BB3 /* Packlin.Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Packlin.Debug.entitlements; sourceTree = "<group>"; };
+		C3713ACF2F7A2BAE00DF8BB4 /* Packlin.Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Packlin.Release.entitlements; sourceTree = "<group>"; };
 		C3D2BB6C2E6A7967002B900A /* Packlin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Packlin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -106,7 +107,8 @@
 		C3D2BB632E6A7967002B900A = {
 			isa = PBXGroup;
 			children = (
-				C3713ACE2F7A2BAE00DF8BB3 /* Packlin.entitlements */,
+				C3713ACE2F7A2BAE00DF8BB3 /* Packlin.Debug.entitlements */,
+				C3713ACF2F7A2BAE00DF8BB4 /* Packlin.Release.entitlements */,
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
@@ -442,7 +444,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Packlin.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Packlin.Debug.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
@@ -469,6 +472,7 @@
 				MARKETING_VERSION = 3.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.azukid.AzPackList5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -484,7 +488,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Packlin.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Packlin.Release.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
@@ -511,6 +516,7 @@
 				MARKETING_VERSION = 3.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.azukid.AzPackList5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -674,7 +680,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Packlin.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Packlin.Release.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
@@ -702,6 +709,7 @@
 				MARKETING_VERSION = 3.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.azukid.AzPackList5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
