@@ -30,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C3713ACE2F7A2BAE00DF8BB3 /* Packlin.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Packlin.entitlements; sourceTree = "<group>"; };
 		C3D2BB6C2E6A7967002B900A /* Packlin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Packlin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -105,6 +106,7 @@
 		C3D2BB632E6A7967002B900A = {
 			isa = PBXGroup;
 			children = (
+				C3713ACE2F7A2BAE00DF8BB3 /* Packlin.entitlements */,
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
@@ -440,6 +442,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Packlin.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
@@ -481,6 +484,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Packlin.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
@@ -670,6 +674,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Packlin.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 0;
 				DEVELOPMENT_TEAM = 5C2UYK6F45;
