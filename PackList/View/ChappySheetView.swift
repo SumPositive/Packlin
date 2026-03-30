@@ -986,6 +986,9 @@ struct ChappyView: View {
             await MainActor.run {
                 // 複数ボタンが並ぶため、購入中の選択肢のみローディング表示へ切り替える
                 processingProductId = productId
+                // 新しい購入操作なので前回の失敗履歴をクリアし、アラートが抑制されないようにする
+                failedTransactionIds.removeAll()
+                persistFailedTransactionIds()
             }
             // 中断や失敗の後でも必ずボタンを再有効化するための保険
             defer {
