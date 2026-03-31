@@ -387,7 +387,16 @@ final class AzukiApi {
             do {
                 assertionPayload = try await deviceAuthenticator.generatePurchaseAssertion(transactionId: transactionId)
             } catch {
-                throw AzukiAPIError.deviceSignatureFailed
+                // assertion 失敗は Keychain にキャッシュされた古い keyId が無効になった可能性がある
+                // (例: App Attest 環境が development → production に切り替わった場合)
+                // identity を破棄して再登録し、もう一度 assertion を試みる
+                await deviceAuthenticator.invalidateIdentity()
+                do {
+                    try await registerDeviceIfNeeded(userId: userId)
+                    assertionPayload = try await deviceAuthenticator.generatePurchaseAssertion(transactionId: transactionId)
+                } catch {
+                    throw AzukiAPIError.deviceSignatureFailed
+                }
             }
             let deviceId = assertionPayload.deviceId
             let assertion = assertionPayload.assertion
