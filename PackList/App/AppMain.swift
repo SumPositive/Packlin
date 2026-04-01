@@ -10,7 +10,6 @@ import SwiftUI
 import SwiftData
 import UIKit
 
-import AppTrackingTransparency
 import FirebaseCore
 import FirebaseAnalytics
 import FirebaseCrashlytics
@@ -79,9 +78,6 @@ struct AppMain: App {
             Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
             GALogger.log(.app_launch)
         }
-
-        // Firebase/AdMobがIDFAへアクセスできるようにATTの許可を確認する
-        requestTrackingAuthorizationIfNeeded()
 
         if let container = sharedModelContainer {
             // Migrate： V2-CoreData --> V3-SwiftData
@@ -283,21 +279,6 @@ struct AppMain: App {
         }
     }
 
-    /// ATTダイアログが未表示の場合のみ表示を試みる
-    private func requestTrackingAuthorizationIfNeeded() {
-        // iOS 14以降でのみATTが有効になる
-        if #available(iOS 14, *) {
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            // 既に許可/拒否が決まっていれば何もしない
-            if status == .notDetermined {
-                // 画面表示はメインスレッドで実行する
-                Task {
-                    // 結果はSDK側で処理されるため、ここでは追加処理を行わない
-                    _ = await ATTrackingManager.requestTrackingAuthorization()
-                }
-            }
-        }
-    }
 
 }
 

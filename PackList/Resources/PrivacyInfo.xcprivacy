@@ -3,27 +3,23 @@
 <plist version="1.0">
 <dict>
     <key>NSPrivacyTracking</key>
-    <true/>
-    <key>NSPrivacyTrackingDomains</key>
-    <array>
-        <string>googleads.g.doubleclick.net</string>
-        <string>pagead2.googlesyndication.com</string>
-    </array>
+    <false/>
     <key>NSPrivacyCollectedDataTypes</key>
     <array>
+        <!-- ユーザーID（Keychain 生成 UUID）：購入・クレジット管理に使用、追跡なし -->
         <dict>
             <key>NSPrivacyCollectedDataType</key>
             <string>DeviceID</string>
             <key>NSPrivacyCollectedDataTypeLinked</key>
-            <true/>
+            <false/>
             <key>NSPrivacyCollectedDataTypeTracking</key>
-            <true/>
+            <false/>
             <key>NSPrivacyCollectedDataTypePurposes</key>
             <array>
-                <string>ThirdPartyAdvertising</string>
-                <string>Analytics</string>
+                <string>AppFunctionality</string>
             </array>
         </dict>
+        <!-- クラッシュデータ：Firebase Crashlytics -->
         <dict>
             <key>NSPrivacyCollectedDataType</key>
             <string>CrashData</string>
