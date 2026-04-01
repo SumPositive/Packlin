@@ -4,12 +4,13 @@
 <dict>
     <key>NSPrivacyTracking</key>
     <false/>
+
     <key>NSPrivacyCollectedDataTypes</key>
     <array>
         <!-- ユーザーID（Keychain 生成 UUID）：購入・クレジット管理に使用、追跡なし -->
         <dict>
             <key>NSPrivacyCollectedDataType</key>
-            <string>DeviceID</string>
+            <string>UserID</string>
             <key>NSPrivacyCollectedDataTypeLinked</key>
             <false/>
             <key>NSPrivacyCollectedDataTypeTracking</key>
@@ -33,8 +34,51 @@
                 <string>Analytics</string>
             </array>
         </dict>
+        <!-- アプリ操作履歴：Firebase Analytics（画面遷移・イベント） -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>ProductInteraction</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>Analytics</string>
+            </array>
+        </dict>
     </array>
+
+    <!-- 必須理由 API の使用 -->
     <key>NSPrivacyAccessedAPITypes</key>
-    <array/>
+    <array>
+        <!-- UserDefaults：アプリ設定の読み書き -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+        <!-- システム起動時刻：Firebase / Crashlytics のセッション・クラッシュ記録 -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>35F9.1</string>
+            </array>
+        </dict>
+        <!-- ファイルタイムスタンプ：Crashlytics のクラッシュログ記録 -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>
