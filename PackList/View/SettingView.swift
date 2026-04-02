@@ -822,10 +822,7 @@ struct SettingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // 広告を見て寄付する（ボタン）
                     Button(action: {
-                        withAnimation {
-                            // SafariでURLを表示する
-                            showAd = true
-                        }
+                        showAd = true
                     }) {
                         Text("広告を見て寄付")
                             .frame(maxWidth: .infinity)
@@ -833,16 +830,16 @@ struct SettingView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.brown)
                     .padding(.horizontal, 32)
-                    .sheet(isPresented: $showAd) {
-                        // バナーも動画もまとめて閲覧できる新しいシートを表示
-                        AdMobAdSheetView(
-                            onRewardEarned: {
-                                // 広告の視聴完了を検知してお礼を伝える
-                                showRewardThankYou = true
-                            },
-                            rewardTrialDescription: String(localized: "広告を最後まで見れば、開発者を直接応援できます！無理のない範囲でご協力いただけると嬉しいです")
-                        )
-                    }
+                }
+                .sheet(isPresented: $showAd) {
+                    // バナーも動画もまとめて閲覧できる新しいシートを表示
+                    AdMobAdSheetView(
+                        onRewardEarned: {
+                            // 広告の視聴完了を検知してお礼を伝える
+                            showRewardThankYou = true
+                        },
+                        rewardTrialDescription: String(localized: "広告を最後まで見れば、開発者を直接応援できます！無理のない範囲でご協力いただけると嬉しいです")
+                    )
                 }
                 // 視聴完了後にささやかな感謝を伝える
                 .alert(
