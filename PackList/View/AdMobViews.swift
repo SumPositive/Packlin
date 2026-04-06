@@ -16,6 +16,15 @@ import FirebaseCrashlytics
 // 利用可能な広告がない場合に共通で表示する文言をまとめておく
 private let adUnavailableMessage = String(localized: "現在、特典付きの広告がありません。後ほどお試しください")
 
+/// ATT不使用のため、常に非パーソナライズ広告リクエストを返す (npa=1)
+private func npaRequest() -> Request {
+    let request = Request()
+    let extras = Extras()
+    extras.additionalParameters = ["npa": "1"]
+    request.register(extras)
+    return request
+}
+
 // 広告ユニットID
 #if xxDEBUG
 // リワード型 テスト用
@@ -297,7 +306,7 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
         isReady = false
         errorMessage = nil
 
-        let request = Request()
+        let request = npaRequest()
         RewardedAd.load(with: adUnitID, request: request) { [weak self] ad, error in
             guard let self else { return }
             Task { @MainActor [self] in
@@ -471,7 +480,7 @@ struct AdMobBannerRepresentable: UIViewControllerRepresentable {
         ])
 
         context.coordinator.bannerView = bannerView
-        bannerView.load(Request())
+        bannerView.load(npaRequest())
 
         return viewController
     }
