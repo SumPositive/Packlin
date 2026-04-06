@@ -1,21 +1,44 @@
-# モチメモ/Packlin V3
+# モチメモ Packlin
 
-## Codex
+A packing list and checklist app for iOS, built with SwiftUI.
 
-V2 Objective-C から Swift/SwiftUI 変換に Codex を利用したのを手始めに Codex を徹底利用する方針とし、System prompt や指示方法などのノウハウを蓄積している
+![Platform](https://img.shields.io/badge/platform-iOS%2016%2B-blue)
+![Swift](https://img.shields.io/badge/Swift-6-orange)
+[![App Store](https://img.shields.io/badge/App%20Store-Download-blue)](https://apps.apple.com/app/id495525984)
 
+## Overview
 
-## azuki-api
+Packlin helps you manage packing lists for travel, camping, work, and everyday carry. Originally released in 2010, fully rebuilt in SwiftUI for v3.
 
-アプリ単体では困難なことを実現するためにバックエンドを設けた
-- 認証：ログイン不要で個人を特定しないデバイス認証を行うため
-- 購入：アプリ内課金によりチケット購入してもらうため
-- 広告：リワード広告を視聴してもらい特典を付与するため
+Includes **Chappie** — an AI assistant that generates and organizes list items on your behalf.
 
+## Features
 
-## StoreKit 購入テスト環境について
+- Manage multiple lists with items and categories
+- AI assistant (Chappie) for list suggestions
+- In-app purchase for AI usage tickets
+- Rewarded ads support
 
-- シミュレータ向けの StoreKit Test Session 自動化は廃止しました。課金フローの検証は実機 + Sandbox Apple ID で行ってください
-- 実機テストでは、端末の App Store に Sandbox Apple ID でサインインした状態でアプリを起動し、AI利用回数券の購入ボタンを操作します
-- StoreKit 関連の追加フレームワークやテスト用 `.storekit` ファイルは不要になったため、Xcode プロジェクトにも特別な設定はありません
-- TestFlightで配布されたアプリはRELEASEモードですが、StoreKitは購入テストモードで動作しますので課金はされません
+## Backend (azuki-api)
+
+Some features require a lightweight backend:
+
+- **Auth** — device-based authentication without login or personal data
+- **Purchase** — validates in-app purchase tickets
+- **Ads** — rewards users for watching ads
+
+## StoreKit Testing
+
+- Use a real device with a **Sandbox Apple ID** signed in to the App Store
+- No `.storekit` configuration file is required
+- TestFlight builds run in StoreKit sandbox mode — no real charges occur
+
+## Requirements
+
+- iOS 16.0+
+- Xcode 16+
+- Swift 6
+
+## License
+
+Source available for reference. All rights reserved.
