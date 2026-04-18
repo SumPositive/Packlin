@@ -44,6 +44,7 @@ struct ItemEditView: View {
     @State private var selectedGroupID: String
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
+    @State private var isDraggingInsideQuantitySection = false
 
     private let sectionCornerRadius: CGFloat = 12
     private var isBeginnerMode: Bool { displayMode == .beginner }
@@ -299,6 +300,15 @@ struct ItemEditView: View {
                             //.padding(.leading, 0)
                     }
                 }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            isDraggingInsideQuantitySection = true
+                        }
+                        .onEnded { _ in
+                            isDraggingInsideQuantitySection = false
+                        }
+                )
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -442,7 +452,11 @@ struct ItemEditView: View {
                     let horizontal = value.translation.width
                     let vertical = value.translation.height
                     if !(horizontal <= 80 || abs(vertical) >= abs(horizontal)) {
-                        // 右へ大きくスワイプしたときに閉じる
+                        guard !isDraggingInsideQuantitySection else {
+                            // ダイアル範囲を除外して閉じられないようにする
+                            return
+                        }
+                        // 右へスワイプしたときに閉じる
                         onDismiss()
                     }
                     else if vertical < -20, abs(horizontal) < abs(vertical) {
@@ -717,7 +731,7 @@ struct ItemEditView: View {
         focusedField = nil
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
-    
+
 }
 
 /// Popup用の簡易編集ビュー（数量のみ）
