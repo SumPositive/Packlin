@@ -260,45 +260,15 @@ struct ItemEditView: View {
 
                 // 数量
                 EditorSection {
-                    // 数量
-                    Text("数量")
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-
-                    HStack(spacing: 0) {
-                        // アイテム・アイコン・チェック
-                        Button {
-                            item.check.toggle()
-                            if item.check {
-                                if linkCheckWithStock {
-                                    // チェックと在庫数を連動させる
-                                    item.stock = item.need
-                                }
-                            }else{
-                                if linkCheckOffWithZero {
-                                    // チェックと在庫数を連動させる
-                                    item.stock = 0
-                                }
-                            }
-                        } label: {
-                            Image(systemName
-                                  : item.check ? "checkmark.circle"     // Check ON
-                                  : item.need == 0 ? "circle.fill"      // Need = 0
-                                  : item.need <= item.stock ? "circle.circle"
-                                  : "circle")
-                            .imageScale(.large)
-                            .tint(item.need == 0 ? .secondary : .accentColor)
-                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                        }
-                        .buttonStyle(BorderlessButtonStyle())
-                        .padding(8)
-
-                        // 数量 編集
-                        ItemQuantityEditor(item: item)
-                            //.padding(.leading, 0)
+                    HStack(spacing: 8) {
+                        // 数量
+                        Text("数量")
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                        quantityCheckButton
                     }
+                    ItemQuantityEditor(item: item)
                 }
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)
@@ -732,6 +702,32 @@ struct ItemEditView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
+    private var quantityCheckButton: some View {
+        Button {
+            item.check.toggle()
+            if item.check {
+                if linkCheckWithStock {
+                    item.stock = item.need
+                }
+            } else {
+                if linkCheckOffWithZero {
+                    item.stock = 0
+                }
+            }
+        } label: {
+            Image(systemName:
+                    item.check ? "checkmark.circle"
+                    : item.need == 0 ? "circle.fill"
+                    : item.need <= item.stock ? "circle.circle"
+                    : "circle")
+                .imageScale(.large)
+                .tint(item.need == 0 ? .secondary : .accentColor)
+                .symbolRenderingMode(.hierarchical)
+                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating)
+        }
+        .buttonStyle(.borderless)
+    }
+
 }
 
 /// Popup用の簡易編集ビュー（数量のみ）
@@ -778,7 +774,7 @@ struct ItemQuickEditView: View {
 // 数量 編集
 private struct ItemQuantityEditor: View {
     @Bindable var item: M3Item
-
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     init(item: M3Item) {
         self._item = Bindable(item)
     }
@@ -842,26 +838,59 @@ private struct ItemQuantityEditor: View {
 
     @State private var activeFieldIndex: Int? = nil
 
+    private var usesCompactMetrics: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    private var titleColumnWidth: CGFloat {
+        usesCompactMetrics ? 44 : 56
+    }
+
+    private var valueColumnWidth: CGFloat {
+        usesCompactMetrics ? 58 : 75
+    }
+
+    private var valueHorizontalPadding: CGFloat {
+        usesCompactMetrics ? 6 : 10
+    }
+
+    private var unitColumnWidth: CGFloat {
+        usesCompactMetrics ? 12 : 30
+    }
+
+    private var unitDialSpacing: CGFloat {
+        4
+    }
+
+    private var numberFont: Font {
+        usesCompactMetrics ? .title3 : .title2
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
                 HStack(alignment: .center, spacing: 0) {
                     // 見出し
                     Text(field.title)
-                        .font(.caption)
+                        .font(usesCompactMetrics ? .caption2 : .caption)
                         .foregroundStyle(.secondary)
-                        .frame(width: 60)
+                        .lineLimit(usesCompactMetrics ? 2 : 1)
+                        .multilineTextAlignment(.leading)
+                        .frame(width: titleColumnWidth, alignment: .leading)
                     // タップでテンキーシートを開く数値表示
                     Button {
                         activeFieldIndex = index
                     } label: {
                         Text("\(field.binding.wrappedValue)")
-                            .font(.title2)
+                            .font(numberFont)
                             .monospacedDigit()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                            .allowsTightening(true)
                             .multilineTextAlignment(.trailing)
-                            .frame(width: 75)
+                            .frame(width: valueColumnWidth)
                             .padding(.vertical, 6)
-                            .padding(.horizontal, 10)
+                            .padding(.horizontal, valueHorizontalPadding)
                             .background(COLOR_BACK_INPUT)
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
@@ -871,7 +900,9 @@ private struct ItemQuantityEditor: View {
                     Text(field.unit)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .frame(width: 30)
+                        .frame(width: unitColumnWidth)
+                    Spacer()
+                        .frame(width: unitDialSpacing)
                     // ダイアル（Stepperの代わり）
                     // GeometryReader で残りスペースを計測し dialWidth に渡す
                     GeometryReader { geo in
@@ -881,10 +912,10 @@ private struct ItemQuantityEditor: View {
                             max: field.maxValue,
                             step: field.step,
                             stepperStep: 0,
-                            dialWidth: max(80, min(220, geo.size.width))
+                            dialWidth: max(100, min(220, geo.size.width))
                         )
                     }
-                    .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 44)
+                    .frame(minWidth: 100, maxWidth: .infinity, minHeight: 44, maxHeight: 44)
                 }
             }
         }
