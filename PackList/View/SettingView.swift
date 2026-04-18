@@ -807,11 +807,12 @@ struct SettingView: View {
         @State private var showAdMovie = false
         @State private var showDonate = false
         @State private var showRewardThankYou = false // 広告視聴後にお礼アラートを出すためのフラグ
+        @State private var showTipSheet = false
 
         var body: some View {
             VStack(alignment: .leading, spacing: 20) {
                 Label {
-                    Text("開発者を応援する")
+                    Text("開発者を応援")
                         .font(.body.weight(.medium))
                 } icon: {
                     Image(systemName: "heart.fill")
@@ -820,11 +821,26 @@ struct SettingView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
-                    // 広告を見て寄付する（ボタン）
+                    // 投げ銭で応援する（ボタン）
+                    Button(action: {
+                        showTipSheet = true
+                    }) {
+                        Label("投げ銭で応援する", systemImage: "heart.fill")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.pink)
+                    .padding(.horizontal, 32)
+                    .sheet(isPresented: $showTipSheet) {
+                        TipSheetView()
+                    }
+
+                    // 広告を見て応援する（ボタン）
                     Button(action: {
                         showAd = true
                     }) {
-                        Text("広告を見て寄付")
+                        Text("広告を見て応援する")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -851,6 +867,82 @@ struct SettingView: View {
                     Text(String(localized: "応援いただき感謝しています。これからも改善を続けますので、よければまたのぞいてみてください！"))
                 }
             }
+        }
+    }
+
+    /// 投げ銭シート
+    struct TipSheetView: View {
+        @Environment(\.dismiss) private var dismiss
+        @State private var store = TipStore.shared
+        @State private var showThankYou = false
+
+        var body: some View {
+            NavigationView {
+                VStack(spacing: 20) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.pink)
+                        .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
+
+                    Text("このアプリの開発を応援していただけると励みになります。")
+                        .font(.callout)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+
+                    if store.isLoadingProducts {
+                        ProgressView()
+                    } else if store.products.isEmpty {
+                        Text("現在ご利用いただけません。")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        HStack(spacing: 12) {
+                            ForEach(store.products, id: \.id) { product in
+                                Button {
+                                    Task {
+                                        if await store.purchase(product) {
+                                            showThankYou = true
+                                        }
+                                    }
+                                } label: {
+                                    Text(product.displayPrice)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.pink)
+                                .disabled(store.isPurchasing)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+
+                    Spacer()
+                }
+                .padding(.top, 32)
+                .navigationTitle(Text("投げ銭で応援する"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.down")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                    }
+                }
+                .alert(
+                    String(localized: "ありがとうございます！"),
+                    isPresented: $showThankYou
+                ) {
+                    Button(String(localized: "OK")) { dismiss() }
+                } message: {
+                    Text(String(localized: "応援いただきありがとうございます。これからも改善を続けてまいります！"))
+                }
+            }
+            .task { await store.loadProducts() }
         }
     }
 
