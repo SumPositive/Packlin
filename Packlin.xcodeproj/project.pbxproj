@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
+		C39A862C2F9356DC00644F0F /* AZDial in Frameworks */ = {isa = PBXBuildFile; productRef = C39A862B2F9356DC00644F0F /* AZDial */; };
 		C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
 		C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
@@ -75,6 +76,7 @@
 				C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
 				C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */,
 				C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */,
+				C39A862C2F9356DC00644F0F /* AZDial in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +148,7 @@
 				C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
 				C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */,
 				C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */,
+				C39A862B2F9356DC00644F0F /* AZDial */,
 			);
 			productName = PackList;
 			productReference = C3D2BB6C2E6A7967002B900A /* Packlin.app */;
@@ -233,6 +236,7 @@
 			packageReferences = (
 				C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C39A862A2F9356DC00644F0F /* XCRemoteSwiftPackageReference "AZDial" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C3D2BB6D2E6A7967002B900A /* Products */;
@@ -815,6 +819,14 @@
 				minimumVersion = 12.11.0;
 			};
 		};
+		C39A862A2F9356DC00644F0F /* XCRemoteSwiftPackageReference "AZDial" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SumPositive/AZDial";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.5;
+			};
+		};
 		C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -830,6 +842,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
+		};
+		C39A862B2F9356DC00644F0F /* AZDial */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C39A862A2F9356DC00644F0F /* XCRemoteSwiftPackageReference "AZDial" */;
+			productName = AZDial;
 		};
 		C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

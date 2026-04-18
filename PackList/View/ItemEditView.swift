@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import AZDial
 
 /// 画面遷移用のアイテム編集ビュー
 struct ItemEditView: View {
@@ -772,6 +773,7 @@ private struct ItemQuantityEditor: View {
         let title: LocalizedStringKey
         let unit: LocalizedStringKey
         let maxValue: Int
+        let step: Int       // AZDial のドラッグ1単位あたりの変化量
         let binding: Binding<Int>
     }
 
@@ -779,13 +781,13 @@ private struct ItemQuantityEditor: View {
         [
             // 個重量
             FieldConfig(title: "個重量", unit: "g",
-                        maxValue: APP_MAX_WEIGHT_NUM, binding: weightBinding),
+                        maxValue: APP_MAX_WEIGHT_NUM, step: 1, binding: weightBinding),
             // 在庫数
             FieldConfig(title: "在庫数", unit: "個",
-                        maxValue: APP_MAX_STOCK_NUM, binding: stockBinding),
+                        maxValue: APP_MAX_STOCK_NUM, step: 1, binding: stockBinding),
             // 必要数
             FieldConfig(title: "必要数", unit: "個",
-                        maxValue: APP_MAX_NEED_NUM, binding: needBinding)
+                        maxValue: APP_MAX_NEED_NUM, step: 1, binding: needBinding)
         ]
     }
 
@@ -856,6 +858,19 @@ private struct ItemQuantityEditor: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(width: 30)
+                    // ダイアル（Stepperの代わり）
+                    // GeometryReader で残りスペースを計測し dialWidth に渡す
+                    GeometryReader { geo in
+                        AZDialView(
+                            value: field.binding,
+                            min: 0,
+                            max: field.maxValue,
+                            step: field.step,
+                            stepperStep: 0,
+                            dialWidth: max(80, min(220, geo.size.width))
+                        )
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 44)
                 }
             }
         }

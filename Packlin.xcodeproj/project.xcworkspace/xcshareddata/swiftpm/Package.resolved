@@ -1,5 +1,5 @@
 {
-  "originHash" : "f485fb75b59651d1d5e1bfe15bfd2a2b6dd9737b87cd29eaaa02288efe4fe401",
+  "originHash" : "c20b0171aebaf45ee49c29304426d0ce322ba39ac1768e0e648c144b475c5447",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "3b62f154d00019ae29a71e9738800bb6f18b236d",
         "version" : "10.19.2"
+      }
+    },
+    {
+      "identity" : "azdial",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SumPositive/AZDial",
+      "state" : {
+        "revision" : "bd94124152d1fb3a139b21b356bbfc32a29fc857",
+        "version" : "3.1.0"
       }
     },
     {
