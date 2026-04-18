@@ -824,41 +824,58 @@ private struct ItemQuantityEditor: View {
         })
     }
 
+    @State private var activeFieldIndex: Int? = nil
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
+            ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
                 HStack(alignment: .center, spacing: 0) {
                     // 見出し
                     Text(field.title)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(width: 60)
-                    // 数値入力
-                    numberField(for: field, width: 75)
+                    // タップでテンキーシートを開く数値表示
+                    Button {
+                        activeFieldIndex = index
+                    } label: {
+                        Text("\(field.binding.wrappedValue)")
+                            .font(.title2)
+                            .monospacedDigit()
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 75)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .background(COLOR_BACK_INPUT)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.primary)
                     // 単位
                     Text(field.unit)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(width: 30)
-                    // ステッパー
-                    Stepper("", value: field.binding, in: 0...field.maxValue)
-                        .labelsHidden()
                 }
             }
         }
         .padding(8)
-    }
-
-    private func numberField(for field: FieldConfig, width: CGFloat) -> some View {
-        TextField("", value: field.binding, format: .number)
-            .font(.title2)
-            .keyboardType(.numberPad)
-            .multilineTextAlignment(.trailing)
-            .frame(width: width)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
-            .background(COLOR_BACK_INPUT)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .sheet(isPresented: Binding(
+            get: { activeFieldIndex != nil },
+            set: { shown in if !shown { activeFieldIndex = nil } }
+        )) {
+            if let idx = activeFieldIndex {
+                let field = fields[idx]
+                NumericKeypadSheet(
+                    title: field.title,
+                    unit: field.unit,
+                    placeholder: field.binding.wrappedValue,
+                    maxValue: field.maxValue
+                ) { newValue in
+                    field.binding.wrappedValue = newValue
+                }
+            }
+        }
     }
 }
 
