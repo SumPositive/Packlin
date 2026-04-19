@@ -10,6 +10,23 @@ import SwiftData
 import UIKit
 import AZDial
 
+private enum PacklinDialSettings {
+    static let styleKey = "packlin.dialStyle"
+    static let tuningKey = "packlin.dialTuning"
+
+    static func loadTuning(from data: Data) -> AZDialInteractionTuning {
+        guard !data.isEmpty,
+              let tuning = try? JSONDecoder().decode(AZDialInteractionTuning.self, from: data) else {
+            return .default
+        }
+        return tuning
+    }
+
+    static func encodeTuning(_ tuning: AZDialInteractionTuning) -> Data {
+        (try? JSONEncoder().encode(tuning)) ?? Data()
+    }
+}
+
 /// 画面遷移用のアイテム編集ビュー
 struct ItemEditView: View {
     let pack: M1Pack
@@ -45,6 +62,10 @@ struct ItemEditView: View {
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
     @State private var isDraggingInsideQuantitySection = false
+    @State private var isShowingDialSettings = false
+
+    @AppStorage(PacklinDialSettings.styleKey) private var dialStyleID = DialStyle.shape.id
+    @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
 
     private let sectionCornerRadius: CGFloat = 12
     private var isBeginnerMode: Bool { displayMode == .beginner }
@@ -267,6 +288,14 @@ struct ItemEditView: View {
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
                         quantityCheckButton
+                        Spacer()
+                        Button {
+                            isShowingDialSettings = true
+                        } label: {
+                            Label("ダイアル設定", systemImage: "slider.horizontal.3")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .buttonStyle(.borderless)
                     }
                     ItemQuantityEditor(item: item)
                 }
@@ -470,6 +499,21 @@ struct ItemEditView: View {
                 onCancel: { isShowingMoveSheet = false }
             )
             .presentationDetents([.height(400)]) // シートの高さ
+        }
+        .sheet(isPresented: $isShowingDialSettings) {
+            NavigationStack {
+                AZDialSettingsView(
+                    tuning: dialTuningBinding,
+                    style: dialStyleBinding
+                )
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("完了") {
+                            isShowingDialSettings = false
+                        }
+                    }
+                }
+            }
         }
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }
@@ -728,6 +772,20 @@ struct ItemEditView: View {
         .buttonStyle(.borderless)
     }
 
+    private var dialStyleBinding: Binding<DialStyle> {
+        Binding(
+            get: { DialStyle.builtin(id: dialStyleID) ?? .shape },
+            set: { dialStyleID = $0.id }
+        )
+    }
+
+    private var dialTuningBinding: Binding<AZDialInteractionTuning> {
+        Binding(
+            get: { PacklinDialSettings.loadTuning(from: dialTuningData) },
+            set: { dialTuningData = PacklinDialSettings.encodeTuning($0) }
+        )
+    }
+
 }
 
 /// Popup用の簡易編集ビュー（数量のみ）
@@ -775,6 +833,9 @@ struct ItemQuickEditView: View {
 private struct ItemQuantityEditor: View {
     @Bindable var item: M3Item
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @AppStorage(PacklinDialSettings.styleKey) private var dialStyleID = DialStyle.shape.id
+    @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
+
     init(item: M3Item) {
         self._item = Bindable(item)
     }
@@ -866,6 +927,14 @@ private struct ItemQuantityEditor: View {
         usesCompactMetrics ? .title3 : .title2
     }
 
+    private var dialStyle: DialStyle {
+        DialStyle.builtin(id: dialStyleID) ?? .shape
+    }
+
+    private var dialTuning: AZDialInteractionTuning {
+        PacklinDialSettings.loadTuning(from: dialTuningData)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
@@ -912,7 +981,9 @@ private struct ItemQuantityEditor: View {
                             max: field.maxValue,
                             step: field.step,
                             stepperStep: 0,
-                            dialWidth: max(100, min(220, geo.size.width))
+                            style: dialStyle,
+                            dialWidth: max(100, min(220, geo.size.width)),
+                            tuning: dialTuning
                         )
                     }
                     .frame(minWidth: 100, maxWidth: .infinity, minHeight: 44, maxHeight: 44)

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -71,28 +71,22 @@
 /* Begin PBXFrameworksBuildPhase section */
 		C3D2BB692E6A7967002B900A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
 				C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */,
 				C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */,
 				C39A862C2F9356DC00644F0F /* AZDial in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C3D2BB782E6A7969002B900A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C3D2BB822E6A7969002B900A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -138,8 +132,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			fileSystemSynchronizedGroups = (
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 			);
@@ -171,8 +163,6 @@
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 			);
 			name = PacklinTests;
-			packageProductDependencies = (
-			);
 			productName = PackListTests;
 			productReference = C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -194,8 +184,6 @@
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
 			);
 			name = PacklinUITests;
-			packageProductDependencies = (
-			);
 			productName = PackListUITests;
 			productReference = C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -238,7 +226,7 @@
 				C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				C39A862A2F9356DC00644F0F /* XCRemoteSwiftPackageReference "AZDial" */,
 			);
-			preferredProjectObjectVersion = 77;
+			preferredProjectObjectVersion = 90;
 			productRefGroup = C3D2BB6D2E6A7967002B900A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -253,48 +241,36 @@
 /* Begin PBXResourcesBuildPhase section */
 		C3D2BB6A2E6A7967002B900A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C3D2BB792E6A7969002B900A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C3D2BB832E6A7969002B900A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C3D2BB682E6A7967002B900A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C3D2BB772E6A7969002B900A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C3D2BB812E6A7969002B900A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -312,7 +288,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		C3D2BB8D2E6A7969002B900A /* Debug */ = {
+		C3D2BB8D2E6A7969002B900A /* Debug configuration for PBXProject "Packlin" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -379,7 +355,7 @@
 			};
 			name = Debug;
 		};
-		C3D2BB8E2E6A7969002B900A /* Release */ = {
+		C3D2BB8E2E6A7969002B900A /* Release configuration for PBXProject "Packlin" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -439,7 +415,7 @@
 			};
 			name = Release;
 		};
-		C3D2BB902E6A7969002B900A /* Debug */ = {
+		C3D2BB902E6A7969002B900A /* Debug configuration for PBXNativeTarget "Packlin" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -483,7 +459,7 @@
 			};
 			name = Debug;
 		};
-		C3D2BB912E6A7969002B900A /* Release */ = {
+		C3D2BB912E6A7969002B900A /* Release configuration for PBXNativeTarget "Packlin" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -527,7 +503,7 @@
 			};
 			name = Release;
 		};
-		C3D2BB932E6A7969002B900A /* Debug */ = {
+		C3D2BB932E6A7969002B900A /* Debug configuration for PBXNativeTarget "PacklinTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -550,7 +526,7 @@
 			};
 			name = Debug;
 		};
-		C3D2BB942E6A7969002B900A /* Release */ = {
+		C3D2BB942E6A7969002B900A /* Release configuration for PBXNativeTarget "PacklinTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -573,7 +549,7 @@
 			};
 			name = Release;
 		};
-		C3D2BB962E6A7969002B900A /* Debug */ = {
+		C3D2BB962E6A7969002B900A /* Debug configuration for PBXNativeTarget "PacklinUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -594,7 +570,7 @@
 			};
 			name = Debug;
 		};
-		C3D2BB972E6A7969002B900A /* Release */ = {
+		C3D2BB972E6A7969002B900A /* Release configuration for PBXNativeTarget "PacklinUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -615,7 +591,7 @@
 			};
 			name = Release;
 		};
-		C3F132652EE2E14A00F21FB1 /* TestFlight */ = {
+		C3F132652EE2E14A00F21FB1 /* TestFlight configuration for PBXProject "Packlin" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -675,7 +651,7 @@
 			};
 			name = TestFlight;
 		};
-		C3F132662EE2E14A00F21FB1 /* TestFlight */ = {
+		C3F132662EE2E14A00F21FB1 /* TestFlight configuration for PBXNativeTarget "Packlin" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -721,7 +697,7 @@
 			};
 			name = TestFlight;
 		};
-		C3F132672EE2E14A00F21FB1 /* TestFlight */ = {
+		C3F132672EE2E14A00F21FB1 /* TestFlight configuration for PBXNativeTarget "PacklinTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -744,7 +720,7 @@
 			};
 			name = TestFlight;
 		};
-		C3F132682EE2E14A00F21FB1 /* TestFlight */ = {
+		C3F132682EE2E14A00F21FB1 /* TestFlight configuration for PBXNativeTarget "PacklinUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -771,41 +747,37 @@
 		C3D2BB672E6A7967002B900A /* Build configuration list for PBXProject "Packlin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C3D2BB8D2E6A7969002B900A /* Debug */,
-				C3D2BB8E2E6A7969002B900A /* Release */,
-				C3F132652EE2E14A00F21FB1 /* TestFlight */,
+				C3D2BB8D2E6A7969002B900A /* Debug configuration for PBXProject "Packlin" */,
+				C3D2BB8E2E6A7969002B900A /* Release configuration for PBXProject "Packlin" */,
+				C3F132652EE2E14A00F21FB1 /* TestFlight configuration for PBXProject "Packlin" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		C3D2BB8F2E6A7969002B900A /* Build configuration list for PBXNativeTarget "Packlin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C3D2BB902E6A7969002B900A /* Debug */,
-				C3D2BB912E6A7969002B900A /* Release */,
-				C3F132662EE2E14A00F21FB1 /* TestFlight */,
+				C3D2BB902E6A7969002B900A /* Debug configuration for PBXNativeTarget "Packlin" */,
+				C3D2BB912E6A7969002B900A /* Release configuration for PBXNativeTarget "Packlin" */,
+				C3F132662EE2E14A00F21FB1 /* TestFlight configuration for PBXNativeTarget "Packlin" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		C3D2BB922E6A7969002B900A /* Build configuration list for PBXNativeTarget "PacklinTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C3D2BB932E6A7969002B900A /* Debug */,
-				C3D2BB942E6A7969002B900A /* Release */,
-				C3F132672EE2E14A00F21FB1 /* TestFlight */,
+				C3D2BB932E6A7969002B900A /* Debug configuration for PBXNativeTarget "PacklinTests" */,
+				C3D2BB942E6A7969002B900A /* Release configuration for PBXNativeTarget "PacklinTests" */,
+				C3F132672EE2E14A00F21FB1 /* TestFlight configuration for PBXNativeTarget "PacklinTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		C3D2BB952E6A7969002B900A /* Build configuration list for PBXNativeTarget "PacklinUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C3D2BB962E6A7969002B900A /* Debug */,
-				C3D2BB972E6A7969002B900A /* Release */,
-				C3F132682EE2E14A00F21FB1 /* TestFlight */,
+				C3D2BB962E6A7969002B900A /* Debug configuration for PBXNativeTarget "PacklinUITests" */,
+				C3D2BB972E6A7969002B900A /* Release configuration for PBXNativeTarget "PacklinUITests" */,
+				C3F132682EE2E14A00F21FB1 /* TestFlight configuration for PBXNativeTarget "PacklinUITests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
@@ -823,8 +795,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SumPositive/AZDial";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.5;
+				branch = develop;
+				kind = branch;
 			};
 		};
 		C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
