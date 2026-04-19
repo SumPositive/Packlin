@@ -48,7 +48,6 @@ struct SettingView: View {
 
     @EnvironmentObject private var creditStore: CreditStore
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
     #if DEBUG
     @State private var showDebugUserIdAlert = false
     #endif
@@ -636,6 +635,7 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
         @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
         @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+        @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
         @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
         // GALoggerのため変更前の設定値を記録する
@@ -645,6 +645,7 @@ struct SettingView: View {
         @State var ona_linkCheckWithStock: Bool?
         @State var ona_linkCheckOffWithZero: Bool?
         @State var ona_displayMode: DisplayMode?
+        @State var ona_appearanceMode: AppearanceMode?
         @State var ona_rowTextLines: RowTextLines?
 
         var body: some View {
@@ -662,6 +663,25 @@ struct SettingView: View {
 
                     Picker("表示モード", selection: $displayMode) {
                         ForEach(DisplayMode.allCases) { mode in
+                            Text(mode.localizedKey)
+                                .tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                // 外観モード（システム追従／ライト／ダーク）
+                HStack(spacing: 8) {
+                    Label {
+                        Text("外観モード")
+                            .font(.callout)
+                    } icon: {
+                        Image(systemName: "circle.lefthalf.filled")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+
+                    Picker("外観モード", selection: $appearanceMode) {
+                        ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.localizedKey)
                                 .tag(mode)
                         }
@@ -759,6 +779,7 @@ struct SettingView: View {
                 ona_linkCheckWithStock = linkCheckWithStock
                 ona_linkCheckOffWithZero = linkCheckOffWithZero
                 ona_displayMode        = displayMode
+                ona_appearanceMode     = appearanceMode
                 ona_rowTextLines       = rowTextLines
             }
             .onDisappear {
@@ -792,6 +813,11 @@ struct SettingView: View {
                     // 表示モード切り替えを初心者・達人それぞれで判定して送信
                     GALogger.log(.function(name: "setting",
                                            option: "displayMode:" + displayMode.rawValue))
+                }
+                if let ona = ona_appearanceMode, ona != appearanceMode {
+                    // 外観モード切り替えを記録する
+                    GALogger.log(.function(name: "setting",
+                                           option: "appearanceMode:" + appearanceMode.rawValue))
                 }
                 if let ona = ona_rowTextLines, ona != rowTextLines {
                     // 行数設定の変更を計測してUI調整の傾向を知る

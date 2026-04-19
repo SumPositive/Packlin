@@ -12,11 +12,13 @@ import UIKit
 
 struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // 表示モード（初心者／上級者）をAppStorageで永続化
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
 
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
@@ -32,6 +34,10 @@ struct PackListView: View {
     private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
     // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
     private var isShowingEditSheet: Bool { editingPack != nil }
+    // シート表示時は自動モードも現在の外観へ解決して渡し、切り替え反映の遅れを避ける
+    private var settingSheetColorScheme: ColorScheme? {
+        appearanceMode.colorScheme ?? colorScheme
+    }
 
     var body: some View {
         ZStack {
@@ -219,6 +225,7 @@ struct PackListView: View {
         // 設定画面もシート表示へ変更
         .sheet(isPresented: $isShowSetting) {
             SettingView()
+                .preferredColorScheme(settingSheetColorScheme)
                 .presentationDetents([.height(SettingView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
@@ -372,4 +379,3 @@ struct ActivityView: UIViewControllerRepresentable {
     PackListView()
     //    EditPackView(pack: M1Pack(name: "TEST"))
 }
-

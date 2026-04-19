@@ -27,3 +27,36 @@ enum DisplayMode: String, CaseIterable, Identifiable, Codable {
         }
     }
 }
+
+/// アプリ全体の外観を切り替えるためのモード
+enum AppearanceMode: String, CaseIterable, Identifiable, Codable {
+    static let `default`: AppearanceMode = .automatic
+
+    case automatic
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .automatic:
+            return "自動"
+        case .light:
+            return "ライト"
+        case .dark:
+            return "ダーク"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .automatic:
+            return nil
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        }
+    }
+}

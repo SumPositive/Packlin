@@ -26,6 +26,7 @@ struct AppMain: App {
     @StateObject private var creditStore: CreditStore
     /// Undo/Redo を自前で管理する履歴サービス
     @StateObject private var historyService = UndoStackService()
+    @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
 
 //    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
 //    private let isFirebaseEnabled: Bool
@@ -104,40 +105,43 @@ struct AppMain: App {
 
     var body: some Scene {
         WindowGroup {
-            if let container = sharedModelContainer {
-                NavigationStack(path: $navigationStore.path) {
-                    PackListView()
-                        .navigationDestination(for: AppDestination.self) { destination in
-                            switch destination {
-                            case .groupList(let packID):
-                                GroupListScene(packID: packID)
-                            case .itemList(let packID, let groupID):
-                                ItemListScene(packID: packID, groupID: groupID)
-                            case .itemEdit(let packID, let groupID, let itemID, let sort):
-                                ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
-                            case .itemSortList(let packID, let sort):
-                                ItemSortListScene(packID: packID, sort: sort)
+            Group {
+                if let container = sharedModelContainer {
+                    NavigationStack(path: $navigationStore.path) {
+                        PackListView()
+                            .navigationDestination(for: AppDestination.self) { destination in
+                                switch destination {
+                                case .groupList(let packID):
+                                    GroupListScene(packID: packID)
+                                case .itemList(let packID, let groupID):
+                                    ItemListScene(packID: packID, groupID: groupID)
+                                case .itemEdit(let packID, let groupID, let itemID, let sort):
+                                    ItemEditScene(packID: packID, groupID: groupID, itemID: itemID, sort: sort)
+                                case .itemSortList(let packID, let sort):
+                                    ItemSortListScene(packID: packID, sort: sort)
+                                }
                             }
+                    }
+                    .onAppear {
+                        // ATT許可ダイアログを表示（UMP/AdMob SDKの要件）
+                        // 許可・拒否どちらでも npa=1 固定のため広告動作は変わらない
+                        ATTrackingManager.requestTrackingAuthorization { _ in }
+                        // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる
+                        let context = container.mainContext
+                        if let existing = context.undoManager as? UndoStackManager {
+                            existing.history = historyService
+                        } else {
+                            context.undoManager = UndoStackManager(context: context, history: historyService)
                         }
-                }
-                .onAppear {
-                    // ATT許可ダイアログを表示（UMP/AdMob SDKの要件）
-                    // 許可・拒否どちらでも npa=1 固定のため広告動作は変わらない
-                    ATTrackingManager.requestTrackingAuthorization { _ in }
-                    // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる
-                    let context = container.mainContext
-                    if let existing = context.undoManager as? UndoStackManager {
-                        existing.history = historyService
-                    } else {
-                        context.undoManager = UndoStackManager(context: context, history: historyService)
+                    }
+                    .modelContainer(container)
+                } else {
+                    DatabaseErrorView(error: containerError) {
+                        renameStoreForRecovery()
                     }
                 }
-                .modelContainer(container)
-            } else {
-                DatabaseErrorView(error: containerError) {
-                    renameStoreForRecovery()
-                }
             }
+            .preferredColorScheme(appearanceMode.colorScheme)
         }
         .environmentObject(creditStore)
         .environmentObject(historyService)

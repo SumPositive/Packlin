@@ -127,6 +127,8 @@ let DEF_linkCheckWithStock = true
 let DEF_linkCheckOffWithZero = false
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
+// 外観モード（自動／ライト／ダーク）
+let DEF_appearanceMode: AppearanceMode = .automatic
 // 行の最大表示行数（name／memo）
 let DEF_rowTextLines: RowTextLines = .minimal
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
@@ -146,6 +148,8 @@ enum AppStorageKey {
     static let linkCheckOffWithZero = "setting.linkCheckOffWithZero"
     // 表示モード（初心者／上級者）
     static let displayMode = "setting.displayMode"
+    // 外観モード（自動／ライト／ダーク）
+    static let appearanceMode = "setting.appearanceMode"
     // 行の表示行数（name／memo）
     static let rowTextLines = "setting.rowTextLines"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
@@ -315,4 +319,3 @@ let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
 ]
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
 let CHATGPT_GENERATION_CREDIT_COST = 1
-
