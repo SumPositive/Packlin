@@ -148,13 +148,26 @@ struct GroupListView: View {
                             }
 
                             GeometryReader { geo in
-                                HStack {
-                                    Spacer()
-                                    NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
+                                HStack(spacing: 0) {
+                                    Button {
+                                        editingGroup = group
+                                        popupAnchor = CGPoint(
+                                            x: geo.frame(in: .global).minX + geo.size.width / 6.0,
+                                            y: geo.frame(in: .global).minY
+                                        )
+                                    } label: {
                                         Color.clear
+                                            .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
-                                    .padding(.trailing, 8)
+                                    .frame(width: geo.size.width / 3.0)
+
+                                    NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
+                                        Color.clear
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .frame(width: geo.size.width * 2.0 / 3.0)
                                 }
                             }
                         }

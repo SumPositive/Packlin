@@ -53,12 +53,25 @@ struct PackListView: View {
                             
                             GeometryReader { geo in
                                 HStack(spacing: 0) {
-                                    Spacer()
-                                    NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
+                                    Button {
+                                        editingPack = pack
+                                        popupAnchor = CGPoint(
+                                            x: geo.frame(in: .global).minX + geo.size.width / 6.0,
+                                            y: geo.frame(in: .global).minY
+                                        )
+                                    } label: {
                                         Color.clear
+                                            .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
-                                    .padding(.trailing, 8)
+                                    .frame(width: geo.size.width / 3.0)
+
+                                    NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
+                                        Color.clear
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .frame(width: geo.size.width * 2.0 / 3.0)
                                 }
                             }
                         }
