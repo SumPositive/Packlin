@@ -36,7 +36,6 @@ struct GroupRowView: View {
         }
     }
     private var weightCapsuleState: QuantityCapsuleState {
-        guard showNeedWeight, 0 < group.needWeight else { return .over }
         if allSufficientStock { return .just }
         return .over
     }

@@ -32,7 +32,6 @@ struct PackRowView: View {
         }
     }
     private var weightCapsuleState: QuantityCapsuleState {
-        guard showNeedWeight, 0 < pack.needWeight else { return .over }
         if allSufficientStock { return .just }
         return .over
     }

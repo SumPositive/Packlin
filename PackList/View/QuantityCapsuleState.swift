@@ -22,7 +22,12 @@ enum QuantityCapsuleState {
     func backgroundStyle(defaultColor: Color) -> Color {
         switch self {
         case .just:
-            return Color.blue.opacity(0.14)
+            return Color(UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return UIColor.systemBlue.withAlphaComponent(0.32)
+                }
+                return UIColor.systemBlue.withAlphaComponent(0.14)
+            })
         case .under, .over:
             return defaultColor
         }
