@@ -232,7 +232,7 @@ struct PackListView: View {
         // Pack編集はポップアップからシート表示へ移行
         .sheet(item: $editingPack) { pack in
             PackEditView(pack: pack)
-                .presentationDetents([.height(580)])
+                .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }
         // 設定画面もシート表示へ変更

@@ -361,7 +361,7 @@ struct GroupListView: View {
             popupAnchor = nil
         }) { group in
             GroupEditView(group: group)
-                .presentationDetents([.height(580)])
+                .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }
         .sheet(isPresented: $showAiCreateSheet) {

@@ -71,6 +71,11 @@ struct ItemListView: View {
                         // Groupシートでは座標を使わないため、その都度リセットする
                         popupAnchor = nil
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        editingGroup = group
+                        popupAnchor = nil
+                    }
                     .background(COLOR_ROW_GROUP)
                     .cornerRadius(16)
                     .padding(.top, -20) // 上余白を減らす
@@ -261,7 +266,7 @@ struct ItemListView: View {
             popupAnchor = nil
         }) { group in
             GroupEditView(group: group)
-                .presentationDetents([.height(580)])
+                .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }
     }

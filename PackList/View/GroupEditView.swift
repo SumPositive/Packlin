@@ -67,120 +67,42 @@ struct GroupEditView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("グループ編集") {
-                    HStack {    // Actions
-                        // チェックON/OFF
-                        Button {
-                            // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-                            checkToggle()
-                        } label: {
-                            VStack {
-                                if allItemsChecked {
-                                    Image(systemName: "checkmark.square")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                    
-                                    Text("全✔︎ON→OFF")
-                                        .font(.caption)
-                                }else{
-                                    Image(systemName: "square")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                    
-                                    Text("OFF→全✔︎ON")
-                                        .font(.caption)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    actionBar
+
+                    editCard(title: "グループ名", minHeight: 74) {
+                        TextEditor(text: $group.name)
+                            .font(FONT_EDIT)
+                            .scrollContentBackground(.hidden)
+                            .onChange(of: group.name) { oldValue, newValue in
+                                // 最大文字数制限
+                                if APP_MAX_NAME_LEN < newValue.count {
+                                    group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
                                 }
                             }
-                        }
-                        .frame(width: 88) // on/off変化時に幅が変わらないように
-                        .tint(.accentColor)
-                        .padding(.horizontal, 8)
-                        
-                        // 複製
-                        Button {
-                            group.duplicate()
-                        } label: {
-                            VStack {
-                                Image(systemName: "plus.square.on.square")
-                                    .imageScale(.large)
-                                Text("複製")
-                                    .font(.caption)
-                            }
-                        }
-                        .tint(.accentColor)
-                        .padding(.horizontal, 8)
-
-                        // 移動（他パックへの移動や複製先を決める）
-                        Button {
-                            prepareMoveSheet()
-                            isShowingMoveSheet = true
-                        } label: {
-                            VStack {
-                                Image(systemName: "hand.point.up.left.and.text")
-                                    .imageScale(.large)
-                                Text("移動")
-                                    .font(.caption)
-                            }
-                        }
-                        .tint(.blue)
-                        .padding(.horizontal, 8)
-
-                        Spacer()
-
-                        // 削除
-                        Button {
-                            // シートを閉じてから削除処理を行う
-                            dismiss()
-                            group.delete()
-                        } label: {
-                            VStack {
-                                Image(systemName: "trash")
-                                    .imageScale(.large)
-                                //.symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                //.symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                
-                                Text("削除")
-                                    .font(.caption)
-                            }
-                        }
-                        .tint(.red)
-                        .padding(.horizontal, 8)
+                            .focused($nameIsFocused) // フォーカス状態とバインド
                     }
-                    // Form配下ではセル全体にボタン用のハイライトプレートが載り、
-                    // そのままだと各Buttonが同じ行に並んでいてもセル全体が同一の大きなボタンのように扱われてしまう。
-                    // これが原因で一度のタップが複数のButtonへ伝播し、同時にアクションが実行される状態になっていた。
-                    // BorderlessButtonStyleを適用するとセル全体のボタン化が解除され、
-                    // それぞれのButtonが独立したタップ領域として機能するようになる。
-                    .buttonStyle(BorderlessButtonStyle())
 
-                }
-                Section("グループ名") {
-                    TextEditor(text: $group.name)
-                        .font(FONT_EDIT)
-                        .onChange(of: group.name) { oldValue, newValue in
-                            // 最大文字数制限
-                            if APP_MAX_NAME_LEN < newValue.count {
-                                group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                    editCard(title: "メモ", minHeight: 112) {
+                        TextEditor(text: $group.memo)
+                            .font(FONT_EDIT)
+                            .scrollContentBackground(.hidden)
+                            .onChange(of: group.memo) { oldValue, newValue in
+                                // 最大文字数制限
+                                if APP_MAX_MEMO_LEN < newValue.count {
+                                    group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
+                                }
                             }
-                        }
-                        .focused($nameIsFocused) // フォーカス状態とバインド
-                        .frame(minHeight: 80, maxHeight: .infinity)
+                    }
                 }
-                Section("メモ") {
-                    TextEditor(text: $group.memo)
-                        .font(FONT_EDIT)
-                        .onChange(of: group.memo) { oldValue, newValue in
-                            // 最大文字数制限
-                            if APP_MAX_MEMO_LEN < newValue.count {
-                                group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                            }
-                        }
-                        .frame(minHeight: 80, maxHeight: .infinity)
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
             }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(Text("グループ編集"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -221,7 +143,88 @@ struct GroupEditView: View {
         }
     }
 
-    /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
+    private var actionBar: some View {
+        HStack(spacing: 8) {
+            compactActionButton(title: allItemsChecked ? "チェックOFF" : "チェックON",
+                                fixedWidth: 82,
+                                systemImage: allItemsChecked ? "checkmark.square" : "square",
+                                tint: .accentColor,
+                                action: checkToggle)
+
+            compactActionButton(title: "複製",
+                                systemImage: "plus.square.on.square",
+                                tint: .accentColor) {
+                group.duplicate()
+            }
+
+            compactActionButton(title: "移動",
+                                systemImage: "hand.point.up.left.and.text",
+                                tint: .blue) {
+                prepareMoveSheet()
+                isShowingMoveSheet = true
+            }
+
+            Spacer(minLength: 0)
+
+            compactActionButton(title: "削除",
+                                systemImage: "trash",
+                                tint: .red) {
+                // シートを閉じてから削除処理を行う
+                dismiss()
+                group.delete()
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .buttonStyle(.borderless)
+    }
+
+    private func compactActionButton(title: LocalizedStringKey,
+                                     fixedWidth: CGFloat? = nil,
+                                     systemImage: String,
+                                     tint: Color,
+                                     action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: systemImage)
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+            }
+            .frame(minWidth: 64)
+            .frame(width: fixedWidth)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 6)
+            .contentShape(Rectangle())
+        }
+        .tint(tint)
+    }
+
+    private func editCard<Content: View>(title: LocalizedStringKey,
+                                         minHeight: CGFloat,
+                                         @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            content()
+                .frame(minHeight: minHeight)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
+        }
+    }
+
+    /// 従来どおり、配下の全item.checkを現在の全チェック状態から反転する。.stockは設定に応じて連動する
     private func checkToggle() {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -229,22 +232,22 @@ struct GroupEditView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
-        let toggle = allItemsChecked
+        let checked = !allItemsChecked
         let items = group.child
         for item in items {
-            if toggle {
-                // ON --> OFF
-                item.check = false
-                if linkCheckOffWithZero {
-                    // チェックOFF時の在庫クリアは新設フラグで制御
-                    item.stock = 0
-                }
-            } else {
+            if checked {
                 // OFF --> ON
                 item.check = (0 < item.need)
                 // チェックと在庫数を連動させる
                 if linkCheckWithStock {
                     item.stock = item.need
+                }
+            } else {
+                // ON --> OFF
+                item.check = false
+                if linkCheckOffWithZero {
+                    // チェックOFF時の在庫クリアは新設フラグで制御
+                    item.stock = 0
                 }
             }
         }
@@ -412,4 +415,3 @@ private struct GroupMoveSheetView: View {
         }
     }
 }
-

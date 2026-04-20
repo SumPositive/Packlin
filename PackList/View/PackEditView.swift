@@ -33,132 +33,38 @@ struct PackEditView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("パック編集") {
-                    HStack {    // Actions
-                        // チェックON/OFF
-                        Button {
-                            // チェック・トグル中は多重タップを防ぎ、プログレスを表示する
-                            startCheckToggle()
-                        } label: {
-                            VStack {
-                                if allItemsChecked {
-                                    ZStack {
-                                        Image(systemName: "case")
-                                            .imageScale(.large)
-                                            .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                            .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                        Image(systemName: "checkmark")
-                                            .imageScale(.small)
-                                            .padding(.top, 4)
-                                    }
-                                    Text("全✔︎ON→OFF")
-                                        .font(.caption)
-                                }else{
-                                    Image(systemName: "case")
-                                        .imageScale(.large)
-                                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                        .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
-                                    Text("OFF→全✔︎ON")
-                                        .font(.caption)
-                                }
-                            }
-                        }
-                        .overlay(alignment: .center) {
-                            if isTogglingCheck {
-                                // 起動直後など処理が重い瞬間はスピナーを表示して進捗を見せる
-                                ProgressView()
-                                    .controlSize(.small)
-                            }
-                        }
-                        .frame(width: 88) // on/off変化時に幅が変わらないように
-                        .tint(.accentColor)
-                        .disabled(isTogglingCheck) // 進行中はタップを無効化
-                        .padding(.horizontal, 8)
-                        
-                        // 複製
-                        Button {
-                            pack.duplicate()
-                        } label: {
-                            VStack {
-                                Image(systemName: "plus.square.on.square")
-                                    .imageScale(.large)
-                                Text("複製")
-                                    .font(.caption)
-                            }
-                        }
-                        .tint(.accentColor)
-                        .padding(.horizontal, 8)
-                        
-                        // 共有
-                        Button {
-                            exportPack()
-                        } label: {
-                            VStack {
-                                Image(systemName: "square.and.arrow.up")
-                                    .imageScale(.large)
-                                Text("共有・保存")
-                                    .font(.caption)
-                            }
-                        }
-                        .tint(.accentColor)
-                        .padding(.leading, 16)
-                        
-                        Spacer()
-                        
-                        // 削除
-                        Button {
-                            // シートを強制的に閉じてから削除処理へ進める
-                            dismiss()
-                            // Packを削除する
-                            pack.delete()
-                        } label: {
-                            VStack {
-                                Image(systemName: "trash")
-                                    .imageScale(.large)
-                                Text("削除")
-                                    .font(.caption)
-                            }
-                        }
-                        .tint(.red)
-                        .padding(.horizontal, 8)
-                    }
-                    // Form配下ではセル全体にボタン用のハイライトプレートが載り、
-                    // そのままだと各Buttonが同じ行に並んでいてもセル全体が同一の大きなボタンのように扱われてしまう。
-                    // これが原因で一度のタップが複数のButtonへ伝播し、同時にアクションが実行される状態になっていた。
-                    // BorderlessButtonStyleを適用するとセル全体のボタン化が解除され、
-                    // それぞれのButtonが独立したタップ領域として機能するようになる。
-                    .buttonStyle(BorderlessButtonStyle())
-                }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    actionBar
 
-                Section("パック名") {
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $pack.name)
-                            .font(FONT_EDIT)
-                            .onChange(of: pack.name) { oldValue, newValue in
-                                // 最大文字数制限（向きは < で統一）
-                                if APP_MAX_NAME_LEN < newValue.count {
-                                    pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                    editCard(title: "パック名", minHeight: 74) {
+                        ZStack(alignment: .topLeading) {
+                            TextEditor(text: $pack.name)
+                                .font(FONT_EDIT)
+                                .scrollContentBackground(.hidden)
+                                .onChange(of: pack.name) { oldValue, newValue in
+                                    // 最大文字数制限（向きは < で統一）
+                                    if APP_MAX_NAME_LEN < newValue.count {
+                                        pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
+                                    }
                                 }
+                                .focused($nameIsFocused) // フォーカス状態とバインド
+
+                            if pack.name.isEmpty {
+                                // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
+                                Text("新しいパックの名前を入れてください")
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 8)
+                                    .padding(.horizontal, 5)
+                                    .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
                             }
-                            .focused($nameIsFocused) // フォーカス状態とバインド
-                        
-                        if pack.name.isEmpty {
-                            // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
-                            Text("新しいパックの名前を入れてください")
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 20)
-                                .padding(.horizontal, 16)
-                                .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
                         }
                     }
-                    .frame(minHeight: 80, maxHeight: .infinity)
-                }
-                
-                Section("メモ") {
-                    ZStack(alignment: .topLeading) {
+
+                    editCard(title: "メモ", minHeight: 112) {
                         TextEditor(text: $pack.memo)
                             .font(FONT_EDIT)
+                            .scrollContentBackground(.hidden)
                             .onChange(of: pack.memo) { oldValue, newValue in
                                 // 最大文字数制限（こちらも < の形で統一）
                                 if APP_MAX_MEMO_LEN < newValue.count {
@@ -166,9 +72,14 @@ struct PackEditView: View {
                                 }
                             }
                     }
-                    .frame(minHeight: 80, maxHeight: .infinity)
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
             }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(Text("パック編集"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 navigationToolbar
             }
@@ -189,6 +100,113 @@ struct PackEditView: View {
             pack.memo = pack.memo.trimTrailSpacesAndNewlines
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
+        }
+    }
+
+    private var actionBar: some View {
+        HStack(spacing: 8) {
+            compactActionButton(title: allItemsChecked ? "チェックOFF" : "チェックON",
+                                fixedWidth: 82,
+                                tint: .accentColor,
+                                action: startCheckToggle) {
+                ZStack {
+                    Image(systemName: "case")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical)
+                    if allItemsChecked {
+                        Image(systemName: "checkmark")
+                            .imageScale(.small)
+                            .padding(.top, 4)
+                    }
+                }
+            }
+            .overlay(alignment: .center) {
+                if isTogglingCheck {
+                    // 起動直後など処理が重い瞬間はスピナーを表示して進捗を見せる
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
+            .disabled(isTogglingCheck) // 進行中はタップを無効化
+
+            compactActionButton(title: "複製",
+                                systemImage: "plus.square.on.square",
+                                tint: .accentColor) {
+                pack.duplicate()
+            }
+
+            compactActionButton(title: "共有",
+                                systemImage: "square.and.arrow.up",
+                                tint: .accentColor,
+                                action: exportPack)
+
+            Spacer(minLength: 0)
+
+            compactActionButton(title: "削除",
+                                systemImage: "trash",
+                                tint: .red) {
+                // シートを強制的に閉じてから削除処理へ進める
+                dismiss()
+                // Packを削除する
+                pack.delete()
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .buttonStyle(.borderless)
+    }
+
+    private func compactActionButton(title: LocalizedStringKey,
+                                     systemImage: String,
+                                     tint: Color,
+                                     action: @escaping () -> Void) -> some View {
+        compactActionButton(title: title, tint: tint, action: action) {
+            Image(systemName: systemImage)
+                .imageScale(.large)
+                .symbolRenderingMode(.hierarchical)
+        }
+    }
+
+    private func compactActionButton<Icon: View>(title: LocalizedStringKey,
+                                                 fixedWidth: CGFloat? = nil,
+                                                 tint: Color,
+                                                 action: @escaping () -> Void,
+                                                 @ViewBuilder icon: () -> Icon) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                icon()
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+            }
+            .frame(minWidth: 64)
+            .frame(width: fixedWidth)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 6)
+            .contentShape(Rectangle())
+        }
+        .tint(tint)
+    }
+
+    private func editCard<Content: View>(title: LocalizedStringKey,
+                                         minHeight: CGFloat,
+                                         @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            content()
+                .frame(minHeight: minHeight)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
         }
     }
 
@@ -240,13 +258,13 @@ struct PackEditView: View {
                 // 処理完了後にスピナーを消す
                 isTogglingCheck = false
             }
-            // チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-            checkToggle()
+            // 従来どおり、現在の全チェック状態からON/OFFを切り替える
+            updateChecks(checked: !allItemsChecked)
         }
     }
 
-    /// チェック・トグル；配下の全item.checkを反転する。.stockはそのまま
-    private func checkToggle() {
+    /// 配下の全item.checkを指定状態へ揃える。.stockは設定に応じて連動する
+    private func updateChecks(checked: Bool) {
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
         defer {
@@ -254,22 +272,21 @@ struct PackEditView: View {
             modelContext.undoManager?.groupingEnd()
         }
 
-        let toggle = allItemsChecked
         let items = pack.child.flatMap { $0.child }
         for item in items {
-            if toggle {
-                // ON --> OFF
-                item.check = false
-                if linkCheckOffWithZero {
-                    // チェック解除時の在庫クリアは新フラグで管理
-                    item.stock = 0
-                }
-            }else{
+            if checked {
                 // OFF --> ON
                 item.check = (0 < item.need)
                 // チェックと在庫数を連動させる
                 if linkCheckWithStock {
                     item.stock = item.need
+                }
+            }else{
+                // ON --> OFF
+                item.check = false
+                if linkCheckOffWithZero {
+                    // チェック解除時の在庫クリアは新フラグで管理
+                    item.stock = 0
                 }
             }
         }
@@ -320,4 +337,3 @@ struct PackEditView: View {
         return sanitized.isEmpty ? "Pack_unnamed" : sanitized
     }
 }
-
