@@ -124,7 +124,7 @@ let DEF_weightDisplayInKg = true
 // チェックONで在庫数を満たす
 let DEF_linkCheckWithStock = true
 // チェックOFFで在庫数を0にする
-let DEF_linkCheckOffWithZero = false
+let DEF_linkCheckOffWithZero = true
 // ヘッダーの説明を表示するモード（初心者／上級者）
 let DEF_displayMode: DisplayMode = .beginner
 // 外観モード（自動／ライト／ダーク）
