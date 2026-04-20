@@ -21,6 +21,7 @@ struct ItemSortListView: View {
     @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -188,6 +189,7 @@ struct ItemSortListView: View {
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
+                .environment(\.defaultMinListRowHeight, rowTextLines.usesExtraSmallItemRow ? 38 : 44)
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)

@@ -14,6 +14,7 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
     case twoLines = "two"
     case oneLine = "one"
     case minimal = "mini"
+    case extraSmall = "extraSmall"
 
     // デフォルト値（AppStorage初期化にも使う）
     static let `default`: RowTextLines = DEF_rowTextLines
@@ -31,6 +32,8 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
             return "1行"
         case .minimal:
             return "最小"
+        case .extraSmall:
+            return "極小"
         }
     }
 
@@ -41,7 +44,7 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
             return 3
         case .twoLines:
             return 2
-        case .oneLine, .minimal:
+        case .oneLine, .minimal, .extraSmall:
             return 1
         }
     }
@@ -55,13 +58,18 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
             return 2
         case .oneLine:
             return 1
-        case .minimal:
+        case .minimal, .extraSmall:
             return 0
         }
     }
 
     /// 重量計や数量カプセルをname行に寄せるかどうか
     var placeAccessoryOnNameLine: Bool {
-        self == .minimal
+        self == .minimal || self == .extraSmall
+    }
+
+    /// アイテム行だけをさらに詰める極小表示かどうか
+    var usesExtraSmallItemRow: Bool {
+        self == .extraSmall
     }
 }

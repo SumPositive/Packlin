@@ -20,6 +20,7 @@ struct ItemListView: View {
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var canUndo = false
     @State private var canRedo = false
@@ -90,6 +91,7 @@ struct ItemListView: View {
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 8)
+            .environment(\.defaultMinListRowHeight, rowTextLines.usesExtraSmallItemRow ? 38 : 44)
             .navigationBarBackButtonHidden(true)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設し、タイトルを下段に分離

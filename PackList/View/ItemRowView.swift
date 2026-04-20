@@ -33,6 +33,18 @@ struct ItemRowView: View {
     private var memoLineLimit: Int { rowTextLines.memoLineLimit }
     private var showMemo: Bool { 0 < memoLineLimit }
     private var showQuantityOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
+    private var isExtraSmallRow: Bool { rowTextLines.usesExtraSmallItemRow }
+    private var itemRowHeight: CGFloat { isExtraSmallRow ? 38 : rowHeight }
+    private var contentVerticalPadding: CGFloat { isExtraSmallRow ? 0 : 4 }
+    private var checkTopPadding: CGFloat { isExtraSmallRow ? 0 : 8 }
+    private var checkBottomPadding: CGFloat { isExtraSmallRow ? 0 : 12 }
+    private var checkTrailingPadding: CGFloat { isExtraSmallRow ? 5 : 8 }
+    private var quantityHorizontalPadding: CGFloat { isExtraSmallRow ? 4 : 5 }
+    private var quantityVerticalPadding: CGFloat { isExtraSmallRow ? 0 : 3 }
+    private var quantityLeadingPadding: CGFloat { isExtraSmallRow ? 5 : 8 }
+    private var itemIconScale: Image.Scale { .large }
+    private var nameFont: Font { FONT_NAME }
+    private var quantityFont: Font { FONT_WEIGHT }
     private var limitedName: String {
         // 改行数で切ってから標準の末尾トランケートに任せる
         item.name.limitedByNewlines(maxLines: nameLineLimit)
@@ -101,16 +113,16 @@ struct ItemRowView: View {
                               : item.need == 0 ? "circle.fill"      // Need = 0
                               : item.need <= item.stock ? "circle.circle"
                               : "circle")
-                        .imageScale(.large)
+                        .imageScale(itemIconScale)
                         .tint(item.need == 0 ? .secondary : .accentColor)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                     }
                     .buttonStyle(BorderlessButtonStyle())
-                    .padding(.top, 8)
-                    .padding(.bottom, 12)// タップ範囲を広げるため
+                    .padding(.top, checkTopPadding)
+                    .padding(.bottom, checkBottomPadding)// タップ範囲を広げるため
                     .padding(.leading, 0)
-                    .padding(.trailing, 8)
+                    .padding(.trailing, checkTrailingPadding)
                     // 名称
                     Group {
                         if item.name.isEmpty {
@@ -119,7 +131,7 @@ struct ItemRowView: View {
                             Text(verbatim: limitedName)
                         }
                     }
-                    .font(FONT_NAME)
+                    .font(nameFont)
                     .multilineTextAlignment(.leading)
                     // 指定行数まで折り返し、それ以上は末尾トランケートに任せる
                     .lineLimit(nameLineLimit, reservesSpace: false)
@@ -128,7 +140,7 @@ struct ItemRowView: View {
                     // 最小表示時は数量カプセルをname行の右端へ寄せる
                     if showQuantityOnNameLine {
                         quantityButton()
-                            .padding(.leading, 8)
+                            .padding(.leading, quantityLeadingPadding)
                     }
                 }
 
@@ -172,9 +184,9 @@ struct ItemRowView: View {
                     Text("item (\(item.order)) [\(item.id)]")
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, contentVerticalPadding)
         }
-        .frame(minHeight: rowHeight)
+        .frame(minHeight: itemRowHeight)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
         .padding(.leading, 0)
         .transition(.move(edge: .top).combined(with: .opacity))
@@ -232,17 +244,16 @@ private extension ItemRowView {
             onEdit(item, po)
         } label: {
             // 数量表示
-            Text(quantityLabelText)
-                .font(FONT_WEIGHT)
+                Text(quantityLabelText)
+                .font(quantityFont)
                 .foregroundStyle(COLOR_WEIGHT)
         }
         .buttonStyle(BorderlessButtonStyle())
-        .padding(.horizontal, 5)
-        .padding(.vertical, 3)
+        .padding(.horizontal, quantityHorizontalPadding)
+        .padding(.vertical, quantityVerticalPadding)
         .background(
             Capsule()
                 .fill(COLOR_ROW_GROUP)
         )
     }
 }
-
