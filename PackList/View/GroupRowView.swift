@@ -29,14 +29,16 @@ struct GroupRowView: View {
     private var weightLabelText: String? {
         if showNeedWeight {
             guard 0 < group.stockWeight || 0 < group.needWeight else { return nil }
-            // 表示単位は重量ごとに決めるため、gとkgが混在するケースにも対応する
-            let stockText = formattedWeightWithUnit(group.stockWeight)
-            let needText  = formattedWeightWithUnit(group.needWeight)
-            return "\(stockText)／\(needText)"
+            return formattedWeightProgress(stock: group.stockWeight, need: group.needWeight)
         } else {
             guard 0 < group.stockWeight else { return nil }
             return formattedWeightWithUnit(group.stockWeight)
         }
+    }
+    private var weightCapsuleState: QuantityCapsuleState {
+        guard showNeedWeight, 0 < group.needWeight else { return .over }
+        if allSufficientStock { return .just }
+        return .over
     }
     // 全チェック済み
     private var allItemsChecked: Bool {
@@ -115,7 +117,7 @@ struct GroupRowView: View {
                 Spacer()
                 // 最小表示時は重量を右側へ寄せる
                 if showWeightOnNameLine, let weightLabelText {
-                    weightLabel(weightLabelText)
+                    weightLabel(weightLabelText, state: weightCapsuleState)
                         .padding(.horizontal, 8)
                 }
             }
@@ -130,7 +132,7 @@ struct GroupRowView: View {
                     let weightOnSecondRow = !showWeightOnNameLine && weightLabelText != nil
 
                     if weightOnSecondRow, let weightLabelText {
-                        weightLabel(weightLabelText)
+                        weightLabel(weightLabelText, state: weightCapsuleState)
                     }else{
                         Rectangle()
                             .frame(width: 24, height: 1)
@@ -214,18 +216,30 @@ private extension GroupRowView {
         return "\(weight.decimalGrouped)\(String(localized: "g"))"
     }
 
-    /// 重量カプセルの共通ビュー
+    func formattedWeightProgress(stock: Int, need: Int) -> String {
+        if 0 < need, stock == need {
+            return formattedWeightWithUnit(need)
+        }
+
+        if weightDisplayInKg, 1000 <= stock || 1000 <= need {
+            let stockKilogram = Double(stock) / 1000.0
+            let needKilogram = Double(need) / 1000.0
+            return "\(stockKilogram.oneDecimalGrouped)/\(needKilogram.oneDecimalGrouped)\(String(localized: "kg"))"
+        }
+
+        return "\(stock.decimalGrouped)/\(need.decimalGrouped)\(String(localized: "g"))"
+    }
+
     @ViewBuilder
-    func weightLabel(_ text: String) -> some View {
+    func weightLabel(_ text: String, state: QuantityCapsuleState) -> some View {
         Text(verbatim: text)
             .font(FONT_WEIGHT)
-            .foregroundStyle(COLOR_WEIGHT)
+            .foregroundStyle(state.foregroundStyle)
             .padding(.horizontal, 5)
             .padding(.vertical, 3)
             .background(
                 Capsule()
-                    .fill(isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP)
+                    .fill(state.backgroundStyle(defaultColor: isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP))
             )
     }
 }
-

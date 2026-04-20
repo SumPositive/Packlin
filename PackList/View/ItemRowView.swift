@@ -69,16 +69,17 @@ struct ItemRowView: View {
         self.item = item
         self.onEdit = onEdit
     }
-    // 数量表示Text
+    private var weightLabelText: String? {
+        guard 0 < item.weight else { return nil }
+        return "\(item.weight.decimalGrouped)\(weightUnit)"
+    }
     private var quantityLabelText: String {
-        var text: String = ""
-        if 0 < item.weight {
-            // 個重量
-            text = "\(item.weight.decimalGrouped)\(weightUnit)　"
-        }
-        // 在庫数／必要数
-        text += "\(item.stock.decimalGrouped)／\(item.need.decimalGrouped)"
-        return text
+        "\(item.stock.decimalGrouped)/\(item.need.decimalGrouped)"
+    }
+    private var quantityCapsuleState: QuantityCapsuleState {
+        guard 0 < item.need else { return 0 < item.stock ? .just : .over }
+        if item.stock < item.need { return .under }
+        return .just
     }
 
 
@@ -243,17 +244,30 @@ private extension ItemRowView {
                              y: rf.minY)
             onEdit(item, po)
         } label: {
-            // 数量表示
-                Text(quantityLabelText)
-                .font(quantityFont)
-                .foregroundStyle(COLOR_WEIGHT)
+            HStack(spacing: 4) {
+                if let weightLabelText {
+                    infoCapsule(weightLabelText, state: quantityCapsuleState)
+                }
+                infoCapsule(quantityLabelText, state: quantityCapsuleState)
+            }
+            // カプセル間の隙間も含め、少し広めに数量編集のタップ対象にする
+            .padding(.horizontal, 4)
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
         }
         .buttonStyle(BorderlessButtonStyle())
-        .padding(.horizontal, quantityHorizontalPadding)
-        .padding(.vertical, quantityVerticalPadding)
-        .background(
-            Capsule()
-                .fill(COLOR_ROW_GROUP)
-        )
+    }
+
+    @ViewBuilder
+    func infoCapsule(_ text: String, state: QuantityCapsuleState) -> some View {
+        Text(verbatim: text)
+            .font(quantityFont)
+            .foregroundStyle(state.foregroundStyle)
+            .padding(.horizontal, quantityHorizontalPadding)
+            .padding(.vertical, quantityVerticalPadding)
+            .background(
+                Capsule()
+                    .fill(state.backgroundStyle(defaultColor: COLOR_ROW_GROUP))
+            )
     }
 }
