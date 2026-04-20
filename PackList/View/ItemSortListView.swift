@@ -337,8 +337,6 @@ struct ItemSortListView: View {
 
                     if isShowingPopup {
                         if abs(horizontal) <= 80 && abs(vertical) <= 80 { return }
-                        editingItem = nil
-                        popupAnchor = nil
                         return
                     }
 

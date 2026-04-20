@@ -252,9 +252,10 @@ struct ItemListView: View {
 
                     if isShowingPopup {
                         if abs(horizontal) <= 80 && abs(vertical) <= 80 { return }
-                        editingGroup = nil
-                        editingItem = nil
-                        popupAnchor = nil
+                        if editingGroup != nil {
+                            editingGroup = nil
+                            popupAnchor = nil
+                        }
                         return
                     }
 
