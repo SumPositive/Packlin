@@ -232,7 +232,7 @@ private extension GroupRowView {
 
     @ViewBuilder
     func weightLabel(_ text: String, state: QuantityCapsuleState) -> some View {
-        Text(verbatim: text)
+        compactSlashText(text)
             .font(FONT_WEIGHT)
             .foregroundStyle(state.foregroundStyle)
             .padding(.horizontal, 5)
@@ -241,5 +241,20 @@ private extension GroupRowView {
                 Capsule()
                     .fill(state.backgroundStyle(defaultColor: isHeader ? COLOR_ROW_BACK : COLOR_ROW_GROUP))
             )
+    }
+
+    @ViewBuilder
+    func compactSlashText(_ text: String) -> some View {
+        if let slashIndex = text.firstIndex(of: "/") {
+            let left = String(text[..<slashIndex])
+            let right = String(text[text.index(after: slashIndex)...])
+            HStack(spacing: 1) {
+                Text(verbatim: left)
+                Text(verbatim: "/")
+                Text(verbatim: right)
+            }
+        } else {
+            Text(verbatim: text)
+        }
     }
 }
