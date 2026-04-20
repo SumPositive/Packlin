@@ -120,7 +120,10 @@ struct GroupEditView: View {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
             if group.name.isEmpty {
-                nameIsFocused = true
+                Task { @MainActor in
+                    await Task.yield()
+                    nameIsFocused = true
+                }
             }
         }
         .onDisappear() {

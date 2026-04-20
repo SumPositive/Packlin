@@ -325,6 +325,7 @@ struct ItemListView: View {
     
     /// アイテム追加
     func addItem() {
+        var newItemID: M3Item.ID?
         // 履歴サービスを利用して新規追加を1つのアクションとして記録する
         history.perform(context: modelContext) {
             let items = sortedItems
@@ -348,6 +349,15 @@ struct ItemListView: View {
             // DB追加
             modelContext.insert(newItem)
             // child 配列はそのままにしておき、表示側で order ソートする
+            newItemID = newItem.id
+        }
+
+        if let newItemID {
+            navigationStore.path = NavigationPath([
+                AppDestination.groupList(packID: pack.id),
+                AppDestination.itemList(packID: pack.id, groupID: group.id),
+                AppDestination.itemEdit(packID: pack.id, groupID: group.id, itemID: newItemID, sort: nil)
+            ])
         }
     }
 

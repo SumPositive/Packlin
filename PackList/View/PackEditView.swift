@@ -93,6 +93,12 @@ struct PackEditView: View {
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
+            if pack.name.isEmpty {
+                Task { @MainActor in
+                    await Task.yield()
+                    nameIsFocused = true
+                }
+            }
         }
         .onDisappear() {
             // 末尾のスペースと改行を除去

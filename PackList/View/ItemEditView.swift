@@ -468,7 +468,10 @@ struct ItemEditView: View {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
             if item.name.isEmpty {
-                focusedField = .name
+                Task { @MainActor in
+                    await Task.yield()
+                    focusedField = .name
+                }
             }
         }
         .onDisappear {

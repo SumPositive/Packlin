@@ -437,6 +437,8 @@ struct GroupListView: View {
             let newGroup = M2Group(name: "", order: newOrder, parent: pack)
             modelContext.insert(newGroup)
             // child 配列はそのまま。表示時に order ソートされる
+            editingGroup = newGroup
+            popupAnchor = nil
         }
     }
 
