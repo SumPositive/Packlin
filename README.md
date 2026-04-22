@@ -1,75 +1,83 @@
 # モチメモ Packlin
 
-A packing list and checklist app for iOS, built with SwiftUI.
+iOS 向けの持ち物リスト・チェックリストアプリです。SwiftUI で開発しています。
+
+**User Guide**
+[English](https://azukid.com/en/sumpo/Packlin/packlin.html) / [日本語](https://azukid.com/jp/sumpo/Packlin/packlin.html)
 
 ![Platform](https://img.shields.io/badge/platform-iOS%2016%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-6-orange)
 [![App Store](https://img.shields.io/badge/App%20Store-Download-blue)](https://apps.apple.com/app/id495525984)
 
-## Overview
+## 概要
 
-Packlin helps you manage packing lists for travel, camping, work, and everyday carry. Originally released in 2010, fully rebuilt in SwiftUI for v3.
+Packlin は、旅行、キャンプ、出張、日常の持ち物をパック単位で管理するアプリです。2010 年に初版を公開し、現在の v3 では SwiftUI ベースで再構築しています。
 
-Includes **Chappie** — an AI assistant that generates and organizes list items on your behalf.
+パック、グループ、アイテムの 3 階層で持ち物を整理し、必要数、在庫数、重量、チェック状態をまとめて確認できます。
 
-## Features
+AI アシスタント **チャッピー** によるパック作成・修正にも対応しています。
 
-### Core
-- 3-tier hierarchy: **Pack → Group → Item**
-- Check items individually; track required quantity and stock quantity
-- Register weight per item (g); view total weight per pack
-- Drag-and-drop reordering within any list
-- Move or duplicate items across groups and packs
-- Move or duplicate groups across packs
-- Undo / Redo (up to 10 steps each)
+## 機能
 
-### Item Overview
-- Browse all items in a pack across every group from a single screen
-- Sort by: unchecked, shortage count, shortage weight, or stock weight
-- Keyword search (name and memo)
-- Auto-sort: list re-orders automatically as you update items
+- **3階層のリスト管理** — パック、グループ、アイテムで持ち物を整理できます。
+- チェック管理 — アイテムごとにチェック状態、必要数、在庫数を管理できます。
+- 重量管理 — アイテム重量を登録し、グループ・パック単位の合計重量を確認できます。
+- 並べ替え — パック、グループ、アイテムをドラッグ操作で並べ替えできます。
+- 移動・複製 — アイテムはグループ間・パック間で移動または複製できます。グループもパック間で移動または複製できます。
+- 取り消し / やり直し — 変更操作を戻す、やり直す操作に対応しています。
+- アイテム縦覧 — パック内の全アイテムをグループ横断で一覧表示できます。
+- 並べ替え表示 — 未チェック順、不足数順、不足重量順、在庫重量順で確認できます。
+- 検索 — アイテム名とメモを対象に検索できます。
+- 自動並べ替え — 編集内容に応じてアイテム縦覧の表示順を更新できます。
+- 数量入力 — ダイアル操作とテンキー入力に対応しています。
+- ダイアル設定 — ダイアルのスタイルや操作感度を設定できます。
+- 共有・バックアップ — パック単体を `.packlin` ファイルとして共有できます。全パックのバックアップ出力と読み込みにも対応しています。
+- チャッピー — 自由入力からパックを作成したり、既存パックの修正案を生成できます。
 
-### Quantity Input
-- **Dial**: drag left/right to increment — customizable style and sensitivity (Dial Settings)
-- **Numeric keypad**: tap a value field to open a dedicated keypad sheet
+## 設定
 
-### Sharing & Backup
-- Export a single pack as a `.packlin` file via AirDrop, email, etc.
-- Export all packs as a backup file; import to restore on any device
+- 表示モード — 初心者、達人
+- 外観モード — 自動、ライト、ダーク
+- 明細表示 — 極小、最小、1行、2行、3行
+- 新規追加位置 — 先頭、末尾
+- 重量表示 — 必要重量の表示、1000g 以上の kg 表示
+- チェックと在庫数の連動 — チェックONで在庫を満たす、チェックOFFで在庫を0にする
+- 編集時の自動並べ替え
 
-### AI (Chappy)
-- Generate a complete pack from a free-text description
-- Revise an existing pack with AI suggestions
-- 1 AI ticket per generation; tickets available via in-app purchase or rewarded ads
+## チャッピーとバックエンド
 
-### Settings
-- Display mode: Beginner (hints shown) / Expert (compact)
-- Appearance: System / Light / Dark
-- Row detail: Minimal / 1 line / 2 lines / 3 lines
-- New item position: top or bottom of list
-- Weight display: show required weight; switch to kg above 1,000 g
-- Check ↔ stock linking: fill stock on check-on; clear stock on check-off
+チャッピーやチケット関連の一部機能では、軽量なバックエンド `azuki-api` を利用します。
 
-## Backend (azuki-api)
+- 認証 — ログインや個人情報登録なしの端末ベース認証
+- 購入 — アプリ内課金チケットの検証
+- 広告 — リワード広告視聴によるチケット付与
 
-Some features require a lightweight backend:
+## StoreKit テスト
 
-- **Auth** — device-based authentication without login or personal data
-- **Purchase** — validates in-app purchase tickets
-- **Ads** — rewards users for watching ads
+- 実機で Sandbox Apple ID を App Store にサインインして確認します。
+- `.storekit` 設定ファイルは不要です。
+- TestFlight ビルドは StoreKit sandbox モードで動作し、実課金は発生しません。
 
-## StoreKit Testing
+## 構成
 
-- Use a real device with a **Sandbox Apple ID** signed in to the App Store
-- No `.storekit` configuration file is required
-- TestFlight builds run in StoreKit sandbox mode — no real charges occur
+```text
+PackList/
+├── App/              — アプリ起点、設定、ナビゲーション、共通定数
+├── Model/            — SwiftData モデル、表示モード、並べ替え定義
+├── View/             — パック、グループ、アイテム、設定、AI、共有などの画面
+└── Resources/        — ローカライズ、サンプルデータ、アセット
+```
 
-## Requirements
+**主な依存関係**
+- [AZDial](https://github.com/SumPositive/AZDial) — ダイアル入力 UI
+- Firebase / Google Mobile Ads — 認証、分析、広告、関連バックエンド連携
+
+## 必要環境
 
 - iOS 16.0+
-- Xcode 16+
+- Xcode 26+
 - Swift 6
 
-## License
+## ライセンス
 
-Source available for reference. All rights reserved.
+ソースは参照用に公開しています。著作権は保持しています。
