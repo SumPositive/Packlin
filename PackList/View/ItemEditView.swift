@@ -292,7 +292,7 @@ struct ItemEditView: View {
                         Button {
                             isShowingDialSettings = true
                         } label: {
-                            Label("ダイアル設定", systemImage: "slider.horizontal.3")
+                            Label("item.quantity.dialSettings", systemImage: "slider.horizontal.3")
                                 .font(.caption.weight(.semibold))
                         }
                         .buttonStyle(.borderless)

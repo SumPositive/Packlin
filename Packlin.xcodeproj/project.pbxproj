@@ -212,12 +212,12 @@
 				};
 			};
 			buildConfigurationList = C3D2BB672E6A7967002B900A /* Build configuration list for PBXProject "Packlin" */;
-			developmentRegion = en;
+				developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
-				ja,
-				Base,
+					ja,
+					en,
+					Base,
 			);
 			mainGroup = C3D2BB632E6A7967002B900A;
 			minimizedProjectReferenceProxies = 1;
