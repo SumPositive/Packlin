@@ -127,7 +127,7 @@ struct ItemRowView: View {
                     // 名称
                     Group {
                         if item.name.isEmpty {
-                            Text("新しいアイテム")
+                            Text("new.item")
                         }else{
                             Text(verbatim: limitedName)
                         }
@@ -160,7 +160,7 @@ struct ItemRowView: View {
                         // メモ
                         if showMemo {
                             if isBeginnerMode, item.name.isEmpty, item.memo.isEmpty {
-                                Text("アイテムとは、持ち物そのもの。最小単位です")
+                                Text("items.things.smallest.pieces")
                                     .font(FONT_MEMO)
                                     // 改行で行数を切り、lineLimitで末尾トランケートする
                                     .multilineTextAlignment(.leading)
@@ -217,7 +217,7 @@ struct ItemRowView: View {
             Button {
                 item.delete()
             } label: {
-                Label("削除", systemImage: "trash")
+                Label("delete", systemImage: "trash")
             }
             .tint(.orange)
             .disabled(item.parent == nil)
@@ -225,7 +225,7 @@ struct ItemRowView: View {
             Button {
                 item.duplicate()
             } label: {
-                Label("複製", systemImage: "plus.square.on.square")
+                Label("copy", systemImage: "plus.square.on.square")
             }
             .tint(.blue)
         }

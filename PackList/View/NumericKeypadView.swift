@@ -59,7 +59,7 @@ struct NumericKeypadSheet: View {
                     onCommit(committedValue)
                     dismiss()
                 } label: {
-                    Text("決定")
+                    Text("done.2")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)

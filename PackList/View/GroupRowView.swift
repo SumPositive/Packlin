@@ -103,7 +103,7 @@ struct GroupRowView: View {
                 Group {
                     if group.name.isEmpty {
                         // プレースホルダもlineLimitの挙動を合わせる
-                        Text("新しいグループ")
+                        Text("new.group")
                     }else{
                         Text(verbatim: limitedName)
                     }
@@ -140,7 +140,7 @@ struct GroupRowView: View {
                     // メモ
                     if showMemo {
                         if isBeginnerMode, group.name.isEmpty, group.memo.isEmpty {
-                            Text("グループとは、持ち物をポーチなどで小分けにしたものです")
+                            Text("groups.split.gear.into.pouches.such")
                                 .font(FONT_MEMO)
                                 // 行数上限はlineLimitに任せ、改行で切った分だけを表示する
                                 .multilineTextAlignment(.leading)

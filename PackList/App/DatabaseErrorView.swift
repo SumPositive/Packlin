@@ -30,7 +30,7 @@ struct DatabaseErrorView: View {
                 .font(.system(size: 60))
                 .foregroundStyle(.yellow)
 
-            Text("データベースの初期化に失敗しました")
+            Text("database.initialization.failed")
                 .font(.title3.bold())
                 .multilineTextAlignment(.center)
 
@@ -42,13 +42,7 @@ struct DatabaseErrorView: View {
                     .padding(.horizontal)
             }
 
-            Text("""
-                データが破損している可能性があります。
-                「リセットして再起動」をタップすると破損データを退避し、
-                次回起動時にクリーンな状態でアプリが起動します。
-
-                パックが消えた場合は、バックアップから復元してください。
-                """)
+            Text("data.may.be.corrupted.tapping.reset")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -57,7 +51,7 @@ struct DatabaseErrorView: View {
             Button(role: .destructive) {
                 showConfirmAlert = true
             } label: {
-                Label("リセットして再起動", systemImage: "arrow.clockwise")
+                Label("reset.restart", systemImage: "arrow.clockwise")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -65,13 +59,13 @@ struct DatabaseErrorView: View {
 
             Spacer()
         }
-        .alert("データをリセットしますか？", isPresented: $showConfirmAlert) {
-            Button("リセット", role: .destructive) {
+        .alert("reset.data", isPresented: $showConfirmAlert) {
+            Button("reset", role: .destructive) {
                 onReset()
             }
-            Button("キャンセル", role: .cancel) {}
+            Button("cancel", role: .cancel) {}
         } message: {
-            Text("現在のデータは .bak ファイルに退避されます。この操作は取り消せません。")
+            Text("current.data.will.be.saved.bak")
         }
     }
 }

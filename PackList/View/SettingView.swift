@@ -27,9 +27,9 @@ enum InsertionPosition: String, CaseIterable, Identifiable, Codable {
     var localizedKey: LocalizedStringKey {
         switch self {
             case .head:
-                return "先頭"
+                return "top"
             case .tail:
-                return "末尾"
+                return "bottom"
         }
     }
     
@@ -101,7 +101,7 @@ struct SettingView: View {
                                     HStack(spacing: 6) {
                                         Image(systemName: "trash")
                                             .symbolRenderingMode(.hierarchical)
-                                        Text(String(localized: "UserIDとAI利用券を削除する"))
+                                        Text(String(localized: "delete.user.id.ai.tickets"))
                                     }
                                     .font(.footnote.weight(.semibold))
                                     .frame(maxWidth: .infinity)
@@ -124,7 +124,7 @@ struct SettingView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)
             }
-            .navigationTitle(Text("設定"))
+            .navigationTitle(Text("settings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -138,7 +138,7 @@ struct SettingView: View {
                 }
             }
             #if DEBUG
-            .alert(String(localized: "UserIDとAI利用券を削除しました"), isPresented: $showDebugUserIdAlert) {
+            .alert(String(localized: "user.id.ai.tickets.deleted"), isPresented: $showDebugUserIdAlert) {
                 Button(role: .cancel) {
                     // 閉じるだけで処理は完了。画面はPublished経由で更新される
                 } label: {
@@ -146,7 +146,7 @@ struct SettingView: View {
                 }
             } message: {
                 // 次回利用時に自動で再発行されることを知らせつつ、クレジット初期化も明示する
-                Text(String(localized: "UserIDは必要に応じて再発行されます"))
+                Text(String(localized: "user.id.recreated.when.needed"))
             }
             #endif
         }
@@ -273,7 +273,7 @@ struct SettingView: View {
                 GALogger.log(.function(name: "settings", option: "tap_info"))
             }) {
                 Label {
-                    Text("アプリの紹介・取扱説明")
+                    Text("about.how.use")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
@@ -288,7 +288,7 @@ struct SettingView: View {
                 if let url = URL(string: urlString) {
                     SafariView(url: url)
                 } else {
-                    Text("情報を表示できません")
+                    Text("can.t.show.info")
                 }
             }
         }
@@ -306,7 +306,7 @@ struct SettingView: View {
             Button(action: startExport) {
                 Label {
                     HStack(spacing: 8) {
-                        Text(isExporting ? "書き出し中..." : "全パックを書き出す（バックアップ）")
+                        Text(LocalizedStringKey(isExporting ? "exporting" : "export.all.packs.backup"))
                             .font(.body.weight(.bold))
                             .foregroundColor(isExporting ? .secondary : .accentColor)
                         if isExporting {
@@ -328,7 +328,7 @@ struct SettingView: View {
                         .ignoresSafeArea()
                 }
             }
-            .alert(String(localized: "書き出しに失敗しました"), isPresented: Binding(
+            .alert(String(localized: "export.failed"), isPresented: Binding(
                 get: { errorAlert != nil },
                 set: { if !$0 { errorAlert = nil } }
             )) {
@@ -407,7 +407,7 @@ struct SettingView: View {
                 GALogger.log(.function(name: "settings", option: "tap_import"))
             }) {
                 Label {
-                    Text("パックを読み込む（同パックは上書き）")
+                    Text("import.pack.overwrites.existing")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
                 } icon: {
@@ -583,8 +583,8 @@ struct SettingView: View {
 
             var title: String {
                 switch self {
-                case .success, .successBatch: return String(localized: "取り込み完了")
-                case .failure: return String(localized: "取り込みに失敗しました")
+                case .success, .successBatch: return String(localized: "import.done")
+                case .failure: return String(localized: "import.failed")
                 }
             }
 
@@ -592,16 +592,16 @@ struct SettingView: View {
                 switch self {
                 case .success(let packName, let wasOverwritten):
                     let format = wasOverwritten
-                        ? String(localized: "%@ を上書きしました")
-                        : String(localized: "%@ を取り込みました")
+                        ? String(localized: "value.overwritten")
+                        : String(localized: "value.imported")
                     return String(format: format, packName)
                 case .successBatch(let added, let overwritten):
                     var parts: [String] = []
                     if added > 0 {
-                        parts.append(String(format: String(localized: "新規 %d 件"), added))
+                        parts.append(String(format: String(localized: "count.new"), added))
                     }
                     if overwritten > 0 {
-                        parts.append(String(format: String(localized: "上書き %d 件"), overwritten))
+                        parts.append(String(format: String(localized: "count.overwritten"), overwritten))
                     }
                     return parts.joined(separator: "・")
                 case .failure(let message):
@@ -618,7 +618,7 @@ struct SettingView: View {
                 case .productNameMismatch: return "Product name mismatch."
                 case .copyrightMismatch:   return "Copyright mismatch."
                 case .versionMismatch:     return "Version mismatch."
-                case .invalidFormat:       return String(localized: "対応していないファイル形式です。")
+                case .invalidFormat:       return String(localized: "unsupported.file.format")
                 }
             }
         }
@@ -654,14 +654,14 @@ struct SettingView: View {
                 // 表示モード（初心者／上級者）
                 HStack(spacing: 8) {
                     Label {
-                        Text("表示モード")
+                        Text("view.mode")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "lightbulb.2")
                             .symbolRenderingMode(.hierarchical)
                     }
 
-                    Picker("表示モード", selection: $displayMode) {
+                    Picker("view.mode", selection: $displayMode) {
                         ForEach(DisplayMode.allCases) { mode in
                             Text(mode.localizedKey)
                                 .tag(mode)
@@ -673,14 +673,14 @@ struct SettingView: View {
                 // 外観モード（システム追従／ライト／ダーク）
                 HStack(spacing: 8) {
                     Label {
-                        Text("外観モード")
+                        Text("appearance")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "circle.lefthalf.filled")
                             .symbolRenderingMode(.hierarchical)
                     }
 
-                    Picker("外観モード", selection: $appearanceMode) {
+                    Picker("appearance", selection: $appearanceMode) {
                         ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.localizedKey)
                                 .tag(mode)
@@ -692,14 +692,14 @@ struct SettingView: View {
                 // 行の表示行数を切り替える
                 HStack(spacing: 8) {
                     Label {
-                        Text("明細表示")
+                        Text("details")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "text.justify")
                             .symbolRenderingMode(.hierarchical)
                     }
 
-                    Picker("明細表示", selection: $rowTextLines) {
+                    Picker("details", selection: $rowTextLines) {
                         ForEach(RowTextLines.allCases) { setting in
                             Text(setting.localizedKey)
                                 .tag(setting)
@@ -711,14 +711,14 @@ struct SettingView: View {
                 // 新規追加の位置
                 HStack(spacing: 8) {
                     Label {
-                        Text("新規追加位置")
+                        Text("add.position")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "plus.circle")
                             .symbolRenderingMode(.hierarchical)
                     }
 
-                    Picker("新規追加位置", selection: $insertionPosition) {
+                    Picker("add.position", selection: $insertionPosition) {
                         ForEach(InsertionPosition.allCases) { position in
                             Image(systemName: position.iconSFname)
                                 .imageScale(.small)
@@ -731,7 +731,7 @@ struct SettingView: View {
                 // 必要重量を表示
                 Toggle(isOn: $showNeedWeight) {
                     Label {
-                        Text("必要重量を表示")
+                        Text("show.needed.weight")
                             .font(.body)
                     } icon: {
                         Image(systemName: "scalemass")
@@ -741,7 +741,7 @@ struct SettingView: View {
                 // 重量計1000gからkgで表示
                 Toggle(isOn: $weightDisplayInKg) {
                     Label {
-                        Text("重量計1000gからkg表示")
+                        Text("scale.from.1000g.kg")
                             .font(.body)
                     } icon: {
                         Image(systemName: "scalemass.fill")
@@ -751,7 +751,7 @@ struct SettingView: View {
                 // チェックと在庫を連動
                 Toggle(isOn: $linkCheckWithStock) {
                     Label {
-                        Text("チェックONで在庫を満たす")
+                        Text("turn.check.fill.stock")
                             .font(.body)
                     } icon: {
                         ZStack{
@@ -763,7 +763,7 @@ struct SettingView: View {
                 // チェックOFF時の在庫リセット設定
                 Toggle(isOn: $linkCheckOffWithZero) {
                     Label {
-                        Text("チェックOFFで在庫を0にする")
+                        Text("turn.check.off.set.stock.0")
                             .font(.body)
                     } icon: {
                         Image(systemName: "circle")
@@ -838,7 +838,7 @@ struct SettingView: View {
         var body: some View {
             VStack(alignment: .leading, spacing: 20) {
                 Label {
-                    Text("開発者を応援")
+                    Text("support.developer")
                         .font(.body.weight(.medium))
                 } icon: {
                     Image(systemName: "heart.fill")
@@ -851,7 +851,7 @@ struct SettingView: View {
                     Button(action: {
                         showTipSheet = true
                     }) {
-                        Label("投げ銭で応援する", systemImage: "heart.fill")
+                        Label("tip.support", systemImage: "heart.fill")
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
                     }
@@ -866,7 +866,7 @@ struct SettingView: View {
                     Button(action: {
                         showAd = true
                     }) {
-                        Text("広告を見て応援する")
+                        Text("watch.ad.support")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -880,17 +880,17 @@ struct SettingView: View {
                             // 広告の視聴完了を検知してお礼を伝える
                             showRewardThankYou = true
                         },
-                        rewardTrialDescription: String(localized: "広告を最後まで見れば、開発者を直接応援できます！無理のない範囲でご協力いただけると嬉しいです")
+                        rewardTrialDescription: String(localized: "watch.end.support.dev.chip.only")
                     )
                 }
                 // 視聴完了後にささやかな感謝を伝える
                 .alert(
-                    String(localized: "広告視聴ありがとう！"),
+                    String(localized: "thanks.watching"),
                     isPresented: $showRewardThankYou
                 ) {
                     Button(String(localized: "OK")) {}
                 } message: {
-                    Text(String(localized: "応援いただき感謝しています。これからも改善を続けますので、よければまたのぞいてみてください！"))
+                    Text(String(localized: "thanks.support.ll.keep.improving.hope"))
                 }
             }
         }
@@ -910,7 +910,7 @@ struct SettingView: View {
                         .foregroundStyle(.pink)
                         .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
 
-                    Text("このアプリの開発を応援していただけると励みになります。")
+                    Text("support.encourages.us.keep.developing.app")
                         .font(.callout)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)
@@ -919,7 +919,7 @@ struct SettingView: View {
                     if store.isLoadingProducts {
                         ProgressView()
                     } else if store.products.isEmpty {
-                        Text("現在ご利用いただけません。")
+                        Text("not.available.time")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     } else {
@@ -946,7 +946,7 @@ struct SettingView: View {
                     Spacer()
                 }
                 .padding(.top, 32)
-                .navigationTitle(Text("投げ銭で応援する"))
+                .navigationTitle(Text("tip.support"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
@@ -960,12 +960,12 @@ struct SettingView: View {
                     }
                 }
                 .alert(
-                    String(localized: "ありがとうございます！"),
+                    String(localized: "thank"),
                     isPresented: $showThankYou
                 ) {
                     Button(String(localized: "OK")) { dismiss() }
                 } message: {
-                    Text(String(localized: "応援いただきありがとうございます。これからも改善を続けてまいります！"))
+                    Text(String(localized: "thank.support.will.keep.improving.app"))
                 }
             }
             .task { await store.loadProducts() }

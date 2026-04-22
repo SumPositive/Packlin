@@ -89,7 +89,7 @@ struct PackRowView: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 // 名称
-                pack.name.placeholderText("新しいパック")
+                pack.name.placeholderText("new.pack")
                     .lineLimit(3, reservesSpace: false)
                     .font(FONT_NAME)
                     .foregroundStyle(pack.name.isEmpty ? .secondary : COLOR_NAME)
@@ -111,7 +111,7 @@ struct PackRowView: View {
                 }
                 // メモ
                 if isBeginnerMode, pack.name.isEmpty, pack.memo.isEmpty {
-                    Text("パックとは、持ち物をバッグやリュックに全てまとめたものです")
+                    Text("packs.gather.everything.bag.backpack")
                         .lineLimit(3)
                         .font(FONT_MEMO)
                         .foregroundStyle(.secondary)
@@ -158,7 +158,7 @@ struct PackRowView: View {
             Button {
                 pack.delete()
             } label: {
-                Label("削除", systemImage: "trash")
+                Label("delete", systemImage: "trash")
             }
             .tint(.orange)
             
@@ -166,7 +166,7 @@ struct PackRowView: View {
             Button {
                 pack.duplicate()
             } label: {
-                Label("複製", systemImage: "plus.square.on.square")
+                Label("copy", systemImage: "plus.square.on.square")
             }
             .tint(.blue)
         }

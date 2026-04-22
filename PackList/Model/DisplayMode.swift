@@ -21,9 +21,9 @@ enum DisplayMode: String, CaseIterable, Identifiable, Codable {
     var localizedKey: LocalizedStringKey {
         switch self {
         case .beginner:
-            return "初心者"
+            return "beginner"
         case .expert:
-            return "達人"
+            return "expert"
         }
     }
 }
@@ -41,11 +41,11 @@ enum AppearanceMode: String, CaseIterable, Identifiable, Codable {
     var localizedKey: LocalizedStringKey {
         switch self {
         case .automatic:
-            return "自動"
+            return "auto"
         case .light:
-            return "ライト"
+            return "light"
         case .dark:
-            return "ダーク"
+            return "dark"
         }
     }
 

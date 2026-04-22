@@ -32,15 +32,15 @@ final class LocalNotificationManager: NSObject {
     /// AI生成が成功した際にローカル通知を発行する
     /// - Parameter packName: 生成したパックの名称
     func notifyPackGenerationSucceeded(packName: String) async {
-        let title = String(localized: "チャッピーの提案が届きました")
-        let body = String(localized: "\(packName) を追加しました。アプリで内容を確認しましょう")
+        let title = String(localized: "chappy.sent.ideas")
+        let body = String(format: String(localized: "value.added.check.out"), packName)
         await scheduleNotification(title: title, body: body, suffix: "success")
     }
 
     /// AI生成が失敗した際にローカル通知を発行する
     /// - Parameter message: 利用者へ伝えたい失敗理由
     func notifyPackGenerationFailed(message: String) async {
-        let title = String(localized: "チャッピーからの応答がありません")
+        let title = String(localized: "no.reply.from.chappy")
         // 失敗理由はダイアログより長くなる場合があるので、通知では要点だけ伝える
         let body = message
         await scheduleNotification(title: title, body: body, suffix: "failure")
@@ -148,4 +148,3 @@ extension LocalNotificationManager: UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound, .list])
     }
 }
-

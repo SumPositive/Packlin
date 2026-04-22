@@ -37,7 +37,7 @@ struct PackEditView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     actionBar
 
-                    editCard(title: "パック名", minHeight: 74) {
+                    editCard(title: "pack.name", minHeight: 74) {
                         ZStack(alignment: .topLeading) {
                             TextEditor(text: $pack.name)
                                 .font(FONT_EDIT)
@@ -52,7 +52,7 @@ struct PackEditView: View {
 
                             if pack.name.isEmpty {
                                 // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
-                                Text("新しいパックの名前を入れてください")
+                                Text("enter.name.new.pack")
                                     .foregroundStyle(.secondary)
                                     .padding(.top, 8)
                                     .padding(.horizontal, 5)
@@ -61,7 +61,7 @@ struct PackEditView: View {
                         }
                     }
 
-                    editCard(title: "メモ", minHeight: 112) {
+                    editCard(title: "memo", minHeight: 112) {
                         TextEditor(text: $pack.memo)
                             .font(FONT_EDIT)
                             .scrollContentBackground(.hidden)
@@ -78,7 +78,7 @@ struct PackEditView: View {
                 .padding(.bottom, 20)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(Text("パック編集"))
+            .navigationTitle(Text("edit.pack"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 navigationToolbar
@@ -111,7 +111,7 @@ struct PackEditView: View {
 
     private var actionBar: some View {
         HStack(spacing: 8) {
-            compactActionButton(title: allItemsChecked ? "チェックOFF" : "チェックON",
+            compactActionButton(title: LocalizedStringKey(allItemsChecked ? "check.off" : "check"),
                                 fixedWidth: 82,
                                 tint: .accentColor,
                                 action: startCheckToggle) {
@@ -135,20 +135,20 @@ struct PackEditView: View {
             }
             .disabled(isTogglingCheck) // 進行中はタップを無効化
 
-            compactActionButton(title: "複製",
+            compactActionButton(title: "copy",
                                 systemImage: "plus.square.on.square",
                                 tint: .accentColor) {
                 pack.duplicate()
             }
 
-            compactActionButton(title: "共有",
+            compactActionButton(title: "share",
                                 systemImage: "square.and.arrow.up",
                                 tint: .accentColor,
                                 action: exportPack)
 
             Spacer(minLength: 0)
 
-            compactActionButton(title: "削除",
+            compactActionButton(title: "delete",
                                 systemImage: "trash",
                                 tint: .red) {
                 // シートを強制的に閉じてから削除処理へ進める
@@ -238,7 +238,7 @@ struct PackEditView: View {
                     Image(systemName: "sparkles")
                     //.imageScale(.large)
                         .symbolRenderingMode(.hierarchical)
-                    Text("チャッピー")
+                    Text("chappy")
                         .font(.body.weight(.regular))
                 }
             }

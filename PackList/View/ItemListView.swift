@@ -113,7 +113,7 @@ struct ItemListView: View {
                             .disabled(isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("グループ一覧に戻る")
+                                Text("back.groups")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -136,7 +136,7 @@ struct ItemListView: View {
                             .disabled(!canUndo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("直前の変更を元に戻す")
+                                Text("undo.last.change")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -148,7 +148,7 @@ struct ItemListView: View {
                         Spacer()
                         
                         if isBeginnerMode {
-                            Text("アイテム\n一覧")
+                            Text("item.list")
                                 .font(.system(size: 15))
                                 .lineLimit(2)
                                 .frame(minWidth: 50)
@@ -171,7 +171,7 @@ struct ItemListView: View {
                             .disabled(!canRedo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("戻した変更をやり直す")
+                                Text("redo.undone.change")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -191,7 +191,7 @@ struct ItemListView: View {
                             .disabled(isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("新しいアイテムを追加する")
+                                Text("add.new.item")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -203,8 +203,8 @@ struct ItemListView: View {
 
                     // パック＞グループのパンくずを並べ、各名称は画面幅の1/4までで自動省略する
                     BreadcrumbView(
-                        packName: pack.name.placeholder("新しいパック"),
-                        groupName: group.name.placeholder("新しいグループ"),
+                        packName: pack.name.placeholder("new.pack"),
+                        groupName: group.name.placeholder("new.group"),
                         itemName: nil,
                         rootAction: { navigationStore.path = NavigationPath() },
                         packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
@@ -278,7 +278,7 @@ struct ItemListView: View {
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("アイテムの状態（未✔︎順）")
+                Text("item.status.unchecked.first")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -287,28 +287,28 @@ struct ItemListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "circle")
                             .imageScale(.large)
-                        Text("不足（必要数に満たない、在庫が足りない）")
+                        Text("lacking")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.circle")
                             .imageScale(.large)
-                        Text("充足（必要数を満たしている、十分な在庫あり）")
+                        Text("enough")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle")
                             .imageScale(.large)
-                        Text("✔︎済（数量に関わらずチェック済みである）")
+                        Text("checked.regardless.count")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.fill")
                             .imageScale(.large)
-                        Text("不要（必要なし）")
+                        Text("not.needed")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

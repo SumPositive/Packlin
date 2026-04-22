@@ -111,7 +111,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：ボタンの役割をテキストで補足
-                            Text("設定を開く")
+                            Text("open.settings")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -135,7 +135,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：巻き戻し操作の説明
-                            Text("直前の変更を元に戻す")
+                            Text("undo.last.change")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -169,7 +169,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：Redoの役割を説明
-                            Text("戻した変更をやり直す")
+                            Text("redo.undone.change")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -186,14 +186,14 @@ struct PackListView: View {
                                 // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
                                 isShowAiCreateSheet = true
                             } label: {
-                                Label("チャッピー(AI)に作ってもらう", systemImage: "sparkles")
+                                Label("let.chappy.ai.make", systemImage: "sparkles")
                             }
                             
                             Button {
                                 // これまで通り自分で項目を入力して作成するパターン
                                 addPack()
                             } label: {
-                                Label("自分で作る", systemImage: "hand.tap")
+                                Label("make.yourself", systemImage: "hand.tap")
                             }
                         } label: {
                             ZStack {
@@ -212,7 +212,7 @@ struct PackListView: View {
 
                         if isBeginnerMode {
                             // 初心者向け：新規パック追加の説明
-                            Text("新しいパックを追加する")
+                            Text("add.new.pack")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -254,7 +254,7 @@ struct PackListView: View {
     struct FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("パックの状態")
+                Text("pack.status")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -263,7 +263,7 @@ struct PackListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "case")
                             .imageScale(.large)
-                        Text("不足（必要数に満たない、在庫が足りない）")
+                        Text("lacking")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -275,7 +275,7 @@ struct PackListView: View {
                                 .imageScale(.small)
                                 .padding(.top, 4)
                         }
-                        Text("充足（必要数を満たしている、十分な在庫あり）")
+                        Text("enough")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -287,7 +287,7 @@ struct PackListView: View {
                                 .imageScale(.small)
                                 .padding(.top, 4)
                         }
-                        Text("✔︎済（パック内の必要なアイテムが全てチェック済み）")
+                        Text("pack.items.all.checked")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -295,7 +295,7 @@ struct PackListView: View {
                 .foregroundStyle(.secondary)
                 .padding(.leading, 16)
 
-                Text("現在、「初心者」表示モードです。設定から「達人」を選択すれば、ほぼアイコンだけの達人表示に変わります")
+                Text("re.beginner.mode.choose.expert.settings")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

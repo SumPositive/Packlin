@@ -74,7 +74,7 @@ enum AzukiAPIError: LocalizedError {
         func errorMsg(_ message: String) -> String {
             let msg = String(message.prefix(100))
             log(.error, msg) // Analytics.logEvent出力される
-            return String(localized: "通信障害が発生しているようです。しばらくしてから再度お試しください")
+            return String(localized: "network.seems.down.please.try.again")
                     + "\n\n [\(msg)]"
         }
 

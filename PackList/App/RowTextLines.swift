@@ -25,15 +25,15 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
     var localizedKey: LocalizedStringKey {
         switch self {
         case .threeLines:
-            return "3行"
+            return "3.lines"
         case .twoLines:
-            return "2行"
+            return "2.lines"
         case .oneLine:
-            return "1行"
+            return "1.line"
         case .minimal:
-            return "最小"
+            return "min"
         case .extraSmall:
-            return "極小"
+            return "tiny"
         }
     }
 

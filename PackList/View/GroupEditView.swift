@@ -52,9 +52,9 @@ struct GroupEditView: View {
         var titleKey: LocalizedStringKey {
             switch self {
             case .start:
-                return "パックの先頭"
+                return "top.pack"
             case .end:
-                return "パックの末尾"
+                return "bottom.pack"
             }
         }
     }
@@ -71,7 +71,7 @@ struct GroupEditView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     actionBar
 
-                    editCard(title: "グループ名", minHeight: 74) {
+                    editCard(title: "group.name", minHeight: 74) {
                         TextEditor(text: $group.name)
                             .font(FONT_EDIT)
                             .scrollContentBackground(.hidden)
@@ -84,7 +84,7 @@ struct GroupEditView: View {
                             .focused($nameIsFocused) // フォーカス状態とバインド
                     }
 
-                    editCard(title: "メモ", minHeight: 112) {
+                    editCard(title: "memo", minHeight: 112) {
                         TextEditor(text: $group.memo)
                             .font(FONT_EDIT)
                             .scrollContentBackground(.hidden)
@@ -101,7 +101,7 @@ struct GroupEditView: View {
                 .padding(.bottom, 20)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(Text("グループ編集"))
+            .navigationTitle(Text("edit.group"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -148,19 +148,19 @@ struct GroupEditView: View {
 
     private var actionBar: some View {
         HStack(spacing: 8) {
-            compactActionButton(title: allItemsChecked ? "チェックOFF" : "チェックON",
+            compactActionButton(title: LocalizedStringKey(allItemsChecked ? "check.off" : "check"),
                                 fixedWidth: 82,
                                 systemImage: allItemsChecked ? "checkmark.square" : "square",
                                 tint: .accentColor,
                                 action: checkToggle)
 
-            compactActionButton(title: "複製",
+            compactActionButton(title: "copy",
                                 systemImage: "plus.square.on.square",
                                 tint: .accentColor) {
                 group.duplicate()
             }
 
-            compactActionButton(title: "移動",
+            compactActionButton(title: "move",
                                 systemImage: "hand.point.up.left.and.text",
                                 tint: .blue) {
                 prepareMoveSheet()
@@ -169,7 +169,7 @@ struct GroupEditView: View {
 
             Spacer(minLength: 0)
 
-            compactActionButton(title: "削除",
+            compactActionButton(title: "delete",
                                 systemImage: "trash",
                                 tint: .red) {
                 // シートを閉じてから削除処理を行う
@@ -366,12 +366,12 @@ private struct GroupMoveSheetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("移動先") {
+                Section("to") {
                     // 送り先のパック選択
                     Picker(selection: $selectedPackID) {
                         ForEach(sortedPacks, id: \.id) { pack in
                             pack.name.truncTail(20)
-                                .placeholderText("新しいパック")
+                                .placeholderText("new.pack")
                                 .tag(pack.id)
                         }
                     } label: {
@@ -381,7 +381,7 @@ private struct GroupMoveSheetView: View {
                     .pickerStyle(.menu)
 
                     // 挿入位置（先頭 or 末尾）
-                    Picker("挿入位置", selection: $insertPosition) {
+                    Picker("insert.position", selection: $insertPosition) {
                         ForEach(GroupEditView.MoveInsertPosition.allCases) { position in
                             Text(position.titleKey)
                                 .tag(position)
@@ -390,9 +390,9 @@ private struct GroupMoveSheetView: View {
                     .pickerStyle(.segmented)
                 }
 
-                Section("移動元") {
+                Section("from") {
                     // 元のグループを残す（複製）かどうか
-                    Toggle("コピーを作成する（複製）", isOn: $keepOriginal)
+                    Toggle("make.copy", isOn: $keepOriginal)
                 }
             }
             .toolbar {
@@ -406,14 +406,14 @@ private struct GroupMoveSheetView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(keepOriginal ? "複製する" : "移動する", action: onConfirm)
+                    Button(LocalizedStringKey(keepOriginal ? "copy.2" : "move.2"), action: onConfirm)
                         .disabled(disableConfirm)
                         .buttonStyle(.borderedProminent)
                         .tint(.accentColor)
                         .padding(.horizontal, 16)
                 }
             }
-            .navigationTitle(groupName.placeholder("新しいグループ"))
+            .navigationTitle(groupName.placeholder("new.group"))
             .navigationBarTitleDisplayMode(.inline)
         }
     }

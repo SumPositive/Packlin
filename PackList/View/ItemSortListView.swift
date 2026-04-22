@@ -138,7 +138,7 @@ struct ItemSortListView: View {
                         .buttonStyle(.borderless)
 
                         if isBeginnerMode {
-                            Text("常時並べ替え")
+                            Text("always.sort")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 //.multilineTextAlignment(.center)
@@ -210,7 +210,7 @@ struct ItemSortListView: View {
                             .disabled(isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("グループ一覧に戻る")
+                                Text("back.groups")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -233,7 +233,7 @@ struct ItemSortListView: View {
                             .disabled(!canUndo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("直前の変更を元に戻す")
+                                Text("undo.last.change")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -245,7 +245,7 @@ struct ItemSortListView: View {
                         Spacer()
                         
                         if isBeginnerMode {
-                            Text("アイテム\n縦覧")
+                            Text("item.browse")
                                 .font(.system(size: 15))
                                 .lineLimit(2)
                                 .frame(minWidth: 50)
@@ -268,7 +268,7 @@ struct ItemSortListView: View {
                             .disabled(!canRedo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("戻した変更をやり直す")
+                                Text("redo.undone.change")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -282,7 +282,7 @@ struct ItemSortListView: View {
 
                     // パック名のみのパンくずも最大幅を1/4に抑えて表示する
                     BreadcrumbView(
-                        packName: pack.name.placeholder("新しいパック"),
+                        packName: pack.name.placeholder("new.pack"),
                         groupName: nil,
                         itemName: sortOption.title,
                         rootAction: { navigationStore.path = NavigationPath() },
@@ -358,7 +358,7 @@ struct ItemSortListView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
 
-                TextField(LocalizedStringKey("アイテムを検索"), text: $searchText)
+                TextField(LocalizedStringKey("search.items"), text: $searchText)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
@@ -371,7 +371,7 @@ struct ItemSortListView: View {
                             .foregroundStyle(.tertiary)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(LocalizedStringKey("クリア"))
+                    .accessibilityLabel(LocalizedStringKey("clear"))
                 }
             }
             .padding(.horizontal, 12)
@@ -438,13 +438,13 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
             case .unchecked:
-                return String(localized: "未 ✔︎ 順")
+                return String(localized: "unchecked.first")
             case .lackCount:
-                return String(localized: "不足個数")
+                return String(localized: "short.count")
             case .lackWeight:
-                return String(localized: "不足重量")
+                return String(localized: "short.weight")
             case .stockWeight:
-                return String(localized: "在庫重量")
+                return String(localized: "stock.weight")
         }
     }
 
@@ -452,13 +452,13 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     var beginnerGuide: String {
         switch self {
             case .unchecked:
-                return String(localized: "最終チェック時にご利用ください")
+                return String(localized: "use.final.check")
             case .lackCount:
-                return String(localized: "個数から確認したい時")
+                return String(localized: "when.check.by.count")
             case .lackWeight:
-                return String(localized: "重量から確認したい時")
+                return String(localized: "when.check.by.weight")
             case .stockWeight:
-                return String(localized: "重量オーバー時の見直しにご利用ください")
+                return String(localized: "use.when.re.over.weight")
         }
     }
 

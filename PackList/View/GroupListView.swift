@@ -54,7 +54,7 @@ struct GroupListView: View {
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(Color.accentColor)
 
-                            Text(LocalizedStringKey("アイテム縦覧"))
+                            Text(LocalizedStringKey("item.browse.2"))
                                 // フォントを小さく軽めにして縦幅を抑える
                                 .font(.footnote.weight(.regular))
                                 .foregroundStyle(Color.primary)
@@ -75,7 +75,7 @@ struct GroupListView: View {
 
                     if isBeginnerMode {
                         // 以前の長文ラベルはここで補足として表示し、ボタン内は短い語句で理解しやすくする
-                        Text(LocalizedStringKey("全てのアイテムを対象に一覧・並べ替え・検索ができます"))
+                        Text(LocalizedStringKey("list.sort.search.all.items"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -97,7 +97,7 @@ struct GroupListView: View {
                                 .symbolRenderingMode(.hierarchical)
                                 .foregroundStyle(Color.accentColor)
 
-                            Text(LocalizedStringKey("チャッピー"))
+                            Text(LocalizedStringKey("chappy"))
                                 // 同様に小さめ・軽めのフォントで縦幅を抑える
                                 .font(.footnote.weight(.regular))
                                 .foregroundStyle(Color.primary)
@@ -118,7 +118,7 @@ struct GroupListView: View {
 
                     if isBeginnerMode {
                         // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
-                        Text(LocalizedStringKey("チャッピー(AI)に修正や変更を依頼できます"))
+                        Text(LocalizedStringKey("ask.chappy.ai.tweak"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -180,7 +180,7 @@ struct GroupListView: View {
                             Button {
                                 group.delete()
                             } label: {
-                                Label("削除", systemImage: "trash")
+                                Label("delete", systemImage: "trash")
                             }
                             .tint(.orange)
                             .disabled(group.parent == nil)
@@ -189,7 +189,7 @@ struct GroupListView: View {
                             Button {
                                 group.duplicate()
                             } label: {
-                                Label("複製", systemImage: "plus.square.on.square")
+                                Label("copy", systemImage: "plus.square.on.square")
                             }
                             .tint(.blue)
                         }
@@ -229,7 +229,7 @@ struct GroupListView: View {
                             .disabled(isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("パック一覧に戻る")
+                                Text("back.packs")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -252,7 +252,7 @@ struct GroupListView: View {
                             .disabled(!history.canUndo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("直前の変更を元に戻す")
+                                Text("undo.last.change")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -264,7 +264,7 @@ struct GroupListView: View {
                         Spacer()
                         
                         if isBeginnerMode {
-                            Text("グループ\n一覧")
+                            Text("group.list")
                                 .font(.system(size: 15))
                                 .lineLimit(2)
                                 .frame(minWidth: 50)
@@ -287,7 +287,7 @@ struct GroupListView: View {
                             .disabled(!history.canRedo || isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("戻した変更をやり直す")
+                                Text("redo.undone.change")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -307,7 +307,7 @@ struct GroupListView: View {
                             .disabled(isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("新しいグループを追加する")
+                                Text("add.new.group")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
@@ -319,7 +319,7 @@ struct GroupListView: View {
 
                     // パック名だけのときもパンくず形式で表示し、長い名称は画面幅の1/4までで省略する
                     BreadcrumbView(
-                        packName: pack.name.placeholder("新しいパック"),
+                        packName: pack.name.placeholder("new.pack"),
                         groupName: nil,
                         itemName: nil,
                         rootAction: { navigationStore.path = NavigationPath() },
@@ -379,7 +379,7 @@ struct GroupListView: View {
     struct Section2FooterView: View {
         var body: some View {
             VStack(spacing: 8) {
-                Text("グループの状態")
+                Text("group.status")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -388,21 +388,21 @@ struct GroupListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "square")
                             .imageScale(.large)
-                        Text("不足（必要数に満たない、在庫が足りない）")
+                        Text("lacking")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "circle.square")
                             .imageScale(.large)
-                        Text("充足（必要数を満たしている、十分な在庫あり）")
+                        Text("enough")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.square")
                             .imageScale(.large)
-                        Text("✔︎済（グループ内の必要なアイテムが全てチェック済み）")
+                        Text("group.items.all.checked")
                             .font(.footnote)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

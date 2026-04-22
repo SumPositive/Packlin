@@ -31,8 +31,8 @@ struct ChappySheetView: View {
 
     var body: some View {
         let title = (basePack == nil || basePack!.name.isEmpty)
-                    ? String(localized:"新しいパックを作ってもらう")
-                    : String(localized:"【変更】 ") + (basePack?.name ?? "")
+                    ? String(localized:"ask.new.pack")
+                    : String(localized:"updated") + (basePack?.name ?? "")
 
         NavigationView {
             ScrollView {
@@ -258,7 +258,7 @@ struct ChappyView: View {
         VStack(alignment: .leading, spacing: 8) {
             // セクションタイトル
             Label {
-                Text("チャッピー(AI)に依頼する")
+                Text("ask.chappy.ai")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "sparkles")
@@ -266,9 +266,7 @@ struct ChappyView: View {
             }
 
             // 操作説明（アプリ内生成の流れを簡潔に案内）
-            Text("""
-                要望を入力して「送信」ボタンを押せば、チャッピーにパックの作成や変更を依頼できます。チャッピーから届いた提案を眺めて修正しながらご利用ください。AI利用券1枚で1回の送信が可能です
-                """)
+            Text("tell.chappy.what.need.tap.send")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 24)
@@ -277,7 +275,7 @@ struct ChappyView: View {
                 // 利用券表示と送信ボタンをヘッダーとしてまとめ、操作の一体感を出す
                 HStack(spacing: 4) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("AI利用券残り \(creditStore.credits) 枚")
+                        Text(String(format: String(localized: "count.ai.tickets.left"), creditStore.credits))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.primary)
                             .padding(.vertical, 4)
@@ -320,7 +318,7 @@ struct ChappyView: View {
                                     .symbolRenderingMode(.hierarchical)
                             }
 
-                            Text(isGenerating ? "AI処理中" : "送信")
+                            Text(LocalizedStringKey(isGenerating ? "ai.working" : "send"))
                                 .font(.callout.weight(.semibold))
                         }
                         .padding(.vertical, 2)
@@ -348,12 +346,12 @@ struct ChappyView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Spacer()
-                        Text(String(localized: "無料！"))
+                        Text(String(localized: "free"))
                             .font(.callout.weight(.regular))
                         Image(systemName: "paperplane")
                             .imageScale(.medium)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(String(localized: "広告を見て送信"))
+                            Text(String(localized: "watch.ad.send"))
                                 .font(.callout.weight(.regular))
                             //Text(String(localized: "チャッピー mini に依頼できます"))
                             //    .font(.caption)
@@ -382,7 +380,7 @@ struct ChappyView: View {
                         .padding(2)
                         .focused(requirementFocus)
                         .background(Color.clear)
-                        .accessibilityLabel(Text("パックの要望入力"))
+                        .accessibilityLabel(Text("enter.pack.request"))
                         // 入力文字数をAI_REQUIREMENT_MAX文字以内に抑えるための監視
                         .onChange(of: requirementText.wrappedValue) { newValue, _ in
                             // 文字数が上限以下ならそのまま利用する
@@ -425,7 +423,7 @@ struct ChappyView: View {
             )
             
             if isGenerating {
-                Text("チャッピーが考えています。提案が届けば通知しますので、閉じても大丈夫です。他の操作をしてお楽しみください")
+                Text("chappy.thinking.ll.ping.can.close")
                     .font(.body.weight(.bold))
                     .foregroundStyle(.blue)
             }
@@ -463,7 +461,7 @@ struct ChappyView: View {
         .sheet(isPresented: $isPresentingAdRewardSheet) {
             AdMobAdSheetView(
                 onRewardEarned: handleRewardedAdCompletion,
-                rewardTrialDescription: String(localized: "広告を見て無料で送信！\n　動画広告を最後まで視聴すると送信が始まります。チャッピー mini に依頼しますので少し情報量は減るかも知れませんがお試しください")
+                rewardTrialDescription: String(localized: "watch.ad.send.free.finish.video")
             )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
@@ -566,7 +564,7 @@ struct ChappyView: View {
         }
         // シートを閉じて送信開始を明示する
         isPresentingAdRewardSheet = false
-        inlineGenerationFeedback = .success(message: String(localized: "広告視聴ありがとう！チャッピー mini へ依頼します"))
+        inlineGenerationFeedback = .success(message: String(localized: "thanks.watching.sending.chappy.mini"))
         // GPT-4o-mini向けに送信し、通常のクレジット消費を伴わないことを明示する
         generatePackWithOpenAI(requirementOverride: requirement, isTrial: true)
         pendingRewardRequirement = nil
@@ -584,7 +582,7 @@ struct ChappyView: View {
         let requirementSource = requirementOverride ?? requirementText.wrappedValue
         let trimmedRequirement = requirementSource.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedRequirement.isEmpty {
-            inlineGenerationFeedback = .failure(message: String(localized: "パック作成の要望を入れてね"))
+            inlineGenerationFeedback = .failure(message: String(localized: "tell.us.what.pack.want"))
             isGenerating = false
             isGeneratingFromReward = false
             return
@@ -681,18 +679,18 @@ struct ChappyView: View {
                     await refreshCreditStatusFromServer(showAlertOnFailure: false)
                     if isTrial {
                         // 広告の完走がサーバーで確認できず無料送信が無効になったケースを明示する
-                        await presentGenerationFailure(message: String(localized: "広告視聴完了が確認できませんでした"))
+                        await presentGenerationFailure(message: String(localized: "couldn.t.confirm.ad.was.finished"))
                     } else {
                         // 通常送信は残高不足として案内し、購入導線へ誘導する
                         await presentCreditShortageFeedback()
                     }
                 case .unauthorized, .forbiddenUser, .missingAuthToken, .tokenExpired:
                     let message = apiError.errorDescription
-                    ?? String(localized: "認証に失敗しました。アプリを再起動して再度お試しください")
+                    ?? String(localized: "auth.failed.restart.app.try.again")
                     await presentGenerationFailure(message: message)
                 default:
                     let message = apiError.errorDescription
-                    ?? String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください")
+                    ?? String(localized: "chappy.s.busy.try.again.soon")
                     await presentGenerationFailure(message: message)
                 }
             } catch let localized as LocalizedError {
@@ -700,7 +698,7 @@ struct ChappyView: View {
                 await presentGenerationFailure(message: message)
             } catch {
                 await presentGenerationFailure(message:
-                                                    String(localized: "チャッピーが忙しそうです。時間をおいて再度お試しください"))
+                                                    String(localized: "chappy.s.busy.try.again.soon"))
             }
         }
     }
@@ -736,11 +734,11 @@ struct ChappyView: View {
         } catch let apiError as AzukiAPIError {
             // 通信エラーなどで送信前の確認に失敗した場合は、ユーザーへ通知し送信を中断する
             let message = apiError.errorDescription
-            ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
+            ?? String(localized: "can.t.confirm.ai.use.please")
             await presentGenerationFailure(message: message)
             return false
         } catch {
-            let message = String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
+            let message = String(localized: "can.t.confirm.ai.use.please")
             await presentGenerationFailure(message: message)
             return false
         }
@@ -754,7 +752,7 @@ struct ChappyView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                let message = String(localized: "チャッピーの提案によりパックを更新しました。さらにカスタマイズしてご利用ください")
+                let message = String(localized: "pack.updated.chappy.s.ideas.customize")
                 inlineGenerationFeedback = .success(message: message)
             }
             return
@@ -780,11 +778,11 @@ struct ChappyView: View {
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .failure(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
+                inlineGenerationFeedback = .failure(message: String(localized: "short.ai.tickets.grab.more.below"))
             }
             return
         }
-        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "AI利用券が不足しています。下のメニューから購入してください"))
+        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "short.ai.tickets.grab.more.below"))
     }
 
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
@@ -946,7 +944,7 @@ struct ChappyView: View {
         } catch let apiError as AzukiAPIError {
             if showAlertOnFailure {
                 let message = apiError.errorDescription
-                ?? String(localized: "AI利用が可能か確認できません。通信環境をご確認ください")
+                ?? String(localized: "can.t.confirm.ai.use.please")
                 await MainActor.run {
                     inlineGenerationFeedback = .failure(message: message)
                 }
@@ -957,7 +955,7 @@ struct ChappyView: View {
         } catch {
             if showAlertOnFailure {
                 await MainActor.run {
-                    inlineGenerationFeedback = .failure(message: String(localized: "AI利用が可能か確認できません。通信環境をご確認ください"))
+                    inlineGenerationFeedback = .failure(message: String(localized: "can.t.confirm.ai.use.please"))
                 }
             }
             #if DEBUG
@@ -997,7 +995,7 @@ struct ChappyView: View {
                 }
             }
 
-            let msgPurchaseCancel = String(localized: "購入を中止しました、課金されません")
+            let msgPurchaseCancel = String(localized: "purchase.canceled.no.charge")
             // StoreKitフローが途中で止まった場合でも復旧できるよう、成功したかの判定を保持する
             var didCompletePurchase = false
 
@@ -1022,7 +1020,7 @@ struct ChappyView: View {
                     case .pending:
                         // ファミリー共有などで承認待ちになる場合
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "購入の承認待ちです、まだ課金されません。承認が完了すると自動で反映されます"))
+                            alertState = .purchaseFailure(message: String(localized: "waiting.approval.no.charge.yet.updates"))
                         }
                         
                     case .userCancelled:
@@ -1033,14 +1031,14 @@ struct ChappyView: View {
                         
                     @unknown default:
                         await MainActor.run {
-                            alertState = .purchaseFailure(message: String(localized: "想定外の結果が返りました、課金されません。時間をおいて再度お試しください"))
+                            alertState = .purchaseFailure(message: String(localized: "unexpected.result.no.charge.try.again"))
                         }
                         didCompletePurchase = false
                 }
             } catch let flowError as PurchaseFlowError {
                 await MainActor.run {
                     let message = flowError.errorDescription
-                        ?? String(localized: "AI利用券が購入できませんでした、課金されません")
+                        ?? String(localized: "couldn.t.buy.ai.tickets.no")
                     alertState = .purchaseFailure(message: message)
                 }
                 didCompletePurchase = false
@@ -1070,7 +1068,7 @@ struct ChappyView: View {
                 didCompletePurchase = false
             } catch {
                 await MainActor.run {
-                    alertState = .purchaseFailure(message: String(localized: "AI利用券の購入中に問題が発生しました、課金されません。通信環境をご確認ください"))
+                    alertState = .purchaseFailure(message: String(localized: "purchase.hiccup.no.charge.check.connection"))
                 }
                 didCompletePurchase = false
             }
@@ -1095,7 +1093,7 @@ struct ChappyView: View {
     private var creditPurchaseMenu: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                Text("AI利用券の購入")
+                Text("buy.ai.tickets")
                     .font(.body.weight(.bold))
             } icon: {
                 Image(systemName: "cart")
@@ -1137,7 +1135,7 @@ struct ChappyView: View {
             }
 
             Label {
-                Text("AI利用券は端末に安全に保管されますが、端末が壊れたりアプリを削除すると失われます。貯めずに早めにお使いください")
+                Text("tickets.live.device.if.s.lost")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } icon: {
@@ -1165,7 +1163,7 @@ struct ChappyView: View {
         let currentCredits = creditStore.credits
         if 0 < currentCredits {
             // 購入は残高ゼロ時のみ許可する旨をユーザーへ伝える
-            return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
+            return String(localized: "tickets.remain.buy.more.once.re")
         }
         return nil
     }
@@ -1281,7 +1279,7 @@ struct ChappyView: View {
         
         // verifyPurchaseに失敗し、購入中止したときのメッセージ
         let fallbackMessage = String(
-            localized: "購入を中止しました、課金されません")
+            localized: "purchase.canceled.no.charge")
 
 
         do {
@@ -1401,7 +1399,7 @@ struct ChappyView: View {
         var errorDescription: String? {
             switch self {
             case .productNotFound:
-                return String(localized: "商品情報が見つかりません")
+                return String(localized: "no.product.info.found")
             case .transactionUnverified(let message):
                 return message
             }
@@ -1529,31 +1527,31 @@ struct ChappyView: View {
         var title: String {
             switch self {
                 case .purchaseSuccess:
-                    return String(localized: "購入手続きが完了しました")
+                    return String(localized: "purchase.completed")
                     // このメッセージの前に出る同様のアラートは、Sandboxでのみ表示される。本番では表示されない
                 case .purchaseAlreadyProcessed:
-                    return String(localized: "既に購入済みです")
+                    return String(localized: "already.purchased")
                 case .purchaseFailure:
-                    return String(localized: "購入状況")
+                    return String(localized: "purchase.status")
                 case .purchaseBlockedByRemaining:
-                    return String(localized: "購入状況")
+                    return String(localized: "purchase.status")
                 case .requirementMissing:
-                    return String(localized: "先に要望を入力してください")
+                    return String(localized: "type.request.first")
                 case .creditRequired:
-                    return String(localized: "AI利用券を購入してください")
+                    return String(localized: "please.buy.ai.ticket")
             }
         }
 
         var message: String {
             switch self {
                 case .purchaseSuccess(let added, _):
-                    return String(localized: "AI利用券を\(added)枚追加しました")
+                    return String(format: String(localized: "added.count.ai.tickets"), added)
                 case .purchaseAlreadyProcessed:
-                    return String(localized: "この購入はすでに完了しています、枚数を更新しました")
+                    return String(localized: "purchase.already.done.count.updated")
                 case .purchaseFailure(let message):
                     return message
                 case .purchaseBlockedByRemaining:
-                    return String(localized: "AI利用券が残っている間は購入できません、残りが0枚になってからご購入ください")
+                    return String(localized: "tickets.remain.buy.more.once.re")
                 case .requirementMissing:
                     return "" //String(localized: "先に要望を入力してください")
                 case .creditRequired:

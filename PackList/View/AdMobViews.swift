@@ -14,7 +14,7 @@ import FirebaseCrashlytics
 // アプリID は、Info.plistにセット：key:GADApplicationIdentifier
 
 // 利用可能な広告がない場合に共通で表示する文言をまとめておく
-private let adUnavailableMessage = String(localized: "現在、特典付きの広告がありません。後ほどお試しください")
+private let adUnavailableMessage = String(localized: "no.bonus.ads.now.try.again")
 
 /// ATT不使用のため、常に非パーソナライズ広告リクエストを返す (npa=1)
 private func npaRequest() -> Request {
@@ -123,7 +123,7 @@ struct AdMobAdSheetView: View {
                 .padding(.vertical, 8)
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle(Text("広告を見て応援する"))
+            .navigationTitle(Text("watch.ad.support"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -150,7 +150,7 @@ struct AdMobAdSheetView: View {
             }
             loader.onRewardEarned = { _ in
                 // 視聴完了直後にトライアル送信を開始する
-                rewardDescription = String(localized: "広告視聴ありがとう！チャッピー mini で送信を始めます")
+                rewardDescription = String(localized: "thanks.watching.sending.chappy.mini.now")
                 onRewardEarned()
             }
             loader.onAdLoaded = {
@@ -195,7 +195,7 @@ struct AdMobRewardedContentView: View {
         VStack(spacing: 16) {
             HStack(spacing: 66) {
                 Label {
-                    Text("動画広告")
+                    Text("video.ad")
                         .font(.headline)
                         .foregroundStyle(.primary)
                 } icon: {
@@ -205,7 +205,7 @@ struct AdMobRewardedContentView: View {
                 }
 
                 Label {
-                    Text("音が出ます")
+                    Text("sound.will.play")
                         .font(.footnote)
                         .foregroundStyle(.red)
                 } icon: {
@@ -217,7 +217,7 @@ struct AdMobRewardedContentView: View {
 
             //Text("最後まで視聴して特典をお受け取りください")
             // ローカライズ済みの案内文で、動画完了後に閉じるボタンが出ることを知らせる
-            Text("最後まで視聴すると閉じる【×】ボタンが現れます")
+            Text("close.x.appears.after.watching")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
@@ -227,7 +227,7 @@ struct AdMobRewardedContentView: View {
                 Spacer()
 
                 if loader.isLoading {
-                    ProgressView(String(localized: "広告を読み込み中..."))
+                    ProgressView(String(localized: "loading.ad"))
                         .padding()
                 }else{
                     
@@ -235,7 +235,7 @@ struct AdMobRewardedContentView: View {
                         presentAction()
                     } label: {
                         Label {
-                            Text("広告を再生する")
+                            Text("play.ad")
                                 .font(.body.weight(.semibold))
                                 .padding(.horizontal, 8)
                         } icon: {
@@ -252,7 +252,7 @@ struct AdMobRewardedContentView: View {
 
             if loader.errorMessage != nil {
                 //log(.error, "AdMob rewarded ad loading failed: \(errorMessage)")
-                Button(String(localized: "再読み込み")) {
+                Button(String(localized: "reload")) {
                     loader.loadAd()
                 }
                 .buttonStyle(.borderedProminent)
@@ -422,7 +422,7 @@ struct AdMobBannerView: View {
             )
 
             if isLoading {
-                ProgressView(String(localized: "広告を読み込み中..."))
+                ProgressView(String(localized: "loading.ad"))
                     .font(.caption)
             // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する
             } else if errorMessage != nil {
@@ -430,7 +430,7 @@ struct AdMobBannerView: View {
                     Text(adUnavailableMessage)
                         .font(.caption.weight(.semibold))
                         .multilineTextAlignment(.center)
-                    Button(String(localized: "再読み込み")) {
+                    Button(String(localized: "reload")) {
                         // バナーを作り直して再リクエストする
                         reloadToken = UUID()
                         isLoading = true
