@@ -186,6 +186,7 @@ struct ItemSortListView: View {
                     }
                 }
                 .listStyle(.plain)
+                .scrollIndicators(.hidden, axes: .vertical)
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
