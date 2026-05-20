@@ -133,6 +133,7 @@ struct GroupEditView: View {
         .sheet(isPresented: $isShowingMoveSheet) {
             GroupMoveSheetView(packs: sortedPacks,
                                groupName: group.name,
+                               fontScale: fontScale,
                                selectedPackID: $selectedPackID,
                                keepOriginal: $keepSourceGroup,
                                insertPosition: $moveInsertPosition,
@@ -140,14 +141,27 @@ struct GroupEditView: View {
                                onConfirm: handleMoveConfirmation,
                                onCancel: { isShowingMoveSheet = false })
                 .appFontScale(fontScale)
-                .presentationDetents([.height(330)])
+                .presentationDetents([.height(moveSheetHeight)])
+                .presentationBackground(Color(.systemGroupedBackground))
+        }
+    }
+
+    private var moveSheetHeight: CGFloat {
+        switch fontScale {
+        case .large:
+            return 430
+        case .xLarge:
+            return 500
+        default:
+            return 360
         }
     }
 
     private var actionBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             compactActionButton(title: LocalizedStringKey(allItemsChecked ? "check.off" : "check"),
-                                fixedWidth: 82,
+                                fixedWidth: 108,
+                                twoLineTitle: checkTwoLineTitle,
                                 systemImage: allItemsChecked ? "checkmark.square" : "square",
                                 tint: .accentColor,
                                 action: checkToggle)
@@ -185,6 +199,7 @@ struct GroupEditView: View {
 
     private func compactActionButton(title: LocalizedStringKey,
                                      fixedWidth: CGFloat? = nil,
+                                     twoLineTitle: (LocalizedStringKey, LocalizedStringKey)? = nil,
                                      systemImage: String,
                                      tint: Color,
                                      action: @escaping () -> Void) -> some View {
@@ -193,17 +208,35 @@ struct GroupEditView: View {
                 Image(systemName: systemImage)
                     .imageScale(.large)
                     .symbolRenderingMode(.hierarchical)
-                Text(title)
+                if let twoLineTitle {
+                    VStack(spacing: 0) {
+                        Text(twoLineTitle.0)
+                        Text(twoLineTitle.1)
+                    }
                     .font(.caption.weight(.semibold))
                     .lineLimit(1)
+                    .multilineTextAlignment(.center)
+                } else {
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
             }
-            .frame(minWidth: 64)
+            .frame(minWidth: 58)
             .frame(width: fixedWidth)
             .padding(.vertical, 6)
             .padding(.horizontal, 6)
             .contentShape(Rectangle())
         }
         .tint(tint)
+    }
+
+    private var checkTwoLineTitle: (LocalizedStringKey, LocalizedStringKey)? {
+        if fontScale == .large || fontScale == .xLarge {
+            return ("check.label", allItemsChecked ? "check.off.state" : "check.on.state")
+        }
+        return nil
     }
 
     private func editCard<Content: View>(title: LocalizedStringKey,
@@ -363,6 +396,7 @@ struct GroupEditView: View {
 private struct GroupMoveSheetView: View {
     let packs: [M1Pack]
     let groupName: String
+    let fontScale: FontScale
     @Binding var selectedPackID: String
     @Binding var keepOriginal: Bool
     @Binding var insertPosition: GroupEditView.MoveInsertPosition
@@ -373,6 +407,21 @@ private struct GroupMoveSheetView: View {
     private var sortedPacks: [M1Pack] {
         // パック一覧もorder順で扱う
         packs.sorted { $0.order < $1.order }
+    }
+
+    private var titleText: Text {
+        groupName.isEmpty ? Text("new.group") : Text(verbatim: groupName)
+    }
+
+    private var titleFont: Font {
+        switch fontScale {
+        case .large:
+            return .title3.weight(.semibold)
+        case .xLarge:
+            return .title2.weight(.semibold)
+        default:
+            return .headline.weight(.semibold)
+        }
     }
 
     var body: some View {
@@ -407,6 +456,8 @@ private struct GroupMoveSheetView: View {
                     Toggle("make.copy", isOn: $keepOriginal)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -424,8 +475,15 @@ private struct GroupMoveSheetView: View {
                         .tint(.accentColor)
                         .padding(.horizontal, 16)
                 }
+                ToolbarItem(placement: .principal) {
+                    titleText
+                        .font(titleFont)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .frame(maxWidth: .infinity)
+                }
             }
-            .navigationTitle(groupName.placeholder("new.group"))
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
         }
     }

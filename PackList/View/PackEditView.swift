@@ -110,9 +110,10 @@ struct PackEditView: View {
     }
 
     private var actionBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             compactActionButton(title: LocalizedStringKey(allItemsChecked ? "check.off" : "check"),
-                                fixedWidth: 82,
+                                fixedWidth: 108,
+                                twoLineTitle: checkTwoLineTitle,
                                 tint: .accentColor,
                                 action: startCheckToggle) {
                 ZStack {
@@ -178,23 +179,42 @@ struct PackEditView: View {
 
     private func compactActionButton<Icon: View>(title: LocalizedStringKey,
                                                  fixedWidth: CGFloat? = nil,
+                                                 twoLineTitle: (LocalizedStringKey, LocalizedStringKey)? = nil,
                                                  tint: Color,
                                                  action: @escaping () -> Void,
                                                  @ViewBuilder icon: () -> Icon) -> some View {
         Button(action: action) {
             VStack(spacing: 4) {
                 icon()
-                Text(title)
+                if let twoLineTitle {
+                    VStack(spacing: 0) {
+                        Text(twoLineTitle.0)
+                        Text(twoLineTitle.1)
+                    }
                     .font(.caption.weight(.semibold))
                     .lineLimit(1)
+                    .multilineTextAlignment(.center)
+                } else {
+                    Text(title)
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
             }
-            .frame(minWidth: 64)
+            .frame(minWidth: 58)
             .frame(width: fixedWidth)
             .padding(.vertical, 6)
             .padding(.horizontal, 6)
             .contentShape(Rectangle())
         }
         .tint(tint)
+    }
+
+    private var checkTwoLineTitle: (LocalizedStringKey, LocalizedStringKey)? {
+        if fontScale == .large || fontScale == .xLarge {
+            return ("check.label", allItemsChecked ? "check.off.state" : "check.on.state")
+        }
+        return nil
     }
 
     private func editCard<Content: View>(title: LocalizedStringKey,

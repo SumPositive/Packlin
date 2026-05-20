@@ -502,6 +502,7 @@ struct ItemEditView: View {
             ItemMoveSheetView(
                 packs: sortedPacks,
                 itemName: item.name,
+                fontScale: fontScale,
                 selectedPackID: $selectedPackID,
                 selectedGroupID: $selectedGroupID,
                 keepOriginal: $keepSourceItem,
@@ -511,7 +512,8 @@ struct ItemEditView: View {
                 onCancel: { isShowingMoveSheet = false }
             )
             .appFontScale(fontScale)
-            .presentationDetents([.height(400)]) // シートの高さ
+            .presentationDetents([.height(moveSheetHeight)])
+            .presentationBackground(Color(.systemGroupedBackground))
         }
         .sheet(isPresented: $isShowingDialSettings) {
             NavigationStack {
@@ -532,6 +534,17 @@ struct ItemEditView: View {
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }
             syncGroupSelection(useStoredPreference: false)
+        }
+    }
+
+    private var moveSheetHeight: CGFloat {
+        switch fontScale {
+        case .large:
+            return 540
+        case .xLarge:
+            return 620
+        default:
+            return 440
         }
     }
 
@@ -1030,6 +1043,7 @@ private struct ItemQuantityEditor: View {
 private struct ItemMoveSheetView: View {
     let packs: [M1Pack]
     let itemName: String
+    let fontScale: FontScale
     @Binding var selectedPackID: String
     @Binding var selectedGroupID: String
     @Binding var keepOriginal: Bool
@@ -1049,6 +1063,21 @@ private struct ItemMoveSheetView: View {
     private var availableGroups: [M2Group] {
         guard let pack = selectedPack else { return [] }
         return pack.child.sorted { $0.order < $1.order }
+    }
+
+    private var titleText: Text {
+        itemName.isEmpty ? Text("new.item") : Text(verbatim: itemName)
+    }
+
+    private var titleFont: Font {
+        switch fontScale {
+        case .large:
+            return .title3.weight(.semibold)
+        case .xLarge:
+            return .title2.weight(.semibold)
+        default:
+            return .headline.weight(.semibold)
+        }
     }
 
     var body: some View {
@@ -1100,6 +1129,8 @@ private struct ItemMoveSheetView: View {
                     Toggle("make.copy", isOn: $keepOriginal)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
             //.listSectionSpacing(.compact)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -1121,8 +1152,15 @@ private struct ItemMoveSheetView: View {
                         .tint(.accentColor)
                         .padding(.horizontal, 16)
                 }
+                ToolbarItem(placement: .principal) {
+                    titleText
+                        .font(titleFont)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .frame(maxWidth: .infinity)
+                }
             }
-            .navigationTitle(itemName.placeholder("new.item"))
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
