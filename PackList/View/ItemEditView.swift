@@ -69,6 +69,19 @@ struct ItemEditView: View {
     @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
 
     private let sectionCornerRadius: CGFloat = 12
+
+    /// アクションボタン（Back/Copy/Delete/Next/Move/Erase）の固定幅。
+    /// 「大」までで頭打ちにしている影響で、英語の "Delete" 等が標準幅(90)では欠ける。
+    /// FontScale が large 以上のときは広めの幅にして欠落を防ぐ。
+    private var actionButtonWidth: CGFloat {
+        switch fontScale {
+        case .system, .standard:
+            return 90
+        case .large, .xLarge:
+            return 110
+        }
+    }
+
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
@@ -160,7 +173,7 @@ struct ItemEditView: View {
                                 // 各ボタンは固定枠（width: 90, height: 44）なので、
                                 // 文字サイズ「特大」では label が欠落する。後段の cappedAtLargeFontSize で頭打ちにする
                                 Label("back", systemImage: "arrow.up.circle")
-                                    .frame(width: 90, height: 44)
+                                    .frame(width: actionButtonWidth, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                                     .overlay(
@@ -177,7 +190,7 @@ struct ItemEditView: View {
                                 onDismiss()
                             } label: {
                                 Label("copy", systemImage: "plus.square.on.square")
-                                    .frame(width: 90, height: 44)
+                                    .frame(width: actionButtonWidth, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                                     .overlay(
@@ -194,7 +207,7 @@ struct ItemEditView: View {
                                 onDismiss()
                             } label: {
                                 Label("delete", systemImage: "trash")
-                                    .frame(width: 90, height: 44)
+                                    .frame(width: actionButtonWidth, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                                     .overlay(
@@ -212,7 +225,7 @@ struct ItemEditView: View {
                                 selectAdjacentItem(by: 1)
                             } label: {
                                 Label("next", systemImage: "arrow.down.circle")
-                                    .frame(width: 90, height: 44)
+                                    .frame(width: actionButtonWidth, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                                     .overlay(
@@ -229,7 +242,7 @@ struct ItemEditView: View {
                                 isShowingMoveSheet = true
                             } label: {
                                 Label("move", systemImage: "hand.point.up.left.and.text")
-                                    .frame(width: 90, height: 44)
+                                    .frame(width: actionButtonWidth, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                                     .overlay(
@@ -246,7 +259,7 @@ struct ItemEditView: View {
                                 resetItemToInitialState()
                             } label: {
                                 Label("erase", systemImage: "eraser")
-                                    .frame(width: 90, height: 44)
+                                    .frame(width: actionButtonWidth, height: 44)
                                     .background(COLOR_BACK_INPUT)
                                     .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
                                     .overlay(
@@ -931,24 +944,47 @@ private struct ItemQuantityEditor: View {
         horizontalSizeClass == .compact
     }
 
+    // タイトル（個重量・在庫数・必要数）は「大」までで頭打ちなので、
+    // FontScale が large 以上のときは「大」基準で十分な幅を確保すれば常に1行に収まる
     private var titleColumnWidth: CGFloat {
-        usesCompactMetrics ? 44 : 56
+        switch fontScale {
+        case .system, .standard:
+            return usesCompactMetrics ? 44 : 56
+        case .large, .xLarge:
+            return usesCompactMetrics ? 64 : 72
+        }
     }
 
+    // 数値は「特大」のままユーザー設定で表示するため、xLarge ではさらに広めの枠を取る
     private var valueColumnWidth: CGFloat {
-        usesCompactMetrics ? 58 : 75
+        switch fontScale {
+        case .system, .standard:
+            return usesCompactMetrics ? 58 : 75
+        case .large:
+            return usesCompactMetrics ? 76 : 90
+        case .xLarge:
+            return usesCompactMetrics ? 94 : 112
+        }
     }
 
     private var valueHorizontalPadding: CGFloat {
         usesCompactMetrics ? 6 : 10
     }
 
+    // 単位（g・個 / pcs など）も「大」までで頭打ち。
+    // 英語の "pcs"（3文字）が1行で収まる幅を確保し、数値枠とも被らないようにする
     private var unitColumnWidth: CGFloat {
-        usesCompactMetrics ? 12 : 30
+        switch fontScale {
+        case .system, .standard:
+            return usesCompactMetrics ? 18 : 30
+        case .large, .xLarge:
+            return usesCompactMetrics ? 30 : 38
+        }
     }
 
+    // 特大では数値が大きいぶん、単位とダイアルの間を広げて被りを避ける
     private var unitDialSpacing: CGFloat {
-        4
+        fontScale == .xLarge ? 10 : 4
     }
 
     private var numberFont: Font {
@@ -967,14 +1003,17 @@ private struct ItemQuantityEditor: View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
                 HStack(alignment: .center, spacing: 0) {
-                    // 見出し
+                    // 見出し（個重量・在庫数・必要数 / Weight per item など）
+                    // 「大」までで頭打ちにする。短い名前（日本語など）は1行、
+                    // 長い名前（英語の "Weight per item"）は2行で折り返して欠落を防ぐ
                     Text(field.title)
                         .font(usesCompactMetrics ? .caption2 : .caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(usesCompactMetrics ? 2 : 1)
+                        .lineLimit(2)
                         .multilineTextAlignment(.leading)
                         .frame(width: titleColumnWidth, alignment: .leading)
-                    // タップでテンキーシートを開く数値表示
+                        .cappedAtLargeFontSize()
+                    // タップでテンキーシートを開く数値表示（数値はユーザー設定の文字サイズそのまま）
                     Button {
                         activeFieldIndex = index
                     } label: {
@@ -993,15 +1032,18 @@ private struct ItemQuantityEditor: View {
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.primary)
-                    // 単位
+                    // 単位（「大」までで頭打ち）
                     Text(field.unit)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(width: unitColumnWidth)
+                        .cappedAtLargeFontSize()
                     Spacer()
                         .frame(width: unitDialSpacing)
                     // ダイアル（Stepperの代わり）
                     // GeometryReader で残りスペースを計測し dialWidth に渡す
+                    // 文字サイズが大きいときはタイトル/値/単位の枠が広がるため、
+                    // ダイアルは残り幅に合わせて自動的に狭くなる（最小80pt）
                     GeometryReader { geo in
                         AZDialView(
                             value: field.binding,
@@ -1010,11 +1052,11 @@ private struct ItemQuantityEditor: View {
                             step: field.step,
                             stepperStep: 0,
                             style: dialStyle,
-                            dialWidth: max(100, min(220, geo.size.width)),
+                            dialWidth: max(80, min(220, geo.size.width)),
                             tuning: dialTuning
                         )
                     }
-                    .frame(minWidth: 100, maxWidth: .infinity, minHeight: 44, maxHeight: 44)
+                    .frame(minWidth: 80, maxWidth: .infinity, minHeight: 44, maxHeight: 44)
                 }
             }
         }

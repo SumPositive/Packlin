@@ -18,6 +18,8 @@ struct PackRowView: View {
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
     // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    // 文字サイズ設定。「特大」のときだけ重量とメモを縦に分離する
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
 
     @State private var rowFrame: CGRect?
 
@@ -96,36 +98,27 @@ struct PackRowView: View {
                 Spacer()
             }
             
-            HStack(spacing: 0) {
-                // インデント
-                Rectangle()
-                    .frame(width: 30, height: 1)
-                    .foregroundStyle(.clear)
-                
-                if let weightLabelText {
-                    infoCapsule(weightLabelText, state: weightCapsuleState)
-                }else{
-                    Rectangle()
-                        .frame(width: 24, height: 1)
-                        .foregroundStyle(.clear)
+            // 文字サイズ「特大」のときだけ、重量とメモを上下に分離して欠落を防ぐ
+            if fontScale == .xLarge {
+                // 「特大」: 2行目に重量（左寄せ）、3行目にメモ（左寄せ）
+                HStack(spacing: 0) {
+                    indentSpacer
+                    weightBadgeOrSpacer
+                    Spacer(minLength: 0)
                 }
-                // メモ
-                if isBeginnerMode, pack.name.isEmpty, pack.memo.isEmpty {
-                    Text("packs.gather.everything.bag.backpack")
-                        .lineLimit(3)
-                        .font(FONT_MEMO)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                        // 初心者ヘルプ（プレースホルダー説明文）を「大」までで頭打ち
-                        .cappedAtLargeFontSize()
-                }else{
-                    Text(pack.memo)
-                        .lineLimit(3, reservesSpace: false)
-                        .font(FONT_MEMO)
-                        .foregroundStyle(COLOR_MEMO)
-                        .padding(.horizontal, 8)
+                HStack(spacing: 0) {
+                    indentSpacer
+                    memoView
+                    Spacer(minLength: 0)
                 }
-                Spacer()
+            } else {
+                // 「自動」「標準」「大」: 重量バッジとメモを同じ行に並べる（従来の動作）
+                HStack(spacing: 0) {
+                    indentSpacer
+                    weightBadgeOrSpacer
+                    memoView
+                    Spacer(minLength: 0)
+                }
             }
             // DEBUG Line
             if DEBUG_SHOW_ORDER_ID {
@@ -177,6 +170,46 @@ struct PackRowView: View {
 }
 
 private extension PackRowView {
+    /// 行先頭のインデント（30pt の透明スペース）
+    @ViewBuilder
+    var indentSpacer: some View {
+        Rectangle()
+            .frame(width: 30, height: 1)
+            .foregroundStyle(.clear)
+    }
+
+    /// 重量バッジ。重量がないときはバッジ幅相当の透明スペースを返して見た目を揃える
+    @ViewBuilder
+    var weightBadgeOrSpacer: some View {
+        if let weightLabelText {
+            infoCapsule(weightLabelText, state: weightCapsuleState)
+        } else {
+            Rectangle()
+                .frame(width: 24, height: 1)
+                .foregroundStyle(.clear)
+        }
+    }
+
+    /// メモ（または初心者向けの空アイテム説明）
+    @ViewBuilder
+    var memoView: some View {
+        if isBeginnerMode, pack.name.isEmpty, pack.memo.isEmpty {
+            Text("packs.gather.everything.bag.backpack")
+                .lineLimit(3)
+                .font(FONT_MEMO)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                // 初心者ヘルプ（プレースホルダー説明文）を「大」までで頭打ち
+                .cappedAtLargeFontSize()
+        } else {
+            Text(pack.memo)
+                .lineLimit(3, reservesSpace: false)
+                .font(FONT_MEMO)
+                .foregroundStyle(COLOR_MEMO)
+                .padding(.horizontal, 8)
+        }
+    }
+
     func formattedWeightWithUnit(_ weight: Int) -> String {
         // 重量値に応じて単位を切り替え、見やすい表記に整える
         if weightDisplayInKg {
@@ -219,6 +252,8 @@ private extension PackRowView {
 
     @ViewBuilder
     func compactSlashText(_ text: String) -> some View {
+        // バッジ内のテキストは絶対に折り返さない。折り返したいときは外側の
+        // ViewThatFits で行レイアウト自体を切り替える
         if let slashIndex = text.firstIndex(of: "/") {
             let left = String(text[..<slashIndex])
             let right = String(text[text.index(after: slashIndex)...])
@@ -227,8 +262,12 @@ private extension PackRowView {
                 Text(verbatim: "/")
                 Text(verbatim: right)
             }
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
         } else {
             Text(verbatim: text)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }

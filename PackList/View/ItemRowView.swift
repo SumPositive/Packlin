@@ -124,24 +124,33 @@ struct ItemRowView: View {
                     .padding(.bottom, checkBottomPadding)// タップ範囲を広げるため
                     .padding(.leading, 0)
                     .padding(.trailing, checkTrailingPadding)
-                    // 名称
-                    Group {
-                        if item.name.isEmpty {
-                            Text("new.item")
-                        }else{
-                            Text(verbatim: limitedName)
+
+                    // 名前 + 数量バッジ：横幅に余裕があれば1行、被るときは2行レイアウトに切り替える
+                    ViewThatFits(in: .horizontal) {
+                        // Layout 1: 1行レイアウト（従来通り）— 横幅に余裕があるとき
+                        HStack(spacing: 0) {
+                            itemNameView
+                            Spacer(minLength: 8)
+                            if showQuantityOnNameLine {
+                                quantityButton()
+                                    .padding(.leading, quantityLeadingPadding)
+                            }
                         }
-                    }
-                    .font(nameFont)
-                    .multilineTextAlignment(.leading)
-                    // 指定行数まで折り返し、それ以上は末尾トランケートに任せる
-                    .lineLimit(nameLineLimit, reservesSpace: false)
-                    .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-                    Spacer()
-                    // 最小表示時は数量カプセルをname行の右端へ寄せる
-                    if showQuantityOnNameLine {
-                        quantityButton()
-                            .padding(.leading, quantityLeadingPadding)
+
+                        // Layout 2: 2行レイアウト — 横幅が足りず1行に収まらないとき
+                        // 名前は1行目左寄せ、重量と数量カプセルは2行目右寄せ
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 0) {
+                                itemNameView
+                                Spacer(minLength: 0)
+                            }
+                            if showQuantityOnNameLine {
+                                HStack(spacing: 0) {
+                                    Spacer(minLength: 0)
+                                    quantityButton()
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -236,6 +245,23 @@ struct ItemRowView: View {
 }
 
 private extension ItemRowView {
+    /// 名前テキスト（ViewThatFits の両レイアウトで共通利用するため切り出し）
+    @ViewBuilder
+    var itemNameView: some View {
+        Group {
+            if item.name.isEmpty {
+                Text("new.item")
+            } else {
+                Text(verbatim: limitedName)
+            }
+        }
+        .font(nameFont)
+        .multilineTextAlignment(.leading)
+        // 指定行数まで折り返し、それ以上は末尾トランケートに任せる
+        .lineLimit(nameLineLimit, reservesSpace: false)
+        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+    }
+
     /// 数量カプセルを1か所にまとめる
     @ViewBuilder
     func quantityButton() -> some View {

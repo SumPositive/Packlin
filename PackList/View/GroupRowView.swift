@@ -99,25 +99,34 @@ struct GroupRowView: View {
                     .padding(.vertical, 8)
                 }
                 .buttonStyle(BorderlessButtonStyle())
-                // 名称
-                Group {
-                    if group.name.isEmpty {
-                        // プレースホルダもlineLimitの挙動を合わせる
-                        Text("new.group")
-                    }else{
-                        Text(verbatim: limitedName)
+
+                // 名前 + 重量バッジ：横幅に余裕があれば1行、被るときは2行レイアウトに切り替える
+                ViewThatFits(in: .horizontal) {
+                    // Layout 1: 1行レイアウト（従来通り）— 横幅に余裕があるとき
+                    HStack(spacing: 0) {
+                        groupNameView
+                        Spacer(minLength: 8)
+                        if showWeightOnNameLine, let weightLabelText {
+                            weightLabel(weightLabelText, state: weightCapsuleState)
+                                .padding(.horizontal, 8)
+                        }
                     }
-                }
-                .font(FONT_NAME)
-                .multilineTextAlignment(.leading)
-                // 行数上限までは折り返し、それ以降は標準の末尾トランケートに任せる
-                .lineLimit(nameLineLimit, reservesSpace: false)
-                .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
-                Spacer()
-                // 最小表示時は重量を右側へ寄せる
-                if showWeightOnNameLine, let weightLabelText {
-                    weightLabel(weightLabelText, state: weightCapsuleState)
-                        .padding(.horizontal, 8)
+
+                    // Layout 2: 2行レイアウト — 横幅が足りず1行に収まらないとき
+                    // 名前は1行目左寄せ、重量バッジは2行目右寄せ
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 0) {
+                            groupNameView
+                            Spacer(minLength: 0)
+                        }
+                        if showWeightOnNameLine, let weightLabelText {
+                            HStack(spacing: 0) {
+                                Spacer(minLength: 0)
+                                weightLabel(weightLabelText, state: weightCapsuleState)
+                                    .padding(.horizontal, 8)
+                            }
+                        }
+                    }
                 }
             }
 
@@ -202,6 +211,23 @@ struct GroupRowView: View {
 }
 
 private extension GroupRowView {
+    /// 名前テキスト（ViewThatFits の両レイアウトで共通利用するため切り出し）
+    @ViewBuilder
+    var groupNameView: some View {
+        Group {
+            if group.name.isEmpty {
+                Text("new.group")
+            } else {
+                Text(verbatim: limitedName)
+            }
+        }
+        .font(FONT_NAME)
+        .multilineTextAlignment(.leading)
+        // 行数上限までは折り返し、それ以降は標準の末尾トランケートに任せる
+        .lineLimit(nameLineLimit, reservesSpace: false)
+        .foregroundStyle(isNamePlaceholder ? .secondary : COLOR_NAME)
+    }
+
     func formattedWeightWithUnit(_ weight: Int) -> String {
         // 重量表示の単位を重量値ごとに動的決定する
         if weightDisplayInKg {
@@ -246,6 +272,8 @@ private extension GroupRowView {
 
     @ViewBuilder
     func compactSlashText(_ text: String) -> some View {
+        // バッジ内のテキストは絶対に折り返さない。折り返したいときは外側の
+        // ViewThatFits で行レイアウト自体を切り替える
         if let slashIndex = text.firstIndex(of: "/") {
             let left = String(text[..<slashIndex])
             let right = String(text[text.index(after: slashIndex)...])
@@ -254,8 +282,12 @@ private extension GroupRowView {
                 Text(verbatim: "/")
                 Text(verbatim: right)
             }
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
         } else {
             Text(verbatim: text)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }
