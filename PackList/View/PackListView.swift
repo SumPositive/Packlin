@@ -228,6 +228,8 @@ struct PackListView: View {
                 .frame(height: headerHeight)
                 .padding(.horizontal, 8)
                 .background(.thinMaterial)
+                // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
+                .cappedAtLargeFontSize()
             }
         }
         // Pack編集はポップアップからシート表示へ移行
@@ -308,6 +310,8 @@ struct PackListView: View {
             .padding(.top, 20)
             .padding(.leading, 30)
             .padding(.trailing, 8)
+            // 初心者ヘルプ「パックの状態」を「大」までで頭打ち
+            .cappedAtLargeFontSize()
         }
     }
 

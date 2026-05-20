@@ -116,6 +116,8 @@ struct PackRowView: View {
                         .font(FONT_MEMO)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 8)
+                        // 初心者ヘルプ（プレースホルダー説明文）を「大」までで頭打ち
+                        .cappedAtLargeFontSize()
                 }else{
                     Text(pack.memo)
                         .lineLimit(3, reservesSpace: false)

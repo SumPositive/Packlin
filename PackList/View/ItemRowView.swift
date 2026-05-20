@@ -167,6 +167,8 @@ struct ItemRowView: View {
                                     .lineLimit(memoLineLimit)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 4)
+                                    // 初心者ヘルプ（プレースホルダー説明文）を「大」までで頭打ち
+                                    .cappedAtLargeFontSize()
                             }else{
                                 Text(verbatim: limitedMemo)
                                     .font(FONT_MEMO)

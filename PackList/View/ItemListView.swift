@@ -221,6 +221,8 @@ struct ItemListView: View {
                 // ヘッダーの上下余白を抑えてリスト領域を広げる
                 .padding(.vertical, 3)
                 .background(.thinMaterial)
+                // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
+                .cappedAtLargeFontSize()
             }
             .onAppear {
                 updateUndoRedo()
@@ -321,10 +323,12 @@ struct ItemListView: View {
             .padding(.top, 20)
             .padding(.leading, 30)
             .padding(.trailing, 8)
+            // 初心者ヘルプ「アイテムの状態」を「大」までで頭打ち
+            .cappedAtLargeFontSize()
         }
     }
-    
-    
+
+
     /// アイテム追加
     func addItem() {
         var newItemID: M3Item.ID?

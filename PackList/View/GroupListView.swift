@@ -132,6 +132,8 @@ struct GroupListView: View {
             // フッターメニュー全体の上下余白を詰めて、画面占有を抑える
             .padding(.vertical, isBeginnerMode ? 8 : 6)
             .background(.ultraThinMaterial)
+            // フッターのボタン名（アイテム縦覧・チャッピー）と初心者ヘルプを「大」までで頭打ち
+            .cappedAtLargeFontSize()
         }
     }
 
@@ -337,6 +339,8 @@ struct GroupListView: View {
                 // ヘッダーの上下余白を控えめにしてコンテンツの見える領域を増やす
                 .padding(.vertical, 3)
                 .background(.thinMaterial)
+                // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
+                .cappedAtLargeFontSize()
             }
         }
         .contentShape(Rectangle())
@@ -416,6 +420,8 @@ struct GroupListView: View {
             .padding(.top, 20)
             .padding(.leading, 30)
             .padding(.trailing, 8)
+            // 初心者ヘルプ「グループの状態」を「大」までで頭打ち
+            .cappedAtLargeFontSize()
         }
     }
 

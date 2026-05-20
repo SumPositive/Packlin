@@ -48,39 +48,40 @@ struct BreadcrumbView: View {
         .padding(.top, 8)
         // 全体を左寄せにして、親子関係が視覚的に並ぶようにする
         .frame(maxWidth: .infinity, alignment: .leading)
-        // パンくずはナビゲーション要素のため、設定が「特大」でも上限を
-        // 「大」(xxxLarge) までで頭打ちにして固定高さヘッダーからはみ出さないようにする
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     // 1要素分のテキスト。幅制限は付けず、layoutPriority だけで縮約順を制御する
     @ViewBuilder
-    private func breadcrumbText(for name: String, priority: Double) -> some View {
+    private func breadcrumbText(for name: String) -> some View {
         Text(name)
             // 視認性を保ちつつもヘッダー内の高さを抑えるため footnote を採用
             .font(.footnote)
             .lineLimit(1)
             .truncationMode(.tail)
-            // 深い階層ほど縮みにくくする
-            .layoutPriority(priority)
     }
 
     // タップ可能なパンくず要素を生成する
+    // layoutPriority は Button / Text の「外側」に付けないと HStack の領域配分に効かないため、
+    // Group でラップしてから最後に適用する
     @ViewBuilder
     private func crumb(
         for name: String,
         action: (() -> Void)?,
         priority: Double
     ) -> some View {
-        if let action = action {
-            Button(action: action) {
-                breadcrumbText(for: name, priority: priority)
+        Group {
+            if let action = action {
+                Button(action: action) {
+                    breadcrumbText(for: name)
+                }
+                // ヘッダー内ではリンク風の見た目を避け、通常テキストのまま押しやすくする
+                .buttonStyle(.plain)
+            } else {
+                breadcrumbText(for: name)
             }
-            // ヘッダー内ではリンク風の見た目を避け、通常テキストのまま押しやすくする
-            .buttonStyle(.plain)
-        } else {
-            breadcrumbText(for: name, priority: priority)
         }
+        // 深い階層ほど縮みにくくする（Group の外側に付与）
+        .layoutPriority(priority)
     }
 
     // パンくずの区切り記号（最優先で残す）

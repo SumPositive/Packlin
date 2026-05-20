@@ -151,6 +151,8 @@ struct ItemSortListView: View {
             .padding(.top, 8)
             .padding(.horizontal, 14)
             .background(.ultraThinMaterial)
+            // ソート順ボタン名と初心者ヘルプを「大」までで頭打ち
+            .cappedAtLargeFontSize()
         }
     }
 
@@ -300,6 +302,8 @@ struct ItemSortListView: View {
                 // ヘッダーの上下余白を抑えてリスト領域を広げる
                 .padding(.vertical, 3)
                 .background(.thinMaterial)
+                // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
+                .cappedAtLargeFontSize()
             }
             .onAppear {
                 updateUndoRedo()

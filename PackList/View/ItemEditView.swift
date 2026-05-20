@@ -157,6 +157,8 @@ struct ItemEditView: View {
                                 // (-1) 1つ前のアイテムを編集対象に切り替える
                                 selectAdjacentItem(by: -1)
                             } label: {
+                                // 各ボタンは固定枠（width: 90, height: 44）なので、
+                                // 文字サイズ「特大」では label が欠落する。後段の cappedAtLargeFontSize で頭打ちにする
                                 Label("back", systemImage: "arrow.up.circle")
                                     .frame(width: 90, height: 44)
                                     .background(COLOR_BACK_INPUT)
@@ -256,6 +258,8 @@ struct ItemEditView: View {
                             .accessibilityLabel(Text("erase"))
                         }
                     }
+                    // 固定枠ボタンの label が「特大」設定で欠落しないよう「大」までで頭打ち
+                    .cappedAtLargeFontSize()
                 }
                 // 名称
                 EditorSection(title: "name") {
@@ -447,6 +451,8 @@ struct ItemEditView: View {
             // ヘッダーの上下余白を控えめにして編集フォームを広く見せる
             .padding(.vertical, 3)
             .background(.thinMaterial)
+            // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
+            .cappedAtLargeFontSize()
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)

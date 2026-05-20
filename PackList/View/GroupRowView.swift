@@ -147,6 +147,8 @@ struct GroupRowView: View {
                                 .lineLimit(memoLineLimit)
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 8)
+                                // 初心者ヘルプ（プレースホルダー説明文）を「大」までで頭打ち
+                                .cappedAtLargeFontSize()
                         }else{
                             Text(verbatim: limitedMemo)
                                 .font(FONT_MEMO)

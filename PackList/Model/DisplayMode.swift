@@ -119,4 +119,11 @@ extension View {
     func appFontScale(_ fontScale: FontScale) -> some View {
         modifier(FontScaleModifier(fontScale: fontScale))
     }
+
+    /// 文字サイズの上限を「大」(`.xxxLarge`) までで頭打ちにする。
+    /// 固定枠を持つナビゲーション要素・初心者ヘルプ・ボタン名称など、
+    /// 「特大」設定で文字が欠落しやすい部位に適用する。
+    func cappedAtLargeFontSize() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+    }
 }
