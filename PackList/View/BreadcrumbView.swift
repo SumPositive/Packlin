@@ -18,73 +18,51 @@ struct BreadcrumbView: View {
     let groupAction: (() -> Void)?
     let itemAction: (() -> Void)?
 
-    // 各パンくずの最大幅を画面の1/3以内にする
-    private var maxNameWidth: CGFloat {
-        (UIScreen.main.bounds.width - 36.0*2) / 3.0
-    }
-
     // アプリ名はローカライズ文字列から取得し、常にパンくずの先頭に置く
     private var appTitle: String {
         String(localized: "app.title")
     }
 
-    // footnoteフォントでの実測幅を取得し、最大幅を超えないようにする
-    private func nameWidth(for name: String) -> CGFloat {
-        let font = UIFont.preferredFont(forTextStyle: .footnote)
-        let attributes = [NSAttributedString.Key.font: font]
-        let measuredWidth = (name as NSString).size(withAttributes: attributes).width
-        // 実測幅が最大幅より小さければそのまま、長ければ最大幅に抑える
-        return min(measuredWidth, maxNameWidth)
-    }
-
     var body: some View {
         HStack(spacing: 2) {
-            // アプリ名を最初のパンくずとして表示し、トップ画面へ戻れるようにする
-            // ただし省略時は先頭が区切りから始まっても良いので、アプリ名は詰めやすくする
-            crumb(for: appTitle, action: rootAction, allowTightCompression: true)
-
-            // アプリ名とパック名の間にも区切りを入れて視覚的に階層を表す
+            // 階層が深い項目ほど layoutPriority を高くして
+            // 縮める必要があるときは先頭（アプリ名）から優先的に省略する
+            crumb(for: appTitle, action: rootAction, priority: 1)
             separator
-
-            // パック名を左寄せ・省略付きで表示し、タップでパック一覧へ戻れるようにする
-            crumb(for: packName, action: packAction)
+            crumb(for: packName, action: packAction, priority: 2)
 
             if let groupName = groupName {
                 separator
-                // グループ名もタップで上位画面へ戻れるようにする
-                crumb(for: groupName, action: groupAction)
+                crumb(for: groupName, action: groupAction, priority: 3)
             }
 
             if let itemName = itemName {
                 separator
-                // アイテム名（またはソート名）も同様にタップ可にする
-                crumb(for: itemName, action: itemAction)
+                // アイテム名（または現在画面の名前）を最も優先して残す
+                crumb(for: itemName, action: itemAction, priority: 4)
             }
         }
-        // 左余白を少し広げて、ヘッダー内での窮屈さを和らげる
-        .padding(.leading, 12)
-        // 上方向にも十分な空き領域を設け、ヘッダーと重ならないようにする（元より+8pt）
+        // 左右余白を最小限にし、画面幅をできるだけ活かす
+        .padding(.horizontal, 4)
+        // 上方向にも十分な空き領域を設け、ヘッダーと重ならないようにする
         .padding(.top, 8)
         // 全体を左寄せにして、親子関係が視覚的に並ぶようにする
         .frame(maxWidth: .infinity, alignment: .leading)
+        // パンくずはナビゲーション要素のため、設定が「特大」でも上限を
+        // 「大」(xxxLarge) までで頭打ちにして固定高さヘッダーからはみ出さないようにする
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
-    // 1要素分のテキストを最大幅付きで描画し、末尾に自動省略記号を付ける
+    // 1要素分のテキスト。幅制限は付けず、layoutPriority だけで縮約順を制御する
     @ViewBuilder
-    private func breadcrumbText(for name: String, allowTightCompression: Bool = false) -> some View {
-        // 先頭要素だけは詰めやすくし、区切り記号が消えないようにする
-        let minWidth: CGFloat = allowTightCompression ? 0 : nameWidth(for: name)
-        let maxWidth: CGFloat = nameWidth(for: name)
+    private func breadcrumbText(for name: String, priority: Double) -> some View {
         Text(name)
-            // 視認性を保ちつつもヘッダー内の高さを抑えるためcaptionサイズを採用
+            // 視認性を保ちつつもヘッダー内の高さを抑えるため footnote を採用
             .font(.footnote)
             .lineLimit(1)
             .truncationMode(.tail)
-            // 左寄せで幅は文字列ぶんの最小限にしつつ、最大幅を超えないように制限
-            // 先頭要素は詰められる余地を残す
-            .frame(minWidth: minWidth, maxWidth: maxWidth, alignment: .leading)
-            // 先頭要素を優先的に縮めて、区切り記号を残す
-            .layoutPriority(allowTightCompression ? -1 : 0)
+            // 深い階層ほど縮みにくくする
+            .layoutPriority(priority)
     }
 
     // タップ可能なパンくず要素を生成する
@@ -92,25 +70,20 @@ struct BreadcrumbView: View {
     private func crumb(
         for name: String,
         action: (() -> Void)?,
-        allowTightCompression: Bool = false
+        priority: Double
     ) -> some View {
         if let action = action {
             Button(action: action) {
-                breadcrumbText(for: name, allowTightCompression: allowTightCompression)
+                breadcrumbText(for: name, priority: priority)
             }
             // ヘッダー内ではリンク風の見た目を避け、通常テキストのまま押しやすくする
             .buttonStyle(.plain)
-            //.padding(3)
-            //.background(
-            //    Capsule(style: .continuous)
-            //        .fill(Color.secondary.opacity(0.2))
-            //)
         } else {
-            breadcrumbText(for: name, allowTightCompression: allowTightCompression)
+            breadcrumbText(for: name, priority: priority)
         }
     }
 
-    // パンくずの区切り記号
+    // パンくずの区切り記号（最優先で残す）
     private var separator: some View {
         Text(">")
             // 文字サイズを合わせ、余白を最小限にして密度を高める
@@ -120,8 +93,8 @@ struct BreadcrumbView: View {
             .padding(.horizontal, 1)
             // 区切り記号は極力縮めず、消えないように固定する
             .fixedSize(horizontal: true, vertical: false)
-            // 区切り記号の表示を優先して確実に見せる
-            .layoutPriority(1)
+            // どんな名前よりも優先して残す
+            .layoutPriority(100)
     }
 }
 
