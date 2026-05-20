@@ -129,6 +129,8 @@ let DEF_linkCheckOffWithZero = true
 let DEF_displayMode: DisplayMode = .beginner
 // 外観モード（自動／ライト／ダーク）
 let DEF_appearanceMode: AppearanceMode = .automatic
+// 文字サイズ（自動／標準／大／特大）
+let DEF_fontScale: FontScale = .system
 // 行の最大表示行数（name／memo）
 let DEF_rowTextLines: RowTextLines = .minimal
 // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
@@ -150,6 +152,8 @@ enum AppStorageKey {
     static let displayMode = "setting.displayMode"
     // 外観モード（自動／ライト／ダーク）
     static let appearanceMode = "setting.appearanceMode"
+    // 文字サイズ（自動／標準／大／特大）
+    static let fontScale = "setting.fontScale"
     // 行の表示行数（name／memo）
     static let rowTextLines = "setting.rowTextLines"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit

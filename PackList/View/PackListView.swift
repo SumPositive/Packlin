@@ -19,6 +19,7 @@ struct PackListView: View {
     // 表示モード（初心者／上級者）をAppStorageで永続化
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
     @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
 
     @State private var editingPack: M1Pack?
     @State private var popupAnchor: CGPoint?
@@ -232,12 +233,14 @@ struct PackListView: View {
         // Pack編集はポップアップからシート表示へ移行
         .sheet(item: $editingPack) { pack in
             PackEditView(pack: pack)
+                .appFontScale(fontScale)
                 .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }
         // 設定画面もシート表示へ変更
         .sheet(isPresented: $isShowSetting) {
             SettingView()
+                .appFontScale(fontScale)
                 .preferredColorScheme(settingSheetColorScheme)
                 .presentationDetents([.height(SettingView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
@@ -245,6 +248,7 @@ struct PackListView: View {
         // 初心者モード時のAI新規作成メニューから遷移するシート
         .sheet(isPresented: $isShowAiCreateSheet) {
             ChappySheetView()
+                .appFontScale(fontScale)
                 .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }

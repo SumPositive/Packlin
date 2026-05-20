@@ -27,6 +27,7 @@ struct AppMain: App {
     /// Undo/Redo を自前で管理する履歴サービス
     @StateObject private var historyService = UndoStackService()
     @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
 
 //    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
 //    private let isFirebaseEnabled: Bool
@@ -142,6 +143,8 @@ struct AppMain: App {
                 }
             }
             .preferredColorScheme(appearanceMode.colorScheme)
+            // 設定の文字サイズを全画面に適用（自動以外は固定の Dynamic Type を強制）
+            .appFontScale(fontScale)
         }
         .environmentObject(creditStore)
         .environmentObject(historyService)

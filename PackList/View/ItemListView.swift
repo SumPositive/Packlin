@@ -20,6 +20,7 @@ struct ItemListView: View {
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var canUndo = false
@@ -269,6 +270,7 @@ struct ItemListView: View {
             popupAnchor = nil
         }) { group in
             GroupEditView(group: group)
+                .appFontScale(fontScale)
                 .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }

@@ -636,6 +636,7 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
         @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
         @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
+        @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
         @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
         // GALoggerのため変更前の設定値を記録する
@@ -646,6 +647,7 @@ struct SettingView: View {
         @State var ona_linkCheckOffWithZero: Bool?
         @State var ona_displayMode: DisplayMode?
         @State var ona_appearanceMode: AppearanceMode?
+        @State var ona_fontScale: FontScale?
         @State var ona_rowTextLines: RowTextLines?
 
         var body: some View {
@@ -684,6 +686,25 @@ struct SettingView: View {
                         ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.localizedKey)
                                 .tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                // 文字サイズ（自動／標準／大／特大）
+                HStack(spacing: 8) {
+                    Label {
+                        Text("font.size")
+                            .font(.callout)
+                    } icon: {
+                        Image(systemName: "textformat.size")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+
+                    Picker("font.size", selection: $fontScale) {
+                        ForEach(FontScale.allCases) { scale in
+                            Text(scale.localizedKey)
+                                .tag(scale)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -780,6 +801,7 @@ struct SettingView: View {
                 ona_linkCheckOffWithZero = linkCheckOffWithZero
                 ona_displayMode        = displayMode
                 ona_appearanceMode     = appearanceMode
+                ona_fontScale          = fontScale
                 ona_rowTextLines       = rowTextLines
             }
             .onDisappear {
@@ -818,6 +840,11 @@ struct SettingView: View {
                     // 外観モード切り替えを記録する
                     GALogger.log(.function(name: "setting",
                                            option: "appearanceMode:" + appearanceMode.rawValue))
+                }
+                if let ona = ona_fontScale, ona != fontScale {
+                    // 文字サイズの変更を記録する
+                    GALogger.log(.function(name: "setting",
+                                           option: "fontScale:" + fontScale.rawValue))
                 }
                 if let ona = ona_rowTextLines, ona != rowTextLines {
                     // 行数設定の変更を計測してUI調整の傾向を知る

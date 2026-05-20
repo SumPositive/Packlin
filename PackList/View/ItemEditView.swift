@@ -44,6 +44,7 @@ struct ItemEditView: View {
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     // PackListViewと同じ表示モードを共有し、初心者向け説明の表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     // 不揮発保存
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
@@ -503,6 +504,7 @@ struct ItemEditView: View {
                 onConfirm: handleMoveConfirmation,
                 onCancel: { isShowingMoveSheet = false }
             )
+            .appFontScale(fontScale)
             .presentationDetents([.height(400)]) // シートの高さ
         }
         .sheet(isPresented: $isShowingDialSettings) {
@@ -519,6 +521,7 @@ struct ItemEditView: View {
                     }
                 }
             }
+            .appFontScale(fontScale)
         }
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }
@@ -836,6 +839,7 @@ struct ItemQuickEditView: View {
 
 // 数量 編集
 private struct ItemQuantityEditor: View {
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @Bindable var item: M3Item
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(PacklinDialSettings.styleKey) private var dialStyleID = DialStyle.shape.id
@@ -1010,6 +1014,7 @@ private struct ItemQuantityEditor: View {
                 ) { newValue in
                     field.binding.wrappedValue = newValue
                 }
+                .appFontScale(fontScale)
             }
         }
     }

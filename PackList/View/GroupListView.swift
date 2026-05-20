@@ -19,6 +19,7 @@ struct GroupListView: View {
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // 表示モード（初心者／上級者）をPackListと同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
 
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
@@ -361,12 +362,14 @@ struct GroupListView: View {
             popupAnchor = nil
         }) { group in
             GroupEditView(group: group)
+                .appFontScale(fontScale)
                 .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }
         .sheet(isPresented: $showAiCreateSheet) {
             // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
             ChappySheetView(basePack: pack)
+                .appFontScale(fontScale)
                 .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }

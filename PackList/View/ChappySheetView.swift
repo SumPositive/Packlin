@@ -92,6 +92,7 @@ struct ChappyView: View {
     @AppStorage(AppStorageKey.aiRequirementTextEdit) private var requirementTextForEdit: String = ""
     /// 設定画面で選択した「新規パックの追加位置」を参照し、インポート時にも統一した挙動にする
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     /// 購入通知済みのトランザクションIDを永続化し、アプリ再起動後も重複アラートを抑止する
     @AppStorage(AppStorageKey.aiPurchaseNotifiedTransactionIds) private var notifiedTransactionIdsBackup: Data = Data()
     /// 購入失敗を一度案内したトランザクションIDを保持し、同じ失敗を連打しないようにする
@@ -463,6 +464,7 @@ struct ChappyView: View {
                 onRewardEarned: handleRewardedAdCompletion,
                 rewardTrialDescription: String(localized: "watch.ad.send.free.finish.video")
             )
+                .appFontScale(fontScale)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }

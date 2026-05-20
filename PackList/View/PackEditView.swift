@@ -18,6 +18,7 @@ struct PackEditView: View {
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
 
     @FocusState private var nameIsFocused: Bool
     @FocusState private var memoIsFocused: Bool
@@ -245,6 +246,7 @@ struct PackEditView: View {
             .sheet(isPresented: $showAiCreateSheet) {
                 // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
                 ChappySheetView(basePack: pack)
+                    .appFontScale(fontScale)
                     .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                     .presentationDragIndicator(.visible)
             }
