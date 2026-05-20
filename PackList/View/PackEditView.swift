@@ -20,6 +20,7 @@ struct PackEditView: View {
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
 
     @FocusState private var nameIsFocused: Bool
+    @FocusState private var memoIsFocused: Bool
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
@@ -38,39 +39,23 @@ struct PackEditView: View {
                     actionBar
 
                     editCard(title: "pack.name", minHeight: 74) {
-                        ZStack(alignment: .topLeading) {
-                            TextEditor(text: $pack.name)
-                                .font(FONT_EDIT)
-                                .scrollContentBackground(.hidden)
-                                .onChange(of: pack.name) { oldValue, newValue in
-                                    // 最大文字数制限（向きは < で統一）
-                                    if APP_MAX_NAME_LEN < newValue.count {
-                                        pack.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                                    }
-                                }
-                                .focused($nameIsFocused) // フォーカス状態とバインド
-
-                            if pack.name.isEmpty {
-                                // 名前未入力時のガイド文を表示（TextEditorはプレースホルダー未対応のため）
-                                Text("enter.name.new.pack")
-                                    .foregroundStyle(.secondary)
-                                    .padding(.top, 8)
-                                    .padding(.horizontal, 5)
-                                    .allowsHitTesting(false) // プレースホルダーをタップしてもフォーカスが当たるように
-                            }
-                        }
+                        PacklinMemoEditor(
+                            placeholder: "enter.name.new.pack",
+                            text: $pack.name,
+                            isFocused: nameFocusBinding,
+                            minHeight: 58,
+                            maxLength: APP_MAX_NAME_LEN
+                        )
                     }
 
                     editCard(title: "memo", minHeight: 112) {
-                        TextEditor(text: $pack.memo)
-                            .font(FONT_EDIT)
-                            .scrollContentBackground(.hidden)
-                            .onChange(of: pack.memo) { oldValue, newValue in
-                                // 最大文字数制限（こちらも < の形で統一）
-                                if APP_MAX_MEMO_LEN < newValue.count {
-                                    pack.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                                }
-                            }
+                        PacklinMemoEditor(
+                            placeholder: nil,
+                            text: $pack.memo,
+                            isFocused: memoFocusBinding,
+                            minHeight: 96,
+                            maxLength: APP_MAX_MEMO_LEN
+                        )
                     }
                 }
                 .padding(.horizontal, 16)
@@ -107,6 +92,20 @@ struct PackEditView: View {
             // Undo grouping END
             modelContext.undoManager?.groupingEnd()
         }
+    }
+
+    private var nameFocusBinding: Binding<Bool> {
+        Binding(
+            get: { nameIsFocused },
+            set: { nameIsFocused = $0 }
+        )
+    }
+
+    private var memoFocusBinding: Binding<Bool> {
+        Binding(
+            get: { memoIsFocused },
+            set: { memoIsFocused = $0 }
+        )
     }
 
     private var actionBar: some View {

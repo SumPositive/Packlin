@@ -89,6 +89,19 @@ struct ItemEditView: View {
         case memo
     }
 
+    private func focusBinding(for field: Field) -> Binding<Bool> {
+        Binding(
+            get: { focusedField == field },
+            set: { newValue in
+                if newValue {
+                    focusedField = field
+                } else if focusedField == field {
+                    focusedField = nil
+                }
+            }
+        )
+    }
+
     enum MoveInsertPosition: String, CaseIterable, Identifiable {
         case start
         case end
@@ -245,38 +258,27 @@ struct ItemEditView: View {
                 }
                 // 名称
                 EditorSection(title: "name") {
-                    TextField("", text: $item.name, prompt: Text("new.item"), axis: .vertical)
-                        .font(FONT_EDIT)
-                        .focused($focusedField, equals: .name)
-                        .textInputAutocapitalization(.sentences)
-                        .lineLimit(6)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: 80, maxHeight: .infinity)
-                        .background(COLOR_BACK_INPUT)
-                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                        .onChange(of: item.name) { newValue, _ in
-                            if APP_MAX_NAME_LEN < newValue.count {
-                                item.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                            }
-                        }
+                    PacklinMemoEditor(
+                        placeholder: "new.item",
+                        text: $item.name,
+                        isFocused: focusBinding(for: .name),
+                        minHeight: 64,
+                        maxLength: APP_MAX_NAME_LEN,
+                        backgroundColor: COLOR_BACK_INPUT,
+                        cornerRadius: sectionCornerRadius
+                    )
                 }
                 // メモ
                 EditorSection(title: "memo") {
-                    TextEditor(text: $item.memo)
-                        .font(FONT_EDIT)
-                        .focused($focusedField, equals: .memo)
-                        .frame(minHeight: 80, maxHeight: .infinity)
-                        .scrollContentBackground(.hidden)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 8)
-                        .background(COLOR_BACK_INPUT)
-                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                        .onChange(of: item.memo) { newValue, _ in
-                            if APP_MAX_MEMO_LEN < newValue.count {
-                                item.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                            }
-                        }
+                    PacklinMemoEditor(
+                        placeholder: nil,
+                        text: $item.memo,
+                        isFocused: focusBinding(for: .memo),
+                        minHeight: 64,
+                        maxLength: APP_MAX_MEMO_LEN,
+                        backgroundColor: COLOR_BACK_INPUT,
+                        cornerRadius: sectionCornerRadius
+                    )
                 }
 
                 // 数量

@@ -22,6 +22,7 @@ struct GroupEditView: View {
     @AppStorage("groupEdit.move.lastKeepOriginal") private var lastMoveKeepOriginal: Bool = false
 
     @FocusState private var nameIsFocused: Bool
+    @FocusState private var memoIsFocused: Bool
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
     @State private var isShowingMoveSheet = false
@@ -72,28 +73,23 @@ struct GroupEditView: View {
                     actionBar
 
                     editCard(title: "group.name", minHeight: 74) {
-                        TextEditor(text: $group.name)
-                            .font(FONT_EDIT)
-                            .scrollContentBackground(.hidden)
-                            .onChange(of: group.name) { oldValue, newValue in
-                                // 最大文字数制限
-                                if APP_MAX_NAME_LEN < newValue.count {
-                                    group.name = String(newValue.prefix(APP_MAX_NAME_LEN))
-                                }
-                            }
-                            .focused($nameIsFocused) // フォーカス状態とバインド
+                        PacklinMemoEditor(
+                            placeholder: nil,
+                            text: $group.name,
+                            isFocused: nameFocusBinding,
+                            minHeight: 58,
+                            maxLength: APP_MAX_NAME_LEN
+                        )
                     }
 
                     editCard(title: "memo", minHeight: 112) {
-                        TextEditor(text: $group.memo)
-                            .font(FONT_EDIT)
-                            .scrollContentBackground(.hidden)
-                            .onChange(of: group.memo) { oldValue, newValue in
-                                // 最大文字数制限
-                                if APP_MAX_MEMO_LEN < newValue.count {
-                                    group.memo = String(newValue.prefix(APP_MAX_MEMO_LEN))
-                                }
-                            }
+                        PacklinMemoEditor(
+                            placeholder: nil,
+                            text: $group.memo,
+                            isFocused: memoFocusBinding,
+                            minHeight: 96,
+                            maxLength: APP_MAX_MEMO_LEN
+                        )
                     }
                 }
                 .padding(.horizontal, 16)
@@ -225,6 +221,20 @@ struct GroupEditView: View {
                         .fill(Color(.secondarySystemGroupedBackground))
                 )
         }
+    }
+
+    private var nameFocusBinding: Binding<Bool> {
+        Binding(
+            get: { nameIsFocused },
+            set: { nameIsFocused = $0 }
+        )
+    }
+
+    private var memoFocusBinding: Binding<Bool> {
+        Binding(
+            get: { memoIsFocused },
+            set: { memoIsFocused = $0 }
+        )
     }
 
     /// 従来どおり、配下の全item.checkを現在の全チェック状態から反転する。.stockは設定に応じて連動する
