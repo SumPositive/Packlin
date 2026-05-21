@@ -116,7 +116,9 @@ let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
 //Text("キャプション").font(.caption)
 //Text("脚注").font(.footnote)
 
-let FONT_NAME: Font = .title2
+// パック名・グループ名・アイテム名のフォントサイズ。
+// .title2(22pt) → .title3(20pt) に下げて控えめなサイズに調整
+let FONT_NAME: Font = .title3
 let FONT_MEMO: Font = .caption
 let FONT_WEIGHT: Font = .body
 let FONT_STOCK: Font = .body
