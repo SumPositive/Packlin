@@ -654,7 +654,9 @@ struct SettingView: View {
 
             VStack(alignment: .leading, spacing: 20) {
                 // 表示モード（初心者／上級者）
-                HStack(spacing: 8) {
+                AdaptiveRadioRow(options: DisplayMode.allCases,
+                                 selection: $displayMode,
+                                 minOptionWidth: 88) {
                     Label {
                         Text("view.mode")
                             .font(.callout)
@@ -662,18 +664,14 @@ struct SettingView: View {
                         Image(systemName: "lightbulb.2")
                             .symbolRenderingMode(.hierarchical)
                     }
-
-                    Picker("view.mode", selection: $displayMode) {
-                        ForEach(DisplayMode.allCases) { mode in
-                            Text(mode.localizedKey)
-                                .tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                } label: { mode in
+                    Text(mode.localizedKey)
                 }
 
                 // 外観モード（システム追従／ライト／ダーク）
-                HStack(spacing: 8) {
+                AdaptiveRadioRow(options: AppearanceMode.allCases,
+                                 selection: $appearanceMode,
+                                 minOptionWidth: 70) {
                     Label {
                         Text("appearance")
                             .font(.callout)
@@ -681,18 +679,14 @@ struct SettingView: View {
                         Image(systemName: "circle.lefthalf.filled")
                             .symbolRenderingMode(.hierarchical)
                     }
-
-                    Picker("appearance", selection: $appearanceMode) {
-                        ForEach(AppearanceMode.allCases) { mode in
-                            Text(mode.localizedKey)
-                                .tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                } label: { mode in
+                    Text(mode.localizedKey)
                 }
 
                 // 文字サイズ（自動／標準／大／特大）
-                HStack(spacing: 8) {
+                AdaptiveRadioRow(options: FontScale.allCases,
+                                 selection: $fontScale,
+                                 minOptionWidth: 60) {
                     Label {
                         Text("font.size")
                             .font(.callout)
@@ -700,18 +694,14 @@ struct SettingView: View {
                         Image(systemName: "textformat.size")
                             .symbolRenderingMode(.hierarchical)
                     }
-
-                    Picker("font.size", selection: $fontScale) {
-                        ForEach(FontScale.allCases) { scale in
-                            Text(scale.localizedKey)
-                                .tag(scale)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                } label: { scale in
+                    Text(scale.localizedKey)
                 }
 
                 // 行の表示行数を切り替える
-                HStack(spacing: 8) {
+                AdaptiveRadioRow(options: RowTextLines.allCases,
+                                 selection: $rowTextLines,
+                                 minOptionWidth: 56) {
                     Label {
                         Text("details")
                             .font(.callout)
@@ -719,18 +709,14 @@ struct SettingView: View {
                         Image(systemName: "text.justify")
                             .symbolRenderingMode(.hierarchical)
                     }
-
-                    Picker("details", selection: $rowTextLines) {
-                        ForEach(RowTextLines.allCases) { setting in
-                            Text(setting.localizedKey)
-                                .tag(setting)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                } label: { setting in
+                    Text(setting.localizedKey)
                 }
 
-                // 新規追加の位置
-                HStack(spacing: 8) {
+                // 新規追加の位置（アイコン選択）
+                AdaptiveRadioRow(options: InsertionPosition.allCases,
+                                 selection: $insertionPosition,
+                                 minOptionWidth: 70) {
                     Label {
                         Text("add.position")
                             .font(.callout)
@@ -738,16 +724,10 @@ struct SettingView: View {
                         Image(systemName: "plus.circle")
                             .symbolRenderingMode(.hierarchical)
                     }
-
-                    Picker("add.position", selection: $insertionPosition) {
-                        ForEach(InsertionPosition.allCases) { position in
-                            Image(systemName: position.iconSFname)
-                                .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical)
-                                .tag(position)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                } label: { position in
+                    Image(systemName: position.iconSFname)
+                        .imageScale(.medium)
+                        .symbolRenderingMode(.hierarchical)
                 }
                 // 必要重量を表示
                 Toggle(isOn: $showNeedWeight) {
