@@ -130,7 +130,7 @@ struct ItemListView: View {
                             }
                         }
                         .frame(width: 50)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         // Undoと説明
                         VStack(spacing: 6) {
@@ -156,7 +156,7 @@ struct ItemListView: View {
                             }
                         }
                         .frame(maxWidth: 55)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         Spacer()
                         
@@ -196,7 +196,7 @@ struct ItemListView: View {
                             }
                         }
                         .frame(maxWidth: 55)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         // 新しいアイテム追加と説明
                         VStack(spacing: 6) {
@@ -219,7 +219,7 @@ struct ItemListView: View {
                             }
                         }
                         .frame(width: 74)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
                     }
 
                     // パック＞グループのパンくずを並べ、各名称は画面幅の1/4までで自動省略する
@@ -237,7 +237,7 @@ struct ItemListView: View {
                 .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 16)
                 // ヘッダーの上下余白を抑えてリスト領域を広げる
                 .padding(.vertical, 3)
                 .background(.thinMaterial)

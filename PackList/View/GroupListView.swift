@@ -251,7 +251,7 @@ struct GroupListView: View {
                             }
                         }
                         .frame(width: 50)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         // Undoボタンと説明
                         VStack(spacing: 6) {
@@ -277,7 +277,7 @@ struct GroupListView: View {
                             }
                         }
                         .frame(maxWidth: 55)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         Spacer()
                         
@@ -317,7 +317,7 @@ struct GroupListView: View {
                             }
                         }
                         .frame(maxWidth: 55)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         // 新しいグループ追加と説明
                         VStack(spacing: 6) {
@@ -340,7 +340,7 @@ struct GroupListView: View {
                             }
                         }
                         .frame(width: 66)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
                     }
 
                     // パック名だけのときもパンくず形式で表示し、長い名称は画面幅の1/4までで省略する
@@ -358,7 +358,7 @@ struct GroupListView: View {
                 .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 16)
                 // ヘッダーの上下余白を控えめにしてコンテンツの見える領域を増やす
                 .padding(.vertical, 3)
                 .background(.thinMaterial)

@@ -78,7 +78,37 @@ struct ItemEditView: View {
         case .system, .standard:
             return 90
         case .large, .xLarge:
-            return 110
+            return 100
+        }
+    }
+
+    private var contentHorizontalPadding: CGFloat {
+        switch fontScale {
+        case .large, .xLarge:
+            // SE3の大きい文字でも左右に最低限の余白を残す
+            return 4
+        default:
+            return 20
+        }
+    }
+
+    private var actionButtonSpacing: CGFloat {
+        switch fontScale {
+        case .large, .xLarge:
+            // 大きい文字ではボタン間隔を詰めて横欠けを防ぐ
+            return 6
+        default:
+            return 20
+        }
+    }
+
+    private var headerHorizontalPadding: CGFloat {
+        switch fontScale {
+        case .large, .xLarge:
+            // ヘッダーもSE3で左右が欠けないよう余白を詰める
+            return 4
+        default:
+            return 16
         }
     }
 
@@ -167,7 +197,7 @@ struct ItemEditView: View {
                 // 操作
                 EditorSection(title: "actions") {
                     VStack {
-                        HStack(spacing: 20) {
+                        HStack(spacing: actionButtonSpacing) {
                             // 上・前へ
                             Button {
                                 // (-1) 1つ前のアイテムを編集対象に切り替える
@@ -221,7 +251,7 @@ struct ItemEditView: View {
                             .accessibilityLabel(Text("delete"))
                         }
                         // 2段目
-                        HStack(spacing: 20) {
+                        HStack(spacing: actionButtonSpacing) {
                             // 下・次へ
                             Button {
                                 // (+1) 1つ次のアイテムを編集対象に切り替える
@@ -332,7 +362,7 @@ struct ItemEditView: View {
                         }
                 )
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, contentHorizontalPadding)
             .padding(.vertical, 12)
         }
         .scrollDismissesKeyboard(.interactively)
@@ -369,7 +399,7 @@ struct ItemEditView: View {
                         }
                     }
                     .frame(width: 50)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
 
                     // Undo＋説明
                     VStack(spacing: 6) {
@@ -395,7 +425,7 @@ struct ItemEditView: View {
                         }
                     }
                     .frame(maxWidth: 55)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
 
                     Spacer()
                     
@@ -435,7 +465,7 @@ struct ItemEditView: View {
                         }
                     }
                     .frame(maxWidth: 55)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
 
                     // 追加＋説明
                     VStack(spacing: 6) {
@@ -459,7 +489,7 @@ struct ItemEditView: View {
                         }
                     }
                     .frame(width: 74)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
                 }
 
                 // パック＞グループ＞アイテムのパンくずを並べ、各名称は画面幅の1/4までに抑える
@@ -477,7 +507,7 @@ struct ItemEditView: View {
             .padding(.leading, ipadWindowControlInset())
             .tint(.primary)
             .frame(height: headerHeight)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, headerHorizontalPadding)
             // ヘッダーの上下余白を控えめにして編集フォームを広く見せる
             .padding(.vertical, 3)
             .background(.thinMaterial)

@@ -233,7 +233,7 @@ struct ItemSortListView: View {
                             }
                         }
                         .frame(width: 50)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         // Undoと説明
                         VStack(spacing: 6) {
@@ -259,7 +259,7 @@ struct ItemSortListView: View {
                             }
                         }
                         .frame(maxWidth: 55)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         Spacer()
                         
@@ -299,7 +299,7 @@ struct ItemSortListView: View {
                             }
                         }
                         .frame(maxWidth: 55)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, 4)
 
                         Spacer(minLength: 66)
                     }
@@ -319,7 +319,7 @@ struct ItemSortListView: View {
                 .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 16)
                 // ヘッダーの上下余白を抑えてリスト領域を広げる
                 .padding(.vertical, 3)
                 .background(.thinMaterial)

@@ -125,7 +125,7 @@ struct PackListView: View {
                         }
                     }
                     .frame(width: 50)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
 
                     // Undoボタンと説明
                     VStack(spacing: 6) {
@@ -152,7 +152,7 @@ struct PackListView: View {
                         }
                     }
                     .frame(maxWidth: 55)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
 
                     Spacer()
 
@@ -189,7 +189,7 @@ struct PackListView: View {
                         }
                     }
                     .frame(maxWidth: 55)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
 
                     // 新しいパック追加と説明
                     VStack(spacing: 6) {
@@ -235,13 +235,13 @@ struct PackListView: View {
                         }
                     }
                     .frame(width: 66)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
                 }
                 // iPadのマルチウィンドウで左上のシステムアイコンに隠れないよう、ヘッダー全体を右へずらす
                 .padding(.leading, ipadWindowControlInset())
                 .tint(.primary) // ヘッダ部は.accentColorにしない
                 .frame(height: headerHeight)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 16)
                 .background(.thinMaterial)
                 // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
                 .cappedAtLargeFontSize()
