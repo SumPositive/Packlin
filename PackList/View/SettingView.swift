@@ -263,9 +263,44 @@ struct SettingView: View {
         return String(rawId[rawId.startIndex..<endIndex])
     }
 
-    /// アプリの紹介・取扱説明
+    /// アプリの取扱説明
     struct InformationView: View {
+        @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+        @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
         @State private var showSafari = false
+
+        private var guideURL: URL? {
+            let urlString = String(localized: "info.url")
+            guard var components = URLComponents(string: urlString) else {
+                return URL(string: urlString)
+            }
+            var queryItems = components.queryItems ?? []
+            // 既存URLに同名パラメータがある場合はアプリ側の現在値で上書きする
+            queryItems.removeAll { $0.name == "fontScale" }
+            // docs.azukid.com の取扱説明へアプリ設定の文字サイズを渡す
+            queryItems.append(URLQueryItem(name: "fontScale", value: guideFontScaleParameter))
+            components.queryItems = queryItems
+            return components.url
+        }
+
+        private var guideFontScaleParameter: String {
+            switch fontScale {
+            case .system:
+                return guideFontScaleParameter(for: dynamicTypeSize)
+            case .standard, .large, .xLarge:
+                return fontScale.rawValue
+            }
+        }
+
+        private func guideFontScaleParameter(for size: DynamicTypeSize) -> String {
+            if size <= .xLarge {
+                return FontScale.standard.rawValue
+            }
+            if size <= .xxxLarge {
+                return FontScale.large.rawValue
+            }
+            return FontScale.xLarge.rawValue
+        }
         
         var body: some View {
             Button(action: {
@@ -285,8 +320,7 @@ struct SettingView: View {
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showSafari) {
-                let urlString = String(localized: "info.url")
-                if let url = URL(string: urlString) {
+                if let url = guideURL {
                     SafariView(url: url)
                 } else {
                     Text("can.t.show.info")

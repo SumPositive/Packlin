@@ -73,13 +73,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "About & how to use"
+            "value" : "User Guide"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリの紹介・取扱説明"
+            "value" : "アプリの取扱説明"
           }
         }
       }
