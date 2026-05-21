@@ -85,8 +85,8 @@ struct ItemEditView: View {
     private var contentHorizontalPadding: CGFloat {
         switch fontScale {
         case .large, .xLarge:
-            // SE3の大きい文字でも左右に最低限の余白を残す
-            return 4
+            // 大きい文字でも他画面と揃うよう左右に8pt残す
+            return 8
         default:
             return 20
         }
@@ -105,10 +105,20 @@ struct ItemEditView: View {
     private var headerHorizontalPadding: CGFloat {
         switch fontScale {
         case .large, .xLarge:
-            // ヘッダーもSE3で左右が欠けないよう余白を詰める
-            return 4
+            // ヘッダーも大きい文字では本文と同じ余白に揃える
+            return 8
         default:
             return 16
+        }
+    }
+
+    private var dialSettingsFontScale: FontScale {
+        switch fontScale {
+        case .xLarge:
+            // AZDial設定は横幅固定のプリセットがあるため「特大」を「大」に丸める
+            return .large
+        default:
+            return fontScale
         }
     }
 
@@ -591,7 +601,9 @@ struct ItemEditView: View {
                     }
                 }
             }
-            .appFontScale(fontScale)
+            // AZDial設定はプリセットボタンの文字欠けを防ぐため「大」までで頭打ち
+            .cappedAtLargeFontSize()
+            .appFontScale(dialSettingsFontScale)
         }
         .onChange(of: selectedPackID) { _, _ in
             guard isShowingMoveSheet else { return }

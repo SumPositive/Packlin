@@ -1597,6 +1597,70 @@
         }
       }
     },
+    "item.sort.lackCount.footerTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Need\nCount"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不足\n個数"
+          }
+        }
+      }
+    },
+    "item.sort.lackWeight.footerTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Need\nWeight"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不足\n重量"
+          }
+        }
+      }
+    },
+    "item.sort.stockWeight.footerTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stock\nWeight"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在庫\n重量"
+          }
+        }
+      }
+    },
+    "item.sort.unchecked.footerTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unchecked\nFirst"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未✔︎\n順"
+          }
+        }
+      }
+    },
     "items.things.smallest.pieces" : {
       "localizations" : {
         "en" : {

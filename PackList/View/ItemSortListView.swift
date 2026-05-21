@@ -93,12 +93,17 @@ struct ItemSortListView: View {
                                     navigationStore.replaceLast(with: destination)
                                 }
                             } label: {
-                                Text(option.title)
+                                Text(option.footerTitle)
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(isCurrent ? Color.accentColor : .primary)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 8)
+                                    // 狭い端末でも省略せず2行で読めるようにする
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.85)
+                                    .allowsTightening(true)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity, minHeight: 38)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 4)
                                     .background(
                                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                                             .fill(isCurrent ? Color.accentColor.opacity(0.14) : Color(uiColor: .secondarySystemBackground))
@@ -471,6 +476,20 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
                 return String(localized: "short.weight")
             case .stockWeight:
                 return String(localized: "stock.weight")
+        }
+    }
+
+    /// フッターボタン用の短い2行タイトル
+    var footerTitle: String {
+        switch self {
+            case .unchecked:
+                return String(localized: "item.sort.unchecked.footerTitle")
+            case .lackCount:
+                return String(localized: "item.sort.lackCount.footerTitle")
+            case .lackWeight:
+                return String(localized: "item.sort.lackWeight.footerTitle")
+            case .stockWeight:
+                return String(localized: "item.sort.stockWeight.footerTitle")
         }
     }
 
