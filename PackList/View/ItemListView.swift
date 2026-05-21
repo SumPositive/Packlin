@@ -40,7 +40,7 @@ struct ItemListView: View {
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
         // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
-        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : appHeaderHeightForExpert(fontScale)
     }
 
     // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用

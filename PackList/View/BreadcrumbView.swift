@@ -44,8 +44,8 @@ struct BreadcrumbView: View {
         }
         // 左右余白を最小限にし、画面幅をできるだけ活かす
         .padding(.horizontal, 4)
-        // 上方向にも十分な空き領域を設け、ヘッダーと重ならないようにする
-        .padding(.top, 8)
+        // ヘッダーを低く保つため、ボタン行との間だけ最小限空ける
+        .padding(.top, 2)
         // 全体を左寄せにして、親子関係が視覚的に並ぶようにする
         .frame(maxWidth: .infinity, alignment: .leading)
     }

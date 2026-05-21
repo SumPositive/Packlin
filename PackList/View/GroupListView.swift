@@ -28,7 +28,7 @@ struct GroupListView: View {
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
         // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
-        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : appHeaderHeightForExpert(fontScale)
     }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }

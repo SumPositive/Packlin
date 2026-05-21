@@ -126,7 +126,7 @@ struct ItemEditView: View {
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
         // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
-        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : appHeaderHeightForExpert(fontScale)
     }
 
 //    private var nameFieldMinHeight: CGFloat {
@@ -351,6 +351,9 @@ struct ItemEditView: View {
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
                         quantityCheckButton
+                    }
+                    ItemQuantityEditor(item: item)
+                    HStack {
                         Spacer()
                         Button {
                             isShowingDialSettings = true
@@ -360,7 +363,8 @@ struct ItemEditView: View {
                         }
                         .buttonStyle(.borderless)
                     }
-                    ItemQuantityEditor(item: item)
+                    // 必要数ダイアルの下に余白を作って設定ボタンを置く
+                    .padding(.top, 30)
                 }
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)

@@ -25,6 +25,7 @@ struct PackListView: View {
     @State private var popupAnchor: CGPoint?
     @State private var isShowSetting: Bool = false
     @State private var isShowAiCreateSheet: Bool = false
+    @State private var isShowingPackAddPopover = false
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var sortedPacks: [M1Pack]
 
@@ -34,7 +35,7 @@ struct PackListView: View {
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
         // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
-        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : appHeaderHeightForExpert(fontScale, hasBreadcrumb: false)
     }
     // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
     private var isShowingEditSheet: Bool { editingPack != nil }
@@ -195,21 +196,9 @@ struct PackListView: View {
 
                     // 新しいパック追加と説明
                     VStack(spacing: 6) {
-                        // メニューからAI依頼と手動作成を選べるようにする
-                        Menu {
-                            Button {
-                                // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
-                                isShowAiCreateSheet = true
-                            } label: {
-                                Label("let.chappy.ai.make", systemImage: "sparkles")
-                            }
-                            
-                            Button {
-                                // これまで通り自分で項目を入力して作成するパターン
-                                addPack()
-                            } label: {
-                                Label("make.yourself", systemImage: "hand.tap")
-                            }
+                        Button {
+                            // 標準Menuは文字サイズ対応しにくいため、独自popoverで選択肢を表示する
+                            isShowingPackAddPopover = true
                         } label: {
                             ZStack {
                                 Image(systemName: "case")
@@ -221,9 +210,28 @@ struct PackListView: View {
                                     .padding(.top, 4)
                             }
                         }
-                        .menuStyle(.button)
                         .buttonStyle(.borderless)
                         .disabled(isShowingEditSheet)
+                        .popover(
+                            isPresented: $isShowingPackAddPopover,
+                            attachmentAnchor: .point(.bottom),
+                            arrowEdge: .top
+                        ) {
+                            PackAddPopoverView(
+                                fontScale: fontScale,
+                                onChappy: {
+                                    isShowingPackAddPopover = false
+                                    // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
+                                    isShowAiCreateSheet = true
+                                },
+                                onManual: {
+                                    isShowingPackAddPopover = false
+                                    // これまで通り自分で項目を入力して作成するパターン
+                                    addPack()
+                                }
+                            )
+                            .presentationCompactAdaptation(.popover)
+                        }
 
                         if isBeginnerMode {
                             // 初心者向け：新規パック追加の説明
@@ -395,6 +403,61 @@ struct PackListView: View {
                 }
             }
         }
+    }
+}
+
+private struct PackAddPopoverView: View {
+    let fontScale: FontScale
+    let onChappy: () -> Void
+    let onManual: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            optionButton(
+                title: "let.chappy.ai.make",
+                systemImage: "sparkles",
+                action: onChappy
+            )
+
+            Divider()
+
+            optionButton(
+                title: "make.yourself",
+                systemImage: "hand.tap",
+                action: onManual
+            )
+        }
+        .padding(14)
+        .frame(minWidth: 260, idealWidth: 300, maxWidth: 340)
+        .appFontScale(fontScale)
+    }
+
+    private func optionButton(
+        title: LocalizedStringKey,
+        systemImage: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Image(systemName: systemImage)
+                    .imageScale(.large)
+                    .symbolRenderingMode(.hierarchical)
+                    .frame(width: 28)
+
+                Text(title)
+                    .font(.body.weight(.semibold))
+                    // 大きい文字でも吹き出し内で欠けずに読めるよう折り返す
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.leading)
+
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 10)
+            .padding(.horizontal, 8)
+        }
+        .buttonStyle(.plain)
     }
 }
 

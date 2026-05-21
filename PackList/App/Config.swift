@@ -34,7 +34,12 @@ let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
 let APP_HEADER_HEIGHT_BEG : CGFloat = 110.0  // 初心者モード（標準・自動）
 let APP_HEADER_HEIGHT_BEG_LARGE : CGFloat = 140.0  // 初心者モード（大）
 let APP_HEADER_HEIGHT_BEG_XLARGE: CGFloat = 160.0  // 初心者モード（特大）
-let APP_HEADER_HEIGHT_EXP : CGFloat =  56.0  // 達人モード
+let APP_HEADER_HEIGHT_EXP : CGFloat =  44.0  // 達人モード（標準・自動、パンくずなし）
+let APP_HEADER_HEIGHT_EXP_LARGE : CGFloat =  52.0  // 達人モード（大、パンくずなし）
+let APP_HEADER_HEIGHT_EXP_XLARGE: CGFloat =  60.0  // 達人モード（特大、パンくずなし）
+let APP_HEADER_HEIGHT_EXP_BREADCRUMB : CGFloat =  60.0  // 達人モード（標準・自動、パンくずあり）
+let APP_HEADER_HEIGHT_EXP_BREADCRUMB_LARGE : CGFloat =  70.0  // 達人モード（大、パンくずあり）
+let APP_HEADER_HEIGHT_EXP_BREADCRUMB_XLARGE: CGFloat =  80.0  // 達人モード（特大、パンくずあり）
 
 /// 初心者モードの fontScale 別ヘッダー高さを返すヘルパー
 func appHeaderHeightForBeginner(_ fontScale: FontScale) -> CGFloat {
@@ -42,6 +47,18 @@ func appHeaderHeightForBeginner(_ fontScale: FontScale) -> CGFloat {
     case .system, .standard: return APP_HEADER_HEIGHT_BEG
     case .large:             return APP_HEADER_HEIGHT_BEG_LARGE
     case .xLarge:            return APP_HEADER_HEIGHT_BEG_XLARGE
+    }
+}
+
+/// 達人モードの fontScale 別ヘッダー高さを返すヘルパー
+func appHeaderHeightForExpert(_ fontScale: FontScale, hasBreadcrumb: Bool = true) -> CGFloat {
+    switch (fontScale, hasBreadcrumb) {
+    case (.system, true), (.standard, true):   return APP_HEADER_HEIGHT_EXP_BREADCRUMB
+    case (.large, true):                       return APP_HEADER_HEIGHT_EXP_BREADCRUMB_LARGE
+    case (.xLarge, true):                      return APP_HEADER_HEIGHT_EXP_BREADCRUMB_XLARGE
+    case (.system, false), (.standard, false): return APP_HEADER_HEIGHT_EXP
+    case (.large, false):                      return APP_HEADER_HEIGHT_EXP_LARGE
+    case (.xLarge, false):                     return APP_HEADER_HEIGHT_EXP_XLARGE
     }
 }
 

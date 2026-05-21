@@ -64,7 +64,7 @@ struct ItemSortListView: View {
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
         // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
-        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : appHeaderHeightForExpert(fontScale)
     }
 
     // 並べ替えを切り替えるためのフッターメニュー
