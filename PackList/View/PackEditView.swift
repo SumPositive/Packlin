@@ -63,6 +63,8 @@ struct PackEditView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 20)
             }
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .background(Color(.systemGroupedBackground))
             .navigationTitle(Text("edit.pack"))
             .navigationBarTitleDisplayMode(.inline)

@@ -365,6 +365,8 @@ struct ItemEditView: View {
             .padding(.horizontal, contentHorizontalPadding)
             .padding(.vertical, 12)
         }
+        // スクロール位置表示は全画面で出さない
+        .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .background(COLOR_ROW_GROUP)
         //.navigationTitle("アイテム編集")
@@ -1222,6 +1224,8 @@ private struct ItemMoveSheetView: View {
                     Toggle("make.copy", isOn: $keepOriginal)
                 }
             }
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
             .background(Color(.systemGroupedBackground))
             //.listSectionSpacing(.compact)

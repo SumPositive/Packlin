@@ -119,7 +119,8 @@ struct SettingView: View {
                     .padding(.vertical, 20)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .scrollIndicators(.never)
+                // スクロール位置表示は全画面で出さない
+                .scrollIndicators(.hidden)
                 // シートでは端末サイズに追従させるため、幅と高さの固定は行わない
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, -20)

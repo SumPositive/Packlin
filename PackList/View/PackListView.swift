@@ -93,6 +93,8 @@ struct PackListView: View {
                 }
             }
             .listStyle(.plain)
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .listRowSeparator(.hidden)
             // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 0)

@@ -122,6 +122,8 @@ struct AdMobAdSheetView: View {
                 }
                 .padding(.vertical, 8)
             }
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle(Text("watch.ad.support"))
             .navigationBarTitleDisplayMode(.inline)

@@ -97,6 +97,8 @@ struct GroupEditView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 20)
             }
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .background(Color(.systemGroupedBackground))
             .navigationTitle(Text("edit.group"))
             .navigationBarTitleDisplayMode(.inline)
@@ -456,6 +458,8 @@ private struct GroupMoveSheetView: View {
                     Toggle("make.copy", isOn: $keepOriginal)
                 }
             }
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .scrollContentBackground(.hidden)
             .background(Color(.systemGroupedBackground))
             .toolbar {

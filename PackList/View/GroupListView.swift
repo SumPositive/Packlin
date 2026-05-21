@@ -218,6 +218,8 @@ struct GroupListView: View {
                 }
             }
             .listStyle(.plain)
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             //.navigationTitle(pack.name.placeholderText("新しいパック"))
             .navigationBarBackButtonHidden(true)

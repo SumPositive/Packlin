@@ -39,6 +39,8 @@ struct ChappySheetView: View {
                 ChappyView(requirementFocus: $isRequirementFocused,
                              basePack: basePack)
             }
+            // スクロール位置表示は全画面で出さない
+            .scrollIndicators(.hidden)
             // 背景タップでキーボードを閉じるためのジェスチャ
             .contentShape(Rectangle())
             // スクロール操作でフォーカスを外してキーボードを閉じる（タップだとTextEditorが含まれて面倒）
