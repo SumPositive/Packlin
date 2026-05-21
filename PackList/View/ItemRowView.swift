@@ -144,6 +144,7 @@ struct ItemRowView: View {
                         // Layout 1: 1行レイアウト（従来通り）— 横幅に余裕があるとき
                         HStack(spacing: 0) {
                             itemNameView
+                                .fixedSize(horizontal: true, vertical: false)
                             Spacer(minLength: 8)
                             if showQuantityOnNameLine {
                                 quantityButton()
@@ -314,6 +315,8 @@ private extension ItemRowView {
                 }
                 infoCapsule(quantityLabelText, state: quantityCapsuleState)
             }
+            // 数量表示は折り返さず、収まらない時は親の2段レイアウトへ逃がす
+            .fixedSize(horizontal: true, vertical: false)
             // カプセル間の隙間も含め、少し広めに数量編集のタップ対象にする
             .padding(.horizontal, 4)
             .padding(.vertical, 4)
@@ -327,6 +330,8 @@ private extension ItemRowView {
         compactSlashText(text)
             .font(quantityFont)
             .foregroundStyle(state.foregroundStyle)
+            // 重量や数量は必ず1行に収める
+            .lineLimit(1)
             .padding(.horizontal, quantityHorizontalPadding)
             .padding(.vertical, quantityVerticalPadding)
             .background(
@@ -345,8 +350,10 @@ private extension ItemRowView {
                 Text(verbatim: "/")
                 Text(verbatim: right)
             }
+            .fixedSize(horizontal: true, vertical: false)
         } else {
             Text(verbatim: text)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }
