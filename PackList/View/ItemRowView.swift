@@ -19,11 +19,12 @@ struct ItemRowView: View {
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var rowFrame: CGRect?
 
-    private let rowHeight: CGFloat = 44
+    private var rowHeight: CGFloat { appRowHeight(fontScale) }
     private var isNamePlaceholder: Bool { item.name.isEmpty }
     private var weightUnit: String { String(localized: "g") }
     // 説明文を出すかどうかのフラグを共通にまとめる
@@ -34,8 +35,11 @@ struct ItemRowView: View {
     private var showMemo: Bool { 0 < memoLineLimit }
     private var showQuantityOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
     private var isExtraSmallRow: Bool { rowTextLines.usesExtraSmallItemRow }
-    private var itemRowHeight: CGFloat { isExtraSmallRow ? 38 : rowHeight }
-    private var contentVerticalPadding: CGFloat { isExtraSmallRow ? 0 : 4 }
+    private var itemRowHeight: CGFloat { isExtraSmallRow ? appExtraSmallRowHeight(fontScale) : rowHeight }
+    // 文字サイズに合わせて上下余白を広げる（極小モードは 0 のまま）
+    private var contentVerticalPadding: CGFloat {
+        appItemContentVerticalPadding(fontScale, isExtraSmall: isExtraSmallRow)
+    }
     private var checkTopPadding: CGFloat { isExtraSmallRow ? 0 : 8 }
     private var checkBottomPadding: CGFloat { isExtraSmallRow ? 0 : 12 }
     private var checkTrailingPadding: CGFloat { isExtraSmallRow ? 5 : 8 }

@@ -23,7 +23,7 @@ struct PackRowView: View {
 
     @State private var rowFrame: CGRect?
 
-    private let rowHeight: CGFloat = 44
+    private var rowHeight: CGFloat { appRowHeight(fontScale) }
     private var weightLabelText: String? {
         if showNeedWeight {
             guard 0 < pack.stockWeight || 0 < pack.needWeight else { return nil }
@@ -126,7 +126,8 @@ struct PackRowView: View {
             }
         }
         .frame(minHeight: rowHeight)
-        .padding(.vertical, 8)
+        // 行コンテナの上下余白を文字サイズに合わせて広げる（大: 12pt、特大: 16pt）
+        .padding(.vertical, appRowVerticalPadding(fontScale))
         .padding(.horizontal, 16)
         .background(COLOR_ROW_BACK)
         .background(

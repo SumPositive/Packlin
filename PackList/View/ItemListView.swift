@@ -34,7 +34,7 @@ struct ItemListView: View {
         group.child.sorted { $0.order < $1.order }
     }
 
-    private let rowHeight: CGFloat = 44
+    private var rowHeight: CGFloat { appRowHeight(fontScale) }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
@@ -95,7 +95,10 @@ struct ItemListView: View {
             .listStyle(.plain)
             .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
             .padding(.horizontal, 8)
-            .environment(\.defaultMinListRowHeight, rowTextLines.usesExtraSmallItemRow ? 38 : 44)
+            .environment(\.defaultMinListRowHeight,
+                         rowTextLines.usesExtraSmallItemRow
+                            ? appExtraSmallRowHeight(fontScale)
+                            : appRowHeight(fontScale))
             .navigationBarBackButtonHidden(true)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設し、タイトルを下段に分離

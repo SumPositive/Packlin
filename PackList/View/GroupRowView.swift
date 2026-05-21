@@ -20,11 +20,12 @@ struct GroupRowView: View {
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
     // 表示モード（初心者／達人）を同じキーで共有し、ヘッダー表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var rowFrame: CGRect?
 
-    private let rowHeight: CGFloat = 44
+    private var rowHeight: CGFloat { appRowHeight(fontScale) }
     private var isNamePlaceholder: Bool { group.name.isEmpty }
     private var weightLabelText: String? {
         if showNeedWeight {
@@ -181,7 +182,8 @@ struct GroupRowView: View {
             }
         }
         .frame(minHeight: rowHeight)
-        .padding(.vertical, 8)
+        // 行コンテナの上下余白を文字サイズに合わせて広げる（大: 12pt、特大: 16pt）
+        .padding(.vertical, appRowVerticalPadding(fontScale))
         .padding(.horizontal, 16)
         //.contentShape(Rectangle()) // 全体をタップ可能領域にする
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす

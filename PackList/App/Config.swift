@@ -44,6 +44,45 @@ func appHeaderHeightForBeginner(_ fontScale: FontScale) -> CGFloat {
     case .xLarge:            return APP_HEADER_HEIGHT_BEG_XLARGE
     }
 }
+
+/// パック・グループ・アイテム行の最小高さを fontScale に応じて返す
+/// 文字サイズ「大」「特大」では行間に余裕を持たせて視認性を上げる
+func appRowHeight(_ fontScale: FontScale) -> CGFloat {
+    switch fontScale {
+    case .system, .standard: return 44
+    case .large:             return 52
+    case .xLarge:            return 60
+    }
+}
+
+/// 極小モード時の行高さも fontScale に応じて調整する
+func appExtraSmallRowHeight(_ fontScale: FontScale) -> CGFloat {
+    switch fontScale {
+    case .system, .standard: return 38
+    case .large:             return 44
+    case .xLarge:            return 50
+    }
+}
+
+/// 行コンテナの上下余白。`frame(minHeight:)` だけでは内容が既に高い時に変化が出ないため、
+/// 実際の行間を広げるには padding を増やす必要がある
+func appRowVerticalPadding(_ fontScale: FontScale) -> CGFloat {
+    switch fontScale {
+    case .system, .standard: return 8
+    case .large:             return 12
+    case .xLarge:            return 16
+    }
+}
+
+/// アイテム行の内側上下余白（極小モード時は0のまま）
+func appItemContentVerticalPadding(_ fontScale: FontScale, isExtraSmall: Bool) -> CGFloat {
+    if isExtraSmall { return 0 }
+    switch fontScale {
+    case .system, .standard: return 4
+    case .large:             return 8
+    case .xLarge:            return 12
+    }
+}
 // iPadのマルチウィンドウ時に左上のシステムボタンとヘッダーが重ならないようにする余白
 let IPAD_WINDOW_CONTROL_INSET : CGFloat = 64.0
 
