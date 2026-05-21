@@ -76,13 +76,13 @@ struct PackRowView: View {
                             Image(systemName: "checkmark")
                                 .imageScale(.small)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .padding(.top, 4)
+                                .padding(.top, 5)
                         }
                         else if allSufficientStock {
                             Image(systemName: "circle")
                                 .imageScale(.small)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                                .padding(.top, 4)
+                                .padding(.top, 5)
                         }
                     }
                     .padding(.leading, 0)

@@ -26,7 +26,10 @@ struct GroupListView: View {
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
 
     // ヘッダーの高さを表示モードで変える
-    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
+    private var headerHeight: CGFloat {
+        // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+    }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
 
@@ -78,6 +81,9 @@ struct GroupListView: View {
                         // 以前の長文ラベルはここで補足として表示し、ボタン内は短い語句で理解しやすくする
                         Text(LocalizedStringKey("list.sort.search.all.items"))
                             .font(.caption2)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.7)
+                            .allowsTightening(true)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
@@ -121,6 +127,9 @@ struct GroupListView: View {
                         // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
                         Text(LocalizedStringKey("ask.chappy.ai.tweak"))
                             .font(.caption2)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.7)
+                            .allowsTightening(true)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
@@ -234,6 +243,9 @@ struct GroupListView: View {
                             if isBeginnerMode {
                                 Text("back.packs")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -257,6 +269,9 @@ struct GroupListView: View {
                             if isBeginnerMode {
                                 Text("undo.last.change")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -269,7 +284,9 @@ struct GroupListView: View {
                         if isBeginnerMode {
                             Text("group.list")
                                 .font(.system(size: 15))
-                                .lineLimit(2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .frame(minWidth: 50)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -292,6 +309,9 @@ struct GroupListView: View {
                             if isBeginnerMode {
                                 Text("redo.undone.change")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -312,6 +332,9 @@ struct GroupListView: View {
                             if isBeginnerMode {
                                 Text("add.new.group")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }

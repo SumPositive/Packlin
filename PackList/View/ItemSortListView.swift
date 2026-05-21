@@ -21,6 +21,7 @@ struct ItemSortListView: View {
     @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
     @State private var canUndo = false
@@ -61,7 +62,10 @@ struct ItemSortListView: View {
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
-    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
+    private var headerHeight: CGFloat {
+        // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+    }
 
     // 並べ替えを切り替えるためのフッターメニュー
     private var sortFooterMenu: some View {
@@ -111,6 +115,9 @@ struct ItemSortListView: View {
                             if isBeginnerMode {
                                 Text(option.beginnerGuide)
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .frame(maxWidth: .infinity)
                             }
@@ -140,6 +147,9 @@ struct ItemSortListView: View {
                         if isBeginnerMode {
                             Text("always.sort")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 //.multilineTextAlignment(.center)
                         }
@@ -215,6 +225,9 @@ struct ItemSortListView: View {
                             if isBeginnerMode {
                                 Text("back.groups")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -238,6 +251,9 @@ struct ItemSortListView: View {
                             if isBeginnerMode {
                                 Text("undo.last.change")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -250,7 +266,9 @@ struct ItemSortListView: View {
                         if isBeginnerMode {
                             Text("item.browse")
                                 .font(.system(size: 15))
-                                .lineLimit(2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .frame(minWidth: 50)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -273,6 +291,9 @@ struct ItemSortListView: View {
                             if isBeginnerMode {
                                 Text("redo.undone.change")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }

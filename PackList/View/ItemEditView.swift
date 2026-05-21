@@ -84,7 +84,10 @@ struct ItemEditView: View {
 
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
-    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
+    private var headerHeight: CGFloat {
+        // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+    }
 
 //    private var nameFieldMinHeight: CGFloat {
 //        UIFont.preferredFont(forTextStyle: .title2).lineHeight * 2 + 16
@@ -358,6 +361,9 @@ struct ItemEditView: View {
                         if isBeginnerMode {
                             Text("back.items")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -381,6 +387,9 @@ struct ItemEditView: View {
                         if isBeginnerMode {
                             Text("undo.last.change")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -393,7 +402,9 @@ struct ItemEditView: View {
                     if isBeginnerMode {
                         Text("item.edit")
                             .font(.system(size: 15))
-                            .lineLimit(2)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.7)
+                            .allowsTightening(true)
                             .frame(minWidth: 50)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -416,6 +427,9 @@ struct ItemEditView: View {
                         if isBeginnerMode {
                             Text("redo.undone.change")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -437,6 +451,9 @@ struct ItemEditView: View {
                         if isBeginnerMode {
                             Text("add.new.item")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -846,7 +863,9 @@ struct ItemQuickEditView: View {
             item.name.placeholderText("new.item")
                 .font(FONT_NAME)
                 .foregroundStyle(item.name.isEmpty ? COLOR_NAME_EMPTY : COLOR_NAME)
-                .lineLimit(2)
+                .lineLimit(3)
+                .minimumScaleFactor(0.7)
+                .allowsTightening(true)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal, 8)
             // 数量 編集
@@ -1009,7 +1028,9 @@ private struct ItemQuantityEditor: View {
                     Text(field.title)
                         .font(usesCompactMetrics ? .caption2 : .caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.7)
+                        .allowsTightening(true)
                         .multilineTextAlignment(.leading)
                         .frame(width: titleColumnWidth, alignment: .leading)
                         .cappedAtLargeFontSize()

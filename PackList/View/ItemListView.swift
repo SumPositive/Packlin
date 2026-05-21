@@ -38,7 +38,10 @@ struct ItemListView: View {
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
-    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
+    private var headerHeight: CGFloat {
+        // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+    }
 
     // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用
     // そのため、どちらかが表示されている間はナビバーボタンを非活性にする
@@ -116,6 +119,9 @@ struct ItemListView: View {
                             if isBeginnerMode {
                                 Text("back.groups")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -139,6 +145,9 @@ struct ItemListView: View {
                             if isBeginnerMode {
                                 Text("undo.last.change")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -151,7 +160,9 @@ struct ItemListView: View {
                         if isBeginnerMode {
                             Text("item.list")
                                 .font(.system(size: 15))
-                                .lineLimit(2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .frame(minWidth: 50)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -174,6 +185,9 @@ struct ItemListView: View {
                             if isBeginnerMode {
                                 Text("redo.undone.change")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }
@@ -194,6 +208,9 @@ struct ItemListView: View {
                             if isBeginnerMode {
                                 Text("add.new.item")
                                     .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
                                     .foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }

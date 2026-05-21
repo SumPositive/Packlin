@@ -29,9 +29,21 @@ let APP_HEIGHT_MAX : CGFloat = 9999    // Free
 
 // 行の下線太さ
 let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
-// ヘッダーの高さ
-let APP_HEADER_HEIGHT_BEG : CGFloat = 100.0  // 初心者モード
+// ヘッダーの高さ（初心者モード時の初心者ヘルプを欠けさせないよう、文字サイズに応じて高くする）
+// 初心者ヘルプは最大3行まで折り返し+必要に応じて縮小するため、3行ぶんの余白を見込む
+let APP_HEADER_HEIGHT_BEG : CGFloat = 110.0  // 初心者モード（標準・自動）
+let APP_HEADER_HEIGHT_BEG_LARGE : CGFloat = 140.0  // 初心者モード（大）
+let APP_HEADER_HEIGHT_BEG_XLARGE: CGFloat = 160.0  // 初心者モード（特大）
 let APP_HEADER_HEIGHT_EXP : CGFloat =  56.0  // 達人モード
+
+/// 初心者モードの fontScale 別ヘッダー高さを返すヘルパー
+func appHeaderHeightForBeginner(_ fontScale: FontScale) -> CGFloat {
+    switch fontScale {
+    case .system, .standard: return APP_HEADER_HEIGHT_BEG
+    case .large:             return APP_HEADER_HEIGHT_BEG_LARGE
+    case .xLarge:            return APP_HEADER_HEIGHT_BEG_XLARGE
+    }
+}
 // iPadのマルチウィンドウ時に左上のシステムボタンとヘッダーが重ならないようにする余白
 let IPAD_WINDOW_CONTROL_INSET : CGFloat = 64.0
 

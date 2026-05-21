@@ -32,7 +32,10 @@ struct PackListView: View {
     // 初心者モードかどうかでヘッダーの説明を出し分ける
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
-    private var headerHeight: CGFloat { isBeginnerMode ? APP_HEADER_HEIGHT_BEG : APP_HEADER_HEIGHT_EXP }
+    private var headerHeight: CGFloat {
+        // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
+        isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : APP_HEADER_HEIGHT_EXP
+    }
     // 編集シート表示中はナビバーボタンを非活性にするためのフラグ
     private var isShowingEditSheet: Bool { editingPack != nil }
     // シート表示時は自動モードも現在の外観へ解決して渡し、切り替え反映の遅れを避ける
@@ -114,6 +117,9 @@ struct PackListView: View {
                             // 初心者向け：ボタンの役割をテキストで補足
                             Text("open.settings")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -138,6 +144,9 @@ struct PackListView: View {
                             // 初心者向け：巻き戻し操作の説明
                             Text("undo.last.change")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -172,6 +181,9 @@ struct PackListView: View {
                             // 初心者向け：Redoの役割を説明
                             Text("redo.undone.change")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -215,6 +227,9 @@ struct PackListView: View {
                             // 初心者向け：新規パック追加の説明
                             Text("add.new.pack")
                                 .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -303,6 +318,9 @@ struct PackListView: View {
 
                 Text("re.beginner.mode.choose.expert.settings")
                     .font(.caption2)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.7)
+                    .allowsTightening(true)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 8)
