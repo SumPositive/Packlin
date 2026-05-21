@@ -26,6 +26,8 @@ struct PackListView: View {
     @State private var isShowSetting: Bool = false
     @State private var isShowAiCreateSheet: Bool = false
     @State private var isShowingPackAddPopover = false
+    @State private var scrollTargetPackID: M1Pack.ID?
+    @State private var scrollTargetPackAnchor: UnitPoint = .bottom
 
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var sortedPacks: [M1Pack]
 
@@ -46,59 +48,68 @@ struct PackListView: View {
 
     var body: some View {
         ZStack {
-            List {
-                Section {
-                    ForEach(sortedPacks) { pack in
-                        ZStack {
-                            PackRowView(pack: pack) { selected, point in
-                                // Pack行のタップ位置はシートでは使用しないが、今後の拡張に備えて保持
-                                editingPack = selected
-                                popupAnchor = point
-                            }
-                            
-                            GeometryReader { geo in
-                                HStack(spacing: 0) {
-                                    Button {
-                                        editingPack = pack
-                                        popupAnchor = CGPoint(
-                                            x: geo.frame(in: .global).minX + geo.size.width / 6.0,
-                                            y: geo.frame(in: .global).minY
-                                        )
-                                    } label: {
-                                        Color.clear
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .frame(width: geo.size.width / 3.0)
+            ScrollViewReader { scrollProxy in
+                List {
+                    Section {
+                        ForEach(sortedPacks) { pack in
+                            ZStack {
+                                PackRowView(pack: pack) { selected, point in
+                                    // Pack行のタップ位置はシートでは使用しないが、今後の拡張に備えて保持
+                                    editingPack = selected
+                                    popupAnchor = point
+                                }
 
-                                    NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
-                                        Color.clear
-                                            .contentShape(Rectangle())
+                                GeometryReader { geo in
+                                    HStack(spacing: 0) {
+                                        Button {
+                                            editingPack = pack
+                                            popupAnchor = CGPoint(
+                                                x: geo.frame(in: .global).minX + geo.size.width / 6.0,
+                                                y: geo.frame(in: .global).minY
+                                            )
+                                        } label: {
+                                            Color.clear
+                                                .contentShape(Rectangle())
+                                        }
+                                        .buttonStyle(.plain)
+                                        .frame(width: geo.size.width / 3.0)
+
+                                        NavigationLink(value: AppDestination.groupList(packID: pack.id)) {
+                                            Color.clear
+                                                .contentShape(Rectangle())
+                                        }
+                                        .buttonStyle(.plain)
+                                        .frame(width: geo.size.width * 2.0 / 3.0)
                                     }
-                                    .buttonStyle(.plain)
-                                    .frame(width: geo.size.width * 2.0 / 3.0)
                                 }
                             }
+                            .id(pack.id)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         }
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .onMove(perform: movePack)
                     }
-                    .onMove(perform: movePack)
+                    footer: {
+                        if isBeginnerMode {
+                            // 表示モードが初心者なら補足説明をフッターに表示する
+                            FooterView()
+                                .listRowSeparator(.hidden) // 下線なし
+                        }
+                    }
                 }
-                footer: {
-                    if isBeginnerMode {
-                        // 表示モードが初心者なら補足説明をフッターに表示する
-                        FooterView()
-                            .listRowSeparator(.hidden) // 下線なし
-                    }
+                .listStyle(.plain)
+                // スクロール位置表示は全画面で出さない
+                .scrollIndicators(.hidden)
+                .listRowSeparator(.hidden)
+                // 区切り線は、Rowの.overlayで表示している
+                .padding(.horizontal, 0)
+                .onChange(of: scrollTargetPackID) { _, _ in
+                    scrollToNewPackIfReady(scrollProxy)
+                }
+                .onChange(of: sortedPacks.map(\.id)) { _, _ in
+                    scrollToNewPackIfReady(scrollProxy)
                 }
             }
-            .listStyle(.plain)
-            // スクロール位置表示は全画面で出さない
-            .scrollIndicators(.hidden)
-            .listRowSeparator(.hidden)
-            // 区切り線は、Rowの.overlayで表示している
-            .padding(.horizontal, 0)
             .safeAreaInset(edge: .top) { // ヘッダ部
                 HStack {
                     // 設定ボタンと説明
@@ -344,6 +355,9 @@ struct PackListView: View {
     }
 
     private func addPack() {
+        var newPackID: M1Pack.ID?
+        let scrollAnchor: UnitPoint = insertionPosition == .head ? .top : .bottom
+
         // 履歴サービスを利用して新規作成を1アクションとして記録する
         history.perform(context: modelContext) {
             let orderedPacks = Array(sortedPacks)
@@ -372,11 +386,27 @@ struct PackListView: View {
             modelContext.insert(initialItem)
             initialGroup.child.append(initialItem)
 
-            // 追加直後に編集ポップアップを開き、すぐに名前を入力してもらう
-            editingPack = newPack
-            popupAnchor = nil
+            // 追加後のスクロール対象として新規Pack IDだけ保持する
+            newPackID = newPack.id
         }
 
+        popupAnchor = nil
+        scrollTargetPackAnchor = scrollAnchor
+        // 新規Packが見える位置までスクロールする
+        scrollTargetPackID = newPackID
+    }
+
+    /// 新規PackがListに反映されてからスクロールする
+    private func scrollToNewPackIfReady(_ scrollProxy: ScrollViewProxy) {
+        guard let packID = scrollTargetPackID,
+              sortedPacks.contains(where: { $0.id == packID }) else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation {
+                scrollProxy.scrollTo(packID, anchor: scrollTargetPackAnchor)
+            }
+            scrollTargetPackID = nil
+        }
     }
 
     /// Drag-Drop-Move

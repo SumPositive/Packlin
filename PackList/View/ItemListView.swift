@@ -41,6 +41,8 @@ struct ItemListView: View {
     @State private var selectedMoveGroupID = ""
     @State private var keepSourceItems = false
     @State private var moveInsertPosition: ItemEditView.MoveInsertPosition = .end
+    @State private var scrollTargetItemID: M3Item.ID?
+    @State private var scrollTargetItemAnchor: UnitPoint = .bottom
 
     /// DBからソートして取得する（group.child は.order昇順）
     private var sortedItems: [M3Item] {
@@ -92,65 +94,74 @@ struct ItemListView: View {
 
     var body: some View {
         ZStack {
-            List {
-                Section {
-                    ForEach(sortedItems) { item in
-                        NavigationLink(
-                            value: AppDestination.itemEdit(
-                                packID: pack.id,
-                                groupID: group.id,
-                                itemID: item.id,
-                                sort: nil
-                            )
-                        ) {
-                            ItemRowView(
-                                item: item,
-                                isBulkMoveMode: isBulkMoveMode,
-                                isBulkMoveSelected: selectedBulkItemIDs.contains(item.id)
-                            ) { selected, point in
-                                editingItem = selected
-                                popupAnchor = point
-                            } onToggleBulkMoveSelection: {
-                                toggleBulkMoveSelection(item)
+            ScrollViewReader { scrollProxy in
+                List {
+                    Section {
+                        ForEach(sortedItems) { item in
+                            NavigationLink(
+                                value: AppDestination.itemEdit(
+                                    packID: pack.id,
+                                    groupID: group.id,
+                                    itemID: item.id,
+                                    sort: nil
+                                )
+                            ) {
+                                ItemRowView(
+                                    item: item,
+                                    isBulkMoveMode: isBulkMoveMode,
+                                    isBulkMoveSelected: selectedBulkItemIDs.contains(item.id)
+                                ) { selected, point in
+                                    editingItem = selected
+                                    popupAnchor = point
+                                } onToggleBulkMoveSelection: {
+                                    toggleBulkMoveSelection(item)
+                                }
                             }
+                            .id(item.id)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowBackground(COLOR_ROW_BACK)
                         }
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .listRowBackground(COLOR_ROW_BACK)
-                    }
-                    .onMove(perform: moveItem)
-                } header: {
-                    GroupRowView(group: group, isHeader: true) { selected, _ in
-                        editingGroup = selected
-                        // Groupシートでは座標を使わないため、その都度リセットする
-                        popupAnchor = nil
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        editingGroup = group
-                        popupAnchor = nil
-                    }
-                    .background(COLOR_ROW_GROUP)
-                    .cornerRadius(16)
-                    .padding(.top, -20) // 上余白を減らす
-                } footer: {
-                    if isBeginnerMode {
-                        // 初心者モードでは操作説明をフッターに表示して迷いを減らす
-                        FooterView()
-                            .listRowSeparator(.hidden) // 下線なし
+                        .onMove(perform: moveItem)
+                    } header: {
+                        GroupRowView(group: group, isHeader: true) { selected, _ in
+                            editingGroup = selected
+                            // Groupシートでは座標を使わないため、その都度リセットする
+                            popupAnchor = nil
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editingGroup = group
+                            popupAnchor = nil
+                        }
+                        .background(COLOR_ROW_GROUP)
+                        .cornerRadius(16)
+                        .padding(.top, -20) // 上余白を減らす
+                    } footer: {
+                        if isBeginnerMode {
+                            // 初心者モードでは操作説明をフッターに表示して迷いを減らす
+                            FooterView()
+                                .listRowSeparator(.hidden) // 下線なし
+                        }
                     }
                 }
+                .listStyle(.plain)
+                // スクロール位置表示は全画面で出さない
+                .scrollIndicators(.hidden)
+                .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
+                .padding(.horizontal, 8)
+                .environment(\.defaultMinListRowHeight,
+                             rowTextLines.usesExtraSmallItemRow
+                                ? appExtraSmallRowHeight(fontScale)
+                                : appRowHeight(fontScale))
+                .navigationBarBackButtonHidden(true)
+                .onChange(of: scrollTargetItemID) { _, _ in
+                    scrollToNewItemIfReady(scrollProxy)
+                }
+                .onChange(of: sortedItems.map(\.id)) { _, _ in
+                    scrollToNewItemIfReady(scrollProxy)
+                }
             }
-            .listStyle(.plain)
-            // スクロール位置表示は全画面で出さない
-            .scrollIndicators(.hidden)
-            .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            .padding(.horizontal, 8)
-            .environment(\.defaultMinListRowHeight,
-                         rowTextLines.usesExtraSmallItemRow
-                            ? appExtraSmallRowHeight(fontScale)
-                            : appRowHeight(fontScale))
-            .navigationBarBackButtonHidden(true)
             .safeAreaInset(edge: .top) {
                 // PackListViewと同じようにカスタムヘッダーへボタンを移設し、タイトルを下段に分離
                 // 中央寄せのタイトルで、左右の操作ボタンに目を移した後でも視線を戻しやすくする
@@ -635,6 +646,8 @@ struct ItemListView: View {
     /// アイテム追加
     func addItem() {
         var newItemID: M3Item.ID?
+        let scrollAnchor: UnitPoint = insertionPosition == .head ? .top : .bottom
+
         // 履歴サービスを利用して新規追加を1つのアクションとして記録する
         history.perform(context: modelContext) {
             let items = sortedItems
@@ -661,12 +674,22 @@ struct ItemListView: View {
             newItemID = newItem.id
         }
 
-        if let newItemID {
-            navigationStore.path = NavigationPath([
-                AppDestination.groupList(packID: pack.id),
-                AppDestination.itemList(packID: pack.id, groupID: group.id),
-                AppDestination.itemEdit(packID: pack.id, groupID: group.id, itemID: newItemID, sort: nil)
-            ])
+        popupAnchor = nil
+        scrollTargetItemAnchor = scrollAnchor
+        // 新規Itemが見える位置までスクロールする
+        scrollTargetItemID = newItemID
+    }
+
+    /// 新規ItemがListに反映されてからスクロールする
+    private func scrollToNewItemIfReady(_ scrollProxy: ScrollViewProxy) {
+        guard let itemID = scrollTargetItemID,
+              sortedItems.contains(where: { $0.id == itemID }) else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation {
+                scrollProxy.scrollTo(itemID, anchor: scrollTargetItemAnchor)
+            }
+            scrollTargetItemID = nil
         }
     }
 

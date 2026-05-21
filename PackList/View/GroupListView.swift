@@ -24,6 +24,8 @@ struct GroupListView: View {
     @State private var editingGroup: M2Group?
     @State private var popupAnchor: CGPoint?
     @State private var showAiCreateSheet = false // AI修正シートの表示状態を保持（ボタンタップで開く）
+    @State private var scrollTargetGroupID: M2Group.ID?
+    @State private var scrollTargetGroupAnchor: UnitPoint = .bottom
 
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
@@ -149,81 +151,90 @@ struct GroupListView: View {
     
     var body: some View {
         ZStack {
-            List {
-                Section {
-                    ForEach(sortedGroups) { group in
-                        ZStack {
-                            GroupRowView(group: group, isHeader: false) { selected, _ in
-                                editingGroup = selected
-                                // シート表示では座標が不要なためリセット
-                                popupAnchor = nil
-                            }
+            ScrollViewReader { scrollProxy in
+                List {
+                    Section {
+                        ForEach(sortedGroups) { group in
+                            ZStack {
+                                GroupRowView(group: group, isHeader: false) { selected, _ in
+                                    editingGroup = selected
+                                    // シート表示では座標が不要なためリセット
+                                    popupAnchor = nil
+                                }
 
-                            GeometryReader { geo in
-                                HStack(spacing: 0) {
-                                    Button {
-                                        editingGroup = group
-                                        popupAnchor = CGPoint(
-                                            x: geo.frame(in: .global).minX + geo.size.width / 6.0,
-                                            y: geo.frame(in: .global).minY
-                                        )
-                                    } label: {
-                                        Color.clear
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .frame(width: geo.size.width / 3.0)
+                                GeometryReader { geo in
+                                    HStack(spacing: 0) {
+                                        Button {
+                                            editingGroup = group
+                                            popupAnchor = CGPoint(
+                                                x: geo.frame(in: .global).minX + geo.size.width / 6.0,
+                                                y: geo.frame(in: .global).minY
+                                            )
+                                        } label: {
+                                            Color.clear
+                                                .contentShape(Rectangle())
+                                        }
+                                        .buttonStyle(.plain)
+                                        .frame(width: geo.size.width / 3.0)
 
-                                    NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
-                                        Color.clear
-                                            .contentShape(Rectangle())
+                                        NavigationLink(value: AppDestination.itemList(packID: pack.id, groupID: group.id)) {
+                                            Color.clear
+                                                .contentShape(Rectangle())
+                                        }
+                                        .buttonStyle(.plain)
+                                        .frame(width: geo.size.width * 2.0 / 3.0)
                                     }
-                                    .buttonStyle(.plain)
-                                    .frame(width: geo.size.width * 2.0 / 3.0)
                                 }
                             }
+                            .id(group.id)
+                            .buttonStyle(.plain)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            // 行のトップレベルでスワイプ操作を受け付けるようにする
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) { // 左スワイプ・アクション（全スワイプ即削除を避ける）
+                                // グループ削除（行コンテナで定義してスワイプ無効化を防ぐ＋フルスワイプ事故を防止）
+                                Button {
+                                    group.delete()
+                                } label: {
+                                    Label("delete", systemImage: "trash")
+                                }
+                                .tint(.red)
+                                .disabled(group.parent == nil)
+
+                                // グループ複製
+                                Button {
+                                    group.duplicate()
+                                } label: {
+                                    Label("copy", systemImage: "plus.square.on.square")
+                                }
+                                .tint(.blue)
+                            }
                         }
-                        .buttonStyle(.plain)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        // 行のトップレベルでスワイプ操作を受け付けるようにする
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) { // 左スワイプ・アクション（全スワイプ即削除を避ける）
-                            // グループ削除（行コンテナで定義してスワイプ無効化を防ぐ＋フルスワイプ事故を防止）
-                            Button {
-                                group.delete()
-                            } label: {
-                                Label("delete", systemImage: "trash")
-                            }
-                            .tint(.red)
-                            .disabled(group.parent == nil)
-                            
-                            // グループ複製
-                            Button {
-                                group.duplicate()
-                            } label: {
-                                Label("copy", systemImage: "plus.square.on.square")
-                            }
-                            .tint(.blue)
+                        .onMove(perform: moveGroup)
+                    }
+                    // 並べ替え一覧
+                    footer: {
+                        if isBeginnerMode {
+                            // 初心者モードでは操作説明をフッターに表示して迷いを減らす
+                            Section2FooterView()
+                                .listRowSeparator(.hidden) // 下線なし
                         }
                     }
-                    .onMove(perform: moveGroup)
                 }
-                // 並べ替え一覧
-                footer: {
-                    if isBeginnerMode {
-                        // 初心者モードでは操作説明をフッターに表示して迷いを減らす
-                        Section2FooterView()
-                            .listRowSeparator(.hidden) // 下線なし
-                    }
+                .listStyle(.plain)
+                // スクロール位置表示は全画面で出さない
+                .scrollIndicators(.hidden)
+                .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
+                //.navigationTitle(pack.name.placeholderText("新しいパック"))
+                .navigationBarBackButtonHidden(true)
+                //.toolbar(.hidden, for: .navigationBar)
+                .onChange(of: scrollTargetGroupID) { _, _ in
+                    scrollToNewGroupIfReady(scrollProxy)
+                }
+                .onChange(of: sortedGroups.map(\.id)) { _, _ in
+                    scrollToNewGroupIfReady(scrollProxy)
                 }
             }
-            .listStyle(.plain)
-            // スクロール位置表示は全画面で出さない
-            .scrollIndicators(.hidden)
-            .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
-            //.navigationTitle(pack.name.placeholderText("新しいパック"))
-            .navigationBarBackButtonHidden(true)
-            //.toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top) { // ヘッダ部
                 // ボタン行の下に中央揃えのタイトル行を分けて、視線の向きを合わせやすくする
                 // spacingも少し詰めて上下余白を半分程度に縮める
@@ -451,6 +462,9 @@ struct GroupListView: View {
     }
 
     private func addGroup() {
+        var newGroupID: M2Group.ID?
+        let scrollAnchor: UnitPoint = insertionPosition == .head ? .top : .bottom
+
         // 新しいグループ追加を1操作として履歴化する
         history.perform(context: modelContext) {
             let orderedGroups = sortedGroups
@@ -471,8 +485,25 @@ struct GroupListView: View {
             let newGroup = M2Group(name: "", order: newOrder, parent: pack)
             modelContext.insert(newGroup)
             // child 配列はそのまま。表示時に order ソートされる
-            editingGroup = newGroup
-            popupAnchor = nil
+            newGroupID = newGroup.id
+        }
+
+        popupAnchor = nil
+        scrollTargetGroupAnchor = scrollAnchor
+        // 新規Groupが見える位置までスクロールする
+        scrollTargetGroupID = newGroupID
+    }
+
+    /// 新規GroupがListに反映されてからスクロールする
+    private func scrollToNewGroupIfReady(_ scrollProxy: ScrollViewProxy) {
+        guard let groupID = scrollTargetGroupID,
+              sortedGroups.contains(where: { $0.id == groupID }) else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation {
+                scrollProxy.scrollTo(groupID, anchor: scrollTargetGroupAnchor)
+            }
+            scrollTargetGroupID = nil
         }
     }
 
