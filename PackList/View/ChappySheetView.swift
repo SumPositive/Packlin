@@ -67,6 +67,7 @@ struct ChappySheetView: View {
                 }
             }
         }
+        .cappedAtLargeFontSize()
     }
 }
 
@@ -465,6 +466,7 @@ struct ChappyView: View {
                 rewardTrialDescription: String(localized: "watch.ad.send.free.finish.video")
             )
                 .appFontScale(fontScale)
+                .cappedAtLargeFontSize()
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
