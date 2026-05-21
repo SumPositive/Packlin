@@ -194,7 +194,7 @@ struct GroupListView: View {
                             } label: {
                                 Label("delete", systemImage: "trash")
                             }
-                            .tint(.orange)
+                            .tint(.red)
                             .disabled(group.parent == nil)
                             
                             // グループ複製

@@ -156,7 +156,7 @@ struct PackRowView: View {
             } label: {
                 Label("delete", systemImage: "trash")
             }
-            .tint(.orange)
+            .tint(.red)
             
             // パック複製
             Button {

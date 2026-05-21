@@ -234,7 +234,7 @@ struct ItemRowView: View {
             } label: {
                 Label("delete", systemImage: "trash")
             }
-            .tint(.orange)
+            .tint(.red)
             .disabled(item.parent == nil)
             // アイテム複製
             Button {
