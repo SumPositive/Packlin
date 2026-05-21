@@ -11,7 +11,10 @@ import UIKit
 
 struct ItemRowView: View {
     let item: M3Item
+    let isBulkMoveMode: Bool
+    let isBulkMoveSelected: Bool
     let onEdit: (M3Item, CGPoint) -> Void
+    let onToggleBulkMoveSelection: () -> Void
 
     @Environment(\.modelContext) private var modelContext
 
@@ -69,9 +72,15 @@ struct ItemRowView: View {
 
     
     init(item: M3Item,
-         onEdit: @escaping (M3Item, CGPoint) -> Void) {
+         isBulkMoveMode: Bool = false,
+         isBulkMoveSelected: Bool = false,
+         onEdit: @escaping (M3Item, CGPoint) -> Void,
+         onToggleBulkMoveSelection: @escaping () -> Void = {}) {
         self.item = item
+        self.isBulkMoveMode = isBulkMoveMode
+        self.isBulkMoveSelected = isBulkMoveSelected
         self.onEdit = onEdit
+        self.onToggleBulkMoveSelection = onToggleBulkMoveSelection
     }
     private var weightLabelText: String? {
         guard 0 < item.weight else { return nil }
@@ -100,6 +109,11 @@ struct ItemRowView: View {
                 HStack(spacing: 0) {
                     // アイテム・アイコン・チェック
                     Button {
+                        if isBulkMoveMode {
+                            // まとめて移動中は在庫チェックではなく移動対象の選択に使う
+                            onToggleBulkMoveSelection()
+                            return
+                        }
                         item.check.toggle()
                         if item.check {
                             if linkCheckWithStock {
@@ -113,13 +127,9 @@ struct ItemRowView: View {
                             }
                         }
                     } label: {
-                        Image(systemName
-                              : item.check ? "checkmark.circle"     // Check ON
-                              : item.need == 0 ? "circle.fill"      // Need = 0
-                              : item.need <= item.stock ? "circle.circle"
-                              : "circle")
+                        Image(systemName: itemIconName)
                         .imageScale(itemIconScale)
-                        .tint(item.need == 0 ? .secondary : .accentColor)
+                        .tint(itemIconTint)
                         .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                         .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                     }
@@ -228,27 +238,49 @@ struct ItemRowView: View {
                 .padding(.trailing, 30)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) { // 左スワイプ・アクション（フルスワイプ即削除を無効化）
-            // アイテム削除（必ずボタンタップを挟み、誤操作を防ぐ）
-            Button {
-                item.delete()
-            } label: {
-                Label("delete", systemImage: "trash")
+            if !isBulkMoveMode {
+                // 選択モード中はスワイプ操作より選択操作を優先する
+                // アイテム削除（必ずボタンタップを挟み、誤操作を防ぐ）
+                Button {
+                    item.delete()
+                } label: {
+                    Label("delete", systemImage: "trash")
+                }
+                .tint(.red)
+                .disabled(item.parent == nil)
+                // アイテム複製
+                Button {
+                    item.duplicate()
+                } label: {
+                    Label("copy", systemImage: "plus.square.on.square")
+                }
+                .tint(.blue)
             }
-            .tint(.red)
-            .disabled(item.parent == nil)
-            // アイテム複製
-            Button {
-                item.duplicate()
-            } label: {
-                Label("copy", systemImage: "plus.square.on.square")
-            }
-            .tint(.blue)
         }
     }
 
 }
 
 private extension ItemRowView {
+    /// 選択モードではオレンジのチェックトグルに差し替える
+    var itemIconName: String {
+        if isBulkMoveMode {
+            return isBulkMoveSelected ? "checkmark.circle.fill" : "circle"
+        }
+        return item.check ? "checkmark.circle"     // Check ON
+            : item.need == 0 ? "circle.fill"      // Need = 0
+            : item.need <= item.stock ? "circle.circle"
+            : "circle"
+    }
+
+    /// 通常チェックとまとめて移動選択の色を分ける
+    var itemIconTint: Color {
+        if isBulkMoveMode {
+            return .orange
+        }
+        return item.need == 0 ? .secondary : .accentColor
+    }
+
     /// 名前テキスト（ViewThatFits の両レイアウトで共通利用するため切り出し）
     @ViewBuilder
     var itemNameView: some View {

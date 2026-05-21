@@ -1871,6 +1871,38 @@
         }
       }
     },
+    "bulk.move" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Items"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まとめて移動"
+          }
+        }
+      }
+    },
+    "bulk.move.instructions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap orange circles, then Move"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "を選択して移動をタップ"
+          }
+        }
+      }
+    },
     "move" : {
       "localizations" : {
         "en" : {

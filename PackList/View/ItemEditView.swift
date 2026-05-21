@@ -1151,7 +1151,7 @@ private struct ItemQuantityEditor: View {
 }
 
 /// アイテム移動 設定シート
-private struct ItemMoveSheetView: View {
+struct ItemMoveSheetView: View {
     let packs: [M1Pack]
     let itemName: String
     let fontScale: FontScale

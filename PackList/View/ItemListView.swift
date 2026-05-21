@@ -17,17 +17,30 @@ struct ItemListView: View {
     @EnvironmentObject private var history: UndoStackService
     @EnvironmentObject private var navigationStore: NavigationStore
 
+    @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
+    // 不揮発保存：単体移動とまとめて移動で前回の移動先を共有する
+    @AppStorage("itemEdit.move.lastPackID") private var lastMovePackID: String = ""
+    @AppStorage("itemEdit.move.lastGroupID") private var lastMoveGroupID: String = ""
+    @AppStorage("itemEdit.move.lastInsertPosition") private var lastMoveInsertPositionRawValue: String = ItemEditView.MoveInsertPosition.end.rawValue
+    @AppStorage("itemEdit.move.lastKeepOriginal") private var lastMoveKeepOriginal: Bool = false
 
     @State private var canUndo = false
     @State private var canRedo = false
     @State private var editingGroup: M2Group?
     @State private var editingItem: M3Item?
     @State private var popupAnchor: CGPoint?
+    @State private var isBulkMoveMode = false
+    @State private var selectedBulkItemIDs: Set<M3Item.ID> = []
+    @State private var isShowingBulkMoveSheet = false
+    @State private var selectedMovePackID = ""
+    @State private var selectedMoveGroupID = ""
+    @State private var keepSourceItems = false
+    @State private var moveInsertPosition: ItemEditView.MoveInsertPosition = .end
 
     /// DBからソートして取得する（group.child は.order昇順）
     private var sortedItems: [M3Item] {
@@ -35,6 +48,25 @@ struct ItemListView: View {
     }
 
     private var rowHeight: CGFloat { appRowHeight(fontScale) }
+    /// order順のPackリストを返す
+    private var sortedPacks: [M1Pack] {
+        packs.sorted { $0.order < $1.order }
+    }
+    /// まとめて移動の対象を表示順で返す
+    private var selectedBulkItems: [M3Item] {
+        sortedItems.filter { selectedBulkItemIDs.contains($0.id) }
+    }
+    /// まとめて移動の移動先Pack
+    private var selectedMovePack: M1Pack? {
+        sortedPacks.first(where: { $0.id == selectedMovePackID })
+    }
+    /// まとめて移動の移動先Group
+    private var selectedDestinationGroup: M2Group? {
+        guard let pack = selectedMovePack else { return nil }
+        return pack.child.sorted { $0.order < $1.order }
+            .first(where: { $0.id == selectedMoveGroupID })
+    }
+    private var hasBulkSelection: Bool { !selectedBulkItems.isEmpty }
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // ヘッダーの高さを表示モードで変える
@@ -46,6 +78,17 @@ struct ItemListView: View {
     // Group編集はシートへ移行したが、アイテムのクイック編集は引き続きPopupを利用
     // そのため、どちらかが表示されている間はナビバーボタンを非活性にする
     private var isShowingPopup: Bool { editingGroup != nil || editingItem != nil }
+
+    private var bulkMoveSheetHeight: CGFloat {
+        switch fontScale {
+        case .large:
+            return 540
+        case .xLarge:
+            return 620
+        default:
+            return 440
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -60,9 +103,15 @@ struct ItemListView: View {
                                 sort: nil
                             )
                         ) {
-                            ItemRowView(item: item) { selected, point in
+                            ItemRowView(
+                                item: item,
+                                isBulkMoveMode: isBulkMoveMode,
+                                isBulkMoveSelected: selectedBulkItemIDs.contains(item.id)
+                            ) { selected, point in
                                 editingItem = selected
                                 popupAnchor = point
+                            } onToggleBulkMoveSelection: {
+                                toggleBulkMoveSelection(item)
                             }
                         }
                         .listRowSeparator(.hidden)
@@ -246,6 +295,9 @@ struct ItemListView: View {
                 // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
                 .cappedAtLargeFontSize()
             }
+            .safeAreaInset(edge: .bottom) {
+                bulkMoveFooter
+            }
             .onAppear {
                 updateUndoRedo()
             }
@@ -298,6 +350,89 @@ struct ItemListView: View {
                 .presentationDetents([.height(500)])
                 .presentationDragIndicator(.hidden)
         }
+        .sheet(isPresented: $isShowingBulkMoveSheet) {
+            // 既存のアイテム移動シートをまとめて移動でも使う
+            ItemMoveSheetView(
+                packs: sortedPacks,
+                itemName: String(localized: "bulk.move"),
+                fontScale: fontScale,
+                selectedPackID: $selectedMovePackID,
+                selectedGroupID: $selectedMoveGroupID,
+                keepOriginal: $keepSourceItems,
+                insertPosition: $moveInsertPosition,
+                disableConfirm: selectedDestinationGroup == nil || selectedBulkItems.isEmpty,
+                onConfirm: handleBulkMoveConfirmation,
+                onCancel: { isShowingBulkMoveSheet = false }
+            )
+            .appFontScale(fontScale)
+            .presentationDetents([.height(bulkMoveSheetHeight)])
+            .presentationBackground(Color(.systemGroupedBackground))
+        }
+        .onChange(of: selectedMovePackID) { _, _ in
+            if isShowingBulkMoveSheet {
+                syncBulkMoveGroupSelection(useStoredPreference: false)
+            }
+        }
+    }
+
+    /// まとめて移動用の下部フッター
+    @ViewBuilder
+    private var bulkMoveFooter: some View {
+        VStack(spacing: 0) {
+            COLOR_LIST_SEPARATOR
+                .frame(height: LIST_SEPARATOR_THICKNESS)
+                .ignoresSafeArea(edges: .horizontal)
+
+            if isBulkMoveMode {
+                HStack(spacing: 10) {
+                    Button("cancel") {
+                        cancelBulkMoveMode()
+                    }
+                    .buttonStyle(.bordered)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "circle")
+                            .imageScale(.large)
+                            .foregroundStyle(.orange)
+
+                        Text("bulk.move.instructions")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
+                    }
+                    // 文頭のオレンジ丸アイコンでセル先頭の選択ボタンを示す
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Button("move") {
+                        prepareBulkMoveSheet()
+                        isShowingBulkMoveSheet = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!hasBulkSelection)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            } else {
+                Button {
+                    beginBulkMoveMode()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.orange)
+                        Text("bulk.move")
+                    }
+                    // 開始ボタンも選択時と同じオレンジ丸チェックで統一する
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+        }
+        .background(.thinMaterial)
+        // フッターの操作文は「大」までで頭打ちし、ボタン欠けを抑える
+        .cappedAtLargeFontSize()
     }
 
     /// フッター：ボタンの説明
@@ -350,6 +485,152 @@ struct ItemListView: View {
         }
     }
 
+
+    /// まとめて移動モードを開始する
+    private func beginBulkMoveMode() {
+        editingGroup = nil
+        editingItem = nil
+        popupAnchor = nil
+        selectedBulkItemIDs.removeAll()
+        isBulkMoveMode = true
+    }
+
+    /// まとめて移動モードを中止する
+    private func cancelBulkMoveMode() {
+        selectedBulkItemIDs.removeAll()
+        isBulkMoveMode = false
+    }
+
+    /// まとめて移動対象の選択を切り替える
+    private func toggleBulkMoveSelection(_ item: M3Item) {
+        if selectedBulkItemIDs.contains(item.id) {
+            selectedBulkItemIDs.remove(item.id)
+        } else {
+            selectedBulkItemIDs.insert(item.id)
+        }
+    }
+
+    /// まとめて移動シートの初期値を準備する
+    private func prepareBulkMoveSheet() {
+        keepSourceItems = lastMoveKeepOriginal
+        if let storedInsertPosition = ItemEditView.MoveInsertPosition(rawValue: lastMoveInsertPositionRawValue) {
+            moveInsertPosition = storedInsertPosition
+        } else {
+            moveInsertPosition = .end
+        }
+
+        if let storedPack = sortedPacks.first(where: { $0.id == lastMovePackID }) {
+            selectedMovePackID = storedPack.id
+        } else if sortedPacks.contains(where: { $0.id == pack.id }) {
+            selectedMovePackID = pack.id
+        } else if let firstPack = sortedPacks.first {
+            selectedMovePackID = firstPack.id
+        } else {
+            selectedMovePackID = ""
+        }
+
+        syncBulkMoveGroupSelection(useStoredPreference: true)
+    }
+
+    /// Pack選択に合わせて移動先Groupを補正する
+    private func syncBulkMoveGroupSelection(useStoredPreference: Bool) {
+        guard let pack = selectedMovePack else {
+            selectedMoveGroupID = ""
+            return
+        }
+
+        let groups = pack.child.sorted { $0.order < $1.order }
+
+        if useStoredPreference,
+           let storedGroup = groups.first(where: { $0.id == lastMoveGroupID }) {
+            selectedMoveGroupID = storedGroup.id
+            return
+        }
+
+        if let currentSelection = groups.first(where: { $0.id == selectedMoveGroupID }) {
+            selectedMoveGroupID = currentSelection.id
+            return
+        }
+
+        if pack.id == group.parent?.id,
+           let currentGroup = groups.first(where: { $0.id == group.id }) {
+            selectedMoveGroupID = currentGroup.id
+            return
+        }
+
+        if let firstGroup = groups.first {
+            selectedMoveGroupID = firstGroup.id
+        } else {
+            selectedMoveGroupID = ""
+        }
+    }
+
+    /// まとめて移動シートの確定処理
+    private func handleBulkMoveConfirmation() {
+        guard let destinationGroup = selectedDestinationGroup else { return }
+
+        performBulkMoveOrCopy(to: destinationGroup, copy: keepSourceItems)
+        lastMovePackID = selectedMovePackID
+        lastMoveGroupID = destinationGroup.id
+        lastMoveInsertPositionRawValue = moveInsertPosition.rawValue
+        lastMoveKeepOriginal = keepSourceItems
+        isShowingBulkMoveSheet = false
+        isBulkMoveMode = false
+        selectedBulkItemIDs.removeAll()
+    }
+
+    /// 選択した複数アイテムを移動または複製する
+    private func performBulkMoveOrCopy(to destinationGroup: M2Group, copy: Bool) {
+        let movingItems = selectedBulkItems
+        guard !movingItems.isEmpty else { return }
+
+        // Undo grouping BEGIN
+        modelContext.undoManager?.groupingBegin()
+        defer {
+            // Undo grouping END
+            modelContext.undoManager?.groupingEnd()
+        }
+
+        let movingIDs = Set(movingItems.map(\.id))
+        var destinationItems = destinationGroup.child.sorted { $0.order < $1.order }
+        if !copy {
+            // 同一Group内の並べ替えでも重複しないよう、移動対象を一度抜く
+            destinationItems.removeAll { movingIDs.contains($0.id) }
+        }
+
+        let insertIndex: Int
+        switch moveInsertPosition {
+        case .start:
+            insertIndex = 0
+        case .end:
+            insertIndex = destinationItems.count
+        }
+        let clampedIndex = max(0, min(insertIndex, destinationItems.count))
+
+        let insertedItems = movingItems.map { sourceItem in
+            if copy {
+                let newItem = M3Item(name: sourceItem.name,
+                                     memo: sourceItem.memo,
+                                     stock: sourceItem.stock,
+                                     need: sourceItem.need,
+                                     weight: sourceItem.weight,
+                                     order: sourceItem.order,
+                                     parent: destinationGroup)
+                modelContext.insert(newItem)
+                return newItem
+            } else {
+                sourceItem.parent = destinationGroup
+                return sourceItem
+            }
+        }
+
+        destinationItems.insert(contentsOf: insertedItems, at: clampedIndex)
+        let endIndex = clampedIndex + insertedItems.count - 1
+        assignSparseOrders(nodes: destinationItems, range: clampedIndex...endIndex) {
+            // order のみを整え、child 配列を並べ替えない
+            normalizeSparseOrders(destinationItems)
+        }
+    }
 
     /// アイテム追加
     func addItem() {
