@@ -10,7 +10,6 @@ import SwiftUI
 import SwiftData
 import UIKit
 
-import AppTrackingTransparency
 import FirebaseCore
 import FirebaseAnalytics
 import FirebaseCrashlytics
@@ -124,9 +123,6 @@ struct AppMain: App {
                             }
                     }
                     .onAppear {
-                        // ATT許可ダイアログを表示（UMP/AdMob SDKの要件）
-                        // 許可・拒否どちらでも npa=1 固定のため広告動作は変わらない
-                        ATTrackingManager.requestTrackingAuthorization { _ in }
                         // ModelContextにHistoryServiceを接続してUndo/Redoを反映させる
                         let context = container.mainContext
                         if let existing = context.undoManager as? UndoStackManager {
