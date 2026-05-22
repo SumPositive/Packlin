@@ -22,8 +22,8 @@ struct GroupEditView: View {
     @AppStorage("groupEdit.move.lastInsertPosition") private var lastMoveInsertPositionRawValue: String = MoveInsertPosition.end.rawValue
     @AppStorage("groupEdit.move.lastKeepOriginal") private var lastMoveKeepOriginal: Bool = false
 
-    @FocusState private var nameIsFocused: Bool
-    @FocusState private var memoIsFocused: Bool
+    @State private var nameIsFocused: Bool = false
+    @State private var memoIsFocused: Bool = false
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
 
     @State private var isShowingMoveSheet = false
@@ -118,12 +118,7 @@ struct GroupEditView: View {
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
-            if group.name.isEmpty {
-                Task { @MainActor in
-                    await Task.yield()
-                    nameIsFocused = true
-                }
-            }
+            focusNameIfEmpty()
         }
         .onDisappear() {
             // 末尾のスペースと改行を除去
@@ -156,6 +151,17 @@ struct GroupEditView: View {
             return 500
         default:
             return 360
+        }
+    }
+
+    private func focusNameIfEmpty() {
+        guard group.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        // シート表示直後はTextEditorの生成が遅れるため、表示確定後にNameへフォーカスする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            if group.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                nameIsFocused = true
+            }
         }
     }
 

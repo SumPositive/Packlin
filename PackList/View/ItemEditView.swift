@@ -40,7 +40,7 @@ struct ItemEditView: View {
     @EnvironmentObject private var history: UndoStackService
     @EnvironmentObject private var navigationStore: NavigationStore
 
-    @FocusState private var focusedField: Field?
+    @State private var focusedField: Field?
     @Query(sort: [SortDescriptor(\M1Pack.order)]) private var packs: [M1Pack]
     // PackListViewと同じ表示モードを共有し、初心者向け説明の表示を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
@@ -98,7 +98,7 @@ struct ItemEditView: View {
             // 大きい文字ではボタン間隔を詰めて横欠けを防ぐ
             return 6
         default:
-            return 20
+            return 6
         }
     }
 
@@ -226,6 +226,22 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("back"))
                             .disabled(!canSelectPreviousItem)
+
+                            // 先頭に追加
+                            Button {
+                                addItemEdit(at: .head)
+                            } label: {
+                                Label("top", systemImage: "plus.circle")
+                                    .foregroundStyle(COLOR_ADD_ACTION)
+                                    .frame(width: actionButtonWidth, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("top"))
                             
                             // 複製
                             Button {
@@ -278,6 +294,22 @@ struct ItemEditView: View {
                             }
                             .accessibilityLabel(Text("next"))
                             .disabled(!canSelectNextItem)
+
+                            // 末尾に追加
+                            Button {
+                                addItemEdit(at: .tail)
+                            } label: {
+                                Label("bottom", systemImage: "plus.circle")
+                                    .foregroundStyle(COLOR_ADD_ACTION)
+                                    .frame(width: actionButtonWidth, height: 44)
+                                    .background(COLOR_BACK_INPUT)
+                                    .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                            .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                    )
+                            }
+                            .accessibilityLabel(Text("bottom"))
 
                             // 移動
                             Button {
@@ -491,6 +523,7 @@ struct ItemEditView: View {
                             Image(systemName: "plus.circle")
                                 .imageScale(.large)
                                 .symbolRenderingMode(.hierarchical)
+                                .foregroundStyle(COLOR_ADD_ACTION)
                         }
                         .buttonStyle(.borderless)
 
@@ -500,7 +533,7 @@ struct ItemEditView: View {
                                 .lineLimit(3)
                                 .minimumScaleFactor(0.7)
                                 .allowsTightening(true)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(COLOR_ADD_ACTION)
                                 .multilineTextAlignment(.center)
                         }
                     }
@@ -552,12 +585,7 @@ struct ItemEditView: View {
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
-            if item.name.isEmpty {
-                Task { @MainActor in
-                    await Task.yield()
-                    focusedField = .name
-                }
-            }
+            focusNameIfEmpty()
         }
         .onDisappear {
             // Trim
@@ -613,6 +641,9 @@ struct ItemEditView: View {
             guard isShowingMoveSheet else { return }
             syncGroupSelection(useStoredPreference: false)
         }
+        .onChange(of: item.id) { _, _ in
+            focusNameIfEmpty()
+        }
     }
 
     private var moveSheetHeight: CGFloat {
@@ -626,13 +657,29 @@ struct ItemEditView: View {
         }
     }
 
+    private func focusNameIfEmpty() {
+        guard item.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        // 画面遷移直後はTextEditorの生成が遅れるため、表示確定後にNameへフォーカスする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            if item.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                focusedField = .name
+            }
+        }
+    }
+
     /// アイテム追加し、そのアイテムを編集状態にする
     private func addItemEdit() {
+        addItemEdit(at: insertionPosition)
+    }
+
+    /// 指定位置にアイテムを追加し、そのアイテムを編集状態にする
+    private func addItemEdit(at position: InsertionPosition) {
         // 履歴サービスを利用して新規追加を1つのアクションとして記録する
         history.perform(context: modelContext) {
             let items = group.child.sorted { $0.order < $1.order }
             let insertionIndex: Int = {
-                switch insertionPosition {
+                switch position {
                     case .head:
                         return 0
                     case .tail:

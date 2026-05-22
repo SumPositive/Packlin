@@ -123,6 +123,19 @@ struct ItemListView: View {
                             .listRowBackground(COLOR_ROW_BACK)
                         }
                         .onMove(perform: moveItem)
+
+                        AppendAtEndRowView(systemImage: "plus.circle",
+                                           fontScale: fontScale,
+                                           showsText: isBeginnerMode) {
+                            addItemAtEndAndNavigate()
+                        }
+                        .disabled(isBulkMoveMode)
+                        .opacity(isBulkMoveMode ? 0.45 : 1.0)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(COLOR_ROW_BACK)
+                        // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
+                        .environment(\.defaultMinListRowHeight, 0)
                     } header: {
                         GroupRowView(group: group, isHeader: true) { selected, _ in
                             editingGroup = selected
@@ -266,6 +279,7 @@ struct ItemListView: View {
                                 Image(systemName: "plus.circle")
                                     .imageScale(.large)
                                     .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(COLOR_ADD_ACTION)
                             }
                             .buttonStyle(.borderless)
                             .disabled(isShowingPopup)
@@ -276,7 +290,7 @@ struct ItemListView: View {
                                     .lineLimit(3)
                                     .minimumScaleFactor(0.7)
                                     .allowsTightening(true)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(COLOR_ADD_ACTION)
                                     .multilineTextAlignment(.center)
                             }
                         }
@@ -678,6 +692,39 @@ struct ItemListView: View {
         scrollTargetItemAnchor = scrollAnchor
         // 新規Itemが見える位置までスクロールする
         scrollTargetItemID = newItemID
+    }
+
+    /// 末尾追加セル用：常に末尾へ追加して編集画面へ遷移する
+    private func addItemAtEndAndNavigate() {
+        var newItem: M3Item?
+
+        history.perform(context: modelContext) {
+            let items = sortedItems
+            let newOrder = sparseOrderForInsertion(items: items, index: items.count) {
+                // order のみを整え、child 配列を並べ替えない
+                normalizeSparseOrders(items)
+            }
+
+            let item = M3Item(name: "",
+                              order: newOrder,
+                              parent: group)
+            modelContext.insert(item)
+            newItem = item
+        }
+
+        popupAnchor = nil
+        if let newItem {
+            scrollTargetItemAnchor = .bottom
+            scrollTargetItemID = newItem.id
+            navigationStore.path.append(
+                AppDestination.itemEdit(
+                    packID: pack.id,
+                    groupID: group.id,
+                    itemID: newItem.id,
+                    sort: nil
+                )
+            )
+        }
     }
 
     /// 新規ItemがListに反映されてからスクロールする

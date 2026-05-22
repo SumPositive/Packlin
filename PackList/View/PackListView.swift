@@ -88,6 +88,17 @@ struct PackListView: View {
                             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         }
                         .onMove(perform: movePack)
+
+                        AppendAtEndRowView(systemImage: "case",
+                                           fontScale: fontScale,
+                                           usesPackAddIcon: true,
+                                           showsText: isBeginnerMode) {
+                            addPackAtEndAndEdit()
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
+                        .environment(\.defaultMinListRowHeight, 0)
                     }
                     footer: {
                         if isBeginnerMode {
@@ -98,6 +109,10 @@ struct PackListView: View {
                     }
                 }
                 .listStyle(.plain)
+                // List の規定最小行高さを 0 にして、AppendAtEndRowView が
+                // 自然サイズ（コンテンツ + 上下8pt）で収まるようにする。
+                // パック行自体は PackRowView 内の minHeight で最低高さを確保している
+                .environment(\.defaultMinListRowHeight, 0)
                 // スクロール位置表示は全画面で出さない
                 .scrollIndicators(.hidden)
                 .listRowSeparator(.hidden)
@@ -220,6 +235,7 @@ struct PackListView: View {
                                     .symbolRenderingMode(.hierarchical)
                                     .padding(.top, 4)
                             }
+                            .foregroundStyle(COLOR_ADD_ACTION)
                         }
                         .buttonStyle(.borderless)
                         .disabled(isShowingEditSheet)
@@ -251,7 +267,7 @@ struct PackListView: View {
                                 .lineLimit(3)
                                 .minimumScaleFactor(0.7)
                                 .allowsTightening(true)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(COLOR_ADD_ACTION)
                                 .multilineTextAlignment(.center)
                         }
                     }
@@ -377,15 +393,6 @@ struct PackListView: View {
             let newPack = M1Pack(name: "", order: newOrder)
             modelContext.insert(newPack)
 
-            // 新規モチメモ作成時に初期グループとアイテムを1つずつ追加する
-            let initialGroup = M2Group(name: "", order: 0, parent: newPack)
-            modelContext.insert(initialGroup)
-            newPack.child.append(initialGroup)
-
-            let initialItem = M3Item(name: "", order: 0, parent: initialGroup)
-            modelContext.insert(initialItem)
-            initialGroup.child.append(initialItem)
-
             // 追加後のスクロール対象として新規Pack IDだけ保持する
             newPackID = newPack.id
         }
@@ -394,6 +401,30 @@ struct PackListView: View {
         scrollTargetPackAnchor = scrollAnchor
         // 新規Packが見える位置までスクロールする
         scrollTargetPackID = newPackID
+    }
+
+    /// 末尾追加セル用：常に末尾へ追加して編集シートを開く
+    private func addPackAtEndAndEdit() {
+        var newPack: M1Pack?
+
+        history.perform(context: modelContext) {
+            let orderedPacks = Array(sortedPacks)
+            let newOrder = sparseOrderForInsertion(items: orderedPacks, index: orderedPacks.count) {
+                normalizeSparseOrders(orderedPacks)
+            }
+
+            let pack = M1Pack(name: "", order: newOrder)
+            modelContext.insert(pack)
+
+            newPack = pack
+        }
+
+        popupAnchor = nil
+        if let newPack {
+            scrollTargetPackAnchor = .bottom
+            scrollTargetPackID = newPack.id
+            editingPack = newPack
+        }
     }
 
     /// 新規PackがListに反映されてからスクロールする

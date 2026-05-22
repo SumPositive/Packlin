@@ -278,6 +278,22 @@
         }
       }
     },
+    "append.to.end" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to end"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "末尾に追加"
+          }
+        }
+      }
+    },
     "ask.chappy.ai" : {
       "localizations" : {
         "en" : {

@@ -20,8 +20,8 @@ struct PackEditView: View {
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
 
-    @FocusState private var nameIsFocused: Bool
-    @FocusState private var memoIsFocused: Bool
+    @State private var nameIsFocused: Bool = false
+    @State private var memoIsFocused: Bool = false
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
@@ -81,12 +81,7 @@ struct PackEditView: View {
         .onAppear {
             // Undo grouping BEGIN
             modelContext.undoManager?.groupingBegin()
-            if pack.name.isEmpty {
-                Task { @MainActor in
-                    await Task.yield()
-                    nameIsFocused = true
-                }
-            }
+            focusNameIfEmpty()
         }
         .onDisappear() {
             // 末尾のスペースと改行を除去
@@ -109,6 +104,17 @@ struct PackEditView: View {
             get: { memoIsFocused },
             set: { memoIsFocused = $0 }
         )
+    }
+
+    private func focusNameIfEmpty() {
+        guard pack.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        // シート表示直後はTextEditorの生成が遅れるため、表示確定後にNameへフォーカスする
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            if pack.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                nameIsFocused = true
+            }
+        }
     }
 
     private var actionBar: some View {

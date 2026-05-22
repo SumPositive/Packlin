@@ -211,6 +211,16 @@ struct GroupListView: View {
                             }
                         }
                         .onMove(perform: moveGroup)
+
+                        AppendAtEndRowView(systemImage: "plus.square",
+                                           fontScale: fontScale,
+                                           showsText: isBeginnerMode) {
+                            addGroupAtEndAndEdit()
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
+                        .environment(\.defaultMinListRowHeight, 0)
                     }
                     // 並べ替え一覧
                     footer: {
@@ -222,6 +232,10 @@ struct GroupListView: View {
                     }
                 }
                 .listStyle(.plain)
+                // List の規定最小行高さを 0 にして、AppendAtEndRowView が
+                // 自然サイズ（コンテンツ + 上下8pt）で収まるようにする。
+                // グループ行自体は GroupRowView 内の minHeight で最低高さを確保している
+                .environment(\.defaultMinListRowHeight, 0)
                 // スクロール位置表示は全画面で出さない
                 .scrollIndicators(.hidden)
                 .listRowSeparator(.hidden) // 区切り線は、Rowの.overlayで表示している
@@ -338,6 +352,7 @@ struct GroupListView: View {
                                 Image(systemName: "plus.square")
                                     .imageScale(.large)
                                     .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(COLOR_ADD_ACTION)
                             }
                             .buttonStyle(.borderless)
                             .disabled(isShowingPopup)
@@ -348,7 +363,7 @@ struct GroupListView: View {
                                     .lineLimit(3)
                                     .minimumScaleFactor(0.7)
                                     .allowsTightening(true)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(COLOR_ADD_ACTION)
                                     .multilineTextAlignment(.center)
                             }
                         }
@@ -492,6 +507,30 @@ struct GroupListView: View {
         scrollTargetGroupAnchor = scrollAnchor
         // 新規Groupが見える位置までスクロールする
         scrollTargetGroupID = newGroupID
+    }
+
+    /// 末尾追加セル用：常に末尾へ追加して編集シートを開く
+    private func addGroupAtEndAndEdit() {
+        var newGroup: M2Group?
+
+        history.perform(context: modelContext) {
+            let orderedGroups = sortedGroups
+            let newOrder = sparseOrderForInsertion(items: orderedGroups, index: orderedGroups.count) {
+                // order だけを整理して child 配列には手を出さない
+                normalizeSparseOrders(orderedGroups)
+            }
+
+            let group = M2Group(name: "", order: newOrder, parent: pack)
+            modelContext.insert(group)
+            newGroup = group
+        }
+
+        popupAnchor = nil
+        if let newGroup {
+            scrollTargetGroupAnchor = .bottom
+            scrollTargetGroupID = newGroup.id
+            editingGroup = newGroup
+        }
     }
 
     /// 新規GroupがListに反映されてからスクロールする

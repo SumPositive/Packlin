@@ -47,6 +47,7 @@ struct PacklinMemoEditor: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .onAppear {
             editorIsFocused = isFocused
+            refocusEditorIfNeeded()
         }
         .onChange(of: editorIsFocused) { _, newValue in
             isFocused = newValue
@@ -56,6 +57,9 @@ struct PacklinMemoEditor: View {
         }
         .onChange(of: isFocused) { _, newValue in
             editorIsFocused = newValue
+            if newValue {
+                refocusEditorIfNeeded()
+            }
             if !newValue {
                 normalizeText()
             }
@@ -72,6 +76,19 @@ struct PacklinMemoEditor: View {
             backgroundColor
         } else {
             Color.clear
+        }
+    }
+
+    private func refocusEditorIfNeeded() {
+        guard isFocused else { return }
+
+        // シート表示や画面遷移ではTextEditorの準備が遅れるため、短時間で数回フォーカスを当て直す
+        for delay in [0.05, 0.18, 0.35] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                if isFocused {
+                    editorIsFocused = true
+                }
+            }
         }
     }
 

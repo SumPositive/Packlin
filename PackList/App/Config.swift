@@ -137,6 +137,14 @@ let COLOR_NAME: Color = .primary
 let COLOR_NAME_EMPTY: Color = .secondary
 let COLOR_MEMO: Color = .secondary
 let COLOR_WEIGHT: Color = .secondary
+// 追加操作のアイコンと説明文字に使う控えめな緑
+let COLOR_ADD_ACTION: Color = Color(UIColor { traitCollection in
+    if traitCollection.userInterfaceStyle == .dark {
+        return UIColor(red: 0.42, green: 0.72, blue: 0.48, alpha: 1.0)
+    } else {
+        return UIColor(red: 0.22, green: 0.52, blue: 0.30, alpha: 1.0)
+    }
+})
 
 // View背景
 let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)

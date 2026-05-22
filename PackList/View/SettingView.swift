@@ -756,9 +756,11 @@ struct SettingView: View {
                     Label {
                         Text("add.position")
                             .font(.callout)
+                            .foregroundStyle(COLOR_ADD_ACTION)
                     } icon: {
                         Image(systemName: "plus.circle")
                             .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(COLOR_ADD_ACTION)
                     }
                 } label: { position in
                     Image(systemName: position.iconSFname)
