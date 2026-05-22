@@ -320,7 +320,7 @@ struct ItemListView: View {
                 // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
                 .cappedAtLargeFontSize()
             }
-            .safeAreaInset(edge: .bottom) {
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 bulkMoveFooter
             }
             .onAppear {
@@ -437,7 +437,8 @@ struct ItemListView: View {
                     .disabled(!hasBulkSelection)
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                // フッターの高さを抑えるため、ボタン外側の余白は最小にする
+                .padding(.vertical, 4)
             } else {
                 Button {
                     beginBulkMoveMode()
@@ -449,13 +450,19 @@ struct ItemListView: View {
                     }
                     // 開始ボタンも選択時と同じオレンジ丸チェックで統一する
                         .frame(maxWidth: .infinity)
+                        .frame(height: 36)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.plain)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(Color(uiColor: .secondarySystemBackground).opacity(0.75))
+                )
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                // フッターの高さを抑えるため、ボタン外側の余白は最小にする
+                .padding(.vertical, 4)
             }
         }
-        .background(.thinMaterial)
+        .background(.thinMaterial, ignoresSafeAreaEdges: [])
         // フッターの操作文は「大」までで頭打ちし、ボタン欠けを抑える
         .cappedAtLargeFontSize()
     }
