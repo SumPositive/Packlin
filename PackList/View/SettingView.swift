@@ -10,6 +10,7 @@ import SafariServices
 import SwiftData
 import UniformTypeIdentifiers
 import Foundation
+import StoreKit
 
 
 let SettingView_HEIGHT: CGFloat = 710.0 // シート表示時の高さ指定
@@ -938,56 +939,68 @@ struct SettingView: View {
         }
     }
 
-    /// 投げ銭シート
+    /// 投げ銭シート（モチメモ独自のコイントス＋カバンへ詰める演出）
     struct TipSheetView: View {
         @Environment(\.dismiss) private var dismiss
         @State private var store = TipStore.shared
         @State private var showThankYou = false
+        @State private var activeThrow: CoinThrow? = nil
+        @State private var targetScale: CGFloat = 1.0
+        @State private var lidLift: CGFloat = 0
+        /// SF Symbol の bounce アニメをトリガーするためのカウンタ
+        @State private var bagBounceTrigger: Int = 0
+
+        /// 投げ銭ボタンが押された瞬間にコインの軌跡を表現するための情報
+        private struct CoinThrow: Identifiable {
+            let id = UUID()
+            let buttonIndex: Int
+            let color: Color
+            let product: Product
+        }
 
         var body: some View {
-            NavigationView {
-                VStack(spacing: 20) {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.pink)
-                        .symbolEffect(.breathe.pulse.byLayer, options: .repeat(.periodic(delay: 0.0)))
-
-                    Text("support.encourages.us.keep.developing.app")
-                        .font(.callout)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal)
-
-                    if store.isLoadingProducts {
-                        ProgressView()
-                    } else if store.products.isEmpty {
-                        Text("not.available.time")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        HStack(spacing: 12) {
-                            ForEach(store.products, id: \.id) { product in
-                                Button {
-                                    Task {
-                                        if await store.purchase(product) {
-                                            showThankYou = true
-                                        }
-                                    }
-                                } label: {
-                                    Text(product.displayPrice)
-                                        .frame(maxWidth: .infinity)
+            NavigationStack {
+                GeometryReader { geo in
+                    ZStack {
+                        sheetContent
+                        if let toss = activeThrow {
+                            // ボタン位置からカバンの口への始点・終点を算出して詰め込み軌道を描く
+                            let startX = toss.buttonIndex == 0
+                                ? geo.size.width * 0.33
+                                : geo.size.width * 0.67
+                            let bagMouthY: CGFloat = 92
+                            TossedCoin(
+                                key: toss.id,
+                                start: CGPoint(x: startX, y: geo.size.height - 130),
+                                end: CGPoint(x: geo.size.width * 0.5, y: bagMouthY),
+                                color: toss.color
+                            ) {
+                                // カバンに「詰める」着弾演出：
+                                //  1) カバンが「ぷくっ」と膨らむ（targetScale）
+                                //  2) フタを少し持ち上げて、口から入った感じを出す
+                                withAnimation(.spring(response: 0.22, dampingFraction: 0.35)) {
+                                    targetScale = 1.22
+                                    lidLift = -8
                                 }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.pink)
-                                .disabled(store.isPurchasing)
+                                bagBounceTrigger += 1
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) {
+                                        targetScale = 1.0
+                                        lidLift = 0
+                                    }
+                                }
+                            } onCompleted: {
+                                let product = toss.product
+                                activeThrow = nil
+                                Task {
+                                    if await store.purchase(product) {
+                                        showThankYou = true
+                                    }
+                                }
                             }
                         }
-                        .padding(.horizontal)
                     }
-
-                    Spacer()
                 }
-                .padding(.top, 32)
                 .navigationTitle(Text("tip.support"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -1001,6 +1014,7 @@ struct SettingView: View {
                         }
                     }
                 }
+                .task { await store.loadProducts() }
                 .alert(
                     String(localized: "thank"),
                     isPresented: $showThankYou
@@ -1010,7 +1024,278 @@ struct SettingView: View {
                     Text(String(localized: "thank.support.will.keep.improving.app"))
                 }
             }
-            .task { await store.loadProducts() }
+        }
+
+        @ViewBuilder
+        private var sheetContent: some View {
+            VStack(spacing: 0) {
+                bagTarget
+                    .padding(.top, 32)
+
+                TossArcHint()
+                    .frame(height: 52)
+                    .padding(.horizontal, 56)
+                    .padding(.top, 6)
+
+                Text("support.encourages.us.keep.developing.app")
+                    .font(.callout)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 32)
+                    .padding(.top, 16)
+
+                Spacer()
+                coinSection
+                    .padding(.bottom, 56)
+            }
+        }
+
+        /// 投げ銭の着弾先ターゲット。旅行カバンの口にコインを吸い込ませる
+        private var bagTarget: some View {
+            ZStack {
+                Circle()
+                    .fill(.pink.opacity(0.10))
+                    .frame(width: 108, height: 108)
+                Circle()
+                    .stroke(.pink.opacity(0.22), lineWidth: 1.5)
+                    .frame(width: 108, height: 108)
+                // モチメモのアプリアイコン同様の「case」シンボル。コイン着弾でバウンスする
+                Image(systemName: "case")
+                    .font(.system(size: 50))
+                    .foregroundStyle(.pink)
+                    .symbolRenderingMode(.hierarchical)
+                    .symbolEffect(.bounce.up.byLayer,
+                                  options: .speed(1.3),
+                                  value: bagBounceTrigger)
+                // コインの吸い込み口をカバン上部に見せる
+                Capsule()
+                    .fill(.pink.opacity(0.82))
+                    .frame(width: 42, height: 4)
+                    .offset(y: -7)
+                // 着弾時だけフタが少し跳ねる
+                Capsule()
+                    .fill(.pink.opacity(0.34))
+                    .frame(width: 38, height: 5)
+                    .offset(y: -17 + lidLift)
+                // 応援の気持ちを示す小さなハート
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(.pink)
+                    .offset(x: 24, y: -24)
+            }
+            .scaleEffect(targetScale)
+        }
+
+        @ViewBuilder
+        private var coinSection: some View {
+            if store.isLoadingProducts {
+                ProgressView()
+            } else if store.products.isEmpty {
+                Text("not.available.time")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else {
+                HStack(spacing: 40) {
+                    ForEach(Array(store.products.enumerated()), id: \.element.id) { index, product in
+                        // 最後の商品（金額が大きい想定）は金色、それ以外は銅色のコインで描画する
+                        let isLarge = index == store.products.count - 1
+                        let coinColor: Color = isLarge
+                            ? Color(red: 0.90, green: 0.72, blue: 0.18)
+                            : Color(red: 0.72, green: 0.45, blue: 0.20)
+                        TipCoinButton(
+                            price: product.displayPrice,
+                            color: coinColor,
+                            disabled: activeThrow != nil || store.isPurchasing
+                        ) {
+                            activeThrow = CoinThrow(
+                                buttonIndex: index,
+                                color: coinColor,
+                                product: product
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - 投げ銭シート用：コインボタン
+
+    /// 円形のコイン風投げ銭ボタン
+    private struct TipCoinButton: View {
+        let price: String
+        let color: Color
+        let disabled: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(
+                            colors: [color.opacity(0.18), color.opacity(0.06)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ))
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [color, color.opacity(0.45)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                    Circle()
+                        .stroke(color.opacity(0.25), lineWidth: 1)
+                        .padding(10)
+                    Text(price)
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(color)
+                }
+                .frame(width: 100, height: 100)
+                .shadow(color: color.opacity(0.35), radius: 10, x: 0, y: 5)
+            }
+            .buttonStyle(TipCoinPressStyle())
+            .disabled(disabled)
+            .opacity(disabled ? 0.5 : 1.0)
+        }
+    }
+
+    /// コインボタンを押下した時のスケール感を出すボタンスタイル
+    private struct TipCoinPressStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(configuration.isPressed ? 0.88 : 1.0)
+                .animation(.spring(response: 0.2, dampingFraction: 0.55), value: configuration.isPressed)
+        }
+    }
+
+    // MARK: - 投げ銭シート用：放物線ヒント
+
+    /// コインが飛ぶ軌道を破線アーチで案内する装飾ビュー
+    private struct TossArcHint: View {
+        var body: some View {
+            Canvas { ctx, size in
+                let width = size.width
+                let height = size.height
+                // 左ボタン→ターゲット、右ボタン→ターゲットの2本の弧を描く
+                for (startRatio, controlRatio) in [(0.25, 0.82), (0.75, 0.18)] as [(Double, Double)] {
+                    var path = Path()
+                    path.move(to: CGPoint(x: width * startRatio, y: height))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.5, y: 0),
+                        control: CGPoint(x: width * controlRatio, y: height * 0.12)
+                    )
+                    ctx.stroke(
+                        path,
+                        with: .color(.secondary.opacity(0.28)),
+                        style: StrokeStyle(lineWidth: 1.5, dash: [3, 5])
+                    )
+                }
+            }
+        }
+    }
+
+    // MARK: - 投げ銭シート用：飛ぶコイン
+
+    /// ボタンからターゲットへ放物線を描いて飛ぶコイン本体
+    private struct TossedCoin: View {
+        let key: UUID
+        let start: CGPoint
+        let end: CGPoint
+        let color: Color
+        let onImpact: () -> Void
+        let onCompleted: () -> Void
+
+        private struct KeyframeValue {
+            var offsetX: CGFloat = 0
+            var offsetY: CGFloat = 0
+            var rotation: Double = 0
+            var scale: CGFloat = 1
+            var opacity: Double = 1
+        }
+
+        @State private var fire = false
+        /// 接近のみの所要時間。到達した瞬間に除去するため、シュリンク/フェード時間は含めない
+        private let duration: Double = 1.0
+
+        private var deltaX: CGFloat { end.x - start.x }
+        private var deltaY: CGFloat { end.y - start.y }
+
+        var body: some View {
+            Circle()
+                .fill(LinearGradient(
+                    colors: [color.opacity(0.95), color.opacity(0.70)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+                .overlay(
+                    ZStack {
+                        Circle().stroke(.white.opacity(0.28), lineWidth: 1.5).padding(5)
+                        Text(verbatim: "¥").font(.title3.bold()).foregroundStyle(.white)
+                    }
+                )
+                .shadow(color: color.opacity(0.55), radius: 10, x: 0, y: 4)
+                .frame(width: 50, height: 50)
+                .keyframeAnimator(initialValue: KeyframeValue(), trigger: fire) { content, value in
+                    content
+                        .offset(x: value.offsetX, y: value.offsetY)
+                        .rotationEffect(.degrees(value.rotation))
+                        .scaleEffect(value.scale)
+                        .opacity(value.opacity)
+                } keyframes: { _ in
+                    // 接近のみ（単調にカバン中心へ進む直線運動）：
+                    //   - 後退するキーフレームを一切含めず、目的地で完全に止める
+                    //   - 到達後はその場でフェードアウトして消える
+
+                    // 横方向：単調に deltaX へ近づく（後退しない）
+                    KeyframeTrack(\.offsetX) {
+                        LinearKeyframe(0,             duration: 0.01)
+                        LinearKeyframe(deltaX * 0.40, duration: duration * 0.30)
+                        LinearKeyframe(deltaX * 0.75, duration: duration * 0.30)
+                        LinearKeyframe(deltaX,        duration: duration * 0.20) // カバン中心へ到達
+                        LinearKeyframe(deltaX,        duration: duration * 0.19) // 停止＋フェード中も固定
+                    }
+
+                    // 縦方向：単調に deltaY へ近づく（カバンより上にも下にも動かさない）
+                    KeyframeTrack(\.offsetY) {
+                        LinearKeyframe(0,             duration: 0.01)
+                        LinearKeyframe(deltaY * 0.40, duration: duration * 0.30)
+                        LinearKeyframe(deltaY * 0.75, duration: duration * 0.30)
+                        LinearKeyframe(deltaY,        duration: duration * 0.20) // カバン中心へ到達
+                        LinearKeyframe(deltaY,        duration: duration * 0.19) // 停止＋フェード中も固定
+                    }
+
+                    // 回転：カバンへ「詰める」動きに集中させるため回さない
+                    KeyframeTrack(\.rotation) {
+                        LinearKeyframe(0, duration: duration)
+                    }
+
+                    // 拡大率：到達まで等倍維持、フェード中も拡縮させない
+                    KeyframeTrack(\.scale) {
+                        LinearKeyframe(1.0, duration: duration)
+                    }
+
+                    // 不透明度：到達した直後（最後の 14%）でその場フェードアウト
+                    KeyframeTrack(\.opacity) {
+                        LinearKeyframe(1.0, duration: duration * 0.86)
+                        LinearKeyframe(0.0, duration: duration * 0.14)
+                    }
+                }
+                .position(start)
+                .allowsHitTesting(false)
+                .onAppear {
+                    fire = true
+                    // コインが消え切ってからカバンを反応させ、跳ね返りに見せない
+                    DispatchQueue.main.asyncAfter(deadline: .now() + duration * 0.96) {
+                        onImpact()
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.05) {
+                        onCompleted()
+                    }
+                }
+                .id(key)
         }
     }
 
