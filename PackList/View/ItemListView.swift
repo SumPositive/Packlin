@@ -320,7 +320,7 @@ struct ItemListView: View {
                 // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
                 .cappedAtLargeFontSize()
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
+            .safeAreaInset(edge: .bottom) {
                 bulkMoveFooter
             }
             .onAppear {
@@ -439,6 +439,7 @@ struct ItemListView: View {
                 .padding(.horizontal, 16)
                 // フッターの高さを抑えるため、ボタン外側の余白は最小にする
                 .padding(.vertical, 4)
+                .background(.ultraThinMaterial)
             } else {
                 Button {
                     beginBulkMoveMode()
@@ -460,9 +461,9 @@ struct ItemListView: View {
                 .padding(.horizontal, 16)
                 // フッターの高さを抑えるため、ボタン外側の余白は最小にする
                 .padding(.vertical, 4)
+                .background(.ultraThinMaterial)
             }
         }
-        .background(.thinMaterial, ignoresSafeAreaEdges: [])
         // フッターの操作文は「大」までで頭打ちし、ボタン欠けを抑える
         .cappedAtLargeFontSize()
     }

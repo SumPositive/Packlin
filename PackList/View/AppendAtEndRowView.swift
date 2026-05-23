@@ -12,6 +12,7 @@ import SwiftUI
 let APPEND_AT_END_ROW_VERTICAL_PADDING: CGFloat = 8
 let APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING: CGFloat = 40
 let APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING: CGFloat = 2
+let APPEND_AT_END_ROW_TOP_GAP: CGFloat = 30
 
 /// 一覧の末尾にだけ表示する追加専用セル
 /// 上下に APPEND_AT_END_ROW_VERTICAL_PADDING ぶんの余白を確保し、
@@ -24,35 +25,41 @@ struct AppendAtEndRowView: View {
     let action: () -> Void
 
     var body: some View {
-        HStack {
-            Spacer(minLength: 0)
+        VStack(spacing: 0) {
+            // 前行の誤タップを避けるため、追加ボタンの上に余白を置く
+            Color.clear
+                .frame(height: APPEND_AT_END_ROW_TOP_GAP)
 
-            Button(action: action) {
-                HStack(spacing: 8) {
-                    addIcon
+            HStack {
+                Spacer(minLength: 0)
 
-                    if showsText {
-                        Text("append.to.end")
-                            .font(.footnote)
-                            .foregroundStyle(COLOR_ADD_ACTION)
+                Button(action: action) {
+                    HStack(spacing: 8) {
+                        addIcon
+
+                        if showsText {
+                            Text("append.to.end")
+                                .font(.footnote)
+                                .foregroundStyle(COLOR_ADD_ACTION)
+                        }
                     }
+                    // アイコンと文字を含む左右40ptだけをタップ範囲にする
+                    .padding(.horizontal, APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
+                    .padding(.vertical, APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
+                    .background(
+                        Capsule()
+                            .fill(COLOR_ADD_ACTION.opacity(0.05))
+                    )
+                    .padding(.vertical, APPEND_AT_END_ROW_VERTICAL_PADDING - APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
+                    .contentShape(Rectangle())
+                    // List のセクションフッター等によりセルが垂直方向に引き伸ばされて
+                    // コンテンツが下に寄るのを防ぐ：自然サイズに固定する
+                    .fixedSize(horizontal: false, vertical: true)
                 }
-                // アイコンと文字を含む左右40ptだけをタップ範囲にする
-                .padding(.horizontal, APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
-                .padding(.vertical, APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
-                .background(
-                    Capsule()
-                        .fill(COLOR_ADD_ACTION.opacity(0.05))
-                )
-                .padding(.vertical, APPEND_AT_END_ROW_VERTICAL_PADDING - APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
-                .contentShape(Rectangle())
-                // List のセクションフッター等によりセルが垂直方向に引き伸ばされて
-                // コンテンツが下に寄るのを防ぐ：自然サイズに固定する
-                .fixedSize(horizontal: false, vertical: true)
-            }
-            .buttonStyle(.plain)
+                .buttonStyle(.plain)
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
+            }
         }
         .background(COLOR_ROW_BACK)
         .overlay(alignment: .bottom) {

@@ -184,7 +184,9 @@ struct GroupRowView: View {
         .frame(minHeight: rowHeight)
         // 行コンテナの上下余白を文字サイズに合わせて広げる（大: 12pt、特大: 16pt）
         .padding(.vertical, appRowVerticalPadding(fontScale))
-        .padding(.horizontal, 16)
+        // 遷移アクセサリとの最小間隔を確保するため、右だけ4pt多く空ける
+        .padding(.leading, 16)
+        .padding(.trailing, 20)
         //.contentShape(Rectangle()) // 全体をタップ可能領域にする
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))// List標準余白を無くす
         .background(isHeader ? COLOR_ROW_GROUP : COLOR_ROW_BACK)

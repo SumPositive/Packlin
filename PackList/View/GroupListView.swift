@@ -163,6 +163,8 @@ struct GroupListView: View {
                                 }
 
                                 GeometryReader { geo in
+                                    // アイテム行と同じ見え方にするため、遷移アクセサリを右端から少し内側に置く
+                                    let navigationLinkWidth = max(0, geo.size.width * 2.0 / 3.0 - 4)
                                     HStack(spacing: 0) {
                                         Button {
                                             editingGroup = group
@@ -182,7 +184,7 @@ struct GroupListView: View {
                                                 .contentShape(Rectangle())
                                         }
                                         .buttonStyle(.plain)
-                                        .frame(width: geo.size.width * 2.0 / 3.0)
+                                        .frame(width: navigationLinkWidth)
                                     }
                                 }
                             }

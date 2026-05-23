@@ -97,6 +97,8 @@ struct ItemEditView: View {
                 .minimumScaleFactor(0.55)
                 .allowsTightening(true)
         }
+        // ボタン枠に文字が張り付かないよう、内容側に最小余白を持たせる
+        .padding(.horizontal, 2)
     }
 
     private var contentHorizontalPadding: CGFloat {
