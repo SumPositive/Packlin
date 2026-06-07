@@ -774,8 +774,18 @@ struct ItemEditView: View {
     }
 
     private func updateUndoRedo() {
+        // === Fix 10 関連: hasChanges 連動を撤去 ===
+        // 旧版は `um.canUndo && modelContext.hasChanges` で「保存待ちの変更が無ければ
+        // Undo も無効」というつもりだった。しかし Fix 2 で Undo/Redo 後に
+        // context.save() を呼ぶようにしたため、Redo 直後は hasChanges が false に
+        // 戻り、canUndo も常に false になる不具合が出ていた。
+        //
+        // UndoStackManager.canUndo は UndoStackService.canUndo を委譲しており、
+        // 履歴スタックの実状態を反映する唯一の真実源。これだけを参照する。
+        // （PackListView/GroupListView は元から history.canUndo を直接見ているため
+        //  この問題は発生していなかった）
         if let um = modelContext.undoManager {
-            canUndo = um.canUndo && modelContext.hasChanges // && 編集なければ非活性
+            canUndo = um.canUndo
             canRedo = um.canRedo
         } else {
             canUndo = false

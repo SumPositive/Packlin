@@ -79,62 +79,140 @@ final class UndoStackService: ObservableObject {
         try operation()
     }
 
+    /// トランザクション（編集の塊）の開始
+    ///
+    /// 設計の不変条件（Fix 10 で明示化）:
+    ///   1. `transactionDepth` は常に `>= 0`
+    ///   2. `transactionBefore` は「深度 0 になったときの diff 比較元」として使う
+    ///      → 復元（restore）が走ると無効化して nil になる
+    ///   3. ネストした begin/end はカウンタで束ねられ、最も外側の begin/end ペアだけが
+    ///      実際の履歴記録を行う
+    ///
+    /// 動作:
+    ///   - depth 0 → 1: スナップショットを取得して transactionBefore に保存
+    ///   - depth >= 1 でさらに begin: 深度を上げるだけ（ネスト処理）
     func beginTransaction(context: ModelContext) {
-        // 履歴復元中は新しい履歴を記録しない
+        // 履歴復元中（restore 実行中）は新しい履歴を記録しないため、何もしない
         if isRestoring {
             return
         }
         transactionDepth += 1
+        // 最外周の begin だけスナップショットを取得する
         if transactionDepth == 1 {
             do {
                 transactionBefore = try captureSnapshot(context: context)
             } catch {
-                // Undo開始時のスナップショット失敗をAnalyticsへ送り、履歴機能の問題分析に使う
+                // スナップショット失敗時は transactionBefore を nil のままにする。
+                // この後の commit では「snapshot=nil なので無視」になり、安全に no-op となる。
+                transactionBefore = nil
                 logError(error, domain: "undo_snapshot_begin", message: "スナップショット取得失敗 beginTransaction")
             }
         }
     }
 
+    /// トランザクション（編集の塊）の終了
+    ///
+    /// === Fix 10: transactionDepth リセットの安全化 ===
+    ///
+    /// 旧版の問題点:
+    ///   - `restore()` が `transactionDepth = 0` で強制リセットしていた
+    ///   - 復元前に開いていた編集 View の `groupingEnd` が後から呼ばれると
+    ///     depth が負方向に進み、`if transactionDepth <= 0` ガードで救われていた
+    ///   - 救われる設計ではあるがコメントが薄く、コードを読んだだけでは
+    ///     なぜそうなっているか理解できず脆い
+    ///
+    /// 新版の改善:
+    ///   1. **Saturating decrement**: depth が 0 のときは減算せず早期 return
+    ///      → depth が決して負にならない（不変条件 #1 を厳守）
+    ///   2. **`transactionBefore` の nil チェックを最初に**: restore() で nil 化された
+    ///      transactionBefore は「無効化された」マーカーとして扱う
+    ///   3. **冗長な状態リセット**: 失敗パスでも必ず transactionBefore = nil で
+    ///      クリーンな状態に戻す（次の begin/end が安全に動くよう保証）
+    ///
+    /// 起こりうるシナリオと対応:
+    ///   (a) 正常: begin → end → 履歴記録 ✓
+    ///   (b) ネスト: begin → begin → end → end → 履歴記録は最外端で1回だけ ✓
+    ///   (c) restore 後の遅延 end:
+    ///       begin → restore（depth=0, before=nil） → end（depth>0 から depth>=0 に減算→ commit試行 → before=nil で no-op） ✓
+    ///       ※ restore で depth=0 に強制リセットされるため、遅延 end は早期 return される
+    ///   (d) スナップショット失敗: transactionBefore=nil で安全に no-op ✓
     func commitTransaction(context: ModelContext) {
-        // 履歴復元中は状態が変わるので、記録処理を抑止する
+        // 履歴復元中（restore 実行中）は記録しない
         if isRestoring {
             return
         }
-        if transactionDepth <= 0 {
+
+        // === 安全ガード 1: depth が 0 のとき（スタブな end 呼び出し） ===
+        // 原因の候補:
+        //   - View の onDisappear が onAppear なしで呼ばれた（Fix 7 で個別 View には対策済みだが、
+        //     念のためサービス側でも防御）
+        //   - restore() が depth を 0 にリセットした後に、過去の begin に対応する end が遅延到着した
+        //   - 開発者ミスで groupingEnd を groupingBegin より先に呼んだ
+        // どのケースでも depth を負にせず、状態をクリーンにして安全に return する。
+        guard transactionDepth > 0 else {
             transactionDepth = 0
             transactionBefore = nil
             return
         }
+
+        // ネストの深度を 1 つ下げる
         transactionDepth -= 1
-        if transactionDepth == 0 {
-            guard let before = transactionBefore else {
-                transactionBefore = nil
-                return
-            }
-            let after: Snapshot
-            do {
-                after = try captureSnapshot(context: context)
-            } catch {
-                // Undo確定時のスナップショット失敗をAnalyticsへ送り、履歴機能の問題分析に使う
-                logError(error, domain: "undo_snapshot_commit", message: "スナップショット取得失敗 commitTransaction")
-                transactionBefore = nil
-                return
-            }
-            transactionBefore = nil
-            if before != after {
-                undoStack.append(Record(before: before, after: after))
-                trimStack(&undoStack)
-                redoStack.removeAll()
-                updateStates()
-                NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
-            }
+
+        // 最外周の end でなければここで終了（ネスト中はまだ確定しない）
+        if transactionDepth != 0 {
+            return
+        }
+
+        // === 以下、最外周の end の処理 ===
+        // 必ず transactionBefore を nil 化してからの早期 return を許すよう、
+        // 一旦ローカルに退避してから処理する。これにより以降の begin/end が安全に動く。
+        let before = transactionBefore
+        transactionBefore = nil
+
+        // === 安全ガード 2: スナップショットの有効性チェック ===
+        // before が nil になる典型ケース:
+        //   - beginTransaction でのスナップショット取得が失敗していた
+        //   - 開始から終了までの間に restore() が走り、transactionBefore を無効化した
+        // どちらも「このトランザクションを履歴に記録すべきでない」状態なので、no-op で終了。
+        guard let before else { return }
+
+        // 終了時点のスナップショットを取得
+        let after: Snapshot
+        do {
+            after = try captureSnapshot(context: context)
+        } catch {
+            // 取得失敗 = 比較できない = 履歴に記録できない。
+            // before は既に nil 化済みなので追加クリーンアップは不要。
+            logError(error, domain: "undo_snapshot_commit", message: "スナップショット取得失敗 commitTransaction")
+            return
+        }
+
+        // 状態が変化していれば履歴に記録（同じなら無意味な履歴を増やさない）
+        if before != after {
+            undoStack.append(Record(before: before, after: after))
+            trimStack(&undoStack)
+            // 新規操作が入ったので、これまでの redo 履歴は無効化する
+            redoStack.removeAll()
+            updateStates()
+            NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
         }
     }
 
+    /// 履歴と進行中トランザクションをすべて破棄する
+    ///
+    /// 用途:
+    ///   - サンプルパック読み込み完了時のリセット
+    ///   - バックグラウンド遷移時に「もう Undo は無し」にしたい場合
+    ///   - 開発時のデバッグリセット
+    ///
+    /// === Fix 10: restore() と同じく状態を完全クリーンにする ===
+    /// transactionDepth と transactionBefore をリセットすることで、reset() 後に
+    /// 古い begin の残骸が end として遅延到着しても、commitTransaction の安全ガードで
+    /// 無害化される（負の depth カウントや古いスナップショットでの誤記録を防ぐ）。
     func reset() {
-        // バックグラウンド遷移などで履歴を明示的に破棄したいときに利用する
         undoStack.removeAll()
         redoStack.removeAll()
+        // restore() と同じ状態リセットを適用（一貫性のため）
         transactionDepth = 0
         transactionBefore = nil
         updateStates()
@@ -274,26 +352,90 @@ final class UndoStackService: ObservableObject {
         return Snapshot(packs: snapshotPacks)
     }
 
+    /// スナップショットの内容で SwiftData を上書き復元する
+    ///
+    /// === Fix 8: Group / Item の Pack 越境（クロス階層移動）対応 ===
+    ///
+    /// 旧版は「Pack ごとに `pack.child` を見て差分適用」していたため、
+    /// 以下のシナリオで動作が壊れていた：
+    ///   1. Group G が Pack A に属していた
+    ///   2. ユーザーが G を Pack B へ移動
+    ///   3. ユーザーが Undo を押す
+    ///   4. 旧 restore は「Pack A の child」を見るが、G はもう Pack B にいる
+    ///   5. groupDictionary に G が無いため else 分岐で **新規 M2Group(id: G.id, ...)** を作る
+    ///   6. しかし DB には既に同じ id の M2Group が存在（Pack B 配下）
+    ///   7. `@Attribute(.unique) var id` の制約違反で save 時にエラー、データ不整合
+    ///
+    /// 新版は **全 Group / 全 Item を最初にグローバル辞書化** してから、
+    /// スナップショットの所属に従って re-parent する：
+    ///   - Group G を id 検索すれば、現在の所属 Pack に関係なく見つけられる
+    ///   - `group.parent = snapshotPack` で正しい Pack に付け替える
+    ///   - SwiftData の inverse リレーションシップにより、旧 Pack の child から
+    ///     自動的に外れる
+    ///
+    /// これにより以下のシナリオが正しく動く：
+    ///   - Group の Pack 越境（A → B → Undo で A に戻る）
+    ///   - Item の Group 越境（同一 Pack 内）
+    ///   - Item の Group 越境（Pack を跨ぐ移動）
+    ///   - 複数項目のドラッグ移動の Undo
     private func restore(snapshot: Snapshot, context: ModelContext) {
-        // 履歴復元中にさらに復元が呼ばれても無視する
+        // 履歴復元中にさらに復元が呼ばれても無視する（再入防止）
         if isRestoring {
             return
         }
         isRestoring = true
         defer {
+            // === Fix 10: 復元完了後の状態リセット（安全化版） ===
+            //
+            // 復元完了時に状態を強制的にリセットする理由：
+            //   - 復元前に開いていた transactionBefore は古いスナップショット（restore 前の状態）を
+            //     参照しているため、そのまま commit されると「不正な diff」が履歴に記録される
+            //   - restore 中・後に発生する begin/end は新しい transaction として再カウントする必要がある
+            //
+            // リセット内容と理由：
+            //   - transactionDepth = 0: 復元前に開いていた View の groupingEnd が後から呼ばれても、
+            //     commitTransaction の安全ガード 1（depth <= 0 で早期 return）で吸収される
+            //   - transactionBefore = nil: 古いスナップショットを参照しないよう明示的にクリア
+            //   - isRestoring = false: 復元処理の終了を明示
+            //
+            // 順序の意図（上から下へ）：
+            //   1. depth と before を先にリセット（commit が誤動作しない状態にする）
+            //   2. 最後に isRestoring を false にする（beginTransaction の早期 return が解除される）
+            //
+            // この順序により、isRestoring=false になった瞬間に走るかもしれない beginTransaction は
+            // クリーンな状態（depth=0, before=nil）から開始できる。
             transactionDepth = 0
             transactionBefore = nil
             isRestoring = false
         }
+
+        // === Step 1: 全 Pack / Group / Item をフェッチして辞書化 ===
+        // Fix 8: Pack 単位ではなく **DB 全体** から id 検索できるよう、
+        // 全 Group と全 Item を一括でフェッチして辞書化する。
+        // これにより Pack 越境した Group / Item も正しく再配置できる。
         let existingPacks: [M1Pack]
+        let existingGroups: [M2Group]
+        let existingItems: [M3Item]
         do {
             existingPacks = try context.fetch(FetchDescriptor<M1Pack>())
+            existingGroups = try context.fetch(FetchDescriptor<M2Group>())
+            existingItems = try context.fetch(FetchDescriptor<M3Item>())
         } catch {
-            // Undo復元時のパック取得失敗をAnalyticsへ送り、復元不能ケースの分析に使う
-            logError(error, domain: "undo_restore_fetch", message: "パック取得失敗 restore")
+            // フェッチ失敗は致命的だが、UI 側で復元できないので Analytics 送信のみ。
+            logError(error, domain: "undo_restore_fetch", message: "Pack/Group/Item 取得失敗 restore")
             return
         }
+
+        // id → エンティティの辞書。`removeValue(forKey:)` で「採用済み」を消費し、
+        // ループ終了後に残ったものは「スナップショットに無い → 削除対象」と判定する。
         var packDictionary: [M1Pack.ID: M1Pack] = Dictionary(uniqueKeysWithValues: existingPacks.map { ($0.id, $0) })
+        // === Fix 8: グローバル辞書を追加 ===
+        // Pack 単位ではなく全 Group / 全 Item を 1 つの辞書で管理することで、
+        // Pack を跨いだ移動の Undo / Redo が正しく動く。
+        var globalGroupDictionary: [M2Group.ID: M2Group] = Dictionary(uniqueKeysWithValues: existingGroups.map { ($0.id, $0) })
+        var globalItemDictionary: [M3Item.ID: M3Item] = Dictionary(uniqueKeysWithValues: existingItems.map { ($0.id, $0) })
+
+        // === Step 2: スナップショットの順序で Pack を復元 ===
         var packOrder: [M1Pack] = []
         for packSnapshot in snapshot.packs {
             // 既存のパックがあれば更新し、無ければ新規作成する
@@ -312,27 +454,64 @@ final class UndoStackService: ObservableObject {
             pack.memo = packSnapshot.memo
             pack.createdAt = packSnapshot.createdAt
             pack.order = packSnapshot.order
-            updateGroups(of: pack, with: packSnapshot.groups, context: context)
+            // === Fix 8: グローバル辞書を渡して updateGroups を呼ぶ ===
+            updateGroups(
+                of: pack,
+                with: packSnapshot.groups,
+                globalGroupDictionary: &globalGroupDictionary,
+                globalItemDictionary: &globalItemDictionary,
+                context: context
+            )
             packOrder.append(pack)
         }
-        // 履歴に含まれないパックは削除する
+
+        // === Step 3: スナップショットに無い Pack / Group / Item をすべて削除 ===
+        // - Pack: 履歴上存在しないので削除（cascade で配下の Group / Item も削除される）
+        // - Group: どの Pack のスナップショットにも含まれていなかったもの（孤児）
+        // - Item: どの Group のスナップショットにも含まれていなかったもの（孤児）
+        //
+        // Pack cascade で多くの Group / Item は既に削除されているが、グローバル辞書に
+        // 残ったままになるので、ここで明示的に delete を呼んでも害はない
+        // （既に削除済みオブジェクトへの delete は SwiftData が no-op として扱う）。
         for (_, removed) in packDictionary {
             context.delete(removed)
         }
+        for (_, removed) in globalGroupDictionary {
+            context.delete(removed)
+        }
+        for (_, removed) in globalItemDictionary {
+            context.delete(removed)
+        }
+
+        // === Step 4: 各 Pack の child の表示順をスナップショット通りに揃える ===
         for pack in packOrder {
             reorderChildren(of: pack)
         }
     }
 
-    private func updateGroups(of pack: M1Pack, with groups: [Snapshot.Pack.Group], context: ModelContext) {
-        // グループも同様に ID ごとに差分適用する
-        var groupDictionary: [M2Group.ID: M2Group] = Dictionary(uniqueKeysWithValues: pack.child.map { ($0.id, $0) })
+    /// 1 つの Pack 配下の Group をスナップショットの内容で復元する
+    ///
+    /// === Fix 8: グローバル辞書ベースに変更 ===
+    /// 旧版は `pack.child` から groupDictionary を作っていたため、Pack 越境した
+    /// Group を見つけられなかった。新版は呼び出し元から渡される
+    /// `globalGroupDictionary`（DB 全体の Group を id でインデックス化したもの）
+    /// から検索することで、現在どの Pack に属していようと再配置できる。
+    private func updateGroups(
+        of pack: M1Pack,
+        with groups: [Snapshot.Pack.Group],
+        globalGroupDictionary: inout [M2Group.ID: M2Group],
+        globalItemDictionary: inout [M3Item.ID: M3Item],
+        context: ModelContext
+    ) {
         var orderedGroups: [M2Group] = []
         for groupSnapshot in groups {
             let group: M2Group
-            if let existing = groupDictionary.removeValue(forKey: groupSnapshot.id) {
+            // === Fix 8: グローバル辞書から検索 ===
+            // 現在どの Pack の子になっていても、id で見つけられる。
+            if let existing = globalGroupDictionary.removeValue(forKey: groupSnapshot.id) {
                 group = existing
             } else {
+                // グローバル辞書にもない → 完全な新規 Group
                 group = M2Group(id: groupSnapshot.id,
                                 name: groupSnapshot.name,
                                 memo: groupSnapshot.memo,
@@ -340,27 +519,46 @@ final class UndoStackService: ObservableObject {
                                 parent: pack)
                 context.insert(group)
             }
+            // === Fix 8: re-parent ===
+            // 既存の Group を別 Pack から「持ってきた」場合、ここで親を付け替える。
+            // SwiftData の inverse リレーションシップ（`@Relationship(inverse: \M1Pack.child)`）
+            // により、旧 Pack の `child` 配列からは自動的に外れる。
             group.parent = pack
             group.name = groupSnapshot.name
             group.memo = groupSnapshot.memo
             group.order = groupSnapshot.order
-            updateItems(of: group, with: groupSnapshot.items, context: context)
+            // === Fix 8: 配下の Item もグローバル辞書経由で更新 ===
+            updateItems(
+                of: group,
+                with: groupSnapshot.items,
+                globalItemDictionary: &globalItemDictionary,
+                context: context
+            )
             orderedGroups.append(group)
         }
-        // 残ったグループは履歴上存在しないので削除する
-        for (_, removed) in groupDictionary {
-            context.delete(removed)
-        }
+        // pack.child を明示的に上書きして、スナップショット通りの並び順にする。
+        // re-parent で外れた Group はここに含まれないため、自動的に他 Pack に
+        // 移っているか、後段の削除フェーズで処理される。
         pack.child = orderedGroups
     }
 
-    private func updateItems(of group: M2Group, with items: [Snapshot.Pack.Group.Item], context: ModelContext) {
-        // アイテムを1件ずつ復元し、余剰分は削除する
-        var itemDictionary: [M3Item.ID: M3Item] = Dictionary(uniqueKeysWithValues: group.child.map { ($0.id, $0) })
+    /// 1 つの Group 配下の Item をスナップショットの内容で復元する
+    ///
+    /// === Fix 8: グローバル辞書ベースに変更 ===
+    /// updateGroups と同じ理由で、グローバル Item 辞書から id 検索する。
+    /// これにより Item が Group 間（同一 Pack でも別 Pack でも）を移動した履歴の
+    /// Undo / Redo が正しく動く。
+    private func updateItems(
+        of group: M2Group,
+        with items: [Snapshot.Pack.Group.Item],
+        globalItemDictionary: inout [M3Item.ID: M3Item],
+        context: ModelContext
+    ) {
         var orderedItems: [M3Item] = []
         for itemSnapshot in items {
             let item: M3Item
-            if let existing = itemDictionary.removeValue(forKey: itemSnapshot.id) {
+            // === Fix 8: グローバル辞書から検索 ===
+            if let existing = globalItemDictionary.removeValue(forKey: itemSnapshot.id) {
                 item = existing
             } else {
                 item = M3Item(id: itemSnapshot.id,
@@ -374,6 +572,9 @@ final class UndoStackService: ObservableObject {
                               parent: group)
                 context.insert(item)
             }
+            // === Fix 8: re-parent ===
+            // 別 Group から持ってきた Item は親を付け替える。
+            // inverse リレーションシップにより旧 Group の child からは自動で外れる。
             item.parent = group
             item.name = itemSnapshot.name
             item.memo = itemSnapshot.memo
@@ -384,9 +585,7 @@ final class UndoStackService: ObservableObject {
             item.order = itemSnapshot.order
             orderedItems.append(item)
         }
-        for (_, removed) in itemDictionary {
-            context.delete(removed)
-        }
+        // group.child を明示的に上書きして、スナップショット通りの並び順にする。
         group.child = orderedItems
     }
 
