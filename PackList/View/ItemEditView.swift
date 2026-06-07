@@ -64,6 +64,14 @@ struct ItemEditView: View {
     @State private var isDraggingInsideQuantitySection = false
     @State private var isShowingDialSettings = false
 
+    /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
+    /// onAppear / onDisappear は NavigationStack の遷移や iOS のシート再描画で
+    /// 必ずしも 1:1 に呼ばれない。アンバランスになると UndoStackService の
+    /// transactionDepth が破綻して、それ以降の操作が履歴に記録されなくなる。
+    /// このフラグで「begin したかどうか」を覚えておき、end は対応する begin が
+    /// あった場合のみ呼ぶ（再入時の二重 begin / 不対応 end を防止）。
+    @State private var isUndoGroupingActive: Bool = false
+
     @AppStorage(PacklinDialSettings.styleKey) private var dialStyleID = DialStyle.shape.id
     @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
 
@@ -602,20 +610,22 @@ struct ItemEditView: View {
                 }
         )
         .onAppear {
-            // Undo grouping BEGIN
-            modelContext.undoManager?.groupingBegin()
+            // === Fix 7: lifecycle 不均衡対策 ===
+            // 二重 onAppear（戻り遷移時など）を考慮し、未開始のときだけ begin する
+            beginUndoGroupingIfNeeded()
             focusNameIfEmpty()
         }
         .onDisappear {
-            // Trim
+            // === Fix 7: lifecycle 不均衡対策 ===
+            // Trim：末尾の空白・改行を正規化
             item.name = item.name.trimTrailSpacesAndNewlines
             item.memo = item.memo.trimTrailSpacesAndNewlines
             // チェックと在庫数を連動させる
             if linkCheckWithStock {
                 item.check = (0 < item.need && item.need <= item.stock)
             }
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
+            // begin したときだけ end する。transactionDepth の破綻を防ぐ
+            endUndoGroupingIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
             updateUndoRedo()
@@ -674,6 +684,25 @@ struct ItemEditView: View {
         default:
             return 440
         }
+    }
+
+    /// === Fix 7: Undo グループの安全な開始 ===
+    /// `isUndoGroupingActive` フラグで再入を防止する。既に開いていれば何もしない。
+    /// onAppear が複数回呼ばれた場合でも、グルーピングは 1 回だけ開始される。
+    private func beginUndoGroupingIfNeeded() {
+        guard !isUndoGroupingActive else { return }
+        modelContext.undoManager?.groupingBegin()
+        isUndoGroupingActive = true
+    }
+
+    /// === Fix 7: Undo グループの安全な終了 ===
+    /// `isUndoGroupingActive` が立っているときだけ end を呼ぶ。
+    /// onAppear なしの onDisappear や二重 onDisappear で transactionDepth が
+    /// 負方向に進むのを防ぐ。
+    private func endUndoGroupingIfNeeded() {
+        guard isUndoGroupingActive else { return }
+        modelContext.undoManager?.groupingEnd()
+        isUndoGroupingActive = false
     }
 
     private func focusNameIfEmpty() {
@@ -967,6 +996,12 @@ struct ItemQuickEditView: View {
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
 
+    /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
+    /// ポップアップ表示でも onAppear / onDisappear が常に 1:1 とは限らないため、
+    /// フラグで begin/end の対応を保証する。詳細は ItemEditView.swift の
+    /// `isUndoGroupingActive` のコメント参照。
+    @State private var isUndoGroupingActive: Bool = false
+
     init(item: M3Item) {
         self._item = Bindable(item)
     }
@@ -988,17 +1023,35 @@ struct ItemQuickEditView: View {
         .padding(8)
         .frame(width: 300)
         .onAppear {
-            // Undo grouping BEGIN
-            modelContext.undoManager?.groupingBegin()
+            // === Fix 7: lifecycle 不均衡対策 ===
+            // 二重 onAppear（ポップアップ再描画時など）でも 1 回だけ begin する
+            beginUndoGroupingIfNeeded()
         }
         .onDisappear {
+            // === Fix 7: lifecycle 不均衡対策 ===
             // チェックと在庫数を連動させる
             if linkCheckWithStock {
                 item.check = (0 < item.need && item.need <= item.stock)
             }
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
+            // begin したときだけ end する
+            endUndoGroupingIfNeeded()
         }
+    }
+
+    /// === Fix 7: Undo グループの安全な開始 ===
+    /// `isUndoGroupingActive` フラグで再入を防止する。
+    private func beginUndoGroupingIfNeeded() {
+        guard !isUndoGroupingActive else { return }
+        modelContext.undoManager?.groupingBegin()
+        isUndoGroupingActive = true
+    }
+
+    /// === Fix 7: Undo グループの安全な終了 ===
+    /// `isUndoGroupingActive` が立っているときだけ end を呼ぶ。
+    private func endUndoGroupingIfNeeded() {
+        guard isUndoGroupingActive else { return }
+        modelContext.undoManager?.groupingEnd()
+        isUndoGroupingActive = false
     }
 }
 

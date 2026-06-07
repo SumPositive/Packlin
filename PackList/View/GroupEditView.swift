@@ -28,6 +28,14 @@ struct GroupEditView: View {
     @State private var keepSourceGroup = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
 
+    /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
+    /// onAppear / onDisappear は iOS のシート遷移や NavigationStack の
+    /// プッシュ/ポップで必ずしも 1:1 に呼ばれないため、グルーピングの begin/end が
+    /// アンバランスになり UndoStackService.transactionDepth が破綻するリスクがある。
+    /// このフラグで「begin したかどうか」を覚えておき、end は対応する begin が
+    /// あった場合のみ呼ぶ（再入時の二重 begin / 不対応 end を防止）。
+    @State private var isUndoGroupingActive: Bool = false
+
     private var allItemsChecked: Bool {
         !group.child.isEmpty && group.child.allSatisfy { $0.check || $0.need == 0 }
     }
@@ -113,16 +121,22 @@ struct GroupEditView: View {
             }
         }
         .onAppear {
-            // Undo grouping BEGIN
-            modelContext.undoManager?.groupingBegin()
+            // === Fix 7: lifecycle 不均衡対策 ===
+            // 二重 onAppear（NavigationStack のプッシュ復帰時など）を考慮し、
+            // 未開始のときだけ groupingBegin する。
+            // 通常の編集開始時はここで Undo グループが 1 つ開かれ、
+            // 編集内容全体が「1 つの Undo」として扱われる。
+            beginUndoGroupingIfNeeded()
             focusNameIfEmpty()
         }
         .onDisappear() {
-            // 末尾のスペースと改行を除去
+            // === Fix 7: lifecycle 不均衡対策 ===
+            // 末尾のスペースと改行を除去（編集内容の正規化）
             group.name = group.name.trimTrailSpacesAndNewlines
             group.memo = group.memo.trimTrailSpacesAndNewlines
-            // Undo grouping END
-            modelContext.undoManager?.groupingEnd()
+            // begin したときだけ end する。これにより onAppear なしの onDisappear や
+            // 二重 onDisappear でも transactionDepth が壊れない。
+            endUndoGroupingIfNeeded()
         }
         .sheet(isPresented: $isShowingMoveSheet) {
             GroupMoveSheetView(packs: sortedPacks,
@@ -149,6 +163,25 @@ struct GroupEditView: View {
         default:
             return 360
         }
+    }
+
+    /// === Fix 7: Undo グループの安全な開始 ===
+    /// `isUndoGroupingActive` フラグで再入を防止する。既に開いていれば何もしない。
+    /// onAppear が複数回呼ばれた場合でも、グルーピングは 1 回だけ開始される。
+    private func beginUndoGroupingIfNeeded() {
+        guard !isUndoGroupingActive else { return }
+        modelContext.undoManager?.groupingBegin()
+        isUndoGroupingActive = true
+    }
+
+    /// === Fix 7: Undo グループの安全な終了 ===
+    /// `isUndoGroupingActive` が立っているときだけ end を呼ぶ。
+    /// これにより、onAppear なしの onDisappear、または onDisappear の二重呼び出しで
+    /// `UndoStackService.transactionDepth` が負方向に進むのを防ぐ。
+    private func endUndoGroupingIfNeeded() {
+        guard isUndoGroupingActive else { return }
+        modelContext.undoManager?.groupingEnd()
+        isUndoGroupingActive = false
     }
 
     private func focusNameIfEmpty() {
