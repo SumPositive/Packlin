@@ -1,3 +1,10 @@
+Packlin　モチメモ
+- 日本語名は `モチメモ`
+- iOSアプリ `Packlin` のコードは `GitLocal/Packlin` にある
+- 取扱説明の日本語版は `GitLocal/azukid.com/docs/jp/sumpo/Packlin/` にある
+- 取扱説明の英語版は `GitLocal/azukid.com/docs/en/sumpo/Packlin/` にある
+
+
 Packlin_PromptNote.txt
 
 パック名、グループ名、アイテム名称、メモ の入力を共通カスタムUI（クレメモの MemoEditor）で実装したい
