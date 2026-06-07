@@ -1,8 +1,5 @@
-//
-//  AiCreateSheetView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/10/12.
+//  チャッピー相談シート
+//  AIへの送信、広告/利用券、生成結果の取り込みをまとめる
 //
 
 import SwiftUI

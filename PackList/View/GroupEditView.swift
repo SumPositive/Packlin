@@ -1,8 +1,5 @@
-//
-//  GroupEditView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/14.
+//  グループ編集シート
+//  名称、メモ、移動、複製、削除をまとめる
 //
 
 import SwiftUI

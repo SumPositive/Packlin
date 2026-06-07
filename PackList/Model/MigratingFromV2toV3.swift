@@ -1,9 +1,5 @@
-//
-//  MigratingFromV2toV3.swift
-//  PackList
-//　　　 Migrate： V2-CoreData --> V3-SwiftData
-//
-//  Created by sumpo on 2025/09/22.
+//  旧データ移行サービス
+//  V2 CoreDataストアからV3 SwiftDataモデルへの移行をまとめる
 //
 
 import Foundation

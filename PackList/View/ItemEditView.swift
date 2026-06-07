@@ -1,8 +1,5 @@
-//
-//  ItemEditView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/14.
+//  アイテム編集画面
+//  名称、メモ、数量、移動、複製、前後移動をまとめる
 //
 
 import SwiftUI

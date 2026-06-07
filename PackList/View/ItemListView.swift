@@ -1,8 +1,5 @@
-//
-//  ItemListView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/14.
+//  アイテム一覧画面
+//  アイテム表示、末尾追加、まとめて移動、グループ編集導線をまとめる
 //
 
 import SwiftUI

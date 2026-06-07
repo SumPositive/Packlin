@@ -1,8 +1,5 @@
-//
-//  AdMobViews.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/19.
+//  AdMob表示部品
+//  リワード広告、バナー広告、広告エラー処理をまとめる
 //
 
 import SwiftUI

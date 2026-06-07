@@ -1,8 +1,5 @@
-//
-//  AzukiDeviceAuthenticator.swift
-//  PackList
-//
-//  Created by OpenAI on 2025/10/30.
+//  端末認証サービス
+//  App Attestの鍵生成、署名、アテステーション情報管理をまとめる
 //
 
 import Foundation

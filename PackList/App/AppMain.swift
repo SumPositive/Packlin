@@ -1,8 +1,5 @@
-//
-//  AppMain.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/05.
+//  アプリ起動エントリ
+//  Firebase、SwiftData、AdMob、共通Environmentの初期化をまとめる
 //
 
 import Foundation

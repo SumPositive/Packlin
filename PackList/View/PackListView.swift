@@ -1,8 +1,5 @@
-//
-//  PackListView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/05.
+//  パック一覧画面
+//  パック表示、末尾追加、設定、Undo/Redo、編集シートをまとめる
 //
 
 import SwiftUI

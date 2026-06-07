@@ -1,8 +1,5 @@
-//
-//  ItemSortListView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/30.
+//  アイテム縦覧画面
+//  全アイテムの検索、並べ替え、条件別表示をまとめる
 //
 
 import SwiftUI

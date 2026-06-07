@@ -1,8 +1,5 @@
-//
-//  SettingView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/19.
+//  設定画面
+//  表示設定、バックアップ、インポート、アプリ情報をまとめる
 //
 
 import SwiftUI

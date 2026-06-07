@@ -1,8 +1,5 @@
-//
-//  PackEditView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/05.
+//  パック編集シート
+//  名称、メモ、共有書き出し、複製、削除をまとめる
 //
 
 import SwiftUI

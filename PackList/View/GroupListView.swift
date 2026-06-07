@@ -1,8 +1,5 @@
-//
-//  GroupListView.swift
-//  PackList
-//
-//  Created by sumpo on 2025/09/14.
+//  グループ一覧画面
+//  グループ表示、末尾追加、アイテム縦覧、チャッピー導線をまとめる
 //
 
 import SwiftUI

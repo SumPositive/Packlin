@@ -1,8 +1,5 @@
-//
-//  AzukiApi.swift
-//  PackList
-//
-//  Created by sumpo on 2025/10/12.
+//  Azuki API通信サービス
+//  認証、AI生成、購入検証、広告報酬反映をまとめる
 //
 
 import Foundation

@@ -1,8 +1,5 @@
-//
-//  UndoStackService.swift
-//  PackList
-//
-//  Created by sumpo on 2025/11/14.
+//  Undo/Redo履歴サービス
+//  SwiftDataモデル全体のスナップショット保存と復元をまとめる
 //
 //  SwiftDataのUndoは不透明・不安定であるため利用せず、自前の履歴レイヤを構築することにした
 //  - UndoStackServiceでパック全体のスナップショットを更新前後で保持し、履歴スタックと UI 更新通知を統合管理する
