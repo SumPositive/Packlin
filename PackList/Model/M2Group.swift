@@ -136,19 +136,45 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     ///
     /// 複製仕様:
     ///   - 新しいグループは元と同じ name / memo を持つ
-    ///   - order は `self.order + 1`（最終的に normalize で 0, 1000, 2000... に振り直し）
+    ///   - 新しい Group の order は **`sparseOrderForInsertion` で「自分と次の Group の中間」を計算**
+    ///     （Fix 6 で改善。旧版の `self.order + 1` は隣接 Group の order と衝突する可能性があった）
     ///   - 配下の各 Item も新規生成して新グループに紐付ける
     ///   - 複製したアイテムは check=false / stock=0 にリセット（need と weight は維持）
     ///     → 複製は「テンプレートとして使い回したい」想定なので、進捗系はリセットするのが妥当
+    ///
+    /// === Fix 6: order 一時衝突の対策 ===
+    /// 旧版は `order: self.order + 1` で挿入していたが、隣接 Group の order と
+    /// 衝突する可能性があり、`normalizeGroupOrder` 後の並びが id タイブレークで
+    /// 不定になる事故があった。詳細は M1Pack.duplicate() のコメント参照。
+    /// 新版は `sparseOrderForInsertion` で「自分と次の Group の中間」を計算する。
     func duplicate() {
         guard let mc = modelContext else {return}
         // 親 Pack が無いグループは複製不可（通常は起こらないが、防御的に return）
         guard let parent = self.parent else { return }
 
-        // === Step 1: 新しい Group を作成 ===
+        // === Step 1: 親パック配下の Group を order でソートして並び順を確定 ===
+        // parent.child は SwiftData リレーションシップで順序が保証されないため、
+        // 自分の次のグループを特定するためにここで明示ソートしておく。
+        let sortedGroups = parent.child.sorted { $0.order < $1.order }
+
+        // === Step 2: 自分のインデックスを特定する ===
+        // id 比較で確実に自分の位置を取得する（クラス参照比較より明示的）
+        let selfIndex = sortedGroups.firstIndex(where: { $0.id == self.id })
+
+        // === Step 3: 自分の直後に挿入する order を sparseOrderForInsertion で算出 ===
+        // 自分が見つからなければ末尾扱い。gap 不足時は内部で正規化される。
+        let insertionIndex = (selfIndex ?? (sortedGroups.count - 1)) + 1
+        let newOrder = sparseOrderForInsertion(
+            items: sortedGroups,
+            index: insertionIndex
+        ) {
+            normalizeSparseOrders(sortedGroups)
+        }
+
+        // === Step 4: 新しい Group を作成 ===
         let newGroup = M2Group(name: self.name,
                                memo: self.memo,
-                               order: self.order + 1,
+                               order: newOrder,
                                parent: parent)
         mc.insert(newGroup)
 
@@ -173,9 +199,11 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
             mc.insert(newItem)
         }
 
-        // === Step 3: 親パックの Group の order を正規化 ===
-        // self.order + 1 で挿入したため、既存のグループと order が衝突する可能性がある。
-        // normalizeGroupOrder() で 0, 1000, 2000... に振り直し、衝突を解消する。
+        // === 最終 Step: 親パックの Group の order を正規化（ハウスキーピング） ===
+        // Fix 6 適用後は sparseOrderForInsertion で衝突しない order を得ているため、
+        // このタイミングでの normalize は「必須」ではなく「長期運用での order 数値が
+        // 大きくなりすぎないようにする」ためのハウスキーピング目的。
+        // 副作用なく安全に呼べるので、従来通り実行しておく。
         parent.normalizeGroupOrder()
     }
 

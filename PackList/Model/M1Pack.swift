@@ -126,14 +126,57 @@ final class M1Pack {
     ///   - name / memo はコピー
     ///   - createdAt は **現在時刻**を採用（元の createdAt を引き継ぐとシート表示からの
     ///     複製でユーザーが混乱しやすいため）
-    ///   - order は `self.order + 1`（最後に normalize で 0, 1000, 2000... に振り直し）
+    ///   - 新しい Pack の order は **`sparseOrderForInsertion` で「自分と次の Pack の中間」を計算**
+    ///     （Fix 6 で改善。旧版の `self.order + 1` は隣接 Pack の order と衝突する可能性があった）
     ///   - 配下の Group / Item をすべて新規生成して複製
     ///   - アイテムの check=false / stock=0 にリセット（need と weight は維持）
     ///     → 「テンプレート的な使い方」を想定し、進捗系はリセット
+    ///
+    /// === Fix 6: order 一時衝突の対策 ===
+    /// 旧版は `order: self.order + 1` で挿入していたが、これには以下の問題があった：
+    ///   - 隣接する Pack の order が既に `self.order + 1` だった場合、衝突が発生
+    ///   - 衝突状態で `normalizePackOrder` を呼ぶと、`id` のタイブレークで並びが
+    ///     予測しづらくなる（複製した Pack が既存の隣 Pack の下に行くか上に行くか不定）
+    ///   - 連続して同じ Pack を複製すると、毎回 `self.order + 1` が同じ値を取り
+    ///     順序が乱れる
+    ///
+    /// 新版は `sparseOrderForInsertion` を使う：
+    ///   - 自分と次の Pack の order の中間値を計算（gap があれば衝突しない）
+    ///   - gap が不足している場合はクロージャ内で全 Pack を正規化してから再計算
+    ///   - 末尾複製なら `self.order + ORDER_SPARSE` を返す
+    /// これにより複製直後の段階で衝突が起こらない order が保証される。
     func duplicate() {
         guard let mc = modelContext else {return}
 
-        // === Step 1: 新しい Pack を作成 ===
+        // === Step 1: 全 Pack を取得して並び順を確定する ===
+        // 自分の次の Pack を特定するために、まず order でソートされた配列を作る。
+        // fetch 失敗時は安全側に倒して self.order + ORDER_SPARSE を使う。
+        let sortedPacks: [M1Pack]
+        if let fetched = try? mc.fetch(FetchDescriptor<M1Pack>()) {
+            sortedPacks = fetched.sorted { $0.order < $1.order }
+        } else {
+            sortedPacks = []
+        }
+
+        // === Step 2: 自分のインデックスを特定する ===
+        // SwiftData @Model はクラスなので `===` で同一性比較も可能だが、
+        // id 比較の方が明示的でリレーションシップキャッシュの揺らぎに強い。
+        let selfIndex = sortedPacks.firstIndex(where: { $0.id == self.id })
+
+        // === Step 3: 自分の直後に挿入する order を sparseOrderForInsertion で算出 ===
+        // - 自分が見つからない場合は末尾扱い（fetch 失敗時のフォールバック）
+        // - 見つかれば selfIndex + 1 の位置に挿入する order を計算
+        // - 隣接する order と衝突しない値が必ず返る（必要なら正規化が走る）
+        let insertionIndex = (selfIndex ?? (sortedPacks.count - 1)) + 1
+        let newOrder = sparseOrderForInsertion(
+            items: sortedPacks,
+            index: insertionIndex
+        ) {
+            // gap 不足時の正規化。0, 1000, 2000... に振り直してから order を計算し直す
+            normalizeSparseOrders(sortedPacks)
+        }
+
+        // === Step 4: 新しい Pack を作成 ===
         // createdAt を現在時刻にする理由:
         //   - 元と同一値だと UI 上で「どちらが新しい複製か」判別困難
         //   - normalizePackOrder のタイブレークでも createdAt は使うので、
@@ -141,7 +184,7 @@ final class M1Pack {
         let newPack = M1Pack(name: self.name,
                              memo: self.memo,
                              createdAt: Date(),
-                             order: self.order + 1)
+                             order: newOrder)
         mc.insert(newPack)
 
         // === Step 2: 配下の Group / Item を再帰的に複製 ===
@@ -173,8 +216,11 @@ final class M1Pack {
             }
         }
 
-        // === Step 3: 全 Pack の order を正規化 ===
-        // self.order + 1 で挿入したため隣のパックと衝突している可能性がある。
+        // === 最終 Step: 全 Pack の order を正規化（ハウスキーピング） ===
+        // Fix 6 適用後は sparseOrderForInsertion で衝突しない order を得ているため、
+        // このタイミングでの normalize は「必須」ではなく「長期運用での order 数値が
+        // 大きくなりすぎないようにする」ためのハウスキーピング目的。
+        // 副作用なく安全に呼べるので、従来通り実行しておく。
         // 全件再フェッチして 0, 1000, 2000... に振り直す。
         let descriptor = FetchDescriptor<M1Pack>()
         if let packs = try? mc.fetch(descriptor) {
