@@ -10,11 +10,13 @@ import AZDial
 private enum PacklinDialSettings {
     static let styleKey = "packlin.dialStyle"
     static let tuningKey = "packlin.dialTuning"
+    static let defaultTuning = AZDialInteractionTuningPreset.mild.tuning
 
     static func loadTuning(from data: Data) -> AZDialInteractionTuning {
         guard !data.isEmpty,
               let tuning = try? JSONDecoder().decode(AZDialInteractionTuning.self, from: data) else {
-            return .default
+            // 未設定時の感度は「控えめ」を既定値にする
+            return defaultTuning
         }
         return tuning
     }
