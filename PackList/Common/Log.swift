@@ -71,6 +71,26 @@ func log(_ level: LogLevel,
     }
 }
 
+/// Errorの内容をAnalyticsへ送信し、通常ログにも残す
+func logError(_ error: Error,
+              domain: String,
+              message: String,
+              file: String = #file,
+              line: Int = #line,
+              function: String = #function)
+{
+    let nsError = error as NSError
+    let detail = "\(message): \(nsError.domain)(\(nsError.code)) \(nsError.localizedDescription)"
+    let fileName = (file as NSString).lastPathComponent
+    let printOut = "\(fileName)(\(line)) \(function) \(LogLevel.error.prefix) \(detail)"
+    if currentLogLevel <= .error {
+        print(printOut)
+    }
+    GALogger.log(.error_occured(domain: domain,
+                                code: nsError.code,
+                                message: printOut))
+}
+
 enum GAEvent {
     case app_launch
     case function(name: String, option: String)

@@ -411,7 +411,8 @@ struct SettingView: View {
                     shareURL = fileURL
                     isPresentingShare = true
                 } catch {
-                    log(.error, "バックアップ書き出し失敗: \(error)")
+                    // バックアップ書き出し失敗をAnalyticsへ送り、保存/共有問題の分析に使う
+                    logError(error, domain: "settings_backup_export", message: "バックアップ書き出し失敗")
                     errorAlert = error.localizedDescription
                 }
                 isExporting = false
@@ -464,11 +465,13 @@ struct SettingView: View {
                     do {
                         importAlert = try importFile(from: url)
                     } catch {
-                        log(.error, "取り込み失敗: \(error)")
+                        // 取り込み失敗をAnalyticsへ送り、ファイル形式や読込問題の分析に使う
+                        logError(error, domain: "settings_import", message: "取り込み失敗")
                         importAlert = .failure(message: error.localizedDescription)
                     }
                 case .failure(let error):
-                    log(.error, "ファイル選択失敗: \(error)")
+                    // ファイル選択失敗をAnalyticsへ送り、DocumentPickerまわりの問題分析に使う
+                    logError(error, domain: "settings_file_importer", message: "ファイル選択失敗")
                     importAlert = .failure(message: error.localizedDescription)
                 }
             }
@@ -537,7 +540,8 @@ struct SettingView: View {
             let dto = try JSONDecoder().decode(PackJsonDTO.self, from: data)
             try validateHeader(productName: dto.productName, copyright: dto.copyright, version: dto.version)
 
-            var existingPacks = (try? modelContext.fetch(FetchDescriptor<M1Pack>())) ?? []
+            // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
+            var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())
             modelContext.undoManager?.groupingBegin()
             defer { modelContext.undoManager?.groupingEnd() }
 
@@ -551,7 +555,8 @@ struct SettingView: View {
             let backup = try JSONDecoder().decode(BackupJsonDTO.self, from: data)
             try validateHeader(productName: backup.productName, copyright: backup.copyright, version: backup.version)
 
-            var existingPacks = (try? modelContext.fetch(FetchDescriptor<M1Pack>())) ?? []
+            // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
+            var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())
             modelContext.undoManager?.groupingBegin()
             defer { modelContext.undoManager?.groupingEnd() }
 

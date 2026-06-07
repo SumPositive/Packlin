@@ -316,6 +316,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
                 if let error {
                     // 具体的な障害内容はCrashlyticsへ残しつつ、画面には優しい文言を出す
                     self.errorMessage = adUnavailableMessage
+                    // 広告ロード失敗をAnalyticsへ送り、広告導線の失敗率分析に使う
+                    logError(error, domain: "rewarded_ad_load", message: "リワード広告ロード失敗")
                     // TestFlightでも原因を追いやすいようCrashlyticsへ記録しておく
                     Crashlytics.crashlytics().record(error: error)
                     self.onAdFailedToLoad?(error)
@@ -377,6 +379,8 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             // プロセスが落ちた場合などは広告オブジェクトを破棄して再読込を試みる
             self.isReady = false
             self.rewardedAd = nil
+            // 広告表示失敗をAnalyticsへ送り、実機依存の表示問題を集計する
+            logError(error, domain: "rewarded_ad_present", message: "リワード広告表示失敗")
             // 実機のみに現れるエラー内容をCrashlyticsで把握する
             Crashlytics.crashlytics().record(error: error)
             Crashlytics.crashlytics().log("rewarded_ad_present_failed: \(error.localizedDescription)")
@@ -410,6 +414,8 @@ struct AdMobBannerView: View {
                     // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
                     isLoading = false
                     errorMessage = adUnavailableMessage
+                    // バナー広告失敗をAnalyticsへ送り、広告枠ごとの問題分析に使う
+                    logError(error, domain: "banner_ad_load", message: "バナー広告ロード失敗")
                     // 技術的な詳細はクラッシュログで追う
                     Crashlytics.crashlytics().record(error: error)
                 },

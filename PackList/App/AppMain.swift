@@ -79,6 +79,10 @@ struct AppMain: App {
             Analytics.setAnalyticsCollectionEnabled(true)
             Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
             GALogger.log(.app_launch)
+            if let containerError {
+                // DB初期化失敗をAnalyticsへ送り、リセット誘導の発生数を把握する
+                logError(containerError, domain: "app_model_container_init", message: "ModelContainer初期化失敗")
+            }
         }
 
         if let container = sharedModelContainer {
@@ -158,7 +162,8 @@ struct AppMain: App {
                 }
             }
             catch {
-                debugPrint("Failed to context.save: \(error)")
+                // バックグラウンド保存失敗を収集し、データ保持の問題分析に使う
+                logError(error, domain: "app_background_save", message: "バックグラウンド保存失敗")
             }
         }
 
@@ -186,7 +191,15 @@ struct AppMain: App {
         guard let container = sharedModelContainer else { return }
         let context = container.mainContext
         let descriptor = FetchDescriptor<M1Pack>()
-        guard let existingPacks = try? context.fetch(descriptor), existingPacks.isEmpty else {
+        let existingPacks: [M1Pack]
+        do {
+            existingPacks = try context.fetch(descriptor)
+        } catch {
+            // 初期パック確認失敗をAnalyticsへ送り、初回起動時のDB問題分析に使う
+            logError(error, domain: "sample_pack_fetch", message: "初期パック確認失敗")
+            return
+        }
+        guard existingPacks.isEmpty else {
             // M1Packが空でない
             return
         }
@@ -241,7 +254,8 @@ struct AppMain: App {
                 // PackJsonDTO をDBへインポートする
                 PackImporter.insertPack(from: dto, into: context, order: nextOrder)
             } catch {
-                debugPrint("Failed to load sample pack \(fileName): \(error)")
+                // サンプル読み込み失敗をAnalyticsへ送り、同梱データ問題の検知に使う
+                logError(error, domain: "sample_pack_load", message: "サンプル読み込み失敗 \(fileName)")
                 // サンプル読み込み失敗をCrashlyticsへ送信
                 Crashlytics.crashlytics().record(error: error)
             }
@@ -255,7 +269,8 @@ struct AppMain: App {
                 context.undoManager?.closeAllUndoGroups()
                 context.undoManager?.removeAllActions()
             } catch {
-                debugPrint("Failed to save sample packs: \(error)")
+                // サンプル保存失敗をAnalyticsへ送り、初期データ投入の問題分析に使う
+                logError(error, domain: "sample_pack_save", message: "サンプル保存失敗")
                 // DB保存失敗をCrashlyticsへ送信
                 Crashlytics.crashlytics().record(error: error)
             }

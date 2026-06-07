@@ -85,6 +85,8 @@ final class LocalNotificationManager: NSObject {
         do {
             try await add(request: request)
         } catch {
+            // 通知登録失敗をAnalyticsへ送り、通知導線の問題分析に使う
+            logError(error, domain: "local_notification_add", message: "ローカル通知登録失敗")
             // 通知登録に失敗した場合はCrashlyticsへ送信して運用保守に役立てる
             Crashlytics.crashlytics().record(error: error)
         }

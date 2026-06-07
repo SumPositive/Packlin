@@ -348,7 +348,8 @@ struct PackEditView: View {
             shareURL = fileURL
             isPresentingShare = true
         } catch {
-            debugPrint("Failed to export pack: \(error)")
+            // パック書き出し失敗をAnalyticsへ送り、共有導線の問題分析に使う
+            logError(error, domain: "pack_export", message: "パック書き出し失敗")
         }
     }
     /// 一時共有ファイルを削除する

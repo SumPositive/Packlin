@@ -35,8 +35,14 @@ final class TipStore {
         guard products.isEmpty else { return }
         isLoadingProducts = true
         defer { isLoadingProducts = false }
-        let loaded = (try? await Product.products(for: productIds)) ?? []
-        products = loaded.sorted { $0.price < $1.price }
+        do {
+            let loaded = try await Product.products(for: productIds)
+            products = loaded.sorted { $0.price < $1.price }
+        } catch {
+            // 商品取得失敗を収集し、課金導線の不具合分析に使う
+            logError(error, domain: "tip_store_load_products", message: "投げ銭商品の取得失敗")
+            products = []
+        }
     }
 
     /// 購入実行。成功時 true を返す
@@ -50,7 +56,10 @@ final class TipStore {
                 await transaction.finish()
                 return true
             }
-        } catch {}
+        } catch {
+            // 購入処理失敗を収集し、StoreKitまわりの不具合分析に使う
+            logError(error, domain: "tip_store_purchase", message: "投げ銭購入失敗")
+        }
         return false
     }
 }

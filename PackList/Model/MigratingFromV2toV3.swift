@@ -23,7 +23,15 @@ struct MigratingFromV2toV3 {
         }
 
         let context = modelContainer.mainContext
-        if let packs = try? context.fetch(FetchDescriptor<M1Pack>()), !packs.isEmpty {
+        let packs: [M1Pack]
+        do {
+            packs = try context.fetch(FetchDescriptor<M1Pack>())
+        } catch {
+            // 移行前の既存データ確認失敗をAnalyticsへ送り、DB状態の問題分析に使う
+            logError(error, domain: "legacy_migration_prefetch", message: "移行前パック取得失敗")
+            return
+        }
+        if !packs.isEmpty {
             // Migrate 完了フラグをセットする
             userDefaults.set(true, forKey: migrationFlagKey)
             return
@@ -46,7 +54,8 @@ struct MigratingFromV2toV3 {
                 userDefaults.set(true, forKey: migrationFlagKey)
                 return
             } catch {
-                debugPrint("Legacy migration failed for store \(url): \(error)")
+                // 旧DB移行失敗をAnalyticsへ送り、移行できないストアの傾向分析に使う
+                logError(error, domain: "legacy_migration", message: "旧DB移行失敗 \(url.lastPathComponent)")
             }
         }
     }
