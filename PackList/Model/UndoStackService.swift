@@ -141,29 +141,78 @@ final class UndoStackService: ObservableObject {
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 
+    /// Undo を 1 回実行する
+    /// - 注意: `restore()` 完了後に必ず `persist()` で SQLite へ書き出すこと。
+    ///   AppMain では `scenePhase == .background` でしか save しないため、
+    ///   Undo 直後にユーザーがアプリを強制終了したり、低メモリで kill されたりすると
+    ///   Undo した結果が消えて元に戻った状態が永続化される（ユーザー的には Undo が効かなかったように見える）。
     func undo(context: ModelContext) {
-        // 直前の履歴がなければ何もしない
+        // 直前の履歴がなければ何もしない（ボタン側で disabled にしているが二重防御）
         guard let record = undoStack.popLast() else {
             updateStates()
             return
         }
+        // Redo スタックに移して、再度 Redo できるようにしておく
         redoStack.append(record)
         trimStack(&redoStack)
+        // 「before」スナップショットの内容で SwiftData を上書き復元する
         restore(snapshot: record.before, context: context)
+        // === ここが Fix 2 で追加した最重要ポイント ===
+        // 復元結果を必ず SQLite へ書き出す。これを怠ると Undo 直後の
+        // クラッシュ・kill でユーザーの「やり直したい」が永続化されない。
+        persist(context: context, domain: "undo_save")
+        // 公開プロパティ（canUndo/canRedo）を更新してボタン表示を切り替える
         updateStates()
+        // 各画面のヘッダーがボタン活性を再評価できるよう通知を送る
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
     }
 
+    /// Redo を 1 回実行する
+    /// - 注意: undo() と同じく、`restore()` 完了後に `persist()` で必ず save する。
+    ///   保存しないと Redo 結果がクラッシュ時に失われる。
     func redo(context: ModelContext) {
+        // Redo スタックが空なら何もしない
         guard let record = redoStack.popLast() else {
             updateStates()
             return
         }
+        // 直前 Undo の逆操作として Undo スタックへ戻す
         undoStack.append(record)
         trimStack(&undoStack)
+        // 「after」スナップショット（つまり Undo する前の状態）で復元する
         restore(snapshot: record.after, context: context)
+        // === ここが Fix 2 で追加した最重要ポイント ===
+        // Undo と同様、Redo 直後にクラッシュしても結果が残るよう即時に永続化する。
+        persist(context: context, domain: "redo_save")
         updateStates()
         NotificationCenter.default.post(name: .updateUndoRedo, object: nil)
+    }
+
+    /// 重要操作直後に SQLite へ強制的に書き出すヘルパー。
+    ///
+    /// - 背景:
+    ///   SwiftData の `ModelContext` は変更を内部バッファに溜め、明示的な `save()` か
+    ///   フレームワークが選んだタイミング（通常はアプリ終了時など）まで永続化しない。
+    ///   Packlin では `AppMain.onChange(scenePhase)` で `.background` 遷移時に save しているが、
+    ///   これは「ユーザーが直近で操作した内容も含めて、バックグラウンド遷移までは未保存」を意味する。
+    ///   通常の編集（テキスト入力など）はバックグラウンド遷移で守られるが、Undo/Redo は
+    ///   「一度しか発生しないユーザー意図」なので、失敗するとユーザーの信頼を著しく損なう。
+    ///   そのため Undo/Redo 完了の都度 save する。
+    ///
+    /// - Parameters:
+    ///   - context: 永続化対象の `ModelContext`
+    ///   - domain: Analytics ログのドメイン名（"undo_save" / "redo_save"）
+    private func persist(context: ModelContext, domain: String) {
+        // 変更が無ければ save 自体が無駄なのでスキップ。
+        // SwiftData の save は I/O を伴うため、無駄な呼び出しを減らす意味でも guard する。
+        guard context.hasChanges else { return }
+        do {
+            try context.save()
+        } catch {
+            // save 失敗は致命的だが、ここで例外を伝播しても呼び出し元（UI）で処理できない。
+            // Crashlytics/Analytics へ送って傾向分析だけ可能にし、UI の流れは止めない。
+            logError(error, domain: domain, message: "context.save 失敗")
+        }
     }
 
     private func updateStates() {

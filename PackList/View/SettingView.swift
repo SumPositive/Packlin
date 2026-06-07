@@ -533,14 +533,36 @@ struct SettingView: View {
 
         // MARK: - 単体パック (.packlin)
 
+        /// 単体パック（.packlin）を取り込む
+        ///
+        /// 取り込み手順:
+        ///   1. JSON をデコードして `PackJsonDTO` 化
+        ///   2. ヘッダー（ProductName/Copyright/Version）の整合性を検証
+        ///   3. 既存パック一覧を取得（ID または name で照合するため）
+        ///   4. Undo グルーピング開始（取り込み全体を1アクションとして Undo できるようにする）
+        ///   5. upsert: 既存と一致すれば上書き、なければ新規挿入
+        ///   6. defer で Undo グルーピング終了 + 即時 save
+        ///
+        /// - Important: defer 内の save は Fix 2 で追加した堅牢化措置。
+        ///   インポート完了直後にユーザーがアプリを切った場合でも、
+        ///   取り込んだパックが SQLite へ確実に書き込まれるようにする。
         private func importSinglePack(data: Data) throws -> ImportAlert {
             let dto = try JSONDecoder().decode(PackJsonDTO.self, from: data)
             try validateHeader(productName: dto.productName, copyright: dto.copyright, version: dto.version)
 
             // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
             var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())
+            // 取り込み全体を 1 つの Undo 操作にまとめる
             modelContext.undoManager?.groupingBegin()
-            defer { modelContext.undoManager?.groupingEnd() }
+            defer {
+                // 関数を抜けるときに Undo グループを閉じる。
+                // 通常 return / throw のどちらでも必ず実行される。
+                modelContext.undoManager?.groupingEnd()
+                // === Fix 2: 取り込み直後の永続化 ===
+                // SwiftData の通常 save タイミング（背景遷移時）を待たず、
+                // インポート直後にクラッシュしても変更が消えないよう即時に書き出す。
+                persistAfterImport(domain: "import_single_save")
+            }
 
             let (pack, wasOverwritten) = upsertPack(dto: dto, existingPacks: &existingPacks)
             return .success(packName: pack.name, wasOverwritten: wasOverwritten)
@@ -548,14 +570,29 @@ struct SettingView: View {
 
         // MARK: - 全パックバックアップ (.packlinbackup)
 
+        /// 全パックバックアップ（.packlinbackup 相当）を取り込む
+        ///
+        /// 取り込み手順は importSinglePack と同じだが、複数パックをループで処理する。
+        ///
+        /// - Important: defer 内の save は Fix 2 で追加した堅牢化措置。
+        ///   特にバックアップ取り込みは「機種変更直後」「データ復元」など
+        ///   ユーザーにとって最重要のシナリオで使われるため、即時 save の効果が大きい。
         private func importBackup(data: Data) throws -> ImportAlert {
             let backup = try JSONDecoder().decode(BackupJsonDTO.self, from: data)
             try validateHeader(productName: backup.productName, copyright: backup.copyright, version: backup.version)
 
             // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
             var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())
+            // バックアップ全件の取り込みを 1 つの Undo 操作にまとめる
             modelContext.undoManager?.groupingBegin()
-            defer { modelContext.undoManager?.groupingEnd() }
+            defer {
+                modelContext.undoManager?.groupingEnd()
+                // === Fix 2: 取り込み直後の永続化 ===
+                // バックアップは件数が多くなる傾向があるが、ループ完了後にまとめて
+                // 1 度 save する。SwiftData はトランザクションを内部で扱うので
+                // 個別 save より効率的。
+                persistAfterImport(domain: "import_backup_save")
+            }
 
             var added = 0, overwritten = 0
             for dto in backup.packs {
@@ -563,6 +600,28 @@ struct SettingView: View {
                 if wasOverwritten { overwritten += 1 } else { added += 1 }
             }
             return .successBatch(added: added, overwritten: overwritten)
+        }
+
+        /// インポート完了直後の永続化ヘルパー
+        ///
+        /// - 呼び出しタイミング: Undo グルーピング終了（`groupingEnd()`）の直後に呼ぶこと。
+        ///   グルーピング閉じる前に save すると、save 操作自体が Undo 履歴に
+        ///   含まれてしまう可能性があるため。
+        /// - エラー処理: save 失敗は UI からは復旧できないため、Analytics 送信のみ行う。
+        ///   ユーザーには成功扱いで通知されるが、実際は次回起動時に取り込み内容が
+        ///   消えている可能性がある。これは想定上きわめて稀（ディスク満杯 等）。
+        ///
+        /// - Parameter domain: Analytics ログのドメイン名
+        ///   ("import_single_save" / "import_backup_save")
+        private func persistAfterImport(domain: String) {
+            // 変更が無ければ無駄な I/O を避ける
+            guard modelContext.hasChanges else { return }
+            do {
+                try modelContext.save()
+            } catch {
+                // 保存失敗は Crashlytics/Analytics へ送り、傾向分析に使う
+                logError(error, domain: domain, message: "インポート後の context.save 失敗")
+            }
         }
 
         // MARK: - 共通ヘルパー

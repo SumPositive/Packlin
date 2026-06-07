@@ -76,12 +76,33 @@ struct PackImporter {
         pack.memo = dto.memo
         pack.createdAt = dto.createdAt
 
-        // 旧データが混ざらないように、先にグループ以下を完全削除しておく
-        let existingGroups = pack.child
+        // === 旧データを掃除する ===
+        // 上書き取り込みでは既存のグループ・アイテムを全て消してから DTO を流し込む。
+        // これは「旧データの一部が新データと混ざる」状態を防ぐため。
+        //
+        // === Fix 3: SwiftData リレーションシップの安全なイテレーション ===
+        // `pack.child` は SwiftData の `@Relationship` で動的に管理される配列で、
+        // `context.delete(group)` を呼ぶとフレームワーク側で `pack.child` の
+        // 内部キャッシュも更新される。
+        //
+        // Swift の `for in` は通常コピーセマンティクスだが、`@Relationship` の
+        // backing storage はビューのような実装になっており、イテレーション中の
+        // 外部変更で挙動が壊れる可能性がある（実機で再現性は低いが、SwiftData の
+        // 内部実装に依存する未定義動作）。
+        //
+        // そのため反復対象を `Array(...)` で明示コピーしてから for-in する。
+        // これでイテレーション対象は値型の通常配列となり、SwiftData 側の変更から
+        // 切り離される。
+        let existingGroups = Array(pack.child)
         for group in existingGroups {
+            // M2Group の @Relationship(deleteRule: .cascade) により、
+            // group 配下の Item も連鎖的に削除される。
             context.delete(group)
         }
-        pack.child.removeAll()
+        // 安全策として pack.child を明示的に空配列で初期化する。
+        // cascade 削除が完了していれば既に空のはずだが、内部状態が
+        // 同期前の場合に備えて確実にクリアしておく。
+        pack.child = []
 
         // JSON上の順序は省略されることもあるので、insert時と同じく並び替えてから採番する
         let groups = dto.groups.enumerated().sorted { left, right in

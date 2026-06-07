@@ -79,54 +79,103 @@ final class M1Pack {
         }
     }
     
-    /// 現在のPackを削除する
+    /// 現在の Pack を削除し、残った Pack の order を再正規化する
+    ///
+    /// 削除の流れ:
+    ///   1. 配下の Group をすべて削除（各 Group の delete() は配下 Item の削除と
+    ///      親 Pack の order 整理を内部で行うが、ここでは Pack 自体が消えるので
+    ///      最後の order 整理は無駄になる。気にしないでよい範囲のオーバーヘッド。）
+    ///   2. 自身を削除
+    ///   3. 残った全 Pack を再フェッチして order を 0, 1000, 2000... に振り直す
+    ///
+    /// === Fix 4 関連: イテレーション安全性 ===
+    /// `self.child` を直接 for-in すると、ループ中の `group.delete()` で SwiftData が
+    /// `self.child` 内部キャッシュを更新する可能性があり、未定義動作になり得る。
+    /// そのため Array(...) で明示的にスナップショット化してからループする。
     func delete() {
         guard let mc = modelContext else {return}
-        // groupとその配下を削除
-        for group in self.child {
+
+        // === Step 1: 配下の Group をすべて削除 ===
+        // Array(...) でスナップショット化することで、ループ中の SwiftData 内部更新
+        // から切り離してイテレーションする（詳細は M2Group.delete() のコメント参照）。
+        let groups = Array(self.child)
+        for group in groups {
+            // 各 Group の delete() は内部で配下 Item の削除と親 Pack の
+            // normalizeGroupOrder() を呼ぶが、親 Pack がもうすぐ消えるので
+            // この normalize は実質的に無効になる（ペナルティは小さい）。
             group.delete()
         }
-        // Packを削除
+
+        // === Step 2: 自身を削除 ===
         mc.delete(self)
-        // ReOrder
+
+        // === Step 3: 全 Pack の order を正規化 ===
+        // 削除によって order に隙間ができる（例: 0, 1000, 2000 → 0, 2000）。
+        // 隙間は機能的には問題ないが、長期運用で order が大きな値になり過ぎるのを
+        // 防ぐため、ここで 0, 1000, 2000... に振り直す。
+        // fetch 失敗時は order 整理を諦める（次回起動時の操作で再正規化される）。
         let descriptor = FetchDescriptor<M1Pack>()
         if let packs = try? mc.fetch(descriptor) {
             M1Pack.normalizePackOrder(packs)
         }
     }
     
-    /// 現在のPackを複製して現在行下に追加する
+    /// 現在の Pack を複製し、現在の行のすぐ下に追加する
+    ///
+    /// 複製仕様:
+    ///   - name / memo はコピー
+    ///   - createdAt は **現在時刻**を採用（元の createdAt を引き継ぐとシート表示からの
+    ///     複製でユーザーが混乱しやすいため）
+    ///   - order は `self.order + 1`（最後に normalize で 0, 1000, 2000... に振り直し）
+    ///   - 配下の Group / Item をすべて新規生成して複製
+    ///   - アイテムの check=false / stock=0 にリセット（need と weight は維持）
+    ///     → 「テンプレート的な使い方」を想定し、進捗系はリセット
     func duplicate() {
         guard let mc = modelContext else {return}
-        // createdAtは現在時刻とし、シート表示からの複製でもID重複や順序入れ替わりを避ける
+
+        // === Step 1: 新しい Pack を作成 ===
+        // createdAt を現在時刻にする理由:
+        //   - 元と同一値だと UI 上で「どちらが新しい複製か」判別困難
+        //   - normalizePackOrder のタイブレークでも createdAt は使うので、
+        //     新しい時刻にしておけば挙動が予測しやすい
         let newPack = M1Pack(name: self.name,
                              memo: self.memo,
                              createdAt: Date(),
                              order: self.order + 1)
         mc.insert(newPack)
-        // Pack配下のGroupを複製する
-        for group in self.child {
-            // Groupを生成して追加する
+
+        // === Step 2: 配下の Group / Item を再帰的に複製 ===
+        // SwiftData の @Relationship は context.insert() の度に親の child 配列が
+        // 暗黙的に変動することがある。そのためイテレーション対象の self.child を
+        // Array(...) でスナップショット化してから for-in する。
+        // （詳細は M2Group.duplicate() のコメント参照）
+        let groups = Array(self.child)
+        for group in groups {
+            // Group を新規作成して新 Pack に紐付ける
             let newGroup = M2Group(name: group.name,
                                    memo: group.memo,
                                    order: group.order,
                                    parent: newPack)
             mc.insert(newGroup)
-            // Group配下のItemを複製する
-            for item in group.child {
-                // Itemを生成して追加する
+
+            // Group 配下の Item も同様に Array(...) で固定してから複製
+            let items = Array(group.child)
+            for item in items {
                 let newItem = M3Item(name: item.name,
                                      memo: item.memo,
-                                     check: false,
-                                     stock: 0,
-                                     need: item.need,
-                                     weight: item.weight,
+                                     check: false,        // 進捗は引き継がない
+                                     stock: 0,            // 在庫もリセット
+                                     need: item.need,     // 必要数は引き継ぐ
+                                     weight: item.weight, // 個重量は引き継ぐ
                                      order: item.order,
                                      parent: newGroup)
                 mc.insert(newItem)
             }
         }
-        // ReOrder
+
+        // === Step 3: 全 Pack の order を正規化 ===
+        // self.order + 1 で挿入したため隣のパックと衝突している可能性がある。
+        // 全件再フェッチして 0, 1000, 2000... に振り直す。
         let descriptor = FetchDescriptor<M1Pack>()
         if let packs = try? mc.fetch(descriptor) {
             M1Pack.normalizePackOrder(packs)

@@ -62,45 +62,120 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
         }
     }
     
-    /// 現在のGroupを削除する
+    /// 現在の Group を削除し、親パック配下の Group の order を再正規化する
+    ///
+    /// === 削除の流れ ===
+    ///   1. 親パックの persistentModelID を退避（順序調整の対象を後で取り直すため）
+    ///   2. 配下のアイテムをすべて削除（cascade で自動削除されるが、明示的に行う）
+    ///   3. 自分自身を削除
+    ///   4. 親パックを再フェッチして normalizeGroupOrder() を呼び、order を 0, 1000, 2000... に振り直す
+    ///
+    /// === Fix 4: 親パックを「参照保持」ではなく「ID 退避→再フェッチ」にする理由 ===
+    /// 修正前は以下のようになっていた：
+    /// ```
+    /// let parentPack = self.parent          // 参照を保持
+    /// mc.delete(self)
+    /// parentPack?.normalizeGroupOrder()      // 古い child を見たまま正規化
+    /// ```
+    /// この実装には次の問題があった：
+    ///   - `mc.delete(self)` の直後、SwiftData は `parentPack.child` 配列から
+    ///     `self` を除外する更新を非同期に行う場合がある（実装詳細）。
+    ///   - そのため `normalizeGroupOrder()` 内で `child` を走査したときに、
+    ///     **削除済みの自分がまだ残ったまま order を再採番する**可能性がある。
+    ///   - 結果として「削除したはずのグループの order が他の生きているグループを
+    ///     押しのける」など、UI と DB の表示順がズレる事故が起こり得た。
+    ///
+    /// 修正後の実装では、`persistentModelID` を退避してから削除し、
+    /// 削除後に **同じパックを ID で再フェッチ** してから `normalizeGroupOrder()`
+    /// を呼ぶ。再フェッチによって `child` のキャッシュが最新化されるため、
+    /// 削除済みグループを含まない正確な状態で order が振り直される。
+    ///
+    /// （同じパターンが M3Item.delete() でも既に採用されていたので、
+    /// それに揃える形での修正でもある。）
     func delete() {
         guard let mc = modelContext else {return}
-        // 親Packは削除後に順序調整するため、ここで一度退避しておく
-        let parentPack = self.parent
-        // groupの配下を削除
-        for item in self.child {
+
+        // === Step 1: 親パックの ID を退避 ===
+        // self.parent を変数に保持しても、後で normalize したときに
+        // 古いキャッシュを見てしまうリスクがあるため、`persistentModelID`
+        // という識別子だけを保存しておく。
+        let parentPackID = self.parent?.persistentModelID
+
+        // === Step 2: 配下のアイテムを削除 ===
+        // SwiftData の @Relationship 配列はイテレーション中に内部状態が
+        // 変化する可能性があるため、Array(...) で明示コピーしてから for-in する。
+        // （詳細は PackImporter.overwrite のコメントを参照）
+        let items = Array(self.child)
+        for item in items {
             mc.delete(item)
         }
-        // 自身を削除したあとで親側のorderを整理する
+
+        // === Step 3: 自身を削除 ===
+        // 上で配下を消してあるが、念のため cascade ルールでも保護される設計。
         mc.delete(self)
-        // child配列からこのグループが消えた状態でorderを再計算させる
-        parentPack?.normalizeGroupOrder()
+
+        // === Step 4: 親パックを再フェッチして order を正規化 ===
+        // ここが Fix 4 の核心。退避しておいた persistentModelID で
+        // 親パックを再取得することで、自分が削除された後の最新 child 配列
+        // を含んだ Pack インスタンスを得る。
+        if let parentPackID {
+            let descriptor = FetchDescriptor<M1Pack>(
+                predicate: #Predicate { element in
+                    element.persistentModelID == parentPackID
+                }
+            )
+            // fetch 失敗時は親が既に削除されたケースなので order 整理は不要。
+            // try? で安全側に倒す。
+            if let reloadedParent = try? mc.fetch(descriptor).first {
+                reloadedParent.normalizeGroupOrder()
+            }
+        }
     }
 
-    /// 現在のGroupを複製して現在行下に追加する
+    /// 現在の Group を複製し、現在の行のすぐ下に追加する
+    ///
+    /// 複製仕様:
+    ///   - 新しいグループは元と同じ name / memo を持つ
+    ///   - order は `self.order + 1`（最終的に normalize で 0, 1000, 2000... に振り直し）
+    ///   - 配下の各 Item も新規生成して新グループに紐付ける
+    ///   - 複製したアイテムは check=false / stock=0 にリセット（need と weight は維持）
+    ///     → 複製は「テンプレートとして使い回したい」想定なので、進捗系はリセットするのが妥当
     func duplicate() {
         guard let mc = modelContext else {return}
+        // 親 Pack が無いグループは複製不可（通常は起こらないが、防御的に return）
         guard let parent = self.parent else { return }
-        // Groupを生成して追加する
+
+        // === Step 1: 新しい Group を作成 ===
         let newGroup = M2Group(name: self.name,
                                memo: self.memo,
                                order: self.order + 1,
                                parent: parent)
         mc.insert(newGroup)
-        // Group配下のItemを複製する
-        for item in self.child {
-            // Itemを生成して追加する
+
+        // === Step 2: 配下の Item をすべて複製 ===
+        // SwiftData の @Relationship は context.insert() によって暗黙的に
+        // 親の child 配列が更新されることがある。たとえば newItem を insert すると
+        // parent (= newGroup) の child が変わり、これが連鎖的にメモリ上の
+        // 他のリレーションシップ状態にも影響を与える可能性がある。
+        //
+        // そのためイテレーション対象 self.child を Array(...) でスナップショット化し、
+        // ループ中に self.child が SwiftData によって変動しても影響を受けないようにする。
+        let items = Array(self.child)
+        for item in items {
             let newItem = M3Item(name: item.name,
                                  memo: item.memo,
-                                 check: false,
-                                 stock: 0,
-                                 need: item.need,
-                                 weight: item.weight,
+                                 check: false,        // 進捗は引き継がない
+                                 stock: 0,            // 在庫もリセット
+                                 need: item.need,     // 必要数は引き継ぐ
+                                 weight: item.weight, // 個重量は引き継ぐ
                                  order: item.order,
                                  parent: newGroup)
             mc.insert(newItem)
         }
-        // ReOrder
+
+        // === Step 3: 親パックの Group の order を正規化 ===
+        // self.order + 1 で挿入したため、既存のグループと order が衝突する可能性がある。
+        // normalizeGroupOrder() で 0, 1000, 2000... に振り直し、衝突を解消する。
         parent.normalizeGroupOrder()
     }
 
