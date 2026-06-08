@@ -76,6 +76,8 @@ struct AppMain: App {
             Analytics.setAnalyticsCollectionEnabled(true)
             Analytics.logEvent(AnalyticsEventAppOpen, parameters: nil)
             GALogger.log(.app_launch)
+            // 匿名の設定分布を集計し、今後のUI改善判断に使う
+            GALogger.log(.settings_snapshot(settings: .current()))
             if let containerError {
                 // DB初期化失敗をAnalyticsへ送り、リセット誘導の発生数を把握する
                 logError(containerError, domain: "app_model_container_init", message: "ModelContainer初期化失敗")

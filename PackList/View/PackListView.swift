@@ -130,6 +130,7 @@ struct PackListView: View {
                     VStack(spacing: 6) {
                         Button {
                             // Setting
+                            GALogger.log(.feature_use(name: "settings", source: "pack_list_header", detail: "open"))
                             popupAnchor = nil // 中央
                             isShowSetting = true
                         } label: {
@@ -159,6 +160,7 @@ struct PackListView: View {
                     VStack(spacing: 6) {
                         Button {
                             // 履歴サービスへ委譲して巻き戻す
+                            GALogger.log(.operation(name: "undo", target: "history", source: "pack_list_header", detail: nil, count: nil))
                             history.undo(context: modelContext)
                         } label: {
                             Image(systemName: "arrow.uturn.backward")
@@ -196,6 +198,7 @@ struct PackListView: View {
                     VStack(spacing: 6) {
                         Button {
                             // 履歴サービスを用いて直前の変更にやり直す
+                            GALogger.log(.operation(name: "redo", target: "history", source: "pack_list_header", detail: nil, count: nil))
                             history.redo(context: modelContext)
                         } label: {
                             Image(systemName: "arrow.uturn.forward")
@@ -248,6 +251,7 @@ struct PackListView: View {
                                 onChappy: {
                                     isShowingPackAddPopover = false
                                     // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
+                                    GALogger.log(.feature_use(name: "ai_create", source: "pack_list_add_popover", detail: "pack"))
                                     isShowAiCreateSheet = true
                                 },
                                 onManual: {
@@ -370,6 +374,8 @@ struct PackListView: View {
     }
 
     private func addPack() {
+        // 新規追加の位置設定ごとの利用頻度を匿名で集計する
+        GALogger.log(.operation(name: "add", target: "pack", source: "header", detail: insertionPosition.rawValue, count: nil))
         var newPackID: M1Pack.ID?
         let scrollAnchor: UnitPoint = insertionPosition == .head ? .top : .bottom
 
@@ -404,6 +410,8 @@ struct PackListView: View {
 
     /// 末尾追加セル用：常に末尾へ追加して編集シートを開く
     private func addPackAtEndAndEdit() {
+        // 末尾追加専用セルの利用頻度を集計する
+        GALogger.log(.operation(name: "add", target: "pack", source: "append_end_row", detail: "tail", count: nil))
         var newPack: M1Pack?
 
         history.perform(context: modelContext) {

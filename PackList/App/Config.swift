@@ -246,6 +246,10 @@ enum AppStorageKey {
     static let aiPurchaseFailedTransactionIds = "aiCreate.failedTransactions"
     // 広告視聴で付与される特典アイコンの個数を保持する
     static let aiAdRewardStamps = "aiCreate.adRewardStamps"
+    // ダイアルの見た目
+    static let dialStyle = "packlin.dialStyle"
+    // ダイアル感度の詳細設定
+    static let dialTuning = "packlin.dialTuning"
 }
 
 //-------------------------------------- パックJSON関係

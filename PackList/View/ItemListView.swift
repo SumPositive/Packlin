@@ -427,6 +427,8 @@ struct ItemListView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     Button("move") {
+                        // まとめて移動シートを開いた頻度と選択数を集計する
+                        GALogger.log(.feature_use(name: "bulk_move", source: "item_list_footer", detail: "open"))
                         prepareBulkMoveSheet()
                         isShowingBulkMoveSheet = true
                     }
@@ -439,6 +441,8 @@ struct ItemListView: View {
                 .background(.ultraThinMaterial)
             } else {
                 Button {
+                    // まとめて移動モードの開始頻度を集計する
+                    GALogger.log(.feature_use(name: "bulk_move", source: "item_list_footer", detail: "start"))
                     beginBulkMoveMode()
                 } label: {
                     HStack(spacing: 8) {
@@ -599,6 +603,12 @@ struct ItemListView: View {
     private func handleBulkMoveConfirmation() {
         guard let destinationGroup = selectedDestinationGroup else { return }
 
+        // まとめて移動の操作傾向を件数だけで集計する
+        GALogger.log(.operation(name: keepSourceItems ? "copy" : "move",
+                                target: "item",
+                                source: "bulk_move",
+                                detail: moveInsertPosition.rawValue,
+                                count: selectedBulkItemIDs.count))
         performBulkMoveOrCopy(to: destinationGroup, copy: keepSourceItems)
         lastMovePackID = selectedMovePackID
         lastMoveGroupID = destinationGroup.id
@@ -664,6 +674,8 @@ struct ItemListView: View {
 
     /// アイテム追加
     func addItem() {
+        // 新規追加の位置設定ごとの利用頻度を匿名で集計する
+        GALogger.log(.operation(name: "add", target: "item", source: "header", detail: insertionPosition.rawValue, count: nil))
         var newItemID: M3Item.ID?
         let scrollAnchor: UnitPoint = insertionPosition == .head ? .top : .bottom
 
@@ -701,6 +713,8 @@ struct ItemListView: View {
 
     /// 末尾追加セル用：常に末尾へ追加して編集画面へ遷移する
     private func addItemAtEndAndNavigate() {
+        // 末尾追加専用セルの利用頻度を集計する
+        GALogger.log(.operation(name: "add", target: "item", source: "append_end_row", detail: "tail", count: nil))
         var newItem: M3Item?
 
         history.perform(context: modelContext) {

@@ -304,7 +304,7 @@ struct SettingView: View {
             Button(action: {
                 // SafariでURLを表示する
                 showSafari = true
-                GALogger.log(.function(name: "settings", option: "tap_info"))
+                GALogger.log(.feature_use(name: "user_guide", source: "settings", detail: "open"))
             }) {
                 Label {
                     Text("about.how.use")
@@ -374,6 +374,8 @@ struct SettingView: View {
         private func startExport() {
             guard !isExporting else { return }
             isExporting = true
+            // バックアップ書き出しの利用頻度を集計する
+            GALogger.log(.feature_use(name: "backup_export", source: "settings", detail: "start"))
 
             Task {
                 do {
@@ -438,7 +440,7 @@ struct SettingView: View {
         var body: some View {
             Button(action: {
                 isPresentingImporter = true
-                GALogger.log(.function(name: "settings", option: "tap_import"))
+                GALogger.log(.feature_use(name: "pack_import", source: "settings", detail: "open"))
             }) {
                 Label {
                     Text("import.pack.overwrites.existing")
@@ -886,49 +888,40 @@ struct SettingView: View {
             .onDisappear {
                 // 変更あればGALogger送信する
                 if let ona = ona_insertionPosition, ona != insertionPosition {
-                    // 変更内容を文字列として連結し、ログに送信する
-                    GALogger.log(.function(name: "setting",
-                                           option: "insertionPosition:" + insertionPosition.rawValue))
+                    // 設定変更を匿名集計できる形で送信する
+                    GALogger.log(.setting_changed(key: "insertion_position", value: insertionPosition.rawValue))
                 }
                 if let ona = ona_showNeedWeight, ona != showNeedWeight {
-                    // 初心者向け重量表示の変更を検知して記録する
-                    GALogger.log(.function(name: "setting",
-                                           option: "showNeedWeight:" + showNeedWeight.description))
+                    // 初心者向け重量表示の変更を集計する
+                    GALogger.log(.setting_changed(key: "show_need_weight", value: showNeedWeight.description))
                 }
                 if let ona = ona_weightDisplayInKg, ona != weightDisplayInKg {
-                    // 単位変更のトグル操作をそのまま文字列化して送信
-                    GALogger.log(.function(name: "setting",
-                                           option: "weightDisplayInKg:" + weightDisplayInKg.description))
+                    // 単位変更の傾向を集計する
+                    GALogger.log(.setting_changed(key: "weight_display_in_kg", value: weightDisplayInKg.description))
                 }
                 if let ona = ona_linkCheckWithStock, ona != linkCheckWithStock {
-                    // チェックと在庫連動の状態変化をログする
-                    GALogger.log(.function(name: "setting",
-                                           option: "linkCheckWithStock:" + linkCheckWithStock.description))
+                    // チェックON時の在庫連動設定を集計する
+                    GALogger.log(.setting_changed(key: "link_check_with_stock", value: linkCheckWithStock.description))
                 }
                 if let ona = ona_linkCheckOffWithZero, ona != linkCheckOffWithZero {
-                    // チェックOFF時の在庫クリア可否も計測しておく
-                    GALogger.log(.function(name: "setting",
-                                           option: "linkCheckOffWithZero:" + linkCheckOffWithZero.description))
+                    // チェックOFF時の在庫クリア設定を集計する
+                    GALogger.log(.setting_changed(key: "link_check_off_with_zero", value: linkCheckOffWithZero.description))
                 }
                 if let ona = ona_displayMode, ona != displayMode {
-                    // 表示モード切り替えを初心者・達人それぞれで判定して送信
-                    GALogger.log(.function(name: "setting",
-                                           option: "displayMode:" + displayMode.rawValue))
+                    // 表示モード切り替えを集計する
+                    GALogger.log(.setting_changed(key: "display_mode", value: displayMode.rawValue))
                 }
                 if let ona = ona_appearanceMode, ona != appearanceMode {
-                    // 外観モード切り替えを記録する
-                    GALogger.log(.function(name: "setting",
-                                           option: "appearanceMode:" + appearanceMode.rawValue))
+                    // 外観モード切り替えを集計する
+                    GALogger.log(.setting_changed(key: "appearance_mode", value: appearanceMode.rawValue))
                 }
                 if let ona = ona_fontScale, ona != fontScale {
-                    // 文字サイズの変更を記録する
-                    GALogger.log(.function(name: "setting",
-                                           option: "fontScale:" + fontScale.rawValue))
+                    // 文字サイズ変更を集計する
+                    GALogger.log(.setting_changed(key: "font_scale", value: fontScale.rawValue))
                 }
                 if let ona = ona_rowTextLines, ona != rowTextLines {
-                    // 行数設定の変更を計測してUI調整の傾向を知る
-                    GALogger.log(.function(name: "setting",
-                                           option: "rowTextLines:" + rowTextLines.rawValue))
+                    // 行数設定の変更を集計してUI調整の傾向を知る
+                    GALogger.log(.setting_changed(key: "row_text_lines", value: rowTextLines.rawValue))
                 }
             }
         }

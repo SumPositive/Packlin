@@ -8,8 +8,8 @@ import UIKit
 import AZDial
 
 private enum PacklinDialSettings {
-    static let styleKey = "packlin.dialStyle"
-    static let tuningKey = "packlin.dialTuning"
+    static let styleKey = AppStorageKey.dialStyle
+    static let tuningKey = AppStorageKey.dialTuning
     static let defaultTuning = AZDialInteractionTuningPreset.mild.tuning
 
     static func loadTuning(from data: Data) -> AZDialInteractionTuning {

@@ -654,8 +654,14 @@ struct ChappyView: View {
                     let packName = try await MainActor.run { () -> String in
                         let importedPack = try createPack(from: dto)
 
-                        GALogger.log(.packlin_request(userId: userId,
-                                                      requirement: trimmedRequirement))
+                        // 要望本文やユーザーIDは送らず、改善に使う匿名集計値だけを送る
+                        let generatedItemsCount = dto.groups.reduce(0) { partial, group in
+                            partial + group.items.count
+                        }
+                        GALogger.log(.packlin_request(source: isTrial ? "trial" : "credit",
+                                                      requirementLength: trimmedRequirement.count,
+                                                      hasBasePack: basePackDTO != nil,
+                                                      generatedItemsCount: generatedItemsCount))
                         // 生成が成功しクレジット消費も確定したので、次回表示時に空欄から始められるよう保存済みの要望文を消す
                         // 送信したモードの入力欄だけを空にし、別モードの下書きは残す
                         requirementText.wrappedValue = ""

@@ -290,7 +290,7 @@ struct PackEditView: View {
             Button {
                 // AI生成用シートを表示（設定画面から移動）
                 showAiCreateSheet = true
-                GALogger.log(.function(name: "pack_edit", option: "tap_ai_create"))
+                GALogger.log(.feature_use(name: "ai_create", source: "pack_edit_toolbar", detail: "pack"))
             } label: {
                 HStack {
                     Image(systemName: "sparkles")

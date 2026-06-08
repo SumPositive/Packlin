@@ -332,7 +332,8 @@ struct ItemSortListView: View {
                 updateUndoRedo()
                 // ソート切り替え直後は自動並べ替えスイッチに関係なく最新順を採用
                 refreshDisplayedItems(forceReset: true, forceResort: true)
-                GALogger.log(.function(name: "item_sort", option: sortOption.rawValue))
+                // 縦覧ソートの利用種別を集計する
+                GALogger.log(.feature_use(name: "item_browse", source: "group_list_footer", detail: sortOption.rawValue))
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()

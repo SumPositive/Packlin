@@ -94,7 +94,7 @@ struct GroupListView: View {
                     Button {
                         // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
                         showAiCreateSheet = true
-                        GALogger.log(.function(name: "group_list", option: "tap_ai_create"))
+                        GALogger.log(.feature_use(name: "ai_create", source: "group_list_footer", detail: "pack"))
                     } label: {
                         // チャッピー相談ボタンもカプセル風にし、短い文言で高さを抑える
                         HStack(spacing: 10) {
@@ -476,6 +476,8 @@ struct GroupListView: View {
     }
 
     private func addGroup() {
+        // 新規追加の位置設定ごとの利用頻度を匿名で集計する
+        GALogger.log(.operation(name: "add", target: "group", source: "header", detail: insertionPosition.rawValue, count: nil))
         var newGroupID: M2Group.ID?
         let scrollAnchor: UnitPoint = insertionPosition == .head ? .top : .bottom
 
@@ -510,6 +512,8 @@ struct GroupListView: View {
 
     /// 末尾追加セル用：常に末尾へ追加して編集シートを開く
     private func addGroupAtEndAndEdit() {
+        // 末尾追加専用セルの利用頻度を集計する
+        GALogger.log(.operation(name: "add", target: "group", source: "append_end_row", detail: "tail", count: nil))
         var newGroup: M2Group?
 
         history.perform(context: modelContext) {
