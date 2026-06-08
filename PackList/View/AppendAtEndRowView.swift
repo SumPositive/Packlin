@@ -77,7 +77,7 @@ struct AppendAtEndRowView: View {
                     .font(.system(size: 17, weight: .regular))
                     .symbolRenderingMode(.hierarchical)
                 Image(systemName: "plus")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 10, weight: .regular))
                     .symbolRenderingMode(.hierarchical)
                     .padding(.top, 3)
             }

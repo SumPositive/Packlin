@@ -228,12 +228,13 @@ struct PackListView: View {
                             // 標準Menuは文字サイズ対応しにくいため、独自popoverで選択肢を表示する
                             isShowingPackAddPopover = true
                         } label: {
+                            // パック追加はカバン＋プラスの合成アイコンにする
                             ZStack {
                                 Image(systemName: "case")
                                     .imageScale(.large)
                                     .symbolRenderingMode(.hierarchical)
                                 Image(systemName: "plus")
-                                    .imageScale(.small)
+                                    .font(.system(size: 17, weight: .regular))
                                     .symbolRenderingMode(.hierarchical)
                                     .padding(.top, 4)
                             }
