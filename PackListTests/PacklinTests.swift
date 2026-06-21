@@ -6,6 +6,7 @@
 //
 
 import Testing
+import Foundation
 import SwiftData
 @testable import Packlin
 
@@ -46,7 +47,9 @@ struct PacklinTests {
         // child 配列自体は変更されない
         #expect(group.child.map(\.id) == ["heavy", "mid", "light"])
         let sorted = group.child.sorted { $0.order < $1.order }
-        #expect(sorted.map(\.id) == ["mid", "light", "heavy"])
+        // order が同値（"mid" と "light" が共に order=0）のときは id 昇順でタイブレークする。
+        // "light" < "mid" なので light が先に来るのが normalizeItemOrder の正しい挙動。
+        #expect(sorted.map(\.id) == ["light", "mid", "heavy"])
         for (index, item) in sorted.enumerated() {
             #expect(item.order == index * ORDER_SPARSE)
         }
