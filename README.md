@@ -79,6 +79,14 @@ PackList/
 - Xcode 26+
 - Swift 6
 
+## Xcodeプロジェクト管理
+
+- XcodeGenは使用禁止
+- `Packlin.xcodeproj` を正としてXcodeで管理する
+- `project.yml` などの定義ファイルから `.xcodeproj` を生成・再生成しない
+- ファイル、ターゲット、Build Settings、Build Phases、Package Dependenciesの追加・変更はXcodeで行う
+- `.xcodeproj` にある既存設定を外部生成ツールで上書きしない
+
 ## ライセンス
 
 本リポジトリのソースコードは参照目的で公開しています。
