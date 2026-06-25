@@ -12,10 +12,15 @@ struct PackEditView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var creditStore: CreditStore
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
+    // 作者ニックネーム（公開されます）。空文字は「匿名」
+    @AppStorage(AppStorageKey.authorNickname) private var authorNickname: String = ""
+    // ニックネームを一度でも明示確定したか（匿名のまま公開を選んだ場合も true）
+    @AppStorage(AppStorageKey.authorNicknameConfigured) private var authorNicknameConfigured: Bool = false
 
     @State private var nameIsFocused: Bool = false
     @State private var memoIsFocused: Bool = false
@@ -24,6 +29,14 @@ struct PackEditView: View {
     @State private var isPresentingShare = false
     @State private var showAiCreateSheet = false
     @State private var isTogglingCheck = false
+
+    // 公開保存まわり
+    @State private var showNicknamePrompt = false
+    @State private var showPublishConfirm = false
+    @State private var nicknameDraft = ""
+    @State private var isPublishing = false
+    @State private var showPublishResult = false
+    @State private var publishResultMessage = ""
 
     /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
     /// onAppear / onDisappear は iOS のシート遷移や NavigationStack の
@@ -82,6 +95,28 @@ struct PackEditView: View {
                 // 共有　パック保存
                 ActivityView(activityItems: [shareURL])
             }
+        }
+        // 初回公開時：作者ニックネーム入力（プライバシー注意も併記）
+        .alert("publish.nickname.title", isPresented: $showNicknamePrompt) {
+            TextField("publish.nickname.placeholder", text: $nicknameDraft)
+            Button("publish.nickname.save.publish") { confirmNickname(useDraft: true) }
+            Button("publish.nickname.anonymous.publish") { confirmNickname(useDraft: false) }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text("publish.privacy.notice")
+        }
+        // 2回目以降の公開時：プライバシー注意つき確認
+        .alert("publish.confirm.title", isPresented: $showPublishConfirm) {
+            Button("publish.action") { Task { await performPublish() } }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text("publish.privacy.notice")
+        }
+        // 公開結果
+        .alert("publish.save", isPresented: $showPublishResult) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(publishResultMessage)
         }
         .onAppear {
             // === Fix 7: lifecycle 不均衡対策 ===
@@ -184,6 +219,18 @@ struct PackEditView: View {
                                 systemImage: "square.and.arrow.up",
                                 tint: .accentColor,
                                 action: exportPack)
+
+            compactActionButton(title: "publish.save",
+                                systemImage: "square.and.arrow.up.on.square",
+                                tint: .accentColor,
+                                action: startPublish)
+            .overlay(alignment: .center) {
+                if isPublishing {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
+            .disabled(isPublishing)
 
             Spacer(minLength: 0)
 
@@ -357,6 +404,85 @@ struct PackEditView: View {
         }
     }
     
+    // MARK: - 公開保存
+
+    /// 公開保存ボタン。ニックネーム未設定なら先に入力させ、設定済みなら確認へ進む
+    private func startPublish() {
+        if isPublishing { return }
+        if authorNicknameConfigured {
+            showPublishConfirm = true
+        } else {
+            nicknameDraft = authorNickname
+            showNicknamePrompt = true
+        }
+    }
+
+    /// ニックネーム入力の確定。useDraft=false は「匿名のまま公開」
+    private func confirmNickname(useDraft: Bool) {
+        let trimmed = nicknameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        authorNickname = useDraft ? trimmed : ""
+        authorNicknameConfigured = true
+        Task { await performPublish() }
+    }
+
+    /// 実際に公開保存する。サーバーで Pack ID（sourcePackId）により上書きされる
+    @MainActor
+    private func performPublish() async {
+        if isPublishing { return }
+        isPublishing = true
+        defer { isPublishing = false }
+        do {
+            let userId = creditStore.regenerateUserIdIfNeeded()
+            // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行を促す
+            if AzukiApi.shared.hasValidAccessToken() == false {
+                _ = try? await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            }
+            // 現在のニックネームをサーバーへ反映（空文字＝匿名）
+            try await AzukiApi.shared.updateNickname(userId: userId, nickname: authorNickname)
+
+            // 末尾の空白・改行を正規化してから公開内容を組み立てる
+            pack.name = pack.name.trimTrailSpacesAndNewlines
+            pack.memo = pack.memo.trimTrailSpacesAndNewlines
+
+            let dto = pack.exportRepresentation()
+            let itemCount = pack.child.reduce(0) { $0 + $1.child.count }
+            let locale = Locale.current.language.languageCode?.identifier
+
+            _ = try await AzukiApi.shared.publishPack(
+                userId: userId,
+                sourcePackId: pack.id,
+                dto: dto,
+                locale: locale,
+                searchText: buildPublishSearchText(),
+                groupCount: pack.child.count,
+                itemCount: itemCount,
+                totalWeight: pack.needWeight
+            )
+            GALogger.log(.feature_use(name: "public_pack", source: "pack_edit", detail: "publish"))
+            publishResultMessage = String(localized: "publish.success")
+        } catch let apiError as AzukiAPIError {
+            publishResultMessage = apiError.errorDescription
+                ?? String(localized: "network.seems.down.please.try.again")
+        } catch {
+            publishResultMessage = String(localized: "network.seems.down.please.try.again")
+        }
+        showPublishResult = true
+    }
+
+    /// 検索用テキスト（name・memo・グループ名・アイテム名を連結）
+    private func buildPublishSearchText() -> String {
+        var parts: [String] = [pack.name, pack.memo]
+        for group in pack.child {
+            parts.append(group.name)
+            parts.append(group.memo)
+            for item in group.child {
+                parts.append(item.name)
+                parts.append(item.memo)
+            }
+        }
+        return parts.filter { $0.isEmpty == false }.joined(separator: " ")
+    }
+
     /// Packを.packlinファイルにして共有(Export)する
     private func exportPack() {
         do {

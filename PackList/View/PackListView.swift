@@ -23,6 +23,7 @@ struct PackListView: View {
     @State private var isShowSetting: Bool = false
     @State private var isShowAiCreateSheet: Bool = false
     @State private var isShowingPackAddPopover = false
+    @State private var isShowPublicGallery = false
     @State private var scrollTargetPackID: M1Pack.ID?
     @State private var scrollTargetPackAnchor: UnitPoint = .bottom
 
@@ -259,6 +260,12 @@ struct PackListView: View {
                                     isShowingPackAddPopover = false
                                     // これまで通り自分で項目を入力して作成するパターン
                                     addPack()
+                                },
+                                onPublicGallery: {
+                                    isShowingPackAddPopover = false
+                                    // 公開パックの一覧・検索から取り込むフローへ誘導
+                                    GALogger.log(.feature_use(name: "public_pack", source: "pack_list_add_popover", detail: "open_gallery"))
+                                    isShowPublicGallery = true
                                 }
                             )
                             .presentationCompactAdaptation(.popover)
@@ -308,6 +315,12 @@ struct PackListView: View {
             ChappySheetView()
                 .appFontScale(fontScale)
                 .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
+                .presentationDragIndicator(.visible)
+        }
+        // 公開パックから取得するシート
+        .sheet(isPresented: $isShowPublicGallery) {
+            PublicPackGalleryView()
+                .appFontScale(fontScale)
                 .presentationDragIndicator(.visible)
         }
     }
@@ -479,6 +492,7 @@ private struct PackAddPopoverView: View {
     let fontScale: FontScale
     let onChappy: () -> Void
     let onManual: () -> Void
+    let onPublicGallery: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -494,6 +508,15 @@ private struct PackAddPopoverView: View {
                 title: "make.yourself",
                 systemImage: "hand.tap",
                 action: onManual
+            )
+
+            Divider()
+
+            // 公開パックから取得するフローへ誘導
+            optionButton(
+                title: "public.pack.gallery.title",
+                systemImage: "square.and.arrow.down.on.square",
+                action: onPublicGallery
             )
         }
         .padding(14)

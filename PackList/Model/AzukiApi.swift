@@ -26,6 +26,9 @@ enum AzukiAPIError: LocalizedError {
     case deviceSecurityUnavailable
     case deviceSignatureFailed
     case notFound
+    case publishQuotaExceeded
+    case publishPayloadTooLarge
+    case packNotFound
 
     var errorDescription: String? {
         switch self {
@@ -65,6 +68,15 @@ enum AzukiAPIError: LocalizedError {
                 return errorMsg("401-deviceSignatureFailed")
             case .notFound: // 404 サイトが見つかりません
                 return errorMsg("404-notFound")
+            case .publishQuotaExceeded: // 公開上限に達した
+                return String(localized: "publish.quota.exceeded",
+                              defaultValue: "公開できる上限に達しました。不要な公開パックを削除してから、もう一度お試しください")
+            case .publishPayloadTooLarge: // 1パックが大きすぎる
+                return String(localized: "publish.payload.too.large",
+                              defaultValue: "このパックはサイズが大きすぎるため公開できません")
+            case .packNotFound: // 公開パックが見つからない
+                return String(localized: "public.pack.not.found",
+                              defaultValue: "このパックは見つかりませんでした。削除された可能性があります")
         }
         
         /// アプリユーザに見せるメッセージ
@@ -889,12 +901,43 @@ final class AzukiApi {
                                   retryCount: retryCount)
                     throw AzukiAPIError.receiptBelongsToOtherUser
                 }
+                if serverErrorCode == "publish_quota_exceeded" {
+                    // 公開上限超過。forbiddenUser に丸めず専用エラーで案内する
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.publishQuotaExceeded,
+                                  retryCount: retryCount)
+                    throw AzukiAPIError.publishQuotaExceeded
+                }
                 logApiFailure(request: request,
                               statusCode: status,
                               serverErrorCode: serverErrorCode,
                               error: AzukiAPIError.forbiddenUser,
                               retryCount: retryCount)
                 throw AzukiAPIError.forbiddenUser
+            }
+            if status == 404 {
+                let serverErrorCode = decodeServerErrorCode(from: data)
+                if serverErrorCode == "pack_not_found" {
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.packNotFound,
+                                  retryCount: retryCount)
+                    throw AzukiAPIError.packNotFound
+                }
+            }
+            if status == 413 {
+                let serverErrorCode = decodeServerErrorCode(from: data)
+                if serverErrorCode == "publish_payload_too_large" {
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.publishPayloadTooLarge,
+                                  retryCount: retryCount)
+                    throw AzukiAPIError.publishPayloadTooLarge
+                }
             }
             // Hono（Cloudflare Workers）からの2xxレスポンスのみ成功扱いとし、それ以外は個別にハンドリングする
             if 199 < status && status < 300 {
@@ -1071,6 +1114,12 @@ final class AzukiApi {
                 return ("AzukiAPIError", "device_signature_failed", apiError.localizedDescription)
             case .notFound:
                 return ("AzukiAPIError", "not_found", apiError.localizedDescription)
+            case .publishQuotaExceeded:
+                return ("AzukiAPIError", "publish_quota_exceeded", apiError.localizedDescription)
+            case .publishPayloadTooLarge:
+                return ("AzukiAPIError", "publish_payload_too_large", apiError.localizedDescription)
+            case .packNotFound:
+                return ("AzukiAPIError", "pack_not_found", apiError.localizedDescription)
             }
         }
         return ("Error", "unknown", String(describing: error))
@@ -1121,6 +1170,192 @@ final class AzukiApi {
             return nil
         }
         return String(data: data, encoding: .utf8)?.count
+    }
+
+    // MARK: - 公開パック（モチメモ）
+
+    /// 公開保存の結果
+    struct PublishedPackRef: Decodable {
+        let publishedId: String
+        let downloadCount: Int
+    }
+
+    /// Pack を公開保存（upsert）する
+    /// - Note: 同一 sourcePackId を再公開するとサーバー側で上書きされる
+    /// - Parameters:
+    ///   - sourcePackId: 作者端末のローカル Pack ID（上書き判定キー）
+    ///   - dto: 公開する PackJsonDTO（id は nil で書き出すこと）
+    ///   - searchText: name・memo・グループ名・アイテム名を連結した検索用テキスト
+    func publishPack(userId: String,
+                     sourcePackId: String,
+                     dto: PackJsonDTO,
+                     locale: String?,
+                     searchText: String,
+                     groupCount: Int,
+                     itemCount: Int,
+                     totalWeight: Int) async throws -> PublishedPackRef {
+        struct PublishRequest: Encodable {
+            let userId: String
+            let sourcePackId: String
+            let name: String
+            let memo: String
+            let locale: String?
+            let searchText: String
+            let groupCount: Int
+            let itemCount: Int
+            let totalWeight: Int
+            let payload: PackJsonDTO
+        }
+        guard let url = makeURL(path: "/api/packs/publish") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let body = PublishRequest(userId: userId,
+                                  sourcePackId: sourcePackId,
+                                  name: dto.name,
+                                  memo: dto.memo,
+                                  locale: locale,
+                                  searchText: searchText,
+                                  groupCount: groupCount,
+                                  itemCount: itemCount,
+                                  totalWeight: totalWeight,
+                                  payload: dto)
+        // payload(PackJsonDTO) 内の createdAt を ISO8601 文字列で送るため、専用エンコーダを使う
+        // （共有 encoder は .deferredToDate で数値化され、取り込み側の .iso8601 デコードと食い違うため）
+        let publishEncoder = JSONEncoder()
+        publishEncoder.keyEncodingStrategy = .useDefaultKeys
+        publishEncoder.dateEncodingStrategy = .iso8601
+        let payloadData: Data
+        do {
+            payloadData = try publishEncoder.encode(body)
+        } catch {
+            throw AzukiAPIError.encoding
+        }
+        let request = try await makeRequest(url: url, method: "POST", body: payloadData, authorization: .required)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(PublishedPackRef.self, from: data)
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// 公開済みパックを削除する（作者本人のみ）
+    func unpublishPack(publishedId: String) async throws {
+        guard let url = makeURL(path: "/api/packs/\(publishedId)") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let request = try await makeRequest(url: url, method: "DELETE", body: nil, authorization: .required)
+        _ = try await send(request: request)
+    }
+
+    /// 自分が公開しているパック一覧を取得する（公開管理画面用）
+    func fetchMyPublishedPacks() async throws -> [OwnPublishedSummary] {
+        struct Response: Decodable { let items: [OwnPublishedSummary] }
+        guard let url = makeURL(path: "/api/packs/mine") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .required)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(Response.self, from: data).items
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// 公開パックを一覧・検索する（上位 PUBLIC_PACK_PAGE_SIZE 件ずつ）
+    /// - Parameters:
+    ///   - query: 検索語（nil/空なら全件）
+    ///   - locale: 言語コードで絞り込む（nil/空なら全言語）
+    ///   - sort: "popular"（取得数順）または "recent"（新着順）
+    ///   - offset: ページング開始位置
+    func searchPublicPacks(query: String?,
+                           locale: String?,
+                           sort: String = "popular",
+                           offset: Int) async throws -> [PublicPackSummary] {
+        struct Response: Decodable {
+            let items: [PublicPackSummary]
+            let limit: Int
+            let offset: Int
+        }
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "sort", value: sort),
+            URLQueryItem(name: "offset", value: String(offset)),
+            URLQueryItem(name: "limit", value: String(PUBLIC_PACK_PAGE_SIZE)),
+        ]
+        if let query, query.isEmpty == false {
+            queryItems.append(URLQueryItem(name: "q", value: query))
+        }
+        if let locale, locale.isEmpty == false {
+            queryItems.append(URLQueryItem(name: "locale", value: locale))
+        }
+        guard let url = makeURL(path: "/api/packs", queryItems: queryItems) else {
+            throw AzukiAPIError.invalidURL
+        }
+        // 一覧は匿名でも引けるため認証は任意
+        let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .optional)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(Response.self, from: data).items
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// 公開パックを取り込む。payload(PackJsonDTO) を返すと同時にサーバーが取得数をカウントする
+    /// - Parameter userId: 取得数カウント・自己取得除外のためのユーザーID
+    func importPublicPack(publishedId: String, userId: String) async throws -> PackJsonDTO {
+        let queryItems = [URLQueryItem(name: "userId", value: userId)]
+        guard let url = makeURL(path: "/api/packs/\(publishedId)/import", queryItems: queryItems) else {
+            throw AzukiAPIError.invalidURL
+        }
+        // 取得は POST だが本文は不要。トークンがあれば付与、無ければ userId クエリでカウントする
+        let request = try await makeRequest(url: url, method: "POST", body: nil, authorization: .optional)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(PackJsonDTO.self, from: data)
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// サーバーに保存されている作者ニックネームを取得する（未設定なら空文字）
+    func fetchNickname() async throws -> String {
+        struct Response: Decodable { let nickname: String }
+        guard let url = makeURL(path: "/api/user/nickname") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .required)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(Response.self, from: data).nickname
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// 作者ニックネームを更新する。空文字は「匿名」を意味する
+    /// - Returns: サーバーがサニタイズした後のニックネーム
+    @discardableResult
+    func updateNickname(userId: String, nickname: String) async throws -> String {
+        struct Request: Encodable { let userId: String; let nickname: String }
+        struct Response: Decodable { let nickname: String }
+        guard let url = makeURL(path: "/api/user/nickname") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let payload: Data
+        do {
+            payload = try encoder.encode(Request(userId: userId, nickname: nickname))
+        } catch {
+            throw AzukiAPIError.encoding
+        }
+        let request = try await makeRequest(url: url, method: "PATCH", body: payload, authorization: .required)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(Response.self, from: data).nickname
+        } catch {
+            throw AzukiAPIError.decoding
+        }
     }
 }
 

@@ -250,7 +250,14 @@ enum AppStorageKey {
     static let dialStyle = "packlin.dialStyle"
     // ダイアル感度の詳細設定
     static let dialTuning = "packlin.dialTuning"
+    // 作者ニックネーム（公開されます）。空文字は「匿名」を意味する
+    static let authorNickname = "publish.authorNickname"
+    // 作者ニックネームを一度でも明示確定したか（空のまま公開を選んだ場合も true）
+    static let authorNicknameConfigured = "publish.authorNicknameConfigured"
 }
+
+//-------------------------------------- 公開パック（モチメモ）
+let PUBLIC_PACK_PAGE_SIZE = 20 // 公開パック一覧の1ページ取得件数（上位20件ずつ）
 
 //-------------------------------------- パックJSON関係
 let PACK_JSON_DTO_PRODUCT_NAME = "Packlin" // 生成ファイルの出自判定に利用

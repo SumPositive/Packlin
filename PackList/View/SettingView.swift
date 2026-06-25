@@ -68,7 +68,12 @@ struct SettingView: View {
                             // 保存パックを読み込む
                             ShareView()
                         }
-                        
+
+                        SettingSection {
+                            // 作者ニックネーム（公開されます）
+                            AuthorNicknameView()
+                        }
+
                         SettingSection {
                             // 情報
                             InformationView()
@@ -151,6 +156,84 @@ struct SettingView: View {
         }
     }
     
+    /// 作者ニックネーム（公開されます）の編集。変更はサーバーへ反映し、過去の公開パックにも適用される
+    private struct AuthorNicknameView: View {
+        @EnvironmentObject private var creditStore: CreditStore
+        @AppStorage(AppStorageKey.authorNickname) private var authorNickname: String = ""
+        @AppStorage(AppStorageKey.authorNicknameConfigured) private var authorNicknameConfigured: Bool = false
+        @State private var draft: String = ""
+        @State private var isSaving = false
+        @State private var statusMessage: String?
+        @FocusState private var focused: Bool
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("publish.nickname.title")
+                    .font(.body.weight(.semibold))
+
+                HStack(spacing: 8) {
+                    TextField(text: $draft) {
+                        Text("publish.nickname.placeholder")
+                    }
+                    .textFieldStyle(.roundedBorder)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .focused($focused)
+                    .submitLabel(.done)
+                    .onSubmit { Task { await save() } }
+
+                    Button {
+                        Task { await save() }
+                    } label: {
+                        if isSaving {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Text("publish.nickname.save")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isSaving)
+                }
+
+                if let statusMessage {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                Text("publish.nickname.footer")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .onAppear { draft = authorNickname }
+        }
+
+        @MainActor
+        private func save() async {
+            if isSaving { return }
+            focused = false
+            isSaving = true
+            defer { isSaving = false }
+            let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+            do {
+                let userId = creditStore.regenerateUserIdIfNeeded()
+                // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行を促す
+                if AzukiApi.shared.hasValidAccessToken() == false {
+                    _ = try? await AzukiApi.shared.fetchCreditStatus(userId: userId)
+                }
+                let saved = try await AzukiApi.shared.updateNickname(userId: userId, nickname: trimmed)
+                authorNickname = saved
+                authorNicknameConfigured = true
+                draft = saved
+                statusMessage = nil
+            } catch let apiError as AzukiAPIError {
+                statusMessage = apiError.errorDescription
+            } catch {
+                statusMessage = String(localized: "network.seems.down.please.try.again")
+            }
+        }
+    }
+
     private struct SettingSection<Content: View>: View {
         @Environment(\.colorScheme) private var colorScheme
         private let content: Content
