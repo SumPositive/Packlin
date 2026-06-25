@@ -30,6 +30,18 @@ struct PublicPackGalleryView: View {
     @State private var importingId: String?
     /// 取り込み成功フィードバック
     @State private var importedMessage: String?
+    /// 削除確認中の自分の公開パック
+    @State private var pendingDeleteItem: PublicPackSummary?
+    /// 削除中のパックID（行のスピナー表示用）
+    @State private var deletingId: String?
+
+    /// 公開日時の表示用フォーマッタ（ローカル時刻・分まで）
+    private static let publishedAtFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale.current
+        f.dateFormat = "yyyy/MM/dd HH:mm"
+        return f
+    }()
 
     var body: some View {
         NavigationStack {
@@ -52,6 +64,20 @@ struct PublicPackGalleryView: View {
             }
         }
         .appFontScale(fontScale)
+        // 自分の公開パックの削除確認
+        .alert("public.pack.delete.confirm",
+               isPresented: Binding(
+                get: { pendingDeleteItem != nil },
+                set: { if $0 == false { pendingDeleteItem = nil } }
+               ),
+               presenting: pendingDeleteItem) { item in
+            Button("delete", role: .destructive) {
+                Task { await deletePack(item) }
+            }
+            Button("cancel", role: .cancel) { pendingDeleteItem = nil }
+        } message: { item in
+            Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+        }
         .task {
             // 初回表示で先頭ページを読み込む
             if items.isEmpty {
@@ -172,7 +198,12 @@ struct PublicPackGalleryView: View {
                     .font(.headline)
                     .lineLimit(2)
                 Spacer(minLength: 8)
-                importButton(item)
+                // 自分が公開したパックは削除ボタン、他人のパックは取り込みボタン
+                if item.isMine {
+                    deleteButton(item)
+                } else {
+                    importButton(item)
+                }
             }
 
             if item.memo.isEmpty == false {
@@ -196,6 +227,13 @@ struct PublicPackGalleryView: View {
             }
             .font(.caption)
             .foregroundStyle(.secondary)
+
+            // 公開日時（分まで）
+            if let publishedAt = item.publishedAt {
+                Text(Self.publishedAtFormatter.string(from: publishedAt))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(12)
         .background(
@@ -222,7 +260,29 @@ struct PublicPackGalleryView: View {
             }
         }
         .buttonStyle(.borderedProminent)
-        .disabled(importingId != nil)
+        .disabled(importingId != nil || deletingId != nil)
+    }
+
+    private func deleteButton(_ item: PublicPackSummary) -> some View {
+        Button(role: .destructive) {
+            // 確認アラートを出してから削除する
+            pendingDeleteItem = item
+        } label: {
+            if deletingId == item.id {
+                ProgressView()
+                    .controlSize(.small)
+            } else {
+                Label {
+                    Text("delete")
+                } icon: {
+                    Image(systemName: "trash")
+                }
+                .font(.caption.weight(.semibold))
+            }
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.red)
+        .disabled(importingId != nil || deletingId != nil)
     }
 
     // MARK: - データ取得
@@ -267,7 +327,8 @@ struct PublicPackGalleryView: View {
                 query: queryArg(),
                 locale: localeArg(),
                 sort: sort.rawValue,
-                offset: offset
+                offset: offset,
+                userId: creditStore.userId
             )
             if reset {
                 items = page
@@ -297,6 +358,31 @@ struct PublicPackGalleryView: View {
             let dto = try await AzukiApi.shared.importPublicPack(publishedId: item.id, userId: userId)
             insert(dto: dto)
             importedMessage = String(localized: "public.pack.imported")
+        } catch let apiError as AzukiAPIError {
+            errorMessage = apiError.errorDescription
+        } catch {
+            errorMessage = String(localized: "network.seems.down.please.try.again")
+        }
+    }
+
+    /// 自分が公開したパックを削除する
+    @MainActor
+    private func deletePack(_ item: PublicPackSummary) async {
+        pendingDeleteItem = nil
+        if deletingId != nil { return }
+        deletingId = item.id
+        importedMessage = nil
+        errorMessage = nil
+        defer { deletingId = nil }
+        do {
+            // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
+            let userId = creditStore.regenerateUserIdIfNeeded()
+            if AzukiApi.shared.hasValidAccessToken() == false {
+                _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            }
+            try await AzukiApi.shared.unpublishPack(publishedId: item.id)
+            // 一覧から取り除く
+            items.removeAll { $0.id == item.id }
         } catch let apiError as AzukiAPIError {
             errorMessage = apiError.errorDescription
         } catch {

@@ -1272,7 +1272,8 @@ final class AzukiApi {
     func searchPublicPacks(query: String?,
                            locale: String?,
                            sort: String = "popular",
-                           offset: Int) async throws -> [PublicPackSummary] {
+                           offset: Int,
+                           userId: String) async throws -> [PublicPackSummary] {
         struct Response: Decodable {
             let items: [PublicPackSummary]
             let limit: Int
@@ -1282,6 +1283,8 @@ final class AzukiApi {
             URLQueryItem(name: "sort", value: sort),
             URLQueryItem(name: "offset", value: String(offset)),
             URLQueryItem(name: "limit", value: String(PUBLIC_PACK_PAGE_SIZE)),
+            // 自分の公開パック判定(mine)のため userId を渡す（認証任意のため）
+            URLQueryItem(name: "userId", value: userId),
         ]
         if let query, query.isEmpty == false {
             queryItems.append(URLQueryItem(name: "q", value: query))

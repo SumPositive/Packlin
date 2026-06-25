@@ -13,6 +13,16 @@ struct PublicPackSummary: Decodable, Identifiable {
     let downloadCount: Int
     /// 作者ニックネーム。サーバー側で未設定なら「匿名」が入る
     let author: String
+    /// 閲覧者自身が公開したパックなら true（削除ボタンを出す）
+    let isMine: Bool
+    /// 公開日時（エポックミリ秒）。端末側でローカル時刻・分まで整形する
+    let publishedAtMs: Double?
+
+    /// 公開日時の Date 表現
+    var publishedAt: Date? {
+        guard let publishedAtMs else { return nil }
+        return Date(timeIntervalSince1970: publishedAtMs / 1000)
+    }
 }
 
 /// 自分の公開済みパック1件（公開管理画面用。status と sourcePackId を含む）
