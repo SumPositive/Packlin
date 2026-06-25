@@ -433,9 +433,10 @@ struct PackEditView: View {
         defer { isPublishing = false }
         do {
             let userId = creditStore.regenerateUserIdIfNeeded()
-            // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行を促す
+            // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
+            // 発行に失敗した場合は missingAuthToken に丸めず、実エラーをそのまま表示する
             if AzukiApi.shared.hasValidAccessToken() == false {
-                _ = try? await AzukiApi.shared.fetchCreditStatus(userId: userId)
+                _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             }
             // 現在のニックネームをサーバーへ反映（空文字＝匿名）
             try await AzukiApi.shared.updateNickname(userId: userId, nickname: authorNickname)

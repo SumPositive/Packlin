@@ -217,9 +217,9 @@ struct SettingView: View {
             let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
             do {
                 let userId = creditStore.regenerateUserIdIfNeeded()
-                // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行を促す
+                // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
                 if AzukiApi.shared.hasValidAccessToken() == false {
-                    _ = try? await AzukiApi.shared.fetchCreditStatus(userId: userId)
+                    _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
                 }
                 let saved = try await AzukiApi.shared.updateNickname(userId: userId, nickname: trimmed)
                 authorNickname = saved
