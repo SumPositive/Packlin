@@ -109,7 +109,20 @@ enum GAEvent {
     case chappy_send_result(source: String, isSuccess: Bool, requestTokens: Int?, responseTokens: Int?, errorDomain: String?, errorCode: String?, message: String?)
     /// AI利用券の購入検証の状況を観測するイベント
     case purchase_verify_result(status: String, isSuccess: Bool, productId: String, transactionId: String, balance: Int?, duplicate: Bool?, errorDomain: String?, errorCode: String?, message: String?)
+    /// 公開パック（公開保存・取込・削除）の利用状況と成否を観測するイベント
+    case public_pack_result(action: String, isSuccess: Bool, itemCount: Int?, errorDomain: String?, errorCode: String?, message: String?)
     case screen_view(name: String) // SwiftUI手動トラッキング用
+}
+
+/// 公開パック系イベント用にエラーを (domain, code, message) へ分解する
+func publicPackErrorInfo(_ error: Error) -> (domain: String, code: String, message: String) {
+    if let api = error as? AzukiAPIError {
+        // "serverError(message: ...)" のような付随値を除き、ケース名だけを error_code にする
+        let code = String(describing: api).components(separatedBy: "(").first ?? "error"
+        return ("AzukiAPIError", code, String((api.errorDescription ?? "").prefix(100)))
+    }
+    let ns = error as NSError
+    return (ns.domain, String(ns.code), String(ns.localizedDescription.prefix(100)))
 }
 
 /// 匿名Analyticsへ送る設定値のスナップショット
@@ -284,6 +297,17 @@ struct GALogger {
                     "error_message": message ?? ""
                 ])
                 
+            case let .public_pack_result(action, isSuccess, itemCount, errorDomain, errorCode, message):
+                // 公開保存・取込・削除の利用回数と成功/失敗・エラー内訳を集計する
+                Analytics.logEvent("public_pack_result", parameters: [
+                    "action": action,                  // "publish" / "import" / "delete"
+                    "success": isSuccess,
+                    "item_count": itemCount ?? -1,
+                    "error_domain": errorDomain ?? "",
+                    "error_code": errorCode ?? "",
+                    "error_message": message ?? ""
+                ])
+
             case let .screen_view(name):
                 // GA4は自動スクリーン計測もあるが、SwiftUIは明示送信が安定
                 Analytics.logEvent(AnalyticsEventScreenView, parameters: [

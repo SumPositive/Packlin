@@ -396,6 +396,9 @@ struct AdMobBannerView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var reloadToken = UUID()
+    // 一度でも広告を受信したか。List のセル再利用で onAppear が再発火しても
+    // ローディング表示に戻さないために使う
+    @State private var hasLoaded = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -406,6 +409,7 @@ struct AdMobBannerView: View {
                     // 成功時はエラーメッセージを消しておく
                     isLoading = false
                     errorMessage = nil
+                    hasLoaded = true
                 },
                 onFailToReceiveAd: { error in
                     // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
@@ -447,7 +451,9 @@ struct AdMobBannerView: View {
             }
         }
         .onAppear {
-            // 画面再表示時は毎回最新状態を取りにいく
+            // 既に受信済みなら、List のセル再表示で「読み込み中」へ戻さない
+            // （戻すと、ロード済みバナーの下にローディング表示が残ってしまう）
+            guard hasLoaded == false else { return }
             isLoading = true
             errorMessage = nil
         }

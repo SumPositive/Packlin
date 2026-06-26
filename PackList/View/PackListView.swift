@@ -49,7 +49,8 @@ struct PackListView: View {
             ScrollViewReader { scrollProxy in
                 List {
                     Section {
-                        ForEach(sortedPacks) { pack in
+                        ForEach(Array(sortedPacks.enumerated()), id: \.element.id) { index, pack in
+                            VStack(spacing: 0) {
                             ZStack {
                                 PackRowView(pack: pack) { selected, point in
                                     // Pack行のタップ位置はシートでは使用しないが、今後の拡張に備えて保持
@@ -82,6 +83,11 @@ struct PackListView: View {
                                         .frame(width: navigationLinkWidth)
                                     }
                                 }
+                            }
+                            // 10件ごと（10・20・30…番目のパックの直後）にバナー広告を挟む
+                            if index % 10 == 9 {
+                                listBannerRow
+                            }
                             }
                             .id(pack.id)
                             .listRowSeparator(.hidden)
@@ -323,6 +329,18 @@ struct PackListView: View {
                 .appFontScale(fontScale)
                 .presentationDragIndicator(.visible)
         }
+    }
+
+    /// パック一覧に挟むバナー広告行（10番目のパックの直後に表示）
+    /// 高さは固定せず内容に追従させる（読み込み中ラベルやエラー表示で高さが変わり、
+    /// 固定すると次の行に重なるため）
+    private var listBannerRow: some View {
+        AdMobBannerView(
+            adUnitID: ADMOB_BANNER_UnitID,
+            size: CGSize(width: 320, height: 50)
+        )
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
     }
 
     /// フッター：ボタンの説明

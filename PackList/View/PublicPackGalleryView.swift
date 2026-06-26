@@ -9,6 +9,10 @@ struct PublicPackGalleryView: View {
     @EnvironmentObject private var creditStore: CreditStore
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
+
+    /// 達人モードではボタンをアイコンのみにする
+    private var isExpertMode: Bool { displayMode == .expert }
 
     /// 並び順
     private enum SortOrder: String, CaseIterable, Identifiable {
@@ -210,10 +214,16 @@ struct PublicPackGalleryView: View {
 
     private func row(_ item: PublicPackSummary) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
-                .font(.headline)
-                .lineLimit(2)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            // 名前行：自分のパックは右上に削除ボタン
+            HStack(alignment: .top, spacing: 8) {
+                Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if item.isMine {
+                    deleteButton(item)
+                }
+            }
 
             if item.memo.isEmpty == false {
                 Text(item.memo)
@@ -249,12 +259,8 @@ struct PublicPackGalleryView: View {
 
                 Spacer(minLength: 8)
 
-                // 自分が公開したパックは削除ボタン、他人のパックは取り込みボタン
-                if item.isMine {
-                    deleteButton(item)
-                } else {
-                    importButton(item)
-                }
+                // 取込ボタンは自分のパックも含め常に右下に配置
+                importButton(item)
             }
         }
         .padding(12)
@@ -309,7 +315,10 @@ struct PublicPackGalleryView: View {
             Task { await importPack(item) }
         } label: {
             Label {
-                Text("public.pack.import")
+                // 達人モードではアイコンのみ
+                if isExpertMode == false {
+                    Text("public.pack.import")
+                }
             } icon: {
                 Image(systemName: "square.and.arrow.down")
             }
@@ -325,7 +334,10 @@ struct PublicPackGalleryView: View {
             pendingDeleteItem = item
         } label: {
             Label {
-                Text("delete")
+                // 達人モードではアイコンのみ
+                if isExpertMode == false {
+                    Text("delete")
+                }
             } icon: {
                 Image(systemName: "trash")
             }
@@ -414,11 +426,15 @@ struct PublicPackGalleryView: View {
             let userId = creditStore.regenerateUserIdIfNeeded()
             let dto = try await AzukiApi.shared.importPublicPack(publishedId: item.id, userId: userId)
             insert(dto: dto)
+            GALogger.log(.public_pack_result(action: "import", isSuccess: true, itemCount: item.itemCount,
+                                             errorDomain: nil, errorCode: nil, message: nil))
             // 完了表示は少し見せてから自動で消し、再取り込みできる状態へ戻す
             setRowState(item.id, .done(String(localized: "public.pack.imported")), autoClearAfter: 1.8)
         } catch let apiError as AzukiAPIError {
+            logPublicPackError(action: "import", apiError)
             setRowState(item.id, .error(apiError.errorDescription ?? String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         } catch {
+            logPublicPackError(action: "import", error)
             setRowState(item.id, .error(String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         }
     }
@@ -436,13 +452,24 @@ struct PublicPackGalleryView: View {
                 _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             }
             try await AzukiApi.shared.unpublishPack(publishedId: item.id)
+            GALogger.log(.public_pack_result(action: "delete", isSuccess: true, itemCount: item.itemCount,
+                                             errorDomain: nil, errorCode: nil, message: nil))
             // セルは消さず、カバー上に「削除しました」を表示したままにする
             rowStatus[item.id] = .done(String(localized: "public.pack.deleted"))
         } catch let apiError as AzukiAPIError {
+            logPublicPackError(action: "delete", apiError)
             setRowState(item.id, .error(apiError.errorDescription ?? String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         } catch {
+            logPublicPackError(action: "delete", error)
             setRowState(item.id, .error(String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         }
+    }
+
+    /// 公開パック操作のエラーを Analytics へ記録する
+    private func logPublicPackError(action: String, _ error: Error) {
+        let info = publicPackErrorInfo(error)
+        GALogger.log(.public_pack_result(action: action, isSuccess: false, itemCount: nil,
+                                         errorDomain: info.domain, errorCode: info.code, message: info.message))
     }
 
     /// セルの状態を設定し、指定秒後に（同じ状態のままなら）自動で解除する

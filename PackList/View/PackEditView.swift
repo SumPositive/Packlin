@@ -526,11 +526,19 @@ struct PackEditView: View {
                 totalWeight: pack.needWeight
             )
             GALogger.log(.feature_use(name: "public_pack", source: "pack_edit", detail: "publish"))
+            GALogger.log(.public_pack_result(action: "publish", isSuccess: true, itemCount: itemCount,
+                                             errorDomain: nil, errorCode: nil, message: nil))
             publishResultMessage = String(localized: "publish.success")
         } catch let apiError as AzukiAPIError {
+            let info = publicPackErrorInfo(apiError)
+            GALogger.log(.public_pack_result(action: "publish", isSuccess: false, itemCount: nil,
+                                             errorDomain: info.domain, errorCode: info.code, message: info.message))
             publishResultMessage = apiError.errorDescription
                 ?? String(localized: "network.seems.down.please.try.again")
         } catch {
+            let info = publicPackErrorInfo(error)
+            GALogger.log(.public_pack_result(action: "publish", isSuccess: false, itemCount: nil,
+                                             errorDomain: info.domain, errorCode: info.code, message: info.message))
             publishResultMessage = String(localized: "network.seems.down.please.try.again")
         }
         showPublishResult = true
