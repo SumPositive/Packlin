@@ -334,7 +334,8 @@ struct PackEditView: View {
                     startPublish()
                 } label: {
                     HStack {
-                        Image(systemName: "square.and.arrow.up.on.square")
+                        // iOS26 などで追加されたシンボルが古いOSで空白にならないよう代替を用意
+                        Image(systemName: "square.and.arrow.up.on.square", fallback: "square.and.arrow.up")
                             .symbolRenderingMode(.hierarchical)
                         if isPublishing {
                             ProgressView()

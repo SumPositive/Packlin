@@ -531,9 +531,10 @@ private struct PackAddPopoverView: View {
             Divider()
 
             // 公開パックから取得するフローへ誘導
+            // iOS26 などで追加されたシンボルが古いOSで空白にならないよう代替を用意
             optionButton(
                 title: "public.pack.gallery.title",
-                systemImage: "square.and.arrow.down.on.square",
+                systemImage: sfSymbolName("square.and.arrow.down.on.square", fallback: "square.and.arrow.down"),
                 action: onPublicGallery
             )
         }
