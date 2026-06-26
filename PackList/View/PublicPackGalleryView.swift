@@ -11,9 +11,18 @@ struct PublicPackGalleryView: View {
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
 
     /// 並び順
-    private enum SortOrder: String {
+    private enum SortOrder: String, CaseIterable, Identifiable {
         case popular // 取得数の多い順
         case recent  // 新着順
+
+        var id: String { rawValue }
+
+        var titleKey: LocalizedStringKey {
+            switch self {
+            case .popular: return "public.pack.sort.popular"
+            case .recent:  return "public.pack.sort.recent"
+            }
+        }
     }
 
     @State private var searchText: String = ""
@@ -25,15 +34,19 @@ struct PublicPackGalleryView: View {
     @State private var offset: Int = 0
     @State private var canLoadMore: Bool = false
     @State private var isLoading: Bool = false
+    /// 一覧読み込み自体のエラー（画面上部に表示）
     @State private var errorMessage: String?
-    /// 取り込み中のパックID（行のスピナー表示用）
-    @State private var importingId: String?
-    /// 取り込み成功フィードバック
-    @State private var importedMessage: String?
     /// 削除確認中の自分の公開パック
     @State private var pendingDeleteItem: PublicPackSummary?
-    /// 削除中のパックID（行のスピナー表示用）
-    @State private var deletingId: String?
+    /// セルごとの処理状態（取り込み・削除のカバー表示用）
+    @State private var rowStatus: [String: RowState] = [:]
+
+    /// セルに被せるカバーの状態
+    private enum RowState: Equatable {
+        case loading            // 処理中（プログレス）
+        case done(String)       // 完了メッセージ
+        case error(String)      // エラーメッセージ
+    }
 
     /// 公開日時の表示用フォーマッタ（ローカル時刻・分まで）
     private static let publishedAtFormatter: DateFormatter = {
@@ -49,6 +62,14 @@ struct PublicPackGalleryView: View {
                 controlBar
                 Divider()
                 listContent
+                // フッターのバナー広告
+                Divider()
+                AdMobBannerView(
+                    adUnitID: ADMOB_BANNER_UnitID,
+                    size: CGSize(width: 320, height: 50)
+                )
+                .frame(height: 50)
+                .padding(.vertical, 4)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle(Text("public.pack.gallery.title"))
@@ -118,15 +139,20 @@ struct PublicPackGalleryView: View {
             )
 
             HStack(spacing: 12) {
-                Picker("", selection: $sort) {
-                    Text("public.pack.sort.popular").tag(SortOrder.popular)
-                    Text("public.pack.sort.recent").tag(SortOrder.recent)
+                // 文字サイズ対応のラジオボタン（設定画面と同じ SettingRadioGroup を再利用）
+                SettingRadioGroup(options: SortOrder.allCases,
+                                  selection: $sort,
+                                  minOptionWidth: 64,
+                                  maxOptionWidth: 140,
+                                  wrapsOptions: false) { option in
+                    Text(option.titleKey)
                 }
-                .pickerStyle(.segmented)
                 .onChange(of: sort) { _, _ in Task { await reload() } }
 
+                Spacer(minLength: 8)
+
                 Toggle(isOn: $localeFilterOn) {
-                    Text("public.pack.locale.filter")
+                    Text(localeFilterLabel)
                         .font(.caption)
                 }
                 .toggleStyle(.button)
@@ -143,15 +169,6 @@ struct PublicPackGalleryView: View {
     private var listContent: some View {
         ScrollView {
             LazyVStack(spacing: 10) {
-                if let importedMessage {
-                    Text(importedMessage)
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(.green)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
-                }
-
                 if let errorMessage {
                     Text(errorMessage)
                         .font(.callout)
@@ -193,18 +210,10 @@ struct PublicPackGalleryView: View {
 
     private func row(_ item: PublicPackSummary) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
-                    .font(.headline)
-                    .lineLimit(2)
-                Spacer(minLength: 8)
-                // 自分が公開したパックは削除ボタン、他人のパックは取り込みボタン
-                if item.isMine {
-                    deleteButton(item)
-                } else {
-                    importButton(item)
-                }
-            }
+            Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+                .font(.headline)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if item.memo.isEmpty == false {
                 Text(item.memo)
@@ -213,26 +222,39 @@ struct PublicPackGalleryView: View {
                     .lineLimit(2)
             }
 
-            HStack(spacing: 12) {
-                Label("\(item.itemCount)", systemImage: "checklist")
-                Label(weightText(item.totalWeight), systemImage: "scalemass")
-                Label("\(item.downloadCount)", systemImage: "arrow.down.circle")
-                Spacer(minLength: 4)
-                Text(item.author)
-                    .lineLimit(1)
-                if let locale = item.locale, locale.isEmpty == false {
-                    Text(locale.uppercased())
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            // 左側に「件数行＋公開日行」の2行、右側のボタンはその2行に跨って上下中央
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 12) {
+                        Label("\(item.itemCount)", systemImage: "checklist")
+                        Label(weightText(item.totalWeight), systemImage: "scalemass")
+                        Label("\(item.downloadCount)", systemImage: "arrow.down.circle")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
-            // 公開日時（分まで）
-            if let publishedAt = item.publishedAt {
-                Text(Self.publishedAtFormatter.string(from: publishedAt))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    // 公開日時（分まで）と、その右に「言語 作者」（例: JA sumpo）
+                    HStack(spacing: 8) {
+                        if let publishedAt = item.publishedAt {
+                            Text(Self.publishedAtFormatter.string(from: publishedAt))
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                        Text(publisherText(item))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer(minLength: 8)
+
+                // 自分が公開したパックは削除ボタン、他人のパックは取り込みボタン
+                if item.isMine {
+                    deleteButton(item)
+                } else {
+                    importButton(item)
+                }
             }
         }
         .padding(12)
@@ -240,27 +262,61 @@ struct PublicPackGalleryView: View {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color(.secondarySystemGroupedBackground))
         )
+        // 処理中・結果表示の半透明カバー
+        .overlay {
+            if let state = rowStatus[item.id] {
+                coverView(state)
+            }
+        }
         .padding(.horizontal, 16)
+    }
+
+    /// セルに被せる半透明カバー（プログレス／完了／エラー）
+    @ViewBuilder
+    private func coverView(_ state: RowState) -> some View {
+        RoundedRectangle(cornerRadius: 14)
+            .fill(Color(.systemBackground).opacity(0.8))
+            .overlay {
+                switch state {
+                case .loading:
+                    ProgressView()
+                case .done(let message):
+                    Label {
+                        Text(message)
+                    } icon: {
+                        Image(systemName: "checkmark.circle.fill")
+                    }
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.green)
+                    .padding(.horizontal, 12)
+                    .multilineTextAlignment(.center)
+                case .error(let message):
+                    VStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                        Text(message)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 12)
+                }
+            }
     }
 
     private func importButton(_ item: PublicPackSummary) -> some View {
         Button {
             Task { await importPack(item) }
         } label: {
-            if importingId == item.id {
-                ProgressView()
-                    .controlSize(.small)
-            } else {
-                Label {
-                    Text("public.pack.import")
-                } icon: {
-                    Image(systemName: "square.and.arrow.down")
-                }
-                .font(.caption.weight(.semibold))
+            Label {
+                Text("public.pack.import")
+            } icon: {
+                Image(systemName: "square.and.arrow.down")
             }
+            .font(.caption.weight(.semibold))
         }
         .buttonStyle(.borderedProminent)
-        .disabled(importingId != nil || deletingId != nil)
+        .disabled(rowStatus[item.id] != nil)
     }
 
     private func deleteButton(_ item: PublicPackSummary) -> some View {
@@ -268,28 +324,32 @@ struct PublicPackGalleryView: View {
             // 確認アラートを出してから削除する
             pendingDeleteItem = item
         } label: {
-            if deletingId == item.id {
-                ProgressView()
-                    .controlSize(.small)
-            } else {
-                Label {
-                    Text("delete")
-                } icon: {
-                    Image(systemName: "trash")
-                }
-                .font(.caption.weight(.semibold))
+            Label {
+                Text("delete")
+            } icon: {
+                Image(systemName: "trash")
             }
+            .font(.caption.weight(.semibold))
         }
         .buttonStyle(.borderedProminent)
         .tint(.red)
-        .disabled(importingId != nil || deletingId != nil)
+        .disabled(rowStatus[item.id] != nil)
     }
 
     // MARK: - データ取得
 
-    /// 端末の言語コード（絞り込みの既定値）
+    /// 端末の言語コード（絞り込みの既定値）。アプリ対応言語(ja/en)でなくデバイス本来のロケール
     private func currentLocaleCode() -> String? {
-        Locale.current.language.languageCode?.identifier
+        devicePreferredLanguageCode()
+    }
+
+    /// 絞り込みトグルのラベル「自言語(JA)のみ」（JA はデバイスロケール、無ければ従来表記）
+    private var localeFilterLabel: String {
+        let code = (currentLocaleCode() ?? "").uppercased()
+        if code.isEmpty {
+            return String(localized: "public.pack.locale.filter")
+        }
+        return String(format: String(localized: "public.pack.locale.filter.fmt"), code)
     }
 
     private func queryArg() -> String? {
@@ -348,20 +408,18 @@ struct PublicPackGalleryView: View {
     /// 公開パックを取り込む（新しいローカルIDが採番される）
     @MainActor
     private func importPack(_ item: PublicPackSummary) async {
-        if importingId != nil { return }
-        importingId = item.id
-        importedMessage = nil
-        errorMessage = nil
-        defer { importingId = nil }
+        if rowStatus[item.id] != nil { return }
+        rowStatus[item.id] = .loading
         do {
             let userId = creditStore.regenerateUserIdIfNeeded()
             let dto = try await AzukiApi.shared.importPublicPack(publishedId: item.id, userId: userId)
             insert(dto: dto)
-            importedMessage = String(localized: "public.pack.imported")
+            // 完了表示は少し見せてから自動で消し、再取り込みできる状態へ戻す
+            setRowState(item.id, .done(String(localized: "public.pack.imported")), autoClearAfter: 1.8)
         } catch let apiError as AzukiAPIError {
-            errorMessage = apiError.errorDescription
+            setRowState(item.id, .error(apiError.errorDescription ?? String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         } catch {
-            errorMessage = String(localized: "network.seems.down.please.try.again")
+            setRowState(item.id, .error(String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         }
     }
 
@@ -369,11 +427,8 @@ struct PublicPackGalleryView: View {
     @MainActor
     private func deletePack(_ item: PublicPackSummary) async {
         pendingDeleteItem = nil
-        if deletingId != nil { return }
-        deletingId = item.id
-        importedMessage = nil
-        errorMessage = nil
-        defer { deletingId = nil }
+        if rowStatus[item.id] != nil { return }
+        rowStatus[item.id] = .loading
         do {
             // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
             let userId = creditStore.regenerateUserIdIfNeeded()
@@ -381,12 +436,24 @@ struct PublicPackGalleryView: View {
                 _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
             }
             try await AzukiApi.shared.unpublishPack(publishedId: item.id)
-            // 一覧から取り除く
-            items.removeAll { $0.id == item.id }
+            // セルは消さず、カバー上に「削除しました」を表示したままにする
+            rowStatus[item.id] = .done(String(localized: "public.pack.deleted"))
         } catch let apiError as AzukiAPIError {
-            errorMessage = apiError.errorDescription
+            setRowState(item.id, .error(apiError.errorDescription ?? String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         } catch {
-            errorMessage = String(localized: "network.seems.down.please.try.again")
+            setRowState(item.id, .error(String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
+        }
+    }
+
+    /// セルの状態を設定し、指定秒後に（同じ状態のままなら）自動で解除する
+    @MainActor
+    private func setRowState(_ id: String, _ state: RowState, autoClearAfter seconds: Double) {
+        rowStatus[id] = state
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            if rowStatus[id] == state {
+                rowStatus[id] = nil
+            }
         }
     }
 
@@ -410,6 +477,14 @@ struct PublicPackGalleryView: View {
             normalizeSparseOrders(orderedPacks)
         }
         PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
+    }
+
+    /// 公開者表示「言語 作者」（例: JA sumpo）。言語が無ければ作者のみ
+    private func publisherText(_ item: PublicPackSummary) -> String {
+        if let locale = item.locale, locale.isEmpty == false {
+            return "\(locale.uppercased()) \(item.author)"
+        }
+        return item.author
     }
 
     /// 総重量の表示用テキスト（1000g以上はkg表記）

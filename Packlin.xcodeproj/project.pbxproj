@@ -795,8 +795,9 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SumPositive/AZDial";
 			requirement = {
-				branch = develop;
-				kind = branch;
+				kind = versionRange;
+				maximumVersion = 4.0.0;
+				minimumVersion = 1.0.0;
 			};
 		};
 		C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {

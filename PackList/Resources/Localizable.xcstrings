@@ -3643,7 +3643,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "取り込む"
+            "value": "取込"
           }
         }
       }
@@ -3916,6 +3916,118 @@
           "stringUnit": {
             "state": "translated",
             "value": "この公開パックを削除しますか？"
+          }
+        }
+      }
+    },
+    "public.pack.deleted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleted"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除しました"
+          }
+        }
+      }
+    },
+    "publish.help.line1": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves this pack to the cloud and publishes it."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このパックをクラウドに保存して公開します"
+          }
+        }
+      }
+    },
+    "publish.help.line2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anyone in the world can import and use it."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "世界中のユーザが取り込んで利用できるようになります"
+          }
+        }
+      }
+    },
+    "publish.help.caution": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do not include personal information! Packs may be removed at the author’s discretion if reported as inappropriate."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "個人情報を含めないでください！不適切報告があれば作者の独断で削除する場合があります"
+          }
+        }
+      }
+    },
+    "publish.publishing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publishing…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "公開中..."
+          }
+        }
+      }
+    },
+    "publish.help.line3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving the same pack overwrites it, so you may use this for backup purposes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同じパックを保存すると上書きしますのでバックアップ目的で使われても構いません"
+          }
+        }
+      }
+    },
+    "public.pack.locale.filter.fmt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Own (%@) only"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自言語(%@)のみ"
           }
         }
       }

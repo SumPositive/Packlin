@@ -27,7 +27,6 @@ struct PackEditView: View {
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
-    @State private var showAiCreateSheet = false
     @State private var isTogglingCheck = false
 
     // 公開保存まわり
@@ -37,6 +36,7 @@ struct PackEditView: View {
     @State private var isPublishing = false
     @State private var showPublishResult = false
     @State private var publishResultMessage = ""
+    @State private var showPublishHelp = false
 
     /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
     /// onAppear / onDisappear は iOS のシート遷移や NavigationStack の
@@ -117,6 +117,12 @@ struct PackEditView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(publishResultMessage)
+        }
+        // 公開中は全画面プログレスを重ねて操作を遮断する
+        .overlay {
+            if isPublishing {
+                publishingOverlay
+            }
         }
         .onAppear {
             // === Fix 7: lifecycle 不均衡対策 ===
@@ -220,18 +226,6 @@ struct PackEditView: View {
                                 tint: .accentColor,
                                 action: exportPack)
 
-            compactActionButton(title: "publish.save",
-                                systemImage: "square.and.arrow.up.on.square",
-                                tint: .accentColor,
-                                action: startPublish)
-            .overlay(alignment: .center) {
-                if isPublishing {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-            }
-            .disabled(isPublishing)
-
             Spacer(minLength: 0)
 
             compactActionButton(title: "delete",
@@ -334,28 +328,99 @@ struct PackEditView: View {
             }
         }
         ToolbarItem(placement: .navigationBarTrailing) {
-            Button {
-                // AI生成用シートを表示（設定画面から移動）
-                showAiCreateSheet = true
-                GALogger.log(.feature_use(name: "ai_create", source: "pack_edit_toolbar", detail: "pack"))
-            } label: {
-                HStack {
-                    Image(systemName: "sparkles")
-                    //.imageScale(.large)
+            // 公開保存（旧チャッピーボタンの位置）＋ 右にヘルプ(?)
+            HStack(spacing: 8) {
+                Button {
+                    startPublish()
+                } label: {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up.on.square")
+                            .symbolRenderingMode(.hierarchical)
+                        if isPublishing {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Text("publish.save")
+                                .font(.body.weight(.regular))
+                        }
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(isPublishing)
+
+                Button {
+                    showPublishHelp = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .imageScale(.large)
                         .symbolRenderingMode(.hierarchical)
-                    Text("chappy")
-                        .font(.body.weight(.regular))
+                }
+                .sheet(isPresented: $showPublishHelp) {
+                    publishHelpSheet
                 }
             }
-            .buttonStyle(.bordered)
-            .sheet(isPresented: $showAiCreateSheet) {
-                // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
-                ChappySheetView(basePack: pack)
-                    .appFontScale(fontScale)
-                    .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
-                    .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 公開中の全画面プログレス
+    private var publishingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.25)
+                .ignoresSafeArea()
+            VStack(spacing: 14) {
+                ProgressView()
+                    .controlSize(.large)
+                Text("publish.publishing")
+                    .font(.callout.weight(.semibold))
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+            )
+        }
+        // カバーがタップを受けて背面の操作を遮断する
+        .contentShape(Rectangle())
+    }
+
+    /// 公開保存のヘルプ（シート表示）
+    private var publishHelpSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("publish.help.line1")
+                    Text("publish.help.line2")
+                    Text("publish.help.line3")
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                        Text("publish.help.caution")
+                    }
+                    .foregroundStyle(.red)
+                }
+                .font(.callout)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(20)
+            }
+            .scrollIndicators(.hidden)
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(Text("publish.save"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showPublishHelp = false
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
             }
         }
+        .appFontScale(fontScale)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     /// チェック・トグルが遅延する場合があるのでプログレス付きで開始する
@@ -447,7 +512,8 @@ struct PackEditView: View {
 
             let dto = pack.exportRepresentation()
             let itemCount = pack.child.reduce(0) { $0 + $1.child.count }
-            let locale = Locale.current.language.languageCode?.identifier
+            // アプリ対応言語(ja/en)ではなくデバイス本来のロケールを登録する
+            let locale = devicePreferredLanguageCode()
 
             _ = try await AzukiApi.shared.publishPack(
                 userId: userId,

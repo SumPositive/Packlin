@@ -259,6 +259,19 @@ enum AppStorageKey {
 //-------------------------------------- 公開パック（モチメモ）
 let PUBLIC_PACK_PAGE_SIZE = 20 // 公開パック一覧の1ページ取得件数（上位20件ずつ）
 
+/// デバイス本来の優先言語コード
+/// `Locale.current` はアプリの対応ローカライズ（ja/en）に丸められるため、
+/// 公開ロケールの登録・絞り込みにはデバイスの preferredLanguages を優先する
+func devicePreferredLanguageCode() -> String? {
+    if let preferred = Locale.preferredLanguages.first {
+        let code = Locale(identifier: preferred).language.languageCode?.identifier
+        if let code, code.isEmpty == false {
+            return code
+        }
+    }
+    return Locale.current.language.languageCode?.identifier
+}
+
 //-------------------------------------- パックJSON関係
 let PACK_JSON_DTO_PRODUCT_NAME = "Packlin" // 生成ファイルの出自判定に利用
 let PACK_JSON_DTO_COPYRIGHT = "2025_sumpo@azukid.com" // 差異あれば読み込みエラー
