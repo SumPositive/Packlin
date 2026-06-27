@@ -401,53 +401,63 @@ struct AdMobBannerView: View {
     @State private var hasLoaded = false
 
     var body: some View {
-        VStack(spacing: 8) {
-            AdMobBannerRepresentable(
-                adUnitID: adUnitID,
-                size: size,
-                onReceiveAd: {
-                    // 成功時はエラーメッセージを消しておく
-                    isLoading = false
-                    errorMessage = nil
-                    hasLoaded = true
-                },
-                onFailToReceiveAd: { error in
-                    // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
-                    isLoading = false
-                    errorMessage = adUnavailableMessage
-                    // バナー広告失敗をAnalyticsへ送り、広告枠ごとの問題分析に使う
-                    logError(error, domain: "banner_ad_load", message: "バナー広告ロード失敗")
-                    // 技術的な詳細はクラッシュログで追う
-                    Crashlytics.crashlytics().record(error: error)
-                },
-                reloadToken: reloadToken
-            )
-            .id(reloadToken)
-            .frame(width: size.width, height: size.height)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(uiColor: .tertiarySystemBackground))
-            )
-
+        AdMobBannerRepresentable(
+            adUnitID: adUnitID,
+            size: size,
+            onReceiveAd: {
+                // 成功時はエラーメッセージを消しておく
+                isLoading = false
+                errorMessage = nil
+                hasLoaded = true
+            },
+            onFailToReceiveAd: { error in
+                // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
+                isLoading = false
+                errorMessage = adUnavailableMessage
+                // バナー広告失敗をAnalyticsへ送り、広告枠ごとの問題分析に使う
+                logError(error, domain: "banner_ad_load", message: "バナー広告ロード失敗")
+                // 技術的な詳細はクラッシュログで追う
+                Crashlytics.crashlytics().record(error: error)
+            },
+            reloadToken: reloadToken
+        )
+        .id(reloadToken)
+        .frame(width: size.width, height: size.height)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(uiColor: .tertiarySystemBackground))
+        )
+        // ローディング・エラー表示は行を増やさず、バナー領域への overlay にして高さを一定に保つ
+        .overlay {
             if isLoading {
                 ProgressView(String(localized: "loading.ad"))
                     .font(.caption)
-            // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する
+            // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する（領域全体がリロードボタン）
             } else if errorMessage != nil {
-                VStack(spacing: 6) {
-                    Text(adUnavailableMessage)
-                        .font(.caption.weight(.semibold))
-                        .multilineTextAlignment(.center)
-                    Button(String(localized: "reload")) {
-                        // バナーを作り直して再リクエストする
-                        reloadToken = UUID()
-                        isLoading = true
-                        // アラート文言をクリアして再試行する
-                        errorMessage = nil
+                Button {
+                    // バナーを作り直して再リクエストする
+                    reloadToken = UUID()
+                    isLoading = true
+                    // アラート文言をクリアして再試行する
+                    errorMessage = nil
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.clockwise")
+                        Text(adUnavailableMessage)
+                            .font(.caption.weight(.semibold))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(uiColor: .tertiarySystemBackground))
+                    )
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
         .onAppear {
