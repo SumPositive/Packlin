@@ -23,7 +23,7 @@ private func npaRequest() -> Request {
 }
 
 // 広告ユニットID
-#if xxDEBUG
+#if DEBUG
 // リワード型 テスト用
 let ADMOB_REWARD_UnitID   = "ca-app-pub-3940256099942544/1712485313"
 // アダプティブ バナー テスト用
