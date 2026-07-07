@@ -49,7 +49,7 @@ struct PackListView: View {
             ScrollViewReader { scrollProxy in
                 List {
                     Section {
-                        ForEach(Array(sortedPacks.enumerated()), id: \.element.id) { index, pack in
+                        ForEach(sortedPacks, id: \.id) { pack in
                             VStack(spacing: 0) {
                             ZStack {
                                 PackRowView(pack: pack) { selected, point in
@@ -84,10 +84,6 @@ struct PackListView: View {
                                     }
                                 }
                             }
-                            // 10件ごと（10・20・30…番目のパックの直後）にバナー広告を挟む
-                            if index % 10 == 9 {
-                                listBannerRow
-                            }
                             }
                             .id(pack.id)
                             .listRowSeparator(.hidden)
@@ -105,6 +101,13 @@ struct PackListView: View {
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
                         .environment(\.defaultMinListRowHeight, 0)
+
+                        // パックが6件以上ある一覧に限り、パック追加セルの下にバナー広告を1つだけ表示する
+                        if sortedPacks.count >= 6 {
+                            listBannerRow
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        }
                     }
                     footer: {
                         if isBeginnerMode {
@@ -340,7 +343,9 @@ struct PackListView: View {
             size: CGSize(width: 320, height: 50)
         )
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
+        // 広告と一覧項目の間隔を広めに取り、誤タップを防ぐ
+        // （Vitalinで間隔が狭く誤タップを招くとして配信停止された経緯を踏まえた対応）
+        .padding(.vertical, 20)
     }
 
     /// フッター：ボタンの説明
