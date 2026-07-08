@@ -50,13 +50,25 @@ struct PublicPackGalleryView: View {
             }
         }
 
-        /// プルダウンに出す全選択肢。先頭が「全言語」、以降が対応言語。
+        /// アプリが標準で用意する言語選択肢（全言語＋対応言語 ja/en）。
         /// 言語を増やすときはこの配列に追記する。
-        static let allCases: [LocaleFilter] = [
+        private static let baseCases: [LocaleFilter] = [
             .all,
             .language("ja"),
             .language("en"),
         ]
+
+        /// プルダウンに出す全選択肢。標準の選択肢に加え、
+        /// デバイス言語が標準に無ければ末尾に追加する
+        /// （例: ko 端末なら「한국어」を出して、その言語のパックを絞り込めるようにする）。
+        static var allCases: [LocaleFilter] {
+            var cases = baseCases
+            if let code = devicePreferredLanguageCode(),
+               cases.contains(where: { $0.id == code }) == false {
+                cases.append(.language(code))
+            }
+            return cases
+        }
 
         /// 表示名。言語はネイティブ表記（日本語 / English）を優先し、無ければコード。
         var title: String {
@@ -69,7 +81,8 @@ struct PublicPackGalleryView: View {
             }
         }
 
-        /// 起動時の既定。デバイス言語が選択肢にあればそれ、無ければ全言語。
+        /// 起動時の既定。デバイス言語を初期選択にする（allCases に必ず含まれる）。
+        /// デバイス言語が取得できないときだけ全言語にフォールバックする。
         static func defaultForDevice() -> LocaleFilter {
             guard let code = devicePreferredLanguageCode() else { return .all }
             return allCases.first { $0.id == code } ?? .all
