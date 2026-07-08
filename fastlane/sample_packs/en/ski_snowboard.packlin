@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Ski & Snowboard",
+  "memo": "Slope gear. Keep it warm and waterproof.",
+  "createdAt": 1783506980.449058,
+  "groups": [
+    {
+      "name": "🎿 Outerwear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1500,
+          "need": 1,
+          "name": "Ski wear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Base layer",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Gloves",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Neck warmer",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥽 Accessories",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Goggles",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Beanie",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 2,
+          "name": "Thick socks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 4,
+          "name": "Hand warmers",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 Care & misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Sunscreen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Lip balm",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Change of clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Cash / IC card",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

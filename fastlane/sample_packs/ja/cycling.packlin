@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "サイクリング",
+  "memo": "ロングライドの装備。パンク修理と補給を忘れずに。",
+  "createdAt": 1783506980.442358,
+  "groups": [
+    {
+      "name": "🚴 装備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "ヘルメット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "グローブ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "サングラス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 2,
+          "name": "ボトル",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔧 メンテ・補給",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 2,
+          "name": "予備チューブ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "携帯ポンプ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "携帯工具",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 3,
+          "name": "補給食",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 貴重品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "財布・身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "スマホ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "鍵",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "現金",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

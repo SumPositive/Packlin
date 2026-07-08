@@ -1,0 +1,105 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "海水浴",
+  "memo": "海を満喫。日焼け対策と着替えをしっかり。",
+  "createdAt": 1783506980.444009,
+  "groups": [
+    {
+      "name": "🏖 ビーチ用品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "水着",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 2,
+          "name": "ビーチタオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "サンダル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "浮き輪・レジャーシート",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "☀️ 対策・ケア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "日焼け止め",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "サングラス・帽子",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "防水ケース",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "ゴミ袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "ウェットティッシュ",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

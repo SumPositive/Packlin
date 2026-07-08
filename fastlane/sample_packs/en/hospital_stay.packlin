@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Hospital Stay",
+  "memo": "Admission prep. Clothes, toiletries, and something to pass time.",
+  "createdAt": 1783506980.451906,
+  "groups": [
+    {
+      "name": "🧾 Admin & essentials",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Insurance & patient card",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Personal seal",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Medication record",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧺 Personal care",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Pajamas & underwear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Toiletries",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "Towels",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Slippers",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "📱 Comfort",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Phone & charger",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Earphones",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Books / magazines",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Tissues & wipes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

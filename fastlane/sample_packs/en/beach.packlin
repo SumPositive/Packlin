@@ -1,0 +1,105 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Beach",
+  "memo": "Enjoy the sea. Sun care and a change of clothes.",
+  "createdAt": 1783506980.4514718,
+  "groups": [
+    {
+      "name": "🏖 Beach items",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Swimsuit",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 2,
+          "name": "Beach towel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Sandals",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Float & sheet",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "☀️ Protection",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Sunscreen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Sunglasses & hat",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Change of clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Waterproof case",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 Misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Drinks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "Trash bags",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wet wipes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

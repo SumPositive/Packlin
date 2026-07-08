@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Doujin Event",
+  "memo": "For a fan convention. Cash, folders, and stamina care.",
+  "createdAt": 1783506980.451318,
+  "groups": [
+    {
+      "name": "💴 Venue essentials",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Cash (small bills)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Catalog / map",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 3,
+          "name": "Clear folders",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 2,
+          "name": "Bags",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔋 Stamina",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Drinks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Snacks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Body wipes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

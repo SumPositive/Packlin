@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "花火大会",
+  "memo": "夏の夜に。浴衣・うちわ・虫除けを。",
+  "createdAt": 1783506980.444397,
+  "groups": [
+    {
+      "name": "🎆 持ち物",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "レジャーシート",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "うちわ・扇子",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "虫除けスプレー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "懐中電灯",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 飲食・ケア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "軽food",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "タオル・汗拭き",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 2,
+          "name": "ゴミ袋",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

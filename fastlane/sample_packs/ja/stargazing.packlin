@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "天体観測",
+  "memo": "星空を見に。防寒と赤色ライトが快適の鍵。",
+  "createdAt": 1783506980.442836,
+  "groups": [
+    {
+      "name": "🔭 観測用品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1500,
+          "need": 1,
+          "name": "双眼鏡・望遠鏡",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "星座早見盤",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "赤色ライト",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "レジャーシート",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧥 防寒・快適",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "防寒着",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "ブランケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "温かい飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "折りたたみ椅子",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

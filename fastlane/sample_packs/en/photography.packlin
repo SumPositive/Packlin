@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Photography",
+  "memo": "For a photo trip. Spare batteries and lens cloth.",
+  "createdAt": 1783506980.450596,
+  "groups": [
+    {
+      "name": "📷 Equipment",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "Camera body",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Lens",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Tripod",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 2,
+          "name": "Spare battery",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💾 Support",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 5,
+          "need": 2,
+          "name": "SD card",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Lens cloth",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Air blower",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -18,11 +18,10 @@ import { neon } from "@neondatabase/serverless";
 
 const COMMIT = process.argv.includes("--commit");
 
-// nickname=sumpo の実ユーザー（DB調査で判明）。ja と en で分けている運用に合わせる。
-const USER_ID = {
-  ja: "8856f454-4345-41f1-9c11-eba24bd8f6df",
-  en: "57a0e4a0-ada6-4cc8-a712-1f520f2ecd83",
-};
+// サンプルは「管理者実機」の user_id に集約する（nickname=sumpo）。
+// 実機から公開ギャラリーで削除・上書きできるようにするため、ja/en とも同じ user_id にする。
+// （過去は ja=8856../en=57a0.. に分けていたが 2026-07-08 に 64f18c2e へ集約済み）
+const DEVICE_USER_ID = "64f18c2e-be24-4535-bd13-c6d6bd1a67a9";
 
 function loadDatabaseUrl() {
   const text = readFileSync("./.dev.vars", "utf8");
@@ -72,9 +71,10 @@ async function main() {
       const payloadBytes = enc.encode(payloadText).length;
       const { groupCount, itemCount, totalWeight } = totals(dto);
       const searchText = buildSearchText(dto);
-      // 既存の手動公開分と衝突しないよう、サンプルは接頭辞付き source_pack_id にする
-      const sourcePackId = `sample-${slug}`;
-      const userId = USER_ID[lang];
+      // 実機集約後のキー形式に合わせる: sample-<slug>-<locale>
+      // （同じ user_id に ja/en を共存させるため locale サフィックスで UNIQUE 衝突を回避）
+      const sourcePackId = `sample-${slug}-${lang}`;
+      const userId = DEVICE_USER_ID;
 
       planned += 1;
       console.log(`[${lang}] "${dto.name}"  G${groupCount} I${itemCount} ${totalWeight}g  src=${sourcePackId} bytes=${payloadBytes}`);

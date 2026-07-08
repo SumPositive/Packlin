@@ -1,0 +1,71 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ボードゲーム会",
+  "memo": "持ち寄り会に。ゲームとおやつを忘れずに。",
+  "createdAt": 1783506980.4436538,
+  "groups": [
+    {
+      "name": "🎲 ゲーム",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 2,
+          "name": "ボードゲーム",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "カードゲーム",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "得点メモ・ペン",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "タイマー",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍿 差し入れ",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "お菓子",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "ウェットティッシュ",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

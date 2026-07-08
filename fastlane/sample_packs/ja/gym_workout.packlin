@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ジム・筋トレ",
+  "memo": "ウェア・シューズ・タオルの定番。プロテインも忘れずに。",
+  "createdAt": 1783506980.440738,
+  "groups": [
+    {
+      "name": "👟 トレーニング",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "トレーニングウェア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "シューズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "グローブ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "タオル",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 補給・ケア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "プロテイン",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "シェイカー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "水",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "シャンプー・ボディソープ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 貴重品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "財布・身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "スマホ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "鍵",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "現金",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

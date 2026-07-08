@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "同人イベント",
+  "memo": "即売会に。現金・クリアファイル・体力ケアを。",
+  "createdAt": 1783506980.44381,
+  "groups": [
+    {
+      "name": "💴 会場必需品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "現金(小銭多め)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "カタログ・地図",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 3,
+          "name": "クリアファイル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 2,
+          "name": "紙袋・エコバッグ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔋 体力ケア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "軽food・補給",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "汗拭きシート",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

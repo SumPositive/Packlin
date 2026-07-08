@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ソロキャンプ",
+  "memo": "軽量ソロ装備。焚き火とコーヒーで一人時間を。",
+  "createdAt": 1783506980.442184,
+  "groups": [
+    {
+      "name": "⛺ 宿泊",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 2000,
+          "need": 1,
+          "name": "ソロテント",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "寝袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "マット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "チェア",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔥 焚き火・調理",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 1,
+          "name": "焚き火台",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "シングルバーナー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "クッカー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "コーヒーセット",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔦 その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "ランタン",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "ヘッドランプ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "ナイフ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "ゴミ袋",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

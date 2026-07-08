@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Cycling",
+  "memo": "Long-ride kit. Puncture repair and fuel are key.",
+  "createdAt": 1783506980.450082,
+  "groups": [
+    {
+      "name": "🚴 Gear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Helmet",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Cycling gloves",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Sunglasses",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 2,
+          "name": "Water bottle",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔧 Repair & fuel",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 2,
+          "name": "Spare tube",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Mini pump",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Multi-tool",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 3,
+          "name": "Energy food",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 Valuables",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Smartphone",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Keys",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Golf",
+  "memo": "A full round setup. Sun and rain protection too.",
+  "createdAt": 1783506980.448748,
+  "groups": [
+    {
+      "name": "⛳ Play items",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "Golf glove",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 45,
+          "need": 6,
+          "name": "Golf balls",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3,
+          "need": 10,
+          "name": "Tees",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "Ball marker",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Apparel",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Golf wear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "Golf shoes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Cap / visor",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Change of clothes",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "☀️ Protection & misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Sunscreen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Rain gear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Towel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Drinks",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

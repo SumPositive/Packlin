@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "テニス",
+  "memo": "ラケット・シューズ・ボール。汗対策も。",
+  "createdAt": 1783506980.441262,
+  "groups": [
+    {
+      "name": "🎾 用具",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "ラケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 3,
+          "name": "テニスボール",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "テニスシューズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "グリップテープ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 ウェア・ケア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "テニスウェア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 2,
+          "name": "リストバンド",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "スポーツドリンク",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

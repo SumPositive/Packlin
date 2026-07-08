@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "花見",
+  "memo": "お花見ピクニック。敷物と防寒を忘れずに。",
+  "createdAt": 1783506980.444185,
+  "groups": [
+    {
+      "name": "🌸 場所取り・飲食",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "レジャーシート",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "お弁当・おつまみ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "紙皿・紙コップ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧥 快適・その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "防寒着・ブランケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "ウェットティッシュ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "ゴミ袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

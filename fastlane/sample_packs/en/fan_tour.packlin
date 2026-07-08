@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Fan Tour",
+  "memo": "Overnight fan trip. Bring an empty bag for goods.",
+  "createdAt": 1783506980.45088,
+  "groups": [
+    {
+      "name": "🎫 Event set",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "Ticket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Cheer goods",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Themed outfit",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Paper fan",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🛍 Travel gear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Bag for goods",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Change of clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Toiletries",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 Valuables",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Smartphone",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Keys",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

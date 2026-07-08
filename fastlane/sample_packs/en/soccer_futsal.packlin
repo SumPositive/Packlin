@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Soccer / Futsal",
+  "memo": "Practice and match basics. Don't forget shin guards.",
+  "createdAt": 1783506980.4493902,
+  "groups": [
+    {
+      "name": "⚽ Gear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "Cleats / shoes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Shin guards",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Uniform",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 2,
+          "name": "Socks",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 Support",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Change of clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Towel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Sports drink",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 420,
+          "need": 1,
+          "name": "Ball",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}
