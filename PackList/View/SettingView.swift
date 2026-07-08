@@ -48,6 +48,9 @@ struct SettingView: View {
     @Environment(\.dismiss) private var dismiss
     #if DEBUG
     @State private var showDebugUserIdAlert = false
+    // 管理者アカウント等へ userId を戻すための入力
+    @State private var debugUserIdInput = ""
+    @State private var showDebugSetUserIdAlert = false
     #endif
 
     var body: some View {
@@ -113,6 +116,27 @@ struct SettingView: View {
                                 .tint(.red.opacity(0.7))
                                 .controlSize(.small)
                                 .padding(.bottom, 4)
+
+                                // デバッグ: userId を指定値へ切り替える（管理者アカウントへ戻す等）
+                                HStack(spacing: 6) {
+                                    TextField("user.id.debug.placeholder", text: $debugUserIdInput)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled(true)
+                                        .font(.footnote.monospaced())
+                                        .textFieldStyle(.roundedBorder)
+                                    Button {
+                                        creditStore.setUserIdForDebug(debugUserIdInput)
+                                        debugUserIdInput = ""
+                                        showDebugSetUserIdAlert = true
+                                    } label: {
+                                        Text("user.id.debug.set")
+                                            .font(.footnote.weight(.semibold))
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                                    .disabled(debugUserIdInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                }
+                                .padding(.bottom, 4)
                                 #endif
                             }
                             .padding(.bottom, 12)
@@ -151,6 +175,11 @@ struct SettingView: View {
             } message: {
                 // 次回利用時に自動で再発行されることを知らせつつ、クレジット初期化も明示する
                 Text(String(localized: "user.id.recreated.when.needed"))
+            }
+            .alert(String(localized: "user.id.debug.set.done"), isPresented: $showDebugSetUserIdAlert) {
+                Button(role: .cancel) { } label: { Text("OK") }
+            } message: {
+                Text(String(localized: "user.id.debug.set.done.message"))
             }
             #endif
         }

@@ -112,6 +112,21 @@ final class CreditStore: ObservableObject {
         // Publishedを通じてUIへ即座に反映させるため空文字を反映
         userId = ""
     }
+
+    /// デバッグ専用: userId を指定値へ切り替える（例: 管理者アカウントへ戻す）。
+    /// 残高やトークンは元ユーザー向けの古い値なので、削除時と同様にクリア・再認証させる。
+    func setUserIdForDebug(_ id: String) {
+        let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false else { return }
+        AzukiUserIdentifier.set(trimmed, keychain: keychain)
+        // 直前ユーザーのクレジット・認証状態が混ざらないようにクリアする
+        keychain.deleteItem(forKey: keychainBalanceKey)
+        credits = 0
+        AzukiApi.shared.clearAuthenticationStateForUserReset()
+        AzukiApi.shared.invalidateDeviceIdentityForDebug()
+        // UIへ即反映
+        userId = trimmed
+    }
     #endif
 
     private func persist() {
@@ -166,6 +181,19 @@ private enum AzukiUserIdentifier {
         // SecItemDeleteに任せ、存在しない場合でもエラーとしない
         keychain.deleteItem(forKey: storageKey)
         iCloud.removeValue(forKey: storageKey)
+    }
+
+    /// 指定した userId を強制的に設定する（デバッグ専用）。
+    /// 管理者アカウント（サンプル公開の運用者）へ戻す等に使う。Keychain と iCloud の両方へ書く。
+    /// - Parameters:
+    ///   - id: 設定したい userId
+    ///   - keychain: 保存先Keychain
+    ///   - iCloud: 保存先 iCloud Key-Value Store
+    static func set(_ id: String,
+                    keychain: KeychainStorage,
+                    iCloud: ICloudKeyValueStore = ICloudKeyValueStore()) {
+        keychain.saveString(id, forKey: storageKey)
+        iCloud.saveString(id, forKey: storageKey)
     }
     #endif
 

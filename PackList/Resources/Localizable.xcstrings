@@ -2478,22 +2478,6 @@
         }
       }
     },
-    "public.pack.import.ad.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch an ad to import"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を見て取り込む"
-          }
-        }
-      }
-    },
     "public.pack.import.ad.body" : {
       "localizations" : {
         "en" : {
@@ -2510,18 +2494,34 @@
         }
       }
     },
-    "public.pack.import.ad.watch" : {
+    "public.pack.import.ad.continue.without" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Watch ad"
+            "value" : "Import without an ad"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "広告を見る"
+            "value" : "広告なしで取り込む"
+          }
+        }
+      }
+    },
+    "public.pack.import.ad.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch an ad to import"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告を見て取り込む"
           }
         }
       }
@@ -2542,18 +2542,18 @@
         }
       }
     },
-    "public.pack.import.ad.continue.without" : {
+    "public.pack.import.ad.watch" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import without an ad"
+            "value" : "Watch ad"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "広告なしで取り込む"
+            "value" : "広告を見る"
           }
         }
       }
@@ -3898,6 +3898,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "UserIDとAI利用券を削除しました"
+          }
+        }
+      }
+    },
+    "user.id.debug.placeholder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter userId to set"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定するuserId"
+          }
+        }
+      }
+    },
+    "user.id.debug.set" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
+    },
+    "user.id.debug.set.done" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User ID updated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UserIDを設定しました"
+          }
+        }
+      }
+    },
+    "user.id.debug.set.done.message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credits and auth were reset for the new user ID."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいUserID向けにクレジットと認証をリセットしました"
           }
         }
       }
