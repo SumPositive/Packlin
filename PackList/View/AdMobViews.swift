@@ -26,6 +26,8 @@ private func npaRequest() -> Request {
 #if DEBUG
 // リワード型 テスト用
 let ADMOB_REWARD_UnitID   = "ca-app-pub-3940256099942544/1712485313"
+// リワード インタースティシャル テスト用（AdMob公式テストID）
+let ADMOB_REWARD_INTERSTITIAL_UnitID = "ca-app-pub-3940256099942544/6978759866"
 // アダプティブ バナー テスト用
 let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 // インタースティシャル（全画面動画）テスト用
@@ -34,6 +36,8 @@ let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 // リワード型
 let ADMOB_REWARD_UnitID   = "ca-app-pub-7576639777972199/1661712828" // reward_1 本番サーバ
 //let ADMOB_REWARD_UnitID = "ca-app-pub-7576639777972199/2789248541" // reward_dev 検証サーバ
+// リワード インタースティシャル 本番用　公開パック取込時に表示＜＜＜コールバックURLを設定しない＞＞＞
+let ADMOB_REWARD_INTERSTITIAL_UnitID = "ca-app-pub-7576639777972199/9603581328" // reward_inter_1
 // アダプティブ バナー 本番用
 let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 // インタースティシャル（全画面動画）本番用
@@ -383,6 +387,105 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
             Crashlytics.crashlytics().log("rewarded_ad_present_failed: \(error.localizedDescription)")
             self.onAdFailedToPresent?(error)
             // 表示失敗のままではユーザーが操作できないため、新しい広告を取りにいく
+            self.loadAd()
+        }
+    }
+}
+
+/// リワード インタースティシャル広告のローダー。
+/// APIは RewardedAdLoader とほぼ同型（型が RewardedInterstitialAd に変わるだけ）。
+/// 公開パックの取込ゲートで使う。在庫が無いとき onAdFailedToLoad が呼ばれる点も同じ。
+final class RewardedInterstitialAdLoader: NSObject, ObservableObject, FullScreenContentDelegate {
+    @Published private(set) var isLoading = false
+    @Published private(set) var isReady = false
+    @Published private(set) var errorMessage: String?
+
+    var onAdLoaded: (() -> Void)?
+    var onAdFailedToLoad: ((Error) -> Void)?
+    var onAdPresented: (() -> Void)?
+    var onAdFailedToPresent: ((Error) -> Void)?
+    var onAdDismissed: (() -> Void)?
+    var onRewardEarned: ((AdReward) -> Void)?
+
+    private let adUnitID: String
+    private var rewardedAd: RewardedInterstitialAd?
+
+    init(adUnitID: String) {
+        self.adUnitID = adUnitID
+        super.init()
+        loadAd()
+    }
+
+    // ※ SSV を使わないため userId は保持しない（取込ゲートはクライアント完結）。
+
+    func loadAd() {
+        isLoading = true
+        isReady = false
+        errorMessage = nil
+
+        let request = npaRequest()
+        RewardedInterstitialAd.load(with: adUnitID, request: request) { [weak self] ad, error in
+            guard let self else { return }
+            Task { @MainActor [self] in
+                self.isLoading = false
+                if let error {
+                    self.errorMessage = adUnavailableMessage
+                    logError(error, domain: "rewarded_interstitial_load", message: "リワードインタースティシャル広告ロード失敗")
+                    Crashlytics.crashlytics().record(error: error)
+                    self.onAdFailedToLoad?(error)
+                    self.rewardedAd = nil
+                } else if let ad {
+                    self.rewardedAd = ad
+                    ad.fullScreenContentDelegate = self
+                    self.isReady = true
+                    self.onAdLoaded?()
+                }
+            }
+        }
+    }
+
+    func present(from root: UIViewController) {
+        guard let rewardedAd else { return }
+        let ad = rewardedAd
+        // ※ SSV（ServerSideVerificationOptions）は設定しない。
+        //   取込ゲートは「視聴できたら取込を通す」クライアント完結の用途で、
+        //   サーバ残高（AI利用券）への付与は不要なため。AdMob 側もこの広告ユニットには
+        //   SSV コールバック URL を設定しないこと（設定すると利用券が誤加算される恐れ）。
+        isReady = false
+        errorMessage = nil
+        ad.present(from: root) { [weak self] in
+            guard let self else { return }
+            self.onRewardEarned?(ad.adReward)
+        }
+    }
+
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.isReady = false
+            self.rewardedAd = nil
+            self.onAdDismissed?()
+            self.loadAd()
+        }
+    }
+
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.onAdPresented?()
+        }
+    }
+
+    func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.errorMessage = adUnavailableMessage
+            self.isReady = false
+            self.rewardedAd = nil
+            logError(error, domain: "rewarded_interstitial_present", message: "リワードインタースティシャル広告表示失敗")
+            Crashlytics.crashlytics().record(error: error)
+            Crashlytics.crashlytics().log("rewarded_interstitial_present_failed: \(error.localizedDescription)")
+            self.onAdFailedToPresent?(error)
             self.loadAd()
         }
     }

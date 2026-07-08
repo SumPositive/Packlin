@@ -254,10 +254,14 @@ enum AppStorageKey {
     static let authorNickname = "publish.authorNickname"
     // 作者ニックネームを一度でも明示確定したか（空のまま公開を選んだ場合も true）
     static let authorNicknameConfigured = "publish.authorNicknameConfigured"
+    // 公開パックの取込回数（累計）。一定回数ごとにリワード広告を挟むための判定に使う
+    static let publicPackImportCount = "publicPack.importCount"
 }
 
 //-------------------------------------- 公開パック（モチメモ）
 let PUBLIC_PACK_PAGE_SIZE = 20 // 公開パック一覧の1ページ取得件数（上位20件ずつ）
+/// 公開パックの取込で、何回ごとにリワード広告視聴を求めるか（3回ごと）
+let PUBLIC_PACK_IMPORT_AD_INTERVAL = 3
 
 /// デバイス本来の優先言語コード
 /// `Locale.current` はアプリの対応ローカライズ（ja/en）に丸められるため、

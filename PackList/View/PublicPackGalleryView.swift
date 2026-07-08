@@ -29,10 +29,62 @@ struct PublicPackGalleryView: View {
         }
     }
 
+    /// 言語の絞り込み。多言語化に備えて言語をここに追加していく。
+    /// `all` は全言語、それ以外は locale コード（サーバの locale 列と一致させる）で1言語に絞る。
+    private enum LocaleFilter: Hashable, Identifiable {
+        case all
+        case language(String) // "ja", "en" など
+
+        var id: String {
+            switch self {
+            case .all: return "all"
+            case .language(let code): return code
+            }
+        }
+
+        /// サーバへ渡す locale 引数（all は nil＝全言語）
+        var localeArg: String? {
+            switch self {
+            case .all: return nil
+            case .language(let code): return code
+            }
+        }
+
+        /// プルダウンに出す全選択肢。先頭が「全言語」、以降が対応言語。
+        /// 言語を増やすときはこの配列に追記する。
+        static let allCases: [LocaleFilter] = [
+            .all,
+            .language("ja"),
+            .language("en"),
+        ]
+
+        /// 表示名。言語はネイティブ表記（日本語 / English）を優先し、無ければコード。
+        var title: String {
+            switch self {
+            case .all:
+                return String(localized: "public.pack.locale.all")
+            case .language(let code):
+                let native = Locale(identifier: code).localizedString(forLanguageCode: code)
+                return native?.capitalized ?? code.uppercased()
+            }
+        }
+
+        /// 起動時の既定。デバイス言語が選択肢にあればそれ、無ければ全言語。
+        static func defaultForDevice() -> LocaleFilter {
+            guard let code = devicePreferredLanguageCode() else { return .all }
+            return allCases.first { $0.id == code } ?? .all
+        }
+    }
+
     @State private var searchText: String = ""
     @State private var sort: SortOrder = .popular
-    /// 自分の端末言語のみに絞り込むか
-    @State private var localeFilterOn: Bool = true
+    /// 言語の絞り込み。既定はデバイス言語（対応言語に無ければ全言語）。
+    @State private var localeFilter: LocaleFilter = LocaleFilter.defaultForDevice()
+
+    /// 公開パックの取込回数（累計）。一定回数ごとにリワード広告を挟むために使う
+    @AppStorage(AppStorageKey.publicPackImportCount) private var importCount: Int = 0
+    /// 広告ゲート表示中に取込予定のパック（視聴完了後にこれを取り込む）
+    @State private var pendingImportItem: PublicPackSummary?
 
     @State private var items: [PublicPackSummary] = []
     @State private var offset: Int = 0
@@ -106,6 +158,21 @@ struct PublicPackGalleryView: View {
         } message: { item in
             Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
         }
+        // 3回ごとの取込で表示するリワード広告ゲート。
+        // 視聴完了なら取込＋回数を進める。広告が見られないときは取込のみ（回数は進めず次回再挑戦）。
+        .sheet(item: $pendingImportItem) { item in
+            ImportAdGateSheet(
+                onRewarded: {
+                    Task { await importPack(item, countsTowardAdGate: true) }
+                },
+                onSkippedNoAd: {
+                    Task { await importPack(item, countsTowardAdGate: false) }
+                }
+            )
+            .appFontScale(fontScale)
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
         .task {
             // 初回表示で先頭ページを読み込む
             if items.isEmpty {
@@ -158,12 +225,28 @@ struct PublicPackGalleryView: View {
 
                 Spacer(minLength: 8)
 
-                Toggle(isOn: $localeFilterOn) {
-                    Text(localeFilterLabel)
-                        .font(.caption)
+                // 言語の絞り込み（多言語対応のためトグルからプルダウンへ）
+                Menu {
+                    Picker("public.pack.locale.picker", selection: $localeFilter) {
+                        ForEach(LocaleFilter.allCases) { filter in
+                            Text(filter.title).tag(filter)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "globe")
+                        Text(localeFilter.title)
+                            .font(.caption)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.caption2)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule().fill(Color(.secondarySystemGroupedBackground))
+                    )
                 }
-                .toggleStyle(.button)
-                .onChange(of: localeFilterOn) { _, _ in Task { await reload() } }
+                .onChange(of: localeFilter) { _, _ in Task { await reload() } }
             }
         }
         .padding(.horizontal, 16)
@@ -315,7 +398,7 @@ struct PublicPackGalleryView: View {
 
     private func importButton(_ item: PublicPackSummary) -> some View {
         Button {
-            Task { await importPack(item) }
+            handleImportTapped(item)
         } label: {
             Label {
                 // 達人モードではアイコンのみ
@@ -353,27 +436,13 @@ struct PublicPackGalleryView: View {
 
     // MARK: - データ取得
 
-    /// 端末の言語コード（絞り込みの既定値）。アプリ対応言語(ja/en)でなくデバイス本来のロケール
-    private func currentLocaleCode() -> String? {
-        devicePreferredLanguageCode()
-    }
-
-    /// 絞り込みトグルのラベル「自言語(JA)のみ」（JA はデバイスロケール、無ければ従来表記）
-    private var localeFilterLabel: String {
-        let code = (currentLocaleCode() ?? "").uppercased()
-        if code.isEmpty {
-            return String(localized: "public.pack.locale.filter")
-        }
-        return String(format: String(localized: "public.pack.locale.filter.fmt"), code)
-    }
-
     private func queryArg() -> String? {
         let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
     }
 
     private func localeArg() -> String? {
-        localeFilterOn ? currentLocaleCode() : nil
+        localeFilter.localeArg
     }
 
     /// 条件を変えて先頭から読み直す
@@ -420,15 +489,36 @@ struct PublicPackGalleryView: View {
         }
     }
 
+    /// 取込ボタンが押されたときの入口。
+    /// この取込が PUBLIC_PACK_IMPORT_AD_INTERVAL の倍数番目（3・6・9…回目）なら
+    /// リワード広告ゲートを挟み、視聴完了後に取込する。それ以外はそのまま取込む。
+    private func handleImportTapped(_ item: PublicPackSummary) {
+        if rowStatus[item.id] != nil { return }
+        let nextCount = importCount + 1
+        if nextCount % PUBLIC_PACK_IMPORT_AD_INTERVAL == 0 {
+            // 3回ごと：広告ゲートを表示。視聴完了で pendingImportItem を取り込む
+            pendingImportItem = item
+        } else {
+            Task { await importPack(item, countsTowardAdGate: true) }
+        }
+    }
+
     /// 公開パックを取り込む（新しいローカルIDが採番される）
+    /// - Parameter countsTowardAdGate: 取込成功時に取込回数を進めるか。
+    ///   通常取込・広告視聴完了は true。広告在庫が無く広告なしで取り込む場合は false にして
+    ///   回数を進めず、次回の取込でまた広告視聴に挑戦させる。
     @MainActor
-    private func importPack(_ item: PublicPackSummary) async {
+    private func importPack(_ item: PublicPackSummary, countsTowardAdGate: Bool) async {
         if rowStatus[item.id] != nil { return }
         rowStatus[item.id] = .loading
         do {
             let userId = creditStore.regenerateUserIdIfNeeded()
             let dto = try await AzukiApi.shared.importPublicPack(publishedId: item.id, userId: userId)
             insert(dto: dto)
+            // 取込成功をカウント（次回の広告ゲート判定に使う）。広告なしスキップ時は進めない。
+            if countsTowardAdGate {
+                importCount += 1
+            }
             GALogger.log(.public_pack_result(action: "import", isSuccess: true, itemCount: item.itemCount,
                                              errorDomain: nil, errorCode: nil, message: nil))
             // 完了表示は少し見せてから自動で消し、再取り込みできる状態へ戻す
