@@ -1,0 +1,132 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Overnight Backpacking",
+  "memo": "Tent, sleeping bag, and cooking gear. Weight matters.",
+  "createdAt": 1783493373.473716,
+  "groups": [
+    {
+      "name": "⛺ Shelter & sleep",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1600,
+          "need": 1,
+          "name": "Tent",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "Sleeping bag",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Sleeping mat",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍳 Cooking",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Stove",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 220,
+          "need": 1,
+          "name": "Gas canister",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Cookware",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Dishes & cutlery",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 Hiking gear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1800,
+          "need": 1,
+          "name": "Backpack",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Trekking poles",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Rain gear (top & bottom)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "Headlamp",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 Food & water",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Water",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Trail snacks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Food (1 night)",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

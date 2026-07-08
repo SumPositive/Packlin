@@ -1,0 +1,160 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "海外旅行",
+  "memo": "パスポート・変換プラグなど海外ならではの必需品。",
+  "createdAt": 1783493373.470815,
+  "groups": [
+    {
+      "name": "🛂 渡航書類",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "パスポート",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "航空券・予約控え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "海外旅行保険証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 2,
+          "name": "クレジットカード",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "現地通貨",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 電源・通信",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "変換プラグ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "SIM・WiFiルーター",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "充電ケーブル",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧼 洗面・衛生",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "歯ブラシ・歯磨き粉",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "洗顔・スキンケア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "常備薬",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 3,
+          "name": "マスク",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "ハンカチ・ティッシュ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 衣類",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 4,
+          "name": "下着",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 4,
+          "name": "靴下",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 3,
+          "name": "トップス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "上着",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

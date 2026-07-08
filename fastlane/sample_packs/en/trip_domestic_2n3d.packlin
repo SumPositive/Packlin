@@ -1,0 +1,187 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Domestic Trip (3 days)",
+  "memo": "For a slightly longer trip. Extra changes of clothes.",
+  "createdAt": 1783493373.47313,
+  "groups": [
+    {
+      "name": "💳 Valuables",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Smartphone",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Keys",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Charging",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "Charging cable",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "Wall charger",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Earphones",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧼 Toiletries",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Toothbrush & paste",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Face wash & skincare",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Medicine",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 3,
+          "name": "Masks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Handkerchief & tissue",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Clothes",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 3,
+          "name": "Underwear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 3,
+          "name": "Socks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "T-shirt",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Light jacket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Pajamas",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👜 Nice to have",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Reusable bag",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Folding umbrella",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Medicine",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

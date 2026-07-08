@@ -81,6 +81,8 @@ struct PackListView: View {
                                         }
                                         .buttonStyle(.plain)
                                         .frame(width: navigationLinkWidth)
+                                        // スクショ撮影用: 先頭パックへの遷移を識別子で確実にタップできるようにする
+                                        .accessibilityIdentifier(pack.id == sortedPacks.first?.id ? "packRow_first_open" : "")
                                     }
                                 }
                             }
@@ -252,6 +254,8 @@ struct PackListView: View {
                         }
                         .buttonStyle(.borderless)
                         .disabled(isShowingEditSheet)
+                        // スクショ撮影用: パック追加ポップオーバーを開くボタン
+                        .accessibilityIdentifier("packAdd_button")
                         .popover(
                             isPresented: $isShowingPackAddPopover,
                             attachmentAnchor: .point(.bottom),
@@ -540,6 +544,7 @@ private struct PackAddPopoverView: View {
             optionButton(
                 title: "public.pack.gallery.title",
                 systemImage: sfSymbolName("square.and.arrow.down.on.square", fallback: "square.and.arrow.down"),
+                identifier: "packAdd_publicGallery",  // スクショ撮影用
                 action: onPublicGallery
             )
         }
@@ -551,6 +556,7 @@ private struct PackAddPopoverView: View {
     private func optionButton(
         title: LocalizedStringKey,
         systemImage: String,
+        identifier: String = "",
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -574,6 +580,7 @@ private struct PackAddPopoverView: View {
             .padding(.horizontal, 8)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier)
     }
 }
 

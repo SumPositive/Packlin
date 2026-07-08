@@ -1,0 +1,139 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Emergency Kit",
+  "memo": "Grab-and-go kit. Review contents and expiry dates regularly.",
+  "createdAt": 1783493373.4753652,
+  "groups": [
+    {
+      "name": "💧 Water & food",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 4,
+          "name": "Bottled water (500ml)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 3,
+          "name": "Emergency food",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 3,
+          "name": "Portable toilet",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔦 Light & info",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Flashlight",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Portable radio",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 25,
+          "need": 4,
+          "name": "Batteries",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🩹 Hygiene & first aid",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "First-aid kit",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 5,
+          "name": "Masks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wet wipes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Medicine",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧤 Warmth & misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Emergency blanket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Work gloves",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Cash (incl. coins)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "Copy of ID",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

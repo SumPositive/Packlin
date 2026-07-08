@@ -1,0 +1,160 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Overseas Trip",
+  "memo": "Passport, adapters, and other overseas essentials.",
+  "createdAt": 1783493373.473344,
+  "groups": [
+    {
+      "name": "🛂 Travel documents",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Passport",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Tickets & bookings",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Travel insurance",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 2,
+          "name": "Credit card",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Local cash",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Power & connectivity",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Plug adapter",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "SIM / WiFi router",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "Charging cable",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧼 Toiletries",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Toothbrush & paste",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Face wash & skincare",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Medicine",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 3,
+          "name": "Masks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Handkerchief & tissue",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Clothes",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 4,
+          "name": "Underwear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 4,
+          "name": "Socks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 3,
+          "name": "Tops",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Jacket",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

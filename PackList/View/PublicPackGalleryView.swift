@@ -66,14 +66,17 @@ struct PublicPackGalleryView: View {
                 controlBar
                 Divider()
                 listContent
-                // フッターのバナー広告
-                Divider()
-                AdMobBannerView(
-                    adUnitID: ADMOB_BANNER_UnitID,
-                    size: CGSize(width: 320, height: 50)
-                )
-                .frame(height: 50)
-                .padding(.vertical, 4)
+                // フッターのバナー広告（スクショ撮影時は審査用スクショに広告を写さないため非表示）
+                if SnapshotSupport.isRunningSnapshot == false {
+                    Divider()
+                    AdMobBannerView(
+                        adUnitID: ADMOB_BANNER_UnitID,
+                        size: CGSize(width: 320, height: 50)
+                    )
+                    .frame(height: 50)
+                    .padding(.vertical, 4)
+                }
+                // ※ 一覧の中身はスクショ時も実サーバから取得する（管理者が公開したサンプルを表示）
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle(Text("public.pack.gallery.title"))
@@ -522,4 +525,5 @@ struct PublicPackGalleryView: View {
         }
         return "\(grams)g"
     }
+
 }

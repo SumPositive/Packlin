@@ -1,0 +1,139 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "防災リュック",
+  "memo": "非常持ち出し用。定期的に中身と期限を見直しましょう。",
+  "createdAt": 1783493373.47272,
+  "groups": [
+    {
+      "name": "💧 水・食料",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 4,
+          "name": "保存水(500ml)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 3,
+          "name": "非常食",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 3,
+          "name": "携帯トイレ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔦 明かり・情報",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "懐中電灯",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "携帯ラジオ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 25,
+          "need": 4,
+          "name": "乾電池",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🩹 衛生・救急",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "救急セット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 5,
+          "name": "マスク",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "ウェットティッシュ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "常備薬",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧤 防寒・その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "アルミブランケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "軍手",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "現金(小銭含む)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "身分証コピー",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

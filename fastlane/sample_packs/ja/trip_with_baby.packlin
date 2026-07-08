@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "赤ちゃん連れ旅行",
+  "memo": "おむつ・ミルク・着替えは多めに。母子手帳も忘れずに。",
+  "createdAt": 1783493373.472183,
+  "groups": [
+    {
+      "name": "🍼 授乳・ミルク",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "哺乳瓶",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "粉ミルク",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "授乳ケープ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 3,
+          "name": "スタイ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧷 おむつまわり",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 40,
+          "need": 10,
+          "name": "紙おむつ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "おしりふき",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "おむつ替えシート",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 5,
+          "name": "防臭袋",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 着替え・ケア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 3,
+          "name": "ベビー服",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "ガーゼ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "母子手帳・保険証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "ベビー用保湿",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

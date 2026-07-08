@@ -1,0 +1,19 @@
+Packlin is a checklist app that organizes what you bring for trips, business travel, camping, and more in three layers: Pack (bag), Group (pouch), and Item.
+
+■ Checking and quantity management
+Check off each item and record required and stock counts. Add a per-item weight (g) and the app automatically totals the weight of your whole load.
+
+■ Item overview
+See every item in a pack across all groups in one list. Sort by unchecked, shortage count, shortage weight, or stock weight. Perfect for a final check before departure or for reviewing an overweight bag. Keyword search is supported.
+
+■ Quantity input
+Drag the dial left or right to adjust counts intuitively. Tap the number to type directly with a dedicated keypad. The dial's style and sensitivity are customizable.
+
+■ Undo / Redo
+No confirmation dialogs and no Save button, so you can work fast. Made a mistake? Undo up to 10 steps back.
+
+■ Sharing and backup
+Export a single pack as a .packlin file and share it via AirDrop or email. Back up and restore all packs at once, so switching devices is worry-free.
+
+■ AI "Chappy" (optional, paid)
+Just enter your destination or purpose, and the AI suggests the entire contents of a pack. You can also ask it to add to or revise an existing pack. Each generation requires one AI ticket, available by purchase or by watching a video ad.

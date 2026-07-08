@@ -1,0 +1,1 @@
+Organize gear in three layers: bag, pouch, item. Check off with counts and weight to avoid forgotten items and overpacking. AI suggests a full pack. Share and back up.

@@ -1,0 +1,132 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "テント泊登山",
+  "memo": "テント・寝袋・炊事道具込み。重量管理が重要。",
+  "createdAt": 1783493373.471332,
+  "groups": [
+    {
+      "name": "⛺ 宿泊装備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1600,
+          "need": 1,
+          "name": "テント",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "寝袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "スリーピングマット",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍳 炊事",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "バーナー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 220,
+          "need": 1,
+          "name": "ガス缶",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "クッカー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "食器・カトラリー",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 登山装備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1800,
+          "need": 1,
+          "name": "バックパック",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "トレッキングポール",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "雨具(上下)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "ヘッドランプ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 食料・水",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "水",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "行動食",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "食料(1泊分)",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

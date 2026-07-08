@@ -52,6 +52,28 @@
                ReferencedContainer = "container:Packlin.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C3562E942FFD486A00539096"
+               BuildableName = "PackListSnapshotUITests.xctest"
+               BlueprintName = "PackListSnapshotUITests"
+               ReferencedContainer = "container:Packlin.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C3562E842FFD47A400539096"
+               BuildableName = "PacklinSnapshotUITests.xctest"
+               BlueprintName = "PacklinSnapshotUITests"
+               ReferencedContainer = "container:Packlin.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

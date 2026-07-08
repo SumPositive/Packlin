@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Trip with a Baby",
+  "memo": "Bring extra diapers, milk, and clothes. Don't forget records.",
+  "createdAt": 1783493373.47468,
+  "groups": [
+    {
+      "name": "🍼 Feeding",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Baby bottle",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Formula",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Nursing cover",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 3,
+          "name": "Bib",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧷 Diapering",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 40,
+          "need": 10,
+          "name": "Diapers",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Baby wipes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Changing pad",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 5,
+          "name": "Odor-proof bags",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 Clothes & care",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 3,
+          "name": "Baby clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "Gauze cloth",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Health records & card",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Baby lotion",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

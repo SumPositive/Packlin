@@ -1,0 +1,3 @@
+- Refreshed the app icon.
+- Reworked ad placement in lists for a layout that's less prone to accidental taps.
+- Minor display tweaks and stability improvements.

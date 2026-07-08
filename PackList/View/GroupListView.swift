@@ -182,6 +182,8 @@ struct GroupListView: View {
                                         }
                                         .buttonStyle(.plain)
                                         .frame(width: navigationLinkWidth)
+                                        // スクショ撮影用: 先頭グループへの遷移を識別子で確実にタップできるようにする
+                                        .accessibilityIdentifier(group.id == sortedGroups.first?.id ? "groupRow_first_open" : "")
                                     }
                                 }
                             }
