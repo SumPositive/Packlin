@@ -63,3 +63,8 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/screenshots/screenshots.html
 fastlane/test_output
+
+# 公開パックサンプルの生成物（.packlin はスクリプトから再生成できる派生物なので追跡しない）
+# 生成元（generate_*.py / terms.py / db_publish_samples.mjs / README.md）はコミットする
+fastlane/sample_packs/*/*.packlin
+fastlane/sample_packs/_v2out/

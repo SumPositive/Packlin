@@ -53,14 +53,18 @@ function totals(dto) {
   return { groupCount: dto.groups.length, itemCount: items, totalWeight: weight };
 }
 
-const SAMPLE_DIR = "../Packlin/fastlane/sample_packs";
+// 既定は ja/en の本番フォルダ。検証や多言語投入は環境変数で差し替える:
+//   SAMPLE_SUBDIR=_v2out  … 読み込むサブフォルダ（sample_packs 配下）
+//   SAMPLE_LANGS=ja,en,de,es,fr,it,ko,zh-Hant … 投入する言語（カンマ区切り）
+const SAMPLE_DIR = `../Packlin/fastlane/sample_packs/${process.env.SAMPLE_SUBDIR ?? ""}`.replace(/\/$/, "");
+const SAMPLE_LANGS = (process.env.SAMPLE_LANGS ?? "ja,en").split(",").map((s) => s.trim()).filter(Boolean);
 
 async function main() {
   const sql = neon(loadDatabaseUrl());
   const enc = new TextEncoder();
   let planned = 0, wrote = 0;
 
-  for (const lang of ["ja", "en"]) {
+  for (const lang of SAMPLE_LANGS) {
     const dir = `${SAMPLE_DIR}/${lang}`;
     const files = readdirSync(dir).filter((f) => f.endsWith(".packlin")).sort();
     for (const file of files) {
