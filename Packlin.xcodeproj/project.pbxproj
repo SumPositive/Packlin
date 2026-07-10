@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C3562EB330007A2D00539096 /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3562EB130007A2D00539096 /* SnapshotHelper.swift */; };
+		C3562EB430007A2D00539096 /* PacklinSnapshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3562EB030007A2D00539096 /* PacklinSnapshotUITests.swift */; };
 		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
 		C39A862C2F9356DC00644F0F /* AZDial in Frameworks */ = {isa = PBXBuildFile; productRef = C39A862B2F9356DC00644F0F /* AZDial */; };
 		C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
@@ -39,6 +41,8 @@
 
 /* Begin PBXFileReference section */
 		C3562E952FFD486A00539096 /* PackListSnapshotUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PackListSnapshotUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3562EB030007A2D00539096 /* PacklinSnapshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacklinSnapshotUITests.swift; sourceTree = "<group>"; };
+		C3562EB130007A2D00539096 /* SnapshotHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
 		C3D2BB6C2E6A7967002B900A /* Packlin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Packlin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB7B2E6A7969002B900A /* PacklinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D2BB852E6A7969002B900A /* PacklinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PacklinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -56,11 +60,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C3562E962FFD486A00539096 /* PackListSnapshotUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PackListSnapshotUITests;
-			sourceTree = "<group>";
-		};
 		C3D2BB6E2E6A7967002B900A /* PackList */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -109,6 +108,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C3562EB230007A2D00539096 /* PackListSnapshotUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C3562EB030007A2D00539096 /* PacklinSnapshotUITests.swift */,
+				C3562EB130007A2D00539096 /* SnapshotHelper.swift */,
+			);
+			name = PackListSnapshotUITests;
+			path = fastlane/PackListSnapshotUITests;
+			sourceTree = "<group>";
+		};
 		C36757AB2E80330F0098BB22 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,7 +131,7 @@
 				C3D2BB6E2E6A7967002B900A /* PackList */,
 				C3D2BB7E2E6A7969002B900A /* PackListTests */,
 				C3D2BB882E6A7969002B900A /* PackListUITests */,
-				C3562E962FFD486A00539096 /* PackListSnapshotUITests */,
+				C3562EB230007A2D00539096 /* PackListSnapshotUITests */,
 				C36757AB2E80330F0098BB22 /* Frameworks */,
 				C3D2BB6D2E6A7967002B900A /* Products */,
 			);
@@ -154,9 +163,6 @@
 			);
 			dependencies = (
 				C3562E9C2FFD486A00539096 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				C3562E962FFD486A00539096 /* PackListSnapshotUITests */,
 			);
 			name = PackListSnapshotUITests;
 			productName = PackListSnapshotUITests;
@@ -312,6 +318,8 @@
 		C3562E912FFD486A00539096 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				C3562EB330007A2D00539096 /* SnapshotHelper.swift in Sources */,
+				C3562EB430007A2D00539096 /* PacklinSnapshotUITests.swift in Sources */,
 			);
 		};
 		C3D2BB682E6A7967002B900A /* Sources */ = {

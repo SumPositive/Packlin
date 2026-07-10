@@ -81,7 +81,7 @@ struct PackListView: View {
                                         }
                                         .buttonStyle(.plain)
                                         .frame(width: navigationLinkWidth)
-                                        // スクショ撮影用: 先頭パックへの遷移を識別子で確実にタップできるようにする
+                                        // スクショ撮影用: 先頭パックの識別子（UIテストは座標タップで補完する）
                                         .accessibilityIdentifier(pack.id == sortedPacks.first?.id ? "packRow_first_open" : "")
                                     }
                                 }
