@@ -37,8 +37,21 @@ final class PacklinSnapshotUITests: XCTestCase {
         // 01: パック一覧
         snapshot("01PackList")
 
+        // 04: 公開パックから取得（★ push で深い画面に入る前に、ルートで撮る。
+        //     こうすれば popToRoot 不要で確実にルートから popover を開ける）
+        if tap(app, "packAdd_button") {
+            sleep(1)
+            // ポップオーバー内の「公開パックから取得」項目を identifier→実文言→座標で多段タップ
+            if tapPublicGalleryOption(app) {
+                sleep(3) // 実サーバ取得を待つ
+                snapshot("04PublicGallery")
+                // シートを閉じてパック一覧へ戻る（下スワイプ or 閉じるボタン）
+                dismissSheet(app)
+                sleep(1)
+            }
+        }
+
         // 02: 先頭パック → グループ一覧
-        // 先頭パック行の遷移領域（行の右寄り）をタップして push する。
         if tapFirstRowNavigation(app, identifier: "packRow_first_open") {
             sleep(2)
             snapshot("02GroupList")
@@ -49,20 +62,16 @@ final class PacklinSnapshotUITests: XCTestCase {
                 snapshot("03ItemList")
             }
         }
+    }
 
-        // 04: パック一覧へ戻ってから、公開パックから取得
-        popToRoot(app)
-        sleep(1)
-        if tap(app, "packAdd_button") {
-            sleep(1)
-            // ポップオーバー内の「公開パックから取得」項目をタップ。
-            // popover は別 presentation なので identifier だけでなく
-            // ローカライズ文言・座標も含めて多段で拾う。
-            if tapPublicGalleryOption(app) {
-                sleep(3) // 実サーバ取得を待つ
-                snapshot("04PublicGallery")
-            }
-        }
+    /// 表示中のシート/ポップオーバーを閉じる。閉じるボタン→下スワイプの順で試す。
+    @MainActor
+    private func dismissSheet(_ app: XCUIApplication) {
+        // 公開パック画面の閉じるボタン（chevron.down のツールバー）を試す
+        let close = app.navigationBars.buttons.firstMatch
+        if close.exists && close.isHittable { close.tap(); return }
+        // ダメなら画面中央から下へスワイプしてシートを下げる
+        app.swipeDown()
     }
 
     /// パック追加ポップオーバー内の「公開パックから取得」項目をタップする。
