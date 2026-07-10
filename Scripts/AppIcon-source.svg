@@ -1,0 +1,104 @@
+<!--
+  Packlin App Icon — ベース元データ (2026-07-10確定)
+  バッグ含む中身全体を右へ3.5°傾け(浮遊感) / 上の3図形(左右四角・青丸+白+)とハンドルを結ぶ引き出し線 / 窓の点々なし。
+  背景の赤茶グラデは回転せず全面のまま(四隅の隙間防止)。
+  書き出し: rsvg-convert -w 1024 -h 1024 AppIcon-source.svg -o Pack-1024.png (App Store用はRGB)
+-->
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 背景: 左上明→右下暗の赤茶グラデ -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e5774f"/>
+      <stop offset="0.55" stop-color="#c05a46"/>
+      <stop offset="1" stop-color="#9b3e3b"/>
+    </linearGradient>
+    <!-- 四角のわずかな縦グラデ(立体感) -->
+    <linearGradient id="sqL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6ab48"/>
+      <stop offset="1" stop-color="#f0983a"/>
+    </linearGradient>
+    <linearGradient id="sqM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4933a"/>
+      <stop offset="1" stop-color="#ee8022"/>
+    </linearGradient>
+    <linearGradient id="circle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#74c6ff"/>
+      <stop offset="1" stop-color="#54b3f5"/>
+    </linearGradient>
+    <linearGradient id="cream" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf9"/>
+      <stop offset="1" stop-color="#fdf6ec"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景(角丸はAppIconマスクに任せるためフル矩形。回転しない) -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- 中身全体を右へ3.5°傾けて浮遊感を出す -->
+  <g transform="rotate(3.5 512 512)">
+
+  <!-- ===== 上の3図形(元の配置・傾きは維持) ===== -->
+  <!-- 左のオレンジ四角 (+2.8deg) -->
+  <g transform="rotate(3 268 264)">
+    <rect x="176" y="172" width="185" height="185" rx="46" fill="url(#sqL)"/>
+  </g>
+  <!-- 中のオレンジ四角 (-1deg) -->
+  <g transform="rotate(-1 538 197)">
+    <rect x="459" y="118" width="160" height="160" rx="42" fill="url(#sqM)"/>
+  </g>
+  <!-- 右の青丸 + 白い + -->
+  <circle cx="796" cy="271" r="86" fill="url(#circle)"/>
+  <g stroke="#f4f4f4" stroke-width="20" stroke-linecap="round">
+    <line x1="796" y1="238" x2="796" y2="304"/>
+    <line x1="763" y1="271" x2="829" y2="271"/>
+  </g>
+
+  <!-- ===== つなぎの点線 ===== -->
+  <!-- バッグ(取っ手の肩)と上の3図形を結ぶ引き出し線。左右対称の直線。 -->
+  <!-- 図形側(上)ほど小さく、取っ手側(下)ほど大きい -->
+  <g fill="#e0b7a3" opacity="0.9">
+    <!-- 左: 左のオレンジ四角 → 取っ手左肩 -->
+    <circle cx="287" cy="357" r="7"/>
+    <circle cx="340" cy="379" r="8"/>
+    <circle cx="389" cy="399" r="9"/>
+    <!-- 右: 青丸 → 取っ手右肩 -->
+    <circle cx="737" cy="357" r="7"/>
+    <circle cx="684" cy="379" r="8"/>
+    <circle cx="635" cy="399" r="9"/>
+    <!-- 中央: 中のオレンジ四角 → 取っ手の頂点 -->
+    <circle cx="531" cy="298" r="7"/>
+    <circle cx="525" cy="323" r="8"/>
+    <circle cx="519" cy="348" r="9"/>
+  </g>
+
+  <!-- ===== バッグ(水平) ===== -->
+  <!-- 取っ手: アーチ(クリームの太い枠に中央の窓) -->
+  <g>
+    <!-- 取っ手の外形(クリーム) -->
+    <path d="M 405 470
+             L 405 405
+             Q 405 350 460 350
+             L 566 350
+             Q 621 350 621 405
+             L 621 470 Z"
+          fill="url(#cream)"/>
+    <!-- 取っ手の窓(内側の穴=背景色) -->
+    <rect x="443" y="405" width="140" height="62" rx="16" fill="#bd5844"/>
+  </g>
+
+  <!-- 本体(角丸長方形, 水平) -->
+  <rect x="168" y="452" width="688" height="470" rx="70" fill="url(#cream)"/>
+
+  <!-- 中身: 2つのチェックトグル + 2本の項目線 -->
+  <!-- 上段 -->
+  <circle cx="300" cy="612" r="52" fill="#ef7f22"/>
+  <path d="M 276 612 L 294 632 L 328 594" fill="none" stroke="#ffffff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="392" y="592" width="352" height="40" rx="20" fill="#cda89a"/>
+
+  <!-- 下段 -->
+  <circle cx="300" cy="760" r="52" fill="#ef7f22"/>
+  <path d="M 276 760 L 294 780 L 328 742" fill="none" stroke="#ffffff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="392" y="740" width="300" height="40" rx="20" fill="#cda89a"/>
+
+  </g>
+</svg>
