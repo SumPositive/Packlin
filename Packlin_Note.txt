@@ -185,16 +185,15 @@ Divigo,Vitalinで行った　fastlaneによるメタデータとスクリーン�
 - アプリアイコンを刷新しました
 - 細かな表示調整と安定性の改善を行いました
 -----
+fastlane メタデータを更新して
+3.4.0 審査提出中、README.mdの開発メモ、公開アプリパネル、取扱説明、azuki-apiのREADME.md を更新して
+-----
 cd /Users/sumpositive/GitLocal/Packlin
 fastlane preview_metadata       # メタ 確認 >[y]反映
 fastlane upload_metadata        # メタ 反映
 fastlane screenshots            # スクショ 生成確認
 fastlane upload_screenshots     # スクショ Upload
------
-3.4.0 本日公開、README.mdの開発メモ、公開アプリパネル、取扱説明（jp/en）を更新してほしい。azuki-apiのREADME.mdも更新して
---------------------------------
-
-
+------------------------------------------------
 
 
 多言語対応：de,es,fr,it,ko,zh-Hant に対応したい
