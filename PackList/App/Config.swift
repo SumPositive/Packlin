@@ -286,8 +286,10 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
-#if DEBUG
-//------------------------- DEBUGモード
+#if DEBUG && targetEnvironment(simulator)
+//------------------------- DEBUGモード（シミュレータのみ）
+// シミュレータではローカルスタブ（ngrok経由）に接続する。
+// DEBUGモードでも実機は下の #else 側（本番）に接続する。
 // Local server
 // ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
 // ローカルサーバを起動する
@@ -296,8 +298,9 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 //   $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
 let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")! // ← ngrok の URL に差し替える
 #else
-//------------------------- RELEASEモード（ArchiveでAppStoreにアップする）
+//------------------------- 本番接続（RELEASEモード全般、および DEBUGモードの実機）
 // TestFlightでは、RELEASEモードで本番同様だが、購入はSandboxテストモードで動作するので課金されない！
+// DEBUGモードの実機もここに来るため、実機デバッグ時は本番サーバに接続する。
 // Cloudflare Workers & Pagesへデプロイする
 //   % npx wrangler deploy
 // 本番 Deploy server

@@ -66,7 +66,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C3562E742FFD476600539096"
+               BlueprintIdentifier = "C3562E942FFD486A00539096"
                BuildableName = "PackListSnapshotUITests.xctest"
                BlueprintName = "PackListSnapshotUITests"
                ReferencedContainer = "container:Packlin.xcodeproj">
