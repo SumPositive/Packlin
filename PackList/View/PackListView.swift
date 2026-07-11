@@ -334,7 +334,10 @@ struct PackListView: View {
         .sheet(isPresented: $isShowPublicGallery) {
             PublicPackGalleryView()
                 .appFontScale(fontScale)
-                .presentationDragIndicator(.visible)
+                // スワイプダウンでは閉じない（左上の閉じるボタンでのみ閉じる）。
+                // 取込中の誤操作を防ぐため。ドラッグインジケーターも非表示にする。
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled()
         }
     }
 
