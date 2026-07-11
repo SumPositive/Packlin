@@ -54,6 +54,8 @@ struct PackRowView: View {
     }
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    // 公開中かどうか（publishedId があれば公開中）
+    private var isPublished: Bool { pack.publishedId != nil }
 
     
     var body: some View {
@@ -71,7 +73,7 @@ struct PackRowView: View {
                             .imageScale(.large)
                             .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                             .symbolEffect(.bounce.up.byLayer, options: .nonRepeating) // Once
-                        
+
                         if allItemsChecked {
                             Image(systemName: "checkmark")
                                 .imageScale(.small)
@@ -83,6 +85,14 @@ struct PackRowView: View {
                                 .imageScale(.small)
                                 .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
                                 .padding(.top, 5)
+                        }
+                    }
+                    // 公開中バッジはアイコン下端にオーバーレイで重ねる。
+                    // 行の高さを増やさないため、VStackで縦積みにはしない（name/memo間に隙間ができるのを防ぐ）。
+                    .overlay(alignment: .bottom) {
+                        if isPublished {
+                            publishedBadge
+                                .offset(y: 9) // アイコンのすぐ下にはみ出させる
                         }
                     }
                     .padding(.leading, 0)
@@ -171,6 +181,17 @@ struct PackRowView: View {
 }
 
 private extension PackRowView {
+    /// 「公開中」を示す小さなバッジ。バッグアイコンの真下に控えめに表示する。
+    /// 文字は折り返さず、極小フォントで幅を取らないようにする。
+    @ViewBuilder
+    var publishedBadge: some View {
+        Text("pack.published.badge")
+            .font(.system(size: 9, weight: .semibold))
+            .lineLimit(1)
+            .fixedSize()
+            .foregroundStyle(COLOR_ADD_ACTION)
+    }
+
     /// 行先頭のインデント（30pt の透明スペース）
     @ViewBuilder
     var indentSpacer: some View {

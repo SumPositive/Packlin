@@ -560,6 +560,9 @@ struct PublicPackGalleryView: View {
             try await AzukiApi.shared.unpublishPack(publishedId: item.id)
             GALogger.log(.public_pack_result(action: "delete", isSuccess: true, itemCount: item.itemCount,
                                              errorDomain: nil, errorCode: nil, message: nil))
+            // 公開取消をローカルにも反映し、「公開中」バッジを消す。
+            // publishedId が一致するローカルパックのフラグをクリアする。
+            clearPublishedFlag(forPublishedId: item.id)
             // セルは消さず、カバー上に「削除しました」を表示したままにする
             rowStatus[item.id] = .done(String(localized: "public.pack.deleted"))
         } catch let apiError as AzukiAPIError {
@@ -568,6 +571,19 @@ struct PublicPackGalleryView: View {
         } catch {
             logPublicPackError(action: "delete", error)
             setRowState(item.id, .error(String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
+        }
+    }
+
+    /// 指定した publishedId を持つローカルパックの「公開中」フラグをクリアする。
+    /// 公開取消（unpublish）成功後に呼び、パックセルの「公開中」バッジを消す。
+    @MainActor
+    private func clearPublishedFlag(forPublishedId publishedId: String) {
+        let descriptor = FetchDescriptor<M1Pack>(
+            predicate: #Predicate { $0.publishedId == publishedId }
+        )
+        guard let packs = try? modelContext.fetch(descriptor) else { return }
+        for pack in packs {
+            pack.publishedId = nil
         }
     }
 

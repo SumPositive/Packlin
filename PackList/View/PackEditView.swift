@@ -516,7 +516,7 @@ struct PackEditView: View {
             // アプリ対応言語(ja/en)ではなくデバイス本来のロケールを登録する
             let locale = devicePreferredLanguageCode()
 
-            _ = try await AzukiApi.shared.publishPack(
+            let publishedRef = try await AzukiApi.shared.publishPack(
                 userId: userId,
                 sourcePackId: pack.id,
                 dto: dto,
@@ -526,6 +526,8 @@ struct PackEditView: View {
                 itemCount: itemCount,
                 totalWeight: pack.needWeight
             )
+            // 公開成功をローカルにも記録し、パックセルに「公開中」バッジを出せるようにする
+            pack.publishedId = publishedRef.publishedId
             GALogger.log(.feature_use(name: "public_pack", source: "pack_edit", detail: "publish"))
             GALogger.log(.public_pack_result(action: "publish", isSuccess: true, itemCount: itemCount,
                                              errorDomain: nil, errorCode: nil, message: nil))

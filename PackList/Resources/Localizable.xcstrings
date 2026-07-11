@@ -2944,6 +2944,23 @@
         }
       }
     },
+    "pack.published.badge" : {
+      "comment" : "パックセルのバッグアイコン下に出す、公開中を示す小さなバッジ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Public"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公開中"
+          }
+        }
+      }
+    },
     "publish.publishing" : {
       "localizations" : {
         "en" : {
