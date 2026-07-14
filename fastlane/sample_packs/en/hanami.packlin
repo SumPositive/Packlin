@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Cherry Blossom Picnic",
+  "memo": "A hanami picnic. Bring a mat and a warm layer.",
+  "createdAt": 1783522556.3837152,
+  "groups": [
+    {
+      "name": "🌸 Spot & food",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Ground sheet",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Food & snacks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Drinks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Paper plates & cups",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧥 Comfort & misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Warm layer & blanket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Wet wipes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "Trash bags",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

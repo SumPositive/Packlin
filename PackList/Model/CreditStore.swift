@@ -112,6 +112,21 @@ final class CreditStore: ObservableObject {
         // Publishedを通じてUIへ即座に反映させるため空文字を反映
         userId = ""
     }
+
+    /// デバッグ専用: userId を指定値へ切り替える（例: 管理者アカウントへ戻す）。
+    /// 残高やトークンは元ユーザー向けの古い値なので、削除時と同様にクリア・再認証させる。
+    func setUserIdForDebug(_ id: String) {
+        let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false else { return }
+        AzukiUserIdentifier.set(trimmed, keychain: keychain)
+        // 直前ユーザーのクレジット・認証状態が混ざらないようにクリアする
+        keychain.deleteItem(forKey: keychainBalanceKey)
+        credits = 0
+        AzukiApi.shared.clearAuthenticationStateForUserReset()
+        AzukiApi.shared.invalidateDeviceIdentityForDebug()
+        // UIへ即反映
+        userId = trimmed
+    }
     #endif
 
     private func persist() {
@@ -124,30 +139,61 @@ final class CreditStore: ObservableObject {
 private enum AzukiUserIdentifier {
     fileprivate static let storageKey = "azuki.api.userId"
 
-    /// Keychainに保存済みであればそれを返し、無ければ新たにUUIDを生成して保存する
+    /// userId を解決する。優先順位は以下（端末故障後も同じ Apple ID で復元できるようにする）:
+    ///   1. Keychain にあればそれを採用（現役の残高・トークンとの整合を最優先）。
+    ///      このとき iCloud 側が未設定なら iCloud にも写して、既存ユーザーも次回以降復元可能にする。
+    ///   2. Keychain に無く iCloud にあれば、それを採用して Keychain へ書き戻す（機種変更後の復元）。
+    ///   3. どちらにも無ければ新規 UUID を生成し、Keychain と iCloud の両方へ保存する。
     /// - Parameters:
     ///   - keychain: アプリ再インストール後も維持したい本来の保存先
+    ///   - iCloud: 端末をまたいで userId を引き継ぐための iCloud Key-Value Store
     /// - Returns: APIへ渡すuserId文字列
-    static func loadOrCreate(keychain: KeychainStorage) -> String {
+    static func loadOrCreate(keychain: KeychainStorage,
+                             iCloud: ICloudKeyValueStore = ICloudKeyValueStore()) -> String {
+        // 1. Keychain 優先
         if let storedInKeychain = keychain.loadString(forKey: storageKey), storedInKeychain.isEmpty == false {
+            // 既存ユーザーの移行: iCloud 未設定なら写しておく（次回以降の復元に備える）
+            if iCloud.loadString(forKey: storageKey) == nil {
+                iCloud.saveString(storedInKeychain, forKey: storageKey)
+            }
             return storedInKeychain
         }
-//        if let storedInDefaults = userDefaults.string(forKey: storageKey), storedInDefaults.isEmpty == false {
-//            keychain.saveString(storedInDefaults, forKey: storageKey)
-//            return storedInDefaults
-//        }
+        // 2. iCloud からの復元（機種変更・端末故障後の新端末など）
+        if let storedInICloud = iCloud.loadString(forKey: storageKey), storedInICloud.isEmpty == false {
+            keychain.saveString(storedInICloud, forKey: storageKey)
+            return storedInICloud
+        }
+        // 3. 新規発行 → Keychain と iCloud の両方へ保存
         let newId = UUID().uuidString.lowercased()
-//        userDefaults.set(newId, forKey: storageKey)
         keychain.saveString(newId, forKey: storageKey)
+        iCloud.saveString(newId, forKey: storageKey)
         return newId
     }
 
     #if DEBUG
-    /// Keychainに保存されたユーザーIDを削除する（デバッグ専用）
-    /// - Parameter keychain: 削除先となるKeychain
-    static func delete(keychain: KeychainStorage) {
+    /// 保存されたユーザーIDを削除する（デバッグ専用）。
+    /// Keychain だけ消しても iCloud から復元されてしまうため、iCloud 側も削除する。
+    /// - Parameters:
+    ///   - keychain: 削除先となるKeychain
+    ///   - iCloud: 削除先となる iCloud Key-Value Store
+    static func delete(keychain: KeychainStorage,
+                       iCloud: ICloudKeyValueStore = ICloudKeyValueStore()) {
         // SecItemDeleteに任せ、存在しない場合でもエラーとしない
         keychain.deleteItem(forKey: storageKey)
+        iCloud.removeValue(forKey: storageKey)
+    }
+
+    /// 指定した userId を強制的に設定する（デバッグ専用）。
+    /// 管理者アカウント（サンプル公開の運用者）へ戻す等に使う。Keychain と iCloud の両方へ書く。
+    /// - Parameters:
+    ///   - id: 設定したい userId
+    ///   - keychain: 保存先Keychain
+    ///   - iCloud: 保存先 iCloud Key-Value Store
+    static func set(_ id: String,
+                    keychain: KeychainStorage,
+                    iCloud: ICloudKeyValueStore = ICloudKeyValueStore()) {
+        keychain.saveString(id, forKey: storageKey)
+        iCloud.saveString(id, forKey: storageKey)
     }
     #endif
 

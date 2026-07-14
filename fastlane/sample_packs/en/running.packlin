@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Running",
+  "memo": "Running essentials. Reflectors and a light for night runs.",
+  "createdAt": 1783522556.380485,
+  "groups": [
+    {
+      "name": "🏃 Gear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Running shoes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Running outfit",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Running socks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Cap",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "📱 Support",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Running watch",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Earphones",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "Energy gel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Reflector & light",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

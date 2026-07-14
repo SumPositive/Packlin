@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ボルダリング",
+  "memo": "ジム通い装備。シューズとチョークが基本。",
+  "createdAt": 1783522556.374791,
+  "groups": [
+    {
+      "name": "🧗 クライミング",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "クライミングシューズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "チョークバッグ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "チョーク",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "テーピング",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "動きやすい服",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "ブラシ",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

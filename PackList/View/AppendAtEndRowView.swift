@@ -12,7 +12,7 @@ import SwiftUI
 let APPEND_AT_END_ROW_VERTICAL_PADDING: CGFloat = 8
 let APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING: CGFloat = 40
 let APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING: CGFloat = 2
-let APPEND_AT_END_ROW_TOP_GAP: CGFloat = 30
+let APPEND_AT_END_ROW_TOP_GAP: CGFloat = 20
 
 /// 一覧の末尾にだけ表示する追加専用セル
 /// 上下に APPEND_AT_END_ROW_VERTICAL_PADDING ぶんの余白を確保し、
@@ -60,6 +60,10 @@ struct AppendAtEndRowView: View {
 
                 Spacer(minLength: 0)
             }
+
+            // 上の余白（誤タップ防止ギャップ）と釣り合わせ、ボタンをセルの縦中央に置く
+            Color.clear
+                .frame(height: APPEND_AT_END_ROW_TOP_GAP)
         }
         .background(COLOR_ROW_BACK)
         .overlay(alignment: .bottom) {

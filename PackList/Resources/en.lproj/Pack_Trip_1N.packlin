@@ -7,7 +7,7 @@
   "createdAt": 1758719028.6339796,
   "groups": [
     {
-      "name": "Essentials",
+      "name": "💳 Essentials",
       "memo": "Valuables",
       "items": [
         {
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "name": "Electronics",
+      "name": "🔌 Electronics",
       "memo": "",
       "items": [
         {
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "name": "Clothing",
+      "name": "👕 Clothing",
       "memo": "",
       "items": [
         {

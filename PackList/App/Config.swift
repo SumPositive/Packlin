@@ -250,6 +250,30 @@ enum AppStorageKey {
     static let dialStyle = "packlin.dialStyle"
     // ダイアル感度の詳細設定
     static let dialTuning = "packlin.dialTuning"
+    // 作者ニックネーム（公開されます）。空文字は「匿名」を意味する
+    static let authorNickname = "publish.authorNickname"
+    // 作者ニックネームを一度でも明示確定したか（空のまま公開を選んだ場合も true）
+    static let authorNicknameConfigured = "publish.authorNicknameConfigured"
+    // 公開パックの取込回数（累計）。一定回数ごとにリワード広告を挟むための判定に使う
+    static let publicPackImportCount = "publicPack.importCount"
+}
+
+//-------------------------------------- 公開パック（モチメモ）
+let PUBLIC_PACK_PAGE_SIZE = 20 // 公開パック一覧の1ページ取得件数（上位20件ずつ）
+/// 公開パックの取込で、何回ごとにリワード広告視聴を求めるか（3回ごと）
+let PUBLIC_PACK_IMPORT_AD_INTERVAL = 3
+
+/// デバイス本来の優先言語コード
+/// `Locale.current` はアプリの対応ローカライズ（ja/en）に丸められるため、
+/// 公開ロケールの登録・絞り込みにはデバイスの preferredLanguages を優先する
+func devicePreferredLanguageCode() -> String? {
+    if let preferred = Locale.preferredLanguages.first {
+        let code = Locale(identifier: preferred).language.languageCode?.identifier
+        if let code, code.isEmpty == false {
+            return code
+        }
+    }
+    return Locale.current.language.languageCode?.identifier
 }
 
 //-------------------------------------- パックJSON関係
@@ -262,8 +286,10 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
-#if DEBUG
-//------------------------- DEBUGモード
+#if DEBUG && targetEnvironment(simulator)
+//------------------------- DEBUGモード（シミュレータのみ）
+// シミュレータではローカルスタブ（ngrok経由）に接続する。
+// DEBUGモードでも実機は下の #else 側（本番）に接続する。
 // Local server
 // ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
 // ローカルサーバを起動する
@@ -272,8 +298,9 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 //   $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
 let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")! // ← ngrok の URL に差し替える
 #else
-//------------------------- RELEASEモード（ArchiveでAppStoreにアップする）
+//------------------------- 本番接続（RELEASEモード全般、および DEBUGモードの実機）
 // TestFlightでは、RELEASEモードで本番同様だが、購入はSandboxテストモードで動作するので課金されない！
+// DEBUGモードの実機もここに来るため、実機デバッグ時は本番サーバに接続する。
 // Cloudflare Workers & Pagesへデプロイする
 //   % npx wrangler deploy
 // 本番 Deploy server

@@ -1,0 +1,132 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ファミリーキャンプ",
+  "memo": "テント・調理・焚き火まわり一式。オートキャンプ向け。",
+  "createdAt": 1783522556.372653,
+  "groups": [
+    {
+      "name": "⛺ 設営",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 8000,
+          "need": 1,
+          "name": "テント",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3000,
+          "need": 1,
+          "name": "タープ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "ペグ・ハンマー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "グランドシート",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🛏 快眠",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1500,
+          "need": 4,
+          "name": "寝袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 4,
+          "name": "マット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 2,
+          "name": "ランタン",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍳 調理",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 4500,
+          "need": 1,
+          "name": "ツーバーナー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3500,
+          "need": 1,
+          "name": "クーラーボックス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 2000,
+          "need": 1,
+          "name": "調理器具一式",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "食器類",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔥 焚き火",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 2500,
+          "need": 1,
+          "name": "焚き火台",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5000,
+          "need": 1,
+          "name": "薪・着火剤",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "軍手・トング",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

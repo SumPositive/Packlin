@@ -1,0 +1,153 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "国内旅行 1泊2日",
+  "memo": "週末のお出かけに。着替え・洗面・充電の定番セット。",
+  "createdAt": 1783522556.371449,
+  "groups": [
+    {
+      "name": "💳 貴重品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "財布・身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "スマホ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "鍵",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "現金",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 充電まわり",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "充電ケーブル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "充電器",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "イヤホン",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧼 洗面・衛生",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "歯ブラシ・歯磨き粉",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "洗顔・スキンケア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "常備薬",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5,
+          "need": 3,
+          "name": "マスク",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "ハンカチ・ティッシュ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 着替え",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 2,
+          "name": "下着",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "靴下",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Tシャツ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "パジャマ",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

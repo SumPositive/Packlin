@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "BBQ",
+  "memo": "デイキャンプ・河原のBBQ。炭と着火が要。",
+  "createdAt": 1783522556.375734,
+  "groups": [
+    {
+      "name": "🔥 コンロまわり",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 4000,
+          "need": 1,
+          "name": "BBQコンロ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3000,
+          "need": 1,
+          "name": "炭",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "着火剤・トング",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "軍手",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍖 食器・食材",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "紙皿・カップ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3000,
+          "need": 1,
+          "name": "クーラーボックス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "調味料",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "ウェットティッシュ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🪑 快適・その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "レジャーシート",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 2,
+          "name": "折りたたみ椅子",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 5,
+          "name": "ゴミ袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "虫除け",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

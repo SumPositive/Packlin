@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ゴルフ",
+  "memo": "ラウンド一式。日焼け・雨対策も忘れずに。",
+  "createdAt": 1783522556.374305,
+  "groups": [
+    {
+      "name": "⛳ プレー用品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "ゴルフグローブ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 45,
+          "need": 6,
+          "name": "ボール",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3,
+          "need": 10,
+          "name": "ティー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "マーカー",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 ウェア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "ゴルフウェア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "ゴルフシューズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "帽子・サンバイザー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "☀️ 対策・その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "日焼け止め",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "レインウェア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "飲み物",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

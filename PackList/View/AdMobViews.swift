@@ -23,9 +23,11 @@ private func npaRequest() -> Request {
 }
 
 // 広告ユニットID
-#if xxDEBUG
+#if DEBUG
 // リワード型 テスト用
 let ADMOB_REWARD_UnitID   = "ca-app-pub-3940256099942544/1712485313"
+// リワード インタースティシャル テスト用（AdMob公式テストID）
+let ADMOB_REWARD_INTERSTITIAL_UnitID = "ca-app-pub-3940256099942544/6978759866"
 // アダプティブ バナー テスト用
 let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 // インタースティシャル（全画面動画）テスト用
@@ -34,6 +36,8 @@ let ADMOB_BANNER_UnitID = "ca-app-pub-3940256099942544/2435281174"
 // リワード型
 let ADMOB_REWARD_UnitID   = "ca-app-pub-7576639777972199/1661712828" // reward_1 本番サーバ
 //let ADMOB_REWARD_UnitID = "ca-app-pub-7576639777972199/2789248541" // reward_dev 検証サーバ
+// リワード インタースティシャル 本番用　公開パック取込時に表示＜＜＜コールバックURLを設定しない＞＞＞
+let ADMOB_REWARD_INTERSTITIAL_UnitID = "ca-app-pub-7576639777972199/9603581328" // reward_inter_1
 // アダプティブ バナー 本番用
 let ADMOB_BANNER_UnitID = "ca-app-pub-7576639777972199/3198136958"
 // インタースティシャル（全画面動画）本番用
@@ -388,6 +392,105 @@ final class RewardedAdLoader: NSObject, ObservableObject, FullScreenContentDeleg
     }
 }
 
+/// リワード インタースティシャル広告のローダー。
+/// APIは RewardedAdLoader とほぼ同型（型が RewardedInterstitialAd に変わるだけ）。
+/// 公開パックの取込ゲートで使う。在庫が無いとき onAdFailedToLoad が呼ばれる点も同じ。
+final class RewardedInterstitialAdLoader: NSObject, ObservableObject, FullScreenContentDelegate {
+    @Published private(set) var isLoading = false
+    @Published private(set) var isReady = false
+    @Published private(set) var errorMessage: String?
+
+    var onAdLoaded: (() -> Void)?
+    var onAdFailedToLoad: ((Error) -> Void)?
+    var onAdPresented: (() -> Void)?
+    var onAdFailedToPresent: ((Error) -> Void)?
+    var onAdDismissed: (() -> Void)?
+    var onRewardEarned: ((AdReward) -> Void)?
+
+    private let adUnitID: String
+    private var rewardedAd: RewardedInterstitialAd?
+
+    init(adUnitID: String) {
+        self.adUnitID = adUnitID
+        super.init()
+        loadAd()
+    }
+
+    // ※ SSV を使わないため userId は保持しない（取込ゲートはクライアント完結）。
+
+    func loadAd() {
+        isLoading = true
+        isReady = false
+        errorMessage = nil
+
+        let request = npaRequest()
+        RewardedInterstitialAd.load(with: adUnitID, request: request) { [weak self] ad, error in
+            guard let self else { return }
+            Task { @MainActor [self] in
+                self.isLoading = false
+                if let error {
+                    self.errorMessage = adUnavailableMessage
+                    logError(error, domain: "rewarded_interstitial_load", message: "リワードインタースティシャル広告ロード失敗")
+                    Crashlytics.crashlytics().record(error: error)
+                    self.onAdFailedToLoad?(error)
+                    self.rewardedAd = nil
+                } else if let ad {
+                    self.rewardedAd = ad
+                    ad.fullScreenContentDelegate = self
+                    self.isReady = true
+                    self.onAdLoaded?()
+                }
+            }
+        }
+    }
+
+    func present(from root: UIViewController) {
+        guard let rewardedAd else { return }
+        let ad = rewardedAd
+        // ※ SSV（ServerSideVerificationOptions）は設定しない。
+        //   取込ゲートは「視聴できたら取込を通す」クライアント完結の用途で、
+        //   サーバ残高（AI利用券）への付与は不要なため。AdMob 側もこの広告ユニットには
+        //   SSV コールバック URL を設定しないこと（設定すると利用券が誤加算される恐れ）。
+        isReady = false
+        errorMessage = nil
+        ad.present(from: root) { [weak self] in
+            guard let self else { return }
+            self.onRewardEarned?(ad.adReward)
+        }
+    }
+
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.isReady = false
+            self.rewardedAd = nil
+            self.onAdDismissed?()
+            self.loadAd()
+        }
+    }
+
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.onAdPresented?()
+        }
+    }
+
+    func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.errorMessage = adUnavailableMessage
+            self.isReady = false
+            self.rewardedAd = nil
+            logError(error, domain: "rewarded_interstitial_present", message: "リワードインタースティシャル広告表示失敗")
+            Crashlytics.crashlytics().record(error: error)
+            Crashlytics.crashlytics().log("rewarded_interstitial_present_failed: \(error.localizedDescription)")
+            self.onAdFailedToPresent?(error)
+            self.loadAd()
+        }
+    }
+}
+
 /// SwiftUIでAdMobバナーを表示するビュー
 struct AdMobBannerView: View {
     let adUnitID: String
@@ -396,58 +499,74 @@ struct AdMobBannerView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var reloadToken = UUID()
+    // 一度でも広告を受信したか。List のセル再利用で onAppear が再発火しても
+    // ローディング表示に戻さないために使う
+    @State private var hasLoaded = false
 
     var body: some View {
-        VStack(spacing: 8) {
-            AdMobBannerRepresentable(
-                adUnitID: adUnitID,
-                size: size,
-                onReceiveAd: {
-                    // 成功時はエラーメッセージを消しておく
-                    isLoading = false
-                    errorMessage = nil
-                },
-                onFailToReceiveAd: { error in
-                    // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
-                    isLoading = false
-                    errorMessage = adUnavailableMessage
-                    // バナー広告失敗をAnalyticsへ送り、広告枠ごとの問題分析に使う
-                    logError(error, domain: "banner_ad_load", message: "バナー広告ロード失敗")
-                    // 技術的な詳細はクラッシュログで追う
-                    Crashlytics.crashlytics().record(error: error)
-                },
-                reloadToken: reloadToken
-            )
-            .id(reloadToken)
-            .frame(width: size.width, height: size.height)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(uiColor: .tertiarySystemBackground))
-            )
-
+        AdMobBannerRepresentable(
+            adUnitID: adUnitID,
+            size: size,
+            onReceiveAd: {
+                // 成功時はエラーメッセージを消しておく
+                isLoading = false
+                errorMessage = nil
+                hasLoaded = true
+            },
+            onFailToReceiveAd: { error in
+                // 配信できなかった場合は優しいメッセージのみ見せ、詳細はCrashlyticsに残す
+                isLoading = false
+                errorMessage = adUnavailableMessage
+                // バナー広告失敗をAnalyticsへ送り、広告枠ごとの問題分析に使う
+                logError(error, domain: "banner_ad_load", message: "バナー広告ロード失敗")
+                // 技術的な詳細はクラッシュログで追う
+                Crashlytics.crashlytics().record(error: error)
+            },
+            reloadToken: reloadToken
+        )
+        .id(reloadToken)
+        .frame(width: size.width, height: size.height)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(uiColor: .tertiarySystemBackground))
+        )
+        // ローディング・エラー表示は行を増やさず、バナー領域への overlay にして高さを一定に保つ
+        .overlay {
             if isLoading {
                 ProgressView(String(localized: "loading.ad"))
                     .font(.caption)
-            // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する
+            // エラー内容がある場合はユーザーに伝えてリトライ手段を用意する（領域全体がリロードボタン）
             } else if errorMessage != nil {
-                VStack(spacing: 6) {
-                    Text(adUnavailableMessage)
-                        .font(.caption.weight(.semibold))
-                        .multilineTextAlignment(.center)
-                    Button(String(localized: "reload")) {
-                        // バナーを作り直して再リクエストする
-                        reloadToken = UUID()
-                        isLoading = true
-                        // アラート文言をクリアして再試行する
-                        errorMessage = nil
+                Button {
+                    // バナーを作り直して再リクエストする
+                    reloadToken = UUID()
+                    isLoading = true
+                    // アラート文言をクリアして再試行する
+                    errorMessage = nil
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.clockwise")
+                        Text(adUnavailableMessage)
+                            .font(.caption.weight(.semibold))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(uiColor: .tertiarySystemBackground))
+                    )
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
         .onAppear {
-            // 画面再表示時は毎回最新状態を取りにいく
+            // 既に受信済みなら、List のセル再表示で「読み込み中」へ戻さない
+            // （戻すと、ロード済みバナーの下にローディング表示が残ってしまう）
+            guard hasLoaded == false else { return }
             isLoading = true
             errorMessage = nil
         }

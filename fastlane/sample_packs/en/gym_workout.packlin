@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Gym Workout",
+  "memo": "Wear, shoes, and towel basics. Don't forget protein.",
+  "createdAt": 1783522556.380316,
+  "groups": [
+    {
+      "name": "👟 Training",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Workout clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "Training shoes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Lifting gloves",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Towel",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 Fuel & care",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Protein",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Shaker bottle",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Water",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Shampoo & body wash",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 Valuables",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Smartphone",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Keys",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

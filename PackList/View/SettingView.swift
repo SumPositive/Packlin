@@ -48,6 +48,9 @@ struct SettingView: View {
     @Environment(\.dismiss) private var dismiss
     #if DEBUG
     @State private var showDebugUserIdAlert = false
+    // 管理者アカウント等へ userId を戻すための入力
+    @State private var debugUserIdInput = ""
+    @State private var showDebugSetUserIdAlert = false
     #endif
 
     var body: some View {
@@ -68,7 +71,12 @@ struct SettingView: View {
                             // 保存パックを読み込む
                             ShareView()
                         }
-                        
+
+                        SettingSection {
+                            // 作者ニックネーム（公開されます）
+                            AuthorNicknameView()
+                        }
+
                         SettingSection {
                             // 情報
                             InformationView()
@@ -107,6 +115,27 @@ struct SettingView: View {
                                 .buttonStyle(.borderedProminent)
                                 .tint(.red.opacity(0.7))
                                 .controlSize(.small)
+                                .padding(.bottom, 4)
+
+                                // デバッグ: userId を指定値へ切り替える（管理者アカウントへ戻す等）
+                                HStack(spacing: 6) {
+                                    TextField("user.id.debug.placeholder", text: $debugUserIdInput)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled(true)
+                                        .font(.footnote.monospaced())
+                                        .textFieldStyle(.roundedBorder)
+                                    Button {
+                                        creditStore.setUserIdForDebug(debugUserIdInput)
+                                        debugUserIdInput = ""
+                                        showDebugSetUserIdAlert = true
+                                    } label: {
+                                        Text("user.id.debug.set")
+                                            .font(.footnote.weight(.semibold))
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                                    .disabled(debugUserIdInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                }
                                 .padding(.bottom, 4)
                                 #endif
                             }
@@ -147,10 +176,93 @@ struct SettingView: View {
                 // 次回利用時に自動で再発行されることを知らせつつ、クレジット初期化も明示する
                 Text(String(localized: "user.id.recreated.when.needed"))
             }
+            .alert(String(localized: "user.id.debug.set.done"), isPresented: $showDebugSetUserIdAlert) {
+                Button(role: .cancel) { } label: { Text("OK") }
+            } message: {
+                Text(String(localized: "user.id.debug.set.done.message"))
+            }
             #endif
         }
     }
     
+    /// 作者ニックネーム（公開されます）の編集。変更はサーバーへ反映し、過去の公開パックにも適用される
+    private struct AuthorNicknameView: View {
+        @EnvironmentObject private var creditStore: CreditStore
+        @AppStorage(AppStorageKey.authorNickname) private var authorNickname: String = ""
+        @AppStorage(AppStorageKey.authorNicknameConfigured) private var authorNicknameConfigured: Bool = false
+        @State private var draft: String = ""
+        @State private var isSaving = false
+        @State private var statusMessage: String?
+        @FocusState private var focused: Bool
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("publish.nickname.title")
+                    .font(.body.weight(.semibold))
+
+                HStack(spacing: 8) {
+                    TextField(text: $draft) {
+                        Text("publish.nickname.placeholder")
+                    }
+                    .textFieldStyle(.roundedBorder)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .focused($focused)
+                    .submitLabel(.done)
+                    .onSubmit { Task { await save() } }
+
+                    Button {
+                        Task { await save() }
+                    } label: {
+                        if isSaving {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Text("publish.nickname.save")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isSaving)
+                }
+
+                if let statusMessage {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                Text("publish.nickname.footer")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .onAppear { draft = authorNickname }
+        }
+
+        @MainActor
+        private func save() async {
+            if isSaving { return }
+            focused = false
+            isSaving = true
+            defer { isSaving = false }
+            let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+            do {
+                let userId = creditStore.regenerateUserIdIfNeeded()
+                // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
+                if AzukiApi.shared.hasValidAccessToken() == false {
+                    _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+                }
+                let saved = try await AzukiApi.shared.updateNickname(userId: userId, nickname: trimmed)
+                authorNickname = saved
+                authorNicknameConfigured = true
+                draft = saved
+                statusMessage = nil
+            } catch let apiError as AzukiAPIError {
+                statusMessage = apiError.errorDescription
+            } catch {
+                statusMessage = String(localized: "network.seems.down.please.try.again")
+            }
+        }
+    }
+
     private struct SettingSection<Content: View>: View {
         @Environment(\.colorScheme) private var colorScheme
         private let content: Content

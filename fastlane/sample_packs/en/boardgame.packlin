@@ -1,0 +1,71 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Board Game Night",
+  "memo": "A bring-your-own night. Games and snacks!",
+  "createdAt": 1783522556.383137,
+  "groups": [
+    {
+      "name": "🎲 Games",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 2,
+          "name": "Board games",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "Card games",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Scorepad & pen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Timer",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍿 Snacks",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Snacks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Drinks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Wet wipes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

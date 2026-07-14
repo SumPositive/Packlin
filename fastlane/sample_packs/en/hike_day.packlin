@@ -1,0 +1,105 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Day Hike",
+  "memo": "Carry 2L water, snacks, and rain gear. For day hikes.",
+  "createdAt": 1783522556.3786812,
+  "groups": [
+    {
+      "name": "💳 Essentials",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Map",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Compass",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "Headlamp",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 Hiking gear",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Daypack",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Trekking poles",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Rain gear (top & bottom)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Insulation layer",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 Food & water",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Water",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Trail snacks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Emergency food",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

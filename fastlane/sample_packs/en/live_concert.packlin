@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Live Concert",
+  "memo": "Show-day prep. Ticket and glow stick are must-haves.",
+  "createdAt": 1783522556.382721,
+  "groups": [
+    {
+      "name": "🎫 Essentials",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "Ticket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "Glow stick",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Cash / IC card",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🎒 Comfort",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Fan goods",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Towel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Drink",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

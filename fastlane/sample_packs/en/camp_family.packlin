@@ -1,0 +1,132 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Family Camping",
+  "memo": "Tent, cooking, and campfire gear for car camping.",
+  "createdAt": 1783522556.37903,
+  "groups": [
+    {
+      "name": "⛺ Setup",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 8000,
+          "need": 1,
+          "name": "Tent",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3000,
+          "need": 1,
+          "name": "Tarp",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Pegs & hammer",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "Ground sheet",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🛏 Sleep",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1500,
+          "need": 4,
+          "name": "Sleeping bag",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 4,
+          "name": "Sleeping pad",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 2,
+          "name": "Lantern",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍳 Cooking",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 4500,
+          "need": 1,
+          "name": "Two-burner stove",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 3500,
+          "need": 1,
+          "name": "Cooler box",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 2000,
+          "need": 1,
+          "name": "Cookware set",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Tableware",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔥 Campfire",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 2500,
+          "need": 1,
+          "name": "Fire pit",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 5000,
+          "need": 1,
+          "name": "Firewood & starter",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Gloves & tongs",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

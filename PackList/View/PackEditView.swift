@@ -12,18 +12,31 @@ struct PackEditView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var creditStore: CreditStore
     // 不揮発保存：チェックと在庫数を連動させる
     @AppStorage(AppStorageKey.linkCheckWithStock) private var linkCheckWithStock: Bool = DEF_linkCheckWithStock
     @AppStorage(AppStorageKey.linkCheckOffWithZero) private var linkCheckOffWithZero: Bool = DEF_linkCheckOffWithZero
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
+    // 作者ニックネーム（公開されます）。空文字は「匿名」
+    @AppStorage(AppStorageKey.authorNickname) private var authorNickname: String = ""
+    // ニックネームを一度でも明示確定したか（匿名のまま公開を選んだ場合も true）
+    @AppStorage(AppStorageKey.authorNicknameConfigured) private var authorNicknameConfigured: Bool = false
 
     @State private var nameIsFocused: Bool = false
     @State private var memoIsFocused: Bool = false
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
-    @State private var showAiCreateSheet = false
     @State private var isTogglingCheck = false
+
+    // 公開保存まわり
+    @State private var showNicknamePrompt = false
+    @State private var showPublishConfirm = false
+    @State private var nicknameDraft = ""
+    @State private var isPublishing = false
+    @State private var showPublishResult = false
+    @State private var publishResultMessage = ""
+    @State private var showPublishHelp = false
 
     /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
     /// onAppear / onDisappear は iOS のシート遷移や NavigationStack の
@@ -81,6 +94,34 @@ struct PackEditView: View {
             if let shareURL {
                 // 共有　パック保存
                 ActivityView(activityItems: [shareURL])
+            }
+        }
+        // 初回公開時：作者ニックネーム入力（プライバシー注意も併記）
+        .alert("publish.nickname.title", isPresented: $showNicknamePrompt) {
+            TextField("publish.nickname.placeholder", text: $nicknameDraft)
+            Button("publish.nickname.save.publish") { confirmNickname(useDraft: true) }
+            Button("publish.nickname.anonymous.publish") { confirmNickname(useDraft: false) }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text("publish.privacy.notice")
+        }
+        // 2回目以降の公開時：プライバシー注意つき確認
+        .alert("publish.confirm.title", isPresented: $showPublishConfirm) {
+            Button("publish.action") { Task { await performPublish() } }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text("publish.privacy.notice")
+        }
+        // 公開結果
+        .alert("publish.save", isPresented: $showPublishResult) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(publishResultMessage)
+        }
+        // 公開中は全画面プログレスを重ねて操作を遮断する
+        .overlay {
+            if isPublishing {
+                publishingOverlay
             }
         }
         .onAppear {
@@ -287,28 +328,100 @@ struct PackEditView: View {
             }
         }
         ToolbarItem(placement: .navigationBarTrailing) {
-            Button {
-                // AI生成用シートを表示（設定画面から移動）
-                showAiCreateSheet = true
-                GALogger.log(.feature_use(name: "ai_create", source: "pack_edit_toolbar", detail: "pack"))
-            } label: {
-                HStack {
-                    Image(systemName: "sparkles")
-                    //.imageScale(.large)
+            // 公開保存（旧チャッピーボタンの位置）＋ 右にヘルプ(?)
+            HStack(spacing: 8) {
+                Button {
+                    startPublish()
+                } label: {
+                    HStack {
+                        // iOS26 などで追加されたシンボルが古いOSで空白にならないよう代替を用意
+                        Image(systemName: "square.and.arrow.up.on.square", fallback: "square.and.arrow.up")
+                            .symbolRenderingMode(.hierarchical)
+                        if isPublishing {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Text("publish.save")
+                                .font(.body.weight(.regular))
+                        }
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(isPublishing)
+
+                Button {
+                    showPublishHelp = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .imageScale(.large)
                         .symbolRenderingMode(.hierarchical)
-                    Text("chappy")
-                        .font(.body.weight(.regular))
+                }
+                .sheet(isPresented: $showPublishHelp) {
+                    publishHelpSheet
                 }
             }
-            .buttonStyle(.bordered)
-            .sheet(isPresented: $showAiCreateSheet) {
-                // AI生成シート本体へ現在のパックを渡し、AIが修正しやすいようにする
-                ChappySheetView(basePack: pack)
-                    .appFontScale(fontScale)
-                    .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
-                    .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 公開中の全画面プログレス
+    private var publishingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.25)
+                .ignoresSafeArea()
+            VStack(spacing: 14) {
+                ProgressView()
+                    .controlSize(.large)
+                Text("publish.publishing")
+                    .font(.callout.weight(.semibold))
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+            )
+        }
+        // カバーがタップを受けて背面の操作を遮断する
+        .contentShape(Rectangle())
+    }
+
+    /// 公開保存のヘルプ（シート表示）
+    private var publishHelpSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("publish.help.line1")
+                    Text("publish.help.line2")
+                    Text("publish.help.line3")
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                        Text("publish.help.caution")
+                    }
+                    .foregroundStyle(.red)
+                }
+                .font(.callout)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(20)
+            }
+            .scrollIndicators(.hidden)
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(Text("publish.save"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showPublishHelp = false
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
             }
         }
+        .appFontScale(fontScale)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     /// チェック・トグルが遅延する場合があるのでプログレス付きで開始する
@@ -357,6 +470,97 @@ struct PackEditView: View {
         }
     }
     
+    // MARK: - 公開保存
+
+    /// 公開保存ボタン。ニックネーム未設定なら先に入力させ、設定済みなら確認へ進む
+    private func startPublish() {
+        if isPublishing { return }
+        if authorNicknameConfigured {
+            showPublishConfirm = true
+        } else {
+            nicknameDraft = authorNickname
+            showNicknamePrompt = true
+        }
+    }
+
+    /// ニックネーム入力の確定。useDraft=false は「匿名のまま公開」
+    private func confirmNickname(useDraft: Bool) {
+        let trimmed = nicknameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        authorNickname = useDraft ? trimmed : ""
+        authorNicknameConfigured = true
+        Task { await performPublish() }
+    }
+
+    /// 実際に公開保存する。サーバーで Pack ID（sourcePackId）により上書きされる
+    @MainActor
+    private func performPublish() async {
+        if isPublishing { return }
+        isPublishing = true
+        defer { isPublishing = false }
+        do {
+            let userId = creditStore.regenerateUserIdIfNeeded()
+            // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
+            // 発行に失敗した場合は missingAuthToken に丸めず、実エラーをそのまま表示する
+            if AzukiApi.shared.hasValidAccessToken() == false {
+                _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            }
+            // 現在のニックネームをサーバーへ反映（空文字＝匿名）
+            try await AzukiApi.shared.updateNickname(userId: userId, nickname: authorNickname)
+
+            // 末尾の空白・改行を正規化してから公開内容を組み立てる
+            pack.name = pack.name.trimTrailSpacesAndNewlines
+            pack.memo = pack.memo.trimTrailSpacesAndNewlines
+
+            let dto = pack.exportRepresentation()
+            let itemCount = pack.child.reduce(0) { $0 + $1.child.count }
+            // アプリ対応言語(ja/en)ではなくデバイス本来のロケールを登録する
+            let locale = devicePreferredLanguageCode()
+
+            let publishedRef = try await AzukiApi.shared.publishPack(
+                userId: userId,
+                sourcePackId: pack.id,
+                dto: dto,
+                locale: locale,
+                searchText: buildPublishSearchText(),
+                groupCount: pack.child.count,
+                itemCount: itemCount,
+                totalWeight: pack.needWeight
+            )
+            // 公開成功をローカルにも記録し、パックセルに「公開中」バッジを出せるようにする
+            pack.publishedId = publishedRef.publishedId
+            GALogger.log(.feature_use(name: "public_pack", source: "pack_edit", detail: "publish"))
+            GALogger.log(.public_pack_result(action: "publish", isSuccess: true, itemCount: itemCount,
+                                             errorDomain: nil, errorCode: nil, message: nil))
+            publishResultMessage = String(localized: "publish.success")
+        } catch let apiError as AzukiAPIError {
+            let info = publicPackErrorInfo(apiError)
+            GALogger.log(.public_pack_result(action: "publish", isSuccess: false, itemCount: nil,
+                                             errorDomain: info.domain, errorCode: info.code, message: info.message))
+            publishResultMessage = apiError.errorDescription
+                ?? String(localized: "network.seems.down.please.try.again")
+        } catch {
+            let info = publicPackErrorInfo(error)
+            GALogger.log(.public_pack_result(action: "publish", isSuccess: false, itemCount: nil,
+                                             errorDomain: info.domain, errorCode: info.code, message: info.message))
+            publishResultMessage = String(localized: "network.seems.down.please.try.again")
+        }
+        showPublishResult = true
+    }
+
+    /// 検索用テキスト（name・memo・グループ名・アイテム名を連結）
+    private func buildPublishSearchText() -> String {
+        var parts: [String] = [pack.name, pack.memo]
+        for group in pack.child {
+            parts.append(group.name)
+            parts.append(group.memo)
+            for item in group.child {
+                parts.append(item.name)
+                parts.append(item.memo)
+            }
+        }
+        return parts.filter { $0.isEmpty == false }.joined(separator: " ")
+    }
+
     /// Packを.packlinファイルにして共有(Export)する
     private func exportPack() {
         do {

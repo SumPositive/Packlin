@@ -20,6 +20,11 @@ final class M1Pack {
 
     var createdAt: Date
 
+    /// 公開済みパックのサーバー側ID。`nil` なら未公開、値があれば「公開中」。
+    /// パックセルに「公開中」バッジを出す判定や、公開取消時のローカル状態同期に使う。
+    /// SwiftData のオプショナル追加なので既存DBは自動で軽量マイグレーションされる。
+    var publishedId: String?
+
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
 
     var stock: Int { child.reduce(0) { $0 + $1.stock } }

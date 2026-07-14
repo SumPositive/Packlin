@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "資格試験",
+  "memo": "試験当日。受験票と時計、防寒調整を。",
+  "createdAt": 1783522556.377931,
+  "groups": [
+    {
+      "name": "📝 受験必需品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "受験票",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "筆記用具",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "腕時計",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧥 コンディション",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "羽織りもの",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "軽food・チョコ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "参考書・要点メモ",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "日帰り登山",
+  "memo": "水2L・行動食・雨具は必携。低山〜日帰り向け。",
+  "createdAt": 1783522556.3722959,
+  "groups": [
+    {
+      "name": "💳 必須品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "財布・身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "地図",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "コンパス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "ヘッドランプ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 登山装備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "デイパック",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "トレッキングポール",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "雨具(上下)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "防寒着",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 食料・水",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "水",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "行動食",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "非常食",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

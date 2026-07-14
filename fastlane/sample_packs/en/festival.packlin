@@ -1,0 +1,146 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Festival / Outdoor Event",
+  "memo": "Sun, rain, and hydration ready. Pack light and mobile.",
+  "createdAt": 1783522556.3799412,
+  "groups": [
+    {
+      "name": "💳 Valuables",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Smartphone",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Keys",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Charging",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Power bank",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 2,
+          "name": "Charging cable",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "Wall charger",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Earphones",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "☀️ Sun & rain",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Rain poncho",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Hat",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Sunscreen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "Towel",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🎒 Comfort",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Ground sheet",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "Folding chair",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Drinks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wet wipes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

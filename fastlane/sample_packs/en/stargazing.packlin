@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Stargazing",
+  "memo": "For the night sky. Warm layers and a red light help.",
+  "createdAt": 1783522556.382431,
+  "groups": [
+    {
+      "name": "🔭 Observation",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1500,
+          "need": 1,
+          "name": "Binoculars / telescope",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Star chart",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Red light",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Ground sheet",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧥 Warmth & comfort",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Warm jacket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Blanket",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Hot drink",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "Folding chair",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

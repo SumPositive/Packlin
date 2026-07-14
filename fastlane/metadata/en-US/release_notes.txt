@@ -1,0 +1,4 @@
+- Added pack publishing. Save your packs to the cloud and publish them, and import packs shared by other users.
+- Your AI tickets and pack publishing ID are now backed up to iCloud. With iCloud enabled, they're restored when you switch devices.
+- Refreshed the app icon.
+- Minor display tweaks and stability improvements.

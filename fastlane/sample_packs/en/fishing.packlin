@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Fishing",
+  "memo": "Pier and sea fishing basics. Always wear a life vest.",
+  "createdAt": 1783522556.381738,
+  "groups": [
+    {
+      "name": "🎣 Tackle",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Rod & reel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Rigs & lures",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 2000,
+          "need": 1,
+          "name": "Cooler box",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Bucket & net",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🦺 Safety & comfort",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "Life vest",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Cap & sunglasses",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Sunscreen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Towel & wipes",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍙 Food & misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Drinks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Snacks",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "Trash bags",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Rain gear",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "入院",
+  "memo": "入院準備。着替え・洗面・退屈しのぎを用意。",
+  "createdAt": 1783522556.377432,
+  "groups": [
+    {
+      "name": "🧾 手続き・必需品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "保険証・診察券",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "印鑑",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "現金",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "お薬手帳",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧺 身の回り",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "パジャマ・下着",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "洗面用具",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "スリッパ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "📱 快適グッズ",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "スマホ・充電器",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "イヤホン",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "本・雑誌",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "ティッシュ・ウェット",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

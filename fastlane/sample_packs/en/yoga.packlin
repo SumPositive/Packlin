@@ -1,0 +1,71 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Yoga",
+  "memo": "For the studio. Mat and towel are the basics.",
+  "createdAt": 1783522556.381598,
+  "groups": [
+    {
+      "name": "🧘 Yoga items",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 1,
+          "name": "Yoga mat",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Yoga wear",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "Face towel",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Yoga block",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 Misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Water",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Change of clothes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Body wipes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

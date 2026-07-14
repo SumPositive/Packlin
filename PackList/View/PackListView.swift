@@ -23,6 +23,7 @@ struct PackListView: View {
     @State private var isShowSetting: Bool = false
     @State private var isShowAiCreateSheet: Bool = false
     @State private var isShowingPackAddPopover = false
+    @State private var isShowPublicGallery = false
     @State private var scrollTargetPackID: M1Pack.ID?
     @State private var scrollTargetPackAnchor: UnitPoint = .bottom
 
@@ -48,7 +49,8 @@ struct PackListView: View {
             ScrollViewReader { scrollProxy in
                 List {
                     Section {
-                        ForEach(sortedPacks) { pack in
+                        ForEach(sortedPacks, id: \.id) { pack in
+                            VStack(spacing: 0) {
                             ZStack {
                                 PackRowView(pack: pack) { selected, point in
                                     // Pack行のタップ位置はシートでは使用しないが、今後の拡張に備えて保持
@@ -79,8 +81,11 @@ struct PackListView: View {
                                         }
                                         .buttonStyle(.plain)
                                         .frame(width: navigationLinkWidth)
+                                        // スクショ撮影用: 先頭パックの識別子（UIテストは座標タップで補完する）
+                                        .accessibilityIdentifier(pack.id == sortedPacks.first?.id ? "packRow_first_open" : "")
                                     }
                                 }
+                            }
                             }
                             .id(pack.id)
                             .listRowSeparator(.hidden)
@@ -98,6 +103,13 @@ struct PackListView: View {
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
                         .environment(\.defaultMinListRowHeight, 0)
+
+                        // パックが6件以上ある一覧に限り、パック追加セルの下にバナー広告を1つだけ表示する
+                        if sortedPacks.count >= 6 {
+                            listBannerRow
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        }
                     }
                     footer: {
                         if isBeginnerMode {
@@ -242,6 +254,8 @@ struct PackListView: View {
                         }
                         .buttonStyle(.borderless)
                         .disabled(isShowingEditSheet)
+                        // スクショ撮影用: パック追加ポップオーバーを開くボタン
+                        .accessibilityIdentifier("packAdd_button")
                         .popover(
                             isPresented: $isShowingPackAddPopover,
                             attachmentAnchor: .point(.bottom),
@@ -259,6 +273,12 @@ struct PackListView: View {
                                     isShowingPackAddPopover = false
                                     // これまで通り自分で項目を入力して作成するパターン
                                     addPack()
+                                },
+                                onPublicGallery: {
+                                    isShowingPackAddPopover = false
+                                    // 公開パックの一覧・検索から取り込むフローへ誘導
+                                    GALogger.log(.feature_use(name: "public_pack", source: "pack_list_add_popover", detail: "open_gallery"))
+                                    isShowPublicGallery = true
                                 }
                             )
                             .presentationCompactAdaptation(.popover)
@@ -310,6 +330,29 @@ struct PackListView: View {
                 .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
+        // 公開パックから取得するシート
+        .sheet(isPresented: $isShowPublicGallery) {
+            PublicPackGalleryView()
+                .appFontScale(fontScale)
+                // スワイプダウンでは閉じない（左上の閉じるボタンでのみ閉じる）。
+                // 取込中の誤操作を防ぐため。ドラッグインジケーターも非表示にする。
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled()
+        }
+    }
+
+    /// パック一覧に挟むバナー広告行（10番目のパックの直後に表示）
+    /// 高さは固定せず内容に追従させる（読み込み中ラベルやエラー表示で高さが変わり、
+    /// 固定すると次の行に重なるため）
+    private var listBannerRow: some View {
+        AdMobBannerView(
+            adUnitID: ADMOB_BANNER_UnitID,
+            size: CGSize(width: 320, height: 50)
+        )
+        .frame(maxWidth: .infinity)
+        // 広告と一覧項目の間隔を広めに取り、誤タップを防ぐ
+        // （Vitalinで間隔が狭く誤タップを招くとして配信停止された経緯を踏まえた対応）
+        .padding(.vertical, 20)
     }
 
     /// フッター：ボタンの説明
@@ -479,6 +522,7 @@ private struct PackAddPopoverView: View {
     let fontScale: FontScale
     let onChappy: () -> Void
     let onManual: () -> Void
+    let onPublicGallery: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -495,6 +539,17 @@ private struct PackAddPopoverView: View {
                 systemImage: "hand.tap",
                 action: onManual
             )
+
+            Divider()
+
+            // 公開パックから取得するフローへ誘導
+            // iOS26 などで追加されたシンボルが古いOSで空白にならないよう代替を用意
+            optionButton(
+                title: "public.pack.gallery.title",
+                systemImage: sfSymbolName("square.and.arrow.down.on.square", fallback: "square.and.arrow.down"),
+                identifier: "packAdd_publicGallery",  // スクショ撮影用
+                action: onPublicGallery
+            )
         }
         .padding(14)
         .frame(minWidth: 260, idealWidth: 300, maxWidth: 340)
@@ -504,6 +559,7 @@ private struct PackAddPopoverView: View {
     private func optionButton(
         title: LocalizedStringKey,
         systemImage: String,
+        identifier: String = "",
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -527,6 +583,7 @@ private struct PackAddPopoverView: View {
             .padding(.horizontal, 8)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier)
     }
 }
 

@@ -1,0 +1,44 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Cinema",
+  "memo": "Comfy movie time. A layer and throat candy help.",
+  "createdAt": 1783522556.38302,
+  "groups": [
+    {
+      "name": "🎬 Items",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "Ticket / membership",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Light layer",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Throat candy",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Handkerchief",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "釣り",
+  "memo": "堤防・海釣りの定番。ライフジャケットは必ず。",
+  "createdAt": 1783522556.375217,
+  "groups": [
+    {
+      "name": "🎣 タックル",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "竿・リール",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "仕掛け・ルアー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 2000,
+          "need": 1,
+          "name": "クーラーボックス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "バケツ・網",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🦺 安全・快適",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "ライフジャケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "帽子・偏光サングラス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "日焼け止め",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "タオル・手拭き",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🍙 飲食・その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "飲み物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "軽food",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "ゴミ袋",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "レインウェア",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

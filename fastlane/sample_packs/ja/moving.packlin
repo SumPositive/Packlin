@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "引っ越し",
+  "memo": "引っ越し当日。すぐ使う物と工具を手元に。",
+  "createdAt": 1783522556.377593,
+  "groups": [
+    {
+      "name": "🔧 作業道具",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "カッター・はさみ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "ガムテープ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 2,
+          "name": "軍手",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "マジック・ラベル",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "📦 すぐ使う物",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "トイレットペーパー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "洗面用具",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧾 手続き",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "契約書類",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "印鑑",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "現金",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "スマホ・充電器",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

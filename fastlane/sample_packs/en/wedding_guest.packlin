@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Wedding Guest",
+  "memo": "Wedding guest prep. Don't forget the gift envelope.",
+  "createdAt": 1783522556.384366,
+  "groups": [
+    {
+      "name": "🎁 Etiquette items",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Gift money envelope",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Fukusa cloth",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Invitation",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "New bills",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👗 Grooming",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "Formal shoes",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Handkerchief",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Spare stockings",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Makeup touch-up",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 Valuables",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Wallet & ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Smartphone",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "Keys",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "Cash",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "サッカー・フットサル",
+  "memo": "練習・試合の定番。すね当ても忘れずに。",
+  "createdAt": 1783522556.3749278,
+  "groups": [
+    {
+      "name": "⚽ 装備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 700,
+          "need": 1,
+          "name": "スパイク・シューズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "すね当て",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "ユニフォーム",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 2,
+          "name": "ソックス",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 サポート",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "スポーツドリンク",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 420,
+          "need": 1,
+          "name": "ボール",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

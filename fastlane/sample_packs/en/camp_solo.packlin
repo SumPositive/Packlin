@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Solo Camping",
+  "memo": "Lightweight solo gear. Fire and coffee for me-time.",
+  "createdAt": 1783522556.381918,
+  "groups": [
+    {
+      "name": "⛺ Shelter & sleep",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 2000,
+          "need": 1,
+          "name": "Solo tent",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 900,
+          "need": 1,
+          "name": "Sleeping bag",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Sleeping mat",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Camp chair",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔥 Fire & cooking",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 1,
+          "name": "Fire pit",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Single burner",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Cookware",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Coffee set",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔦 Misc",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Lantern",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 90,
+          "need": 1,
+          "name": "Headlamp",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Knife",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 3,
+          "name": "Trash bags",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

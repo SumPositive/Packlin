@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "スキー・スノボ",
+  "memo": "ゲレンデ装備。防寒・防水をしっかり。",
+  "createdAt": 1783522556.374629,
+  "groups": [
+    {
+      "name": "🎿 ウェア",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1500,
+          "need": 1,
+          "name": "スキーウェア(上下)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "インナー(上下)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "グローブ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "ネックウォーマー",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥽 小物",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "ゴーグル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "ニット帽",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 2,
+          "name": "厚手ソックス",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 4,
+          "name": "カイロ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 ケア・その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "日焼け止め",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "リップクリーム",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "現金・IC",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

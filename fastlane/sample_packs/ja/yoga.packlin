@@ -1,0 +1,71 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ヨガ",
+  "memo": "スタジオ通いに。マットとタオルが基本。",
+  "createdAt": 1783522556.375076,
+  "groups": [
+    {
+      "name": "🧘 ヨガ用品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 1,
+          "name": "ヨガマット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "ヨガウェア",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "フェイスタオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "ヨガブロック",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥤 その他",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "水",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "汗拭きシート",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

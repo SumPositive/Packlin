@@ -1,0 +1,78 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "ライブ・コンサート",
+  "memo": "参戦準備。チケットとペンライトは必須。",
+  "createdAt": 1783522556.376182,
+  "groups": [
+    {
+      "name": "🎫 必需品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "チケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "ペンライト",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "現金・交通IC",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🎒 快適グッズ",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "うちわ・応援グッズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "タオル",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "飲み物",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

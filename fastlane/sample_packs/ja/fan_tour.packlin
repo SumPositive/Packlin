@@ -1,0 +1,112 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "推し活・遠征",
+  "memo": "遠征1泊。グッズ用の空きバッグも用意。",
+  "createdAt": 1783522556.3763359,
+  "groups": [
+    {
+      "name": "🎫 参戦セット",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 10,
+          "need": 1,
+          "name": "チケット",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "応援グッズ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "推しカラー衣装",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "うちわ",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🛍 遠征装備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 80,
+          "need": 1,
+          "name": "グッズ用エコバッグ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "モバイルバッテリー",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "着替え",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "洗面用具",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💳 貴重品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "財布・身分証",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "スマホ",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 60,
+          "need": 1,
+          "name": "鍵",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 20,
+          "need": 1,
+          "name": "現金",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

@@ -182,6 +182,8 @@ struct GroupListView: View {
                                         }
                                         .buttonStyle(.plain)
                                         .frame(width: navigationLinkWidth)
+                                        // スクショ撮影用: 先頭グループの識別子（UIテストは座標タップで補完する）
+                                        .accessibilityIdentifier(group.id == sortedGroups.first?.id ? "groupRow_first_open" : "")
                                     }
                                 }
                             }
