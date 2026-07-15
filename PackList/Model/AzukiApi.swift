@@ -1180,6 +1180,13 @@ final class AzukiApi {
         let downloadCount: Int
     }
 
+    /// 非公開共有リンクの作成結果
+    struct PackShareRef: Decodable {
+        let shareId: String
+        let shareUrl: String
+        let importCount: Int
+    }
+
     /// Pack を公開保存（upsert）する
     /// - Note: 同一 sourcePackId を再公開するとサーバー側で上書きされる
     /// - Parameters:
@@ -1234,6 +1241,56 @@ final class AzukiApi {
         let data = try await send(request: request)
         do {
             return try decoder.decode(PublishedPackRef.self, from: data)
+        } catch {
+            throw AzukiAPIError.decoding
+        }
+    }
+
+    /// Pack の非公開共有リンクを作成（同じPackならサーバー側で更新）する
+    func createPackShare(userId: String,
+                         sourcePackId: String,
+                         dto: PackJsonDTO,
+                         locale: String?,
+                         groupCount: Int,
+                         itemCount: Int,
+                         totalWeight: Int) async throws -> PackShareRef {
+        struct ShareRequest: Encodable {
+            let userId: String
+            let sourcePackId: String
+            let name: String
+            let memo: String
+            let locale: String?
+            let groupCount: Int
+            let itemCount: Int
+            let totalWeight: Int
+            let payload: PackJsonDTO
+        }
+        guard let url = makeURL(path: "/api/pack-shares") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let body = ShareRequest(userId: userId,
+                                sourcePackId: sourcePackId,
+                                name: dto.name,
+                                memo: dto.memo,
+                                locale: locale,
+                                groupCount: groupCount,
+                                itemCount: itemCount,
+                                totalWeight: totalWeight,
+                                payload: dto)
+        // 共有リンク保存も公開保存と同じく、createdAtをISO8601で送る
+        let shareEncoder = JSONEncoder()
+        shareEncoder.keyEncodingStrategy = .useDefaultKeys
+        shareEncoder.dateEncodingStrategy = .iso8601
+        let payloadData: Data
+        do {
+            payloadData = try shareEncoder.encode(body)
+        } catch {
+            throw AzukiAPIError.encoding
+        }
+        let request = try await makeRequest(url: url, method: "POST", body: payloadData, authorization: .required)
+        let data = try await send(request: request)
+        do {
+            return try decoder.decode(PackShareRef.self, from: data)
         } catch {
             throw AzukiAPIError.decoding
         }

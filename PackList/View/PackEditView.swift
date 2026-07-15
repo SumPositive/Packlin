@@ -27,6 +27,11 @@ struct PackEditView: View {
 
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
+    @State private var shareActivityItems: [Any] = []
+    @State private var shareLinkText = ""
+    @State private var showShareLinkResult = false
+    @State private var shareLinkResultMessage = ""
+    @State private var isCreatingShareLink = false
     @State private var isTogglingCheck = false
 
     // 公開保存まわり
@@ -94,7 +99,22 @@ struct PackEditView: View {
             if let shareURL {
                 // 共有　パック保存
                 ActivityView(activityItems: [shareURL])
+            } else {
+                // 共有リンクはURL文字列をそのまま共有する
+                ActivityView(activityItems: shareActivityItems)
             }
+        }
+        // 共有リンク作成結果
+        .alert("pack.share.link.title", isPresented: $showShareLinkResult) {
+            Button("copy") {
+                copyShareLinkToPasteboard()
+            }
+            Button("share") {
+                presentShareLinkActivity()
+            }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(shareLinkResultMessage)
         }
         // 初回公開時：作者ニックネーム入力（プライバシー注意も併記）
         .alert("publish.nickname.title", isPresented: $showNicknamePrompt) {
@@ -122,6 +142,8 @@ struct PackEditView: View {
         .overlay {
             if isPublishing {
                 publishingOverlay
+            } else if isCreatingShareLink {
+                shareLinkOverlay
             }
         }
         .onAppear {
@@ -224,7 +246,8 @@ struct PackEditView: View {
             compactActionButton(title: "share",
                                 systemImage: "square.and.arrow.up",
                                 tint: .accentColor,
-                                action: exportPack)
+                                action: startShareLinkCreation)
+            .disabled(isCreatingShareLink)
 
             Spacer(minLength: 0)
 
@@ -372,6 +395,27 @@ struct PackEditView: View {
                 ProgressView()
                     .controlSize(.large)
                 Text("publish.publishing")
+                    .font(.callout.weight(.semibold))
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+            )
+        }
+        // カバーがタップを受けて背面の操作を遮断する
+        .contentShape(Rectangle())
+    }
+
+    /// 共有リンク作成中の全画面プログレス
+    private var shareLinkOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.25)
+                .ignoresSafeArea()
+            VStack(spacing: 14) {
+                ProgressView()
+                    .controlSize(.large)
+                Text("pack.share.link.creating")
                     .font(.callout.weight(.semibold))
             }
             .padding(28)
@@ -561,6 +605,79 @@ struct PackEditView: View {
         return parts.filter { $0.isEmpty == false }.joined(separator: " ")
     }
 
+    // MARK: - 共有リンク
+
+    /// 共有リンク作成を開始する
+    private func startShareLinkCreation() {
+        Task { await createShareLink() }
+    }
+
+    /// Packを非公開共有リンクとして保存し、URLをコピーする
+    @MainActor
+    private func createShareLink() async {
+        guard isCreatingShareLink == false else { return }
+        isCreatingShareLink = true
+        defer { isCreatingShareLink = false }
+
+        do {
+            let userId = creditStore.regenerateUserIdIfNeeded()
+            // 共有リンク作成は認証必須のため、トークン未取得ならcredit/checkで発行する
+            if AzukiApi.shared.hasValidAccessToken() == false {
+                _ = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            }
+
+            // 共有前に末尾の空白・改行を正規化してスナップショットを作る
+            pack.name = pack.name.trimTrailSpacesAndNewlines
+            pack.memo = pack.memo.trimTrailSpacesAndNewlines
+
+            let dto = pack.exportRepresentation()
+            let itemCount = pack.child.reduce(0) { $0 + $1.child.count }
+            let locale = devicePreferredLanguageCode()
+            let ref = try await AzukiApi.shared.createPackShare(
+                userId: userId,
+                sourcePackId: pack.id,
+                dto: dto,
+                locale: locale,
+                groupCount: pack.child.count,
+                itemCount: itemCount,
+                totalWeight: pack.needWeight
+            )
+
+            shareLinkText = ref.shareUrl
+            copyShareLinkToPasteboard()
+            GALogger.log(.feature_use(name: "pack_share_link", source: "pack_edit", detail: "create"))
+            shareLinkResultMessage = String(
+                format: String(localized: "pack.share.link.copied.message"),
+                ref.shareUrl
+            )
+            showShareLinkResult = true
+        } catch {
+            // 共有リンク作成失敗をAnalyticsへ送り、リンク共有導線の問題分析に使う
+            logError(error, domain: "pack_share_link_create", message: "共有リンク作成失敗")
+            shareLinkResultMessage = error.localizedDescription
+            showShareLinkResult = true
+        }
+    }
+
+    /// 共有リンクをクリップボードへコピーする
+    private func copyShareLinkToPasteboard() {
+        guard shareLinkText.isEmpty == false else { return }
+        UIPasteboard.general.string = shareLinkText
+    }
+
+    /// 共有リンクを標準共有シートで送る
+    private func presentShareLinkActivity() {
+        guard shareLinkText.isEmpty == false else { return }
+        let message = String(
+            format: String(localized: "pack.share.link.message"),
+            pack.name.isEmpty ? "Packlin" : pack.name,
+            shareLinkText
+        )
+        shareURL = nil
+        shareActivityItems = [message]
+        isPresentingShare = true
+    }
+
     /// Packを.packlinファイルにして共有(Export)する
     private func exportPack() {
         do {
@@ -590,6 +707,7 @@ struct PackEditView: View {
     private func cleanupShareResource() {
         defer {
             shareURL = nil
+            shareActivityItems = []
             isPresentingShare = false
         }
 
