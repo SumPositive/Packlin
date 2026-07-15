@@ -2,6 +2,8 @@
 
 iOS 向けの持ち物リスト・チェックリストアプリです。SwiftUI で開発しています。
 
+対応言語: 日本語、英語、ドイツ語、スペイン語、フランス語、イタリア語、韓国語、繁体字中国語
+
 **User Guide**
 [English](https://azukid.com/en/sumpo/Packlin/packlin.html) / [日本語](https://azukid.com/jp/sumpo/Packlin/packlin.html)
 

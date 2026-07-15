@@ -1,0 +1,77 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "출장(1박)",
+  "memo": "1박 출장용 최소 구성. PC, 의류, 충전류 포함",
+  "createdAt": 1758719028.6339796,
+  "groups": [
+    {
+      "name": "💳 필수품",
+      "memo": "귀중품",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "지갑 및 신분증",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "명함지갑",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 전자기기",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "노트북",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "AC 어댑터",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "보조배터리",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 의류",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "와이셔츠",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "속옷 및 양말",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

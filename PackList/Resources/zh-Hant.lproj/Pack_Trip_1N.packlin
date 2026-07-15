@@ -1,0 +1,77 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "出差（1晚）",
+  "memo": "1晚出差，PC、衣物與充電用品的最小配置",
+  "createdAt": 1758719028.6339796,
+  "groups": [
+    {
+      "name": "💳 必需品",
+      "memo": "貴重物品",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "錢包與證件",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "名片夾",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 電子設備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "筆記型電腦",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "AC 變壓器",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "行動電源",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 衣物",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "襯衫",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "內衣與襪子",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

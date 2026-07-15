@@ -269,6 +269,12 @@
 			knownRegions = (
 				en,
 				ja,
+				de,
+				es,
+				fr,
+				it,
+				ko,
+				"zh-Hant",
 				Base,
 			);
 			mainGroup = C3D2BB632E6A7967002B900A;

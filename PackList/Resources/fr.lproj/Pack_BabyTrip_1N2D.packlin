@@ -1,0 +1,111 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Voyage avec bébé (1 nuit, 2 jours)",
+  "memo": "Liste pour voyager avec un bébé. Inclut 10 couches, 2 biberons, etc.",
+  "createdAt": 1758720438.3882663,
+  "groups": [
+    {
+      "name": "💳 Essentiels",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Portefeuille et pièce d’identité",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Carnet de santé mère-enfant",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 Affaires bébé",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 10,
+          "name": "Couches",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Lingettes bébé",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Biberon",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Boîte de lait infantile",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "Vêtements bébé (rechange)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Couverture bébé",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🚼 Matériel de déplacement",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 6000,
+          "need": 1,
+          "name": "Poussette",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Porte-bébé",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 Hygiène",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "Serviettes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

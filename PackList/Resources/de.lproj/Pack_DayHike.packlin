@@ -1,0 +1,104 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Tageswanderung",
+  "memo": "Tageswanderung mit 2 l Wasser, Snacks und notwendiger Regenkleidung.",
+  "createdAt": 1758720438.3879426,
+  "groups": [
+    {
+      "name": "💳 Wichtiges",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Geldbeutel & Ausweis",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Karte",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Kompass",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 Wanderausrüstung",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Tagesrucksack",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Trekkingstöcke",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Regenkleidung (Jacke & Hose)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 Essen & Wasser",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Wasserflasche 1 l",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 2,
+          "name": "Wandersnacks (Nüsse/Riegel)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "⛑️ Erste Hilfe & Sicherheit",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Erste-Hilfe-Set",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Stirnlampe",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

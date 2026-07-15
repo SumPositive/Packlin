@@ -1,0 +1,104 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Randonnée à la journée",
+  "memo": "Essentiels de randonnée avec 2 L d’eau, encas et vêtements de pluie obligatoires.",
+  "createdAt": 1758720438.3879426,
+  "groups": [
+    {
+      "name": "💳 Essentiels",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Portefeuille et pièce d’identité",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Carte",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Boussole",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 Matériel de randonnée",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Sac de journée",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Bâtons de randonnée",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Vêtements de pluie (veste et pantalon)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 Nourriture et eau",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Gourde 1 L",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 2,
+          "name": "Encas de randonnée (noix/barres)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "⛑️ Premiers secours et sécurité",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Trousse de premiers secours",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Lampe frontale",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

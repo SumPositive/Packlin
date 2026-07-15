@@ -1,0 +1,104 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Senderismo de un día",
+  "memo": "Imprescindibles para senderismo de un día con 2 L de agua, snacks y ropa de lluvia.",
+  "createdAt": 1758720438.3879426,
+  "groups": [
+    {
+      "name": "💳 Esenciales",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Cartera e ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Mapa",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Brújula",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 Equipo de senderismo",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Mochila de día",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Bastones de trekking",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Ropa de lluvia (chaqueta y pantalón)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 Comida y agua",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Botella de agua 1 L",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 2,
+          "name": "Snacks de ruta (frutos secos/barritas)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "⛑️ Primeros auxilios y seguridad",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Botiquín",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Linterna frontal",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

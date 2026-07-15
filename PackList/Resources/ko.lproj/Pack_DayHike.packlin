@@ -1,0 +1,104 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "당일 하이킹",
+  "memo": "물 2L, 행동식, 필수 우비를 포함한 당일 하이킹 장비",
+  "createdAt": 1758720438.3879426,
+  "groups": [
+    {
+      "name": "💳 필수품",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "지갑 및 신분증",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "지도",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "나침반",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 등산 장비",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "데이팩",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "트레킹 폴",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "우비(상의/하의)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 식료・물",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "물병 1L",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 2,
+          "name": "행동식(견과/바)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "⛑️ 응급・안전",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "구급키트",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "헤드램프",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

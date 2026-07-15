@@ -1,0 +1,104 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Escursione giornaliera",
+  "memo": "Essenziali per escursione giornaliera con 2 L d’acqua, snack e antipioggia.",
+  "createdAt": 1758720438.3879426,
+  "groups": [
+    {
+      "name": "💳 Essenziali",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Portafoglio e documento",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "Mappa",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "Bussola",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 Attrezzatura trekking",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Zaino giornaliero",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "Bastoncini da trekking",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "Antipioggia (giacca e pantaloni)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 Cibo e acqua",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "Borraccia 1 L",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 2,
+          "name": "Snack da sentiero (frutta secca/barrette)",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "⛑️ Primo soccorso e sicurezza",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "Kit pronto soccorso",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "Lampada frontale",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

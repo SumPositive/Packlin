@@ -1,0 +1,111 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "親子旅行（1晚2天）",
+  "memo": "適合帶寶寶旅行。包含10片尿布、2支奶瓶等",
+  "createdAt": 1758720438.3882663,
+  "groups": [
+    {
+      "name": "💳 必需品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "錢包與證件",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "母子健康手冊",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 寶寶用品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 10,
+          "name": "尿布",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "濕紙巾",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "奶瓶",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "奶粉罐",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "寶寶替換衣物",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "寶寶毯",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🚼 外出用品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 6000,
+          "need": 1,
+          "name": "嬰兒推車",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "背巾",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 盥洗衛生",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "毛巾",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

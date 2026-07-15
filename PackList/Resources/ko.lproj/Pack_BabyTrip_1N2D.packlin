@@ -1,0 +1,111 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "아기 동반 여행(1박 2일)",
+  "memo": "아기와 함께 여행할 때를 위한 목록입니다. 기저귀 10장, 젖병 2개 등",
+  "createdAt": 1758720438.3882663,
+  "groups": [
+    {
+      "name": "💳 필수품",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "지갑 및 신분증",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "모자보건수첩",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 아기용품",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 10,
+          "name": "기저귀",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "물티슈",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "젖병",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "분유 캔",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "아기 갈아입을 옷",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "아기 담요",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🚼 이동용품",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 6000,
+          "need": 1,
+          "name": "유모차",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "아기띠",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 위생용품",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "수건",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

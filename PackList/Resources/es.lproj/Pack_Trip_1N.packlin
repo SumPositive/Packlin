@@ -1,0 +1,77 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Viaje de negocios (1 noche)",
+  "memo": "Viaje de negocios de una noche con equipo de PC, ropa y cargadores mínimos.",
+  "createdAt": 1758719028.6339796,
+  "groups": [
+    {
+      "name": "💳 Esenciales",
+      "memo": "Objetos de valor",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Cartera e ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Tarjetero",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Electrónica",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Portátil",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Adaptador de corriente",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Batería portátil",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Ropa",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Camisa de vestir",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Ropa interior y calcetines",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

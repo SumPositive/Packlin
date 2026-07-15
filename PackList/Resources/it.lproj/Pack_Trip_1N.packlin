@@ -1,0 +1,77 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Viaggio di lavoro (1 notte)",
+  "memo": "Viaggio di lavoro di una notte con minimo PC, vestiti e caricabatterie.",
+  "createdAt": 1758719028.6339796,
+  "groups": [
+    {
+      "name": "💳 Essenziali",
+      "memo": "Valori",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Portafoglio e documento",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Porta biglietti da visita",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Elettronica",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Laptop",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Alimentatore",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Batteria portatile",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Abbigliamento",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Camicia",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Intimo e calze",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

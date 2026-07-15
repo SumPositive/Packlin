@@ -1,0 +1,111 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Reise mit Baby (1 Nacht, 2 Tage)",
+  "memo": "Packliste für Reisen mit Baby. Enthält 10 Windeln, 2 Fläschchen und mehr.",
+  "createdAt": 1758720438.3882663,
+  "groups": [
+    {
+      "name": "💳 Wichtiges",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Geldbeutel & Ausweis",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Mutter-Kind-Pass",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 Babybedarf",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 10,
+          "name": "Windeln",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Feuchttücher",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Babyfläschchen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Dose Babynahrung",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "Babykleidung (Wechsel)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Babydecke",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🚼 Reiseausrüstung",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 6000,
+          "need": 1,
+          "name": "Kinderwagen",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Babytrage",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 Hygiene",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "Handtücher",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

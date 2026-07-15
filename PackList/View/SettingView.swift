@@ -378,11 +378,25 @@ struct SettingView: View {
         @Environment(\.dynamicTypeSize) private var dynamicTypeSize
         @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
         @State private var showSafari = false
+        @State private var resolvedGuideURL: URL?
+        @State private var isResolvingGuideURL = false
+        private let guideURLFallbackString = "https://docs.azukid.com/en/sumpo/Packlin/packlin.html"
 
         private var guideURL: URL? {
-            let urlString = String(localized: "info.url")
+            let urlString = String(localized: "info.url").trimmingCharacters(in: .whitespacesAndNewlines)
+            // 多言語URLが未設定・不正な場合は英語ページへフォールバックする
+            return guideURLWithFontScale(from: urlString)
+                ?? guideURLWithFontScale(from: guideURLFallbackString)
+        }
+
+        /// 取扱説明URLへ文字サイズクエリを付与する
+        private func guideURLWithFontScale(from urlString: String) -> URL? {
             guard var components = URLComponents(string: urlString) else {
-                return URL(string: urlString)
+                return nil
+            }
+            guard components.scheme?.isEmpty == false,
+                  components.host?.isEmpty == false else {
+                return nil
             }
             var queryItems = components.queryItems ?? []
             // 既存URLに同名パラメータがある場合はアプリ側の現在値で上書きする
@@ -391,6 +405,46 @@ struct SettingView: View {
             queryItems.append(URLQueryItem(name: "fontScale", value: guideFontScaleParameter))
             components.queryItems = queryItems
             return components.url
+        }
+
+        /// 取扱説明URLを確認し、404などの場合は英語URLへフォールバックする
+        @MainActor
+        private func openGuide() async {
+            guard isResolvingGuideURL == false else { return }
+            isResolvingGuideURL = true
+            defer { isResolvingGuideURL = false }
+
+            let fallbackURL = guideURLWithFontScale(from: guideURLFallbackString)
+            guard let localizedURL = guideURL else {
+                resolvedGuideURL = fallbackURL
+                showSafari = fallbackURL != nil
+                return
+            }
+
+            if await isGuideURLAvailable(localizedURL) {
+                resolvedGuideURL = localizedURL
+            } else {
+                // ローカライズ先が404などで見つからない場合は英語ページを開く
+                resolvedGuideURL = fallbackURL
+            }
+            showSafari = resolvedGuideURL != nil
+        }
+
+        /// HTTPステータスで取扱説明ページの存在を確認する
+        private func isGuideURLAvailable(_ url: URL) async -> Bool {
+            var request = URLRequest(url: url)
+            request.httpMethod = "HEAD"
+            request.timeoutInterval = 5
+            do {
+                let (_, response) = try await URLSession.shared.data(for: request)
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    return true
+                }
+                return httpResponse.statusCode < 400
+            } catch {
+                // 通信確認に失敗した場合も、404相当として英語へ逃がす
+                return false
+            }
         }
 
         private var guideFontScaleParameter: String {
@@ -414,8 +468,8 @@ struct SettingView: View {
         
         var body: some View {
             Button(action: {
-                // SafariでURLを表示する
-                showSafari = true
+                // Safariを開く前にページ存在を確認する
+                Task { await openGuide() }
                 GALogger.log(.feature_use(name: "user_guide", source: "settings", detail: "open"))
             }) {
                 Label {
@@ -429,8 +483,9 @@ struct SettingView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
+            .disabled(isResolvingGuideURL)
             .sheet(isPresented: $showSafari) {
-                if let url = guideURL {
+                if let url = resolvedGuideURL {
                     SafariView(url: url)
                 } else {
                     Text("can.t.show.info")

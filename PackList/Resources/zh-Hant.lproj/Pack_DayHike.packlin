@@ -1,0 +1,104 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "日間健行",
+  "memo": "日間健行裝備。水2L、行動糧、雨具必備",
+  "createdAt": 1758720438.3879426,
+  "groups": [
+    {
+      "name": "💳 必需品",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "錢包與證件",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 30,
+          "need": 1,
+          "name": "地圖",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 40,
+          "need": 1,
+          "name": "指南針",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🥾 健行裝備",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "日用背包",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 2,
+          "name": "登山杖",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 600,
+          "need": 1,
+          "name": "雨具（外套與褲子）",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "💧 食物與水",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1000,
+          "need": 2,
+          "name": "水瓶1L",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 2,
+          "name": "行動糧（堅果/能量棒）",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "⛑️ 急救與安全",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 120,
+          "need": 1,
+          "name": "急救包",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 100,
+          "need": 1,
+          "name": "頭燈",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

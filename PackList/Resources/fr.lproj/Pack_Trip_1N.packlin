@@ -1,0 +1,77 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Voyage d’affaires (1 nuit)",
+  "memo": "Voyage d’affaires d’une nuit avec le minimum PC, vêtements et chargeurs.",
+  "createdAt": 1758719028.6339796,
+  "groups": [
+    {
+      "name": "💳 Essentiels",
+      "memo": "Objets de valeur",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Portefeuille et pièce d’identité",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Porte-cartes de visite",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Électronique",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Ordinateur portable",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Adaptateur secteur",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Batterie externe",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Vêtements",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Chemise habillée",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Sous-vêtements et chaussettes",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

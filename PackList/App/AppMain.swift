@@ -203,7 +203,7 @@ struct AppMain: App {
             return
         }
         // Bundle サンプル.packlin ファイル
-        // 英語がBaseリソース、ja.lprojが日本語リソース
+        // ユーザーの優先ローカライズに応じたサンプルを読み込む
         let sampleFileNames = [
             "Pack_Trip_1N",
             "Pack_DayHike",

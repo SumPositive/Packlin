@@ -151,21 +151,31 @@ struct ChappyView: View {
         requirementText.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// チャッピー要望入力欄のローカライズ済みプレースホルダー
+    private var chappyRequirementPlaceholder: String {
+        let key: LocalizedStringResource = (basePack?.name.isEmpty ?? true)
+            ? "list.places.dates.purpose.crew.weather"
+            : "list.changes.want.up.count.chars"
+        return String(format: String(localized: key), Int64(AI_REQUIREMENT_MAX))
+    }
+
     /// 端末の言語コードを取り出し、優先順で返す
     private func deviceLanguageCode() -> String? {
-        if let languageCode = locale.language.languageCode?.identifier, languageCode.isEmpty == false {
+        if let languageCode = languageCodePreservingScript(locale.language) {
             return languageCode
         }
-        if let preferred = Locale.preferredLanguages.first {
-            let preferredLocale = Locale(identifier: preferred)
-            if let preferredCode = preferredLocale.language.languageCode?.identifier, preferredCode.isEmpty == false {
-                return preferredCode
-            }
+        return devicePreferredLanguageCode()
+    }
+
+    /// 繁体字中国語はサーバやAIへ渡すため zh-Hant として保持する
+    private func languageCodePreservingScript(_ language: Locale.Language) -> String? {
+        guard let code = language.languageCode?.identifier, code.isEmpty == false else {
+            return nil
         }
-        if let currentCode = Locale.current.language.languageCode?.identifier, currentCode.isEmpty == false {
-            return currentCode
+        if code == "zh", language.script?.identifier == "Hant" {
+            return "zh-Hant"
         }
-        return nil
+        return code
     }
 
     /// クレジット枚数だけで送信できるかどうか
@@ -396,18 +406,7 @@ struct ChappyView: View {
                     // プレースホルダー
                     if isRequirementEmpty {
                         // 入力例。TextEditorの内側余白と揃えて配置
-                        Text((self.basePack == nil || self.basePack!.name.isEmpty) ?
-                            """
-                            訪問先、日程、目的、人数、気候、アクティビティなどの要望をたくさん列記してください
-                            （最大\(AI_REQUIREMENT_MAX)文字）
-                            （例）海外旅行5泊6日、イタリア、スペイン、家族4人、8月の気候に配慮して
-                            """
-                             :
-                            """
-                            変更の要望をたくさん列記してください
-                            （最大\(AI_REQUIREMENT_MAX)文字）
-                            （例）6泊に変更、ギリシャも訪問、祖父母も参加、雨天も想定
-                            """)
+                        Text(chappyRequirementPlaceholder)
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 16)
                         .padding(.horizontal, 20)

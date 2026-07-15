@@ -264,16 +264,27 @@ let PUBLIC_PACK_PAGE_SIZE = 20 // 公開パック一覧の1ページ取得件数
 let PUBLIC_PACK_IMPORT_AD_INTERVAL = 3
 
 /// デバイス本来の優先言語コード
-/// `Locale.current` はアプリの対応ローカライズ（ja/en）に丸められるため、
+/// `Locale.current` はアプリの対応ローカライズに丸められるため、
 /// 公開ロケールの登録・絞り込みにはデバイスの preferredLanguages を優先する
 func devicePreferredLanguageCode() -> String? {
     if let preferred = Locale.preferredLanguages.first {
-        let code = Locale(identifier: preferred).language.languageCode?.identifier
+        let language = Locale(identifier: preferred).language
+        let code = language.languageCode?.identifier
         if let code, code.isEmpty == false {
+            // 繁体字中国語はサーバのロケール列と合わせて zh-Hant として扱う
+            if code == "zh", language.script?.identifier == "Hant" {
+                return "zh-Hant"
+            }
             return code
         }
     }
-    return Locale.current.language.languageCode?.identifier
+    let currentLanguage = Locale.current.language
+    if currentLanguage.languageCode?.identifier == "zh",
+       currentLanguage.script?.identifier == "Hant" {
+        // Locale.current に丸められた場合も繁体字は区別する
+        return "zh-Hant"
+    }
+    return currentLanguage.languageCode?.identifier
 }
 
 //-------------------------------------- パックJSON関係

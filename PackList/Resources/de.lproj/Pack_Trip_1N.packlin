@@ -1,0 +1,77 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Geschäftsreise (1 Nacht)",
+  "memo": "Eine Nacht Geschäftsreise mit minimaler PC-Ausrüstung, Kleidung und Ladegeräten.",
+  "createdAt": 1758719028.6339796,
+  "groups": [
+    {
+      "name": "💳 Wichtiges",
+      "memo": "Wertsachen",
+      "items": [
+        {
+          "check": false,
+          "weight": 200,
+          "need": 1,
+          "name": "Geldbeutel & Ausweis",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Visitenkartenetui",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🔌 Elektronik",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 1200,
+          "need": 1,
+          "name": "Laptop",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Netzteil",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 250,
+          "need": 1,
+          "name": "Powerbank",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👕 Kleidung",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Businesshemd",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Unterwäsche & Socken",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}

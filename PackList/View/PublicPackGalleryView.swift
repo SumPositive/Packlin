@@ -50,12 +50,29 @@ struct PublicPackGalleryView: View {
             }
         }
 
-        /// アプリが標準で用意する言語選択肢（全言語＋対応言語 ja/en）。
-        /// 言語を増やすときはこの配列に追記する。
+        /// アプリが標準で用意する言語選択肢（全言語＋対応言語）
         private static let baseCases: [LocaleFilter] = [
             .all,
             .language("ja"),
             .language("en"),
+            .language("de"),
+            .language("es"),
+            .language("fr"),
+            .language("it"),
+            .language("ko"),
+            .language("zh-Hant"),
+        ]
+
+        // 対応言語は母語名を固定し、zh-Hant の表示ゆれを避ける
+        private static let nativeLanguageNames: [String: String] = [
+            "ja": "日本語",
+            "en": "English",
+            "de": "Deutsch",
+            "es": "Español",
+            "fr": "Français",
+            "it": "Italiano",
+            "ko": "한국어",
+            "zh-Hant": "繁體中文",
         ]
 
         /// プルダウンに出す全選択肢。標準の選択肢に加え、
@@ -70,12 +87,15 @@ struct PublicPackGalleryView: View {
             return cases
         }
 
-        /// 表示名。言語はネイティブ表記（日本語 / English）を優先し、無ければコード。
+        /// 表示名。言語はネイティブ表記を優先し、無ければコード。
         var title: String {
             switch self {
             case .all:
                 return String(localized: "public.pack.locale.all")
             case .language(let code):
+                if let native = Self.nativeLanguageNames[code] {
+                    return native
+                }
                 let native = Locale(identifier: code).localizedString(forLanguageCode: code)
                 return native?.capitalized ?? code.uppercased()
             }

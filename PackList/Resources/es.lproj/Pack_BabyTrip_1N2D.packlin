@@ -1,0 +1,111 @@
+{
+  "ProductName": "Packlin",
+  "copyright": "2025_sumpo@azukid.com",
+  "version": "3.0",
+  "name": "Viaje con bebé (1 noche, 2 días)",
+  "memo": "Lista para viajar con un bebé. Incluye 10 pañales, 2 biberones y más.",
+  "createdAt": 1758720438.3882663,
+  "groups": [
+    {
+      "name": "💳 Esenciales",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 150,
+          "need": 1,
+          "name": "Cartera e ID",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 50,
+          "need": 1,
+          "name": "Cartilla materno-infantil",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "👶 Artículos de bebé",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 60,
+          "need": 10,
+          "name": "Pañales",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 300,
+          "need": 1,
+          "name": "Toallitas de bebé",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 150,
+          "need": 2,
+          "name": "Biberón",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 400,
+          "need": 1,
+          "name": "Lata de fórmula infantil",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 200,
+          "need": 2,
+          "name": "Ropa de bebé (cambio)",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 500,
+          "need": 1,
+          "name": "Manta de bebé",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🚼 Equipo de viaje",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 6000,
+          "need": 1,
+          "name": "Cochecito",
+          "memo": ""
+        },
+        {
+          "check": false,
+          "weight": 800,
+          "need": 1,
+          "name": "Portabebés",
+          "memo": ""
+        }
+      ]
+    },
+    {
+      "name": "🧴 Higiene",
+      "memo": "",
+      "items": [
+        {
+          "check": false,
+          "weight": 100,
+          "need": 2,
+          "name": "Toallas",
+          "memo": ""
+        }
+      ]
+    }
+  ]
+}
