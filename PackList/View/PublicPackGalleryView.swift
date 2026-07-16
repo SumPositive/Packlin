@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 /// 公開パックから取得する画面
 /// 一覧／検索（上位20件ずつ）から選び、自分のパックとして取り込む
@@ -9,10 +10,6 @@ struct PublicPackGalleryView: View {
     @EnvironmentObject private var creditStore: CreditStore
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
-    @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
-
-    /// 達人モードではボタンをアイコンのみにする
-    private var isExpertMode: Bool { displayMode == .expert }
 
     /// 並び順
     private enum SortOrder: String, CaseIterable, Identifiable {
@@ -125,8 +122,8 @@ struct PublicPackGalleryView: View {
     @State private var isLoading: Bool = false
     /// 一覧読み込み自体のエラー（画面上部に表示）
     @State private var errorMessage: String?
-    /// 削除確認中の自分の公開パック
-    @State private var pendingDeleteItem: PublicPackSummary?
+    /// 詳細シートへ表示する公開パック
+    @State private var sharingItem: PublicPackSummary?
     /// セルごとの処理状態（取り込み・削除のカバー表示用）
     @State private var rowStatus: [String: RowState] = [:]
 
@@ -152,7 +149,7 @@ struct PublicPackGalleryView: View {
                 Divider()
                 listContent
                 // フッターのバナー広告（スクショ撮影時は審査用スクショに広告を写さないため非表示）
-                if SnapshotSupport.isRunningSnapshot == false {
+                if SnapshotSupport.isRunningSnapshot == false && sharingItem == nil {
                     Divider()
                     AdMobBannerView(
                         adUnitID: ADMOB_BANNER_UnitID,
@@ -177,19 +174,27 @@ struct PublicPackGalleryView: View {
             }
         }
         .appFontScale(fontScale)
-        // 自分の公開パックの削除確認
-        .alert("public.pack.delete.confirm",
-               isPresented: Binding(
-                get: { pendingDeleteItem != nil },
-                set: { if $0 == false { pendingDeleteItem = nil } }
-               ),
-               presenting: pendingDeleteItem) { item in
-            Button("delete", role: .destructive) {
-                Task { await deletePack(item) }
-            }
-            Button("cancel", role: .cancel) { pendingDeleteItem = nil }
-        } message: { item in
-            Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+        // 詳細、取込、共有、作者用削除を1つのシートへまとめる
+        .sheet(item: $sharingItem) { item in
+            PublicPackDetailSheet(
+                item: item,
+                onImport: {
+                    // 詳細シートを閉じてから広告ゲートまたは取込処理を開始する
+                    sharingItem = nil
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 250_000_000)
+                        handleImportTapped(item)
+                    }
+                },
+                onDelete: {
+                    // 削除確認は詳細シート内で完了済み
+                    sharingItem = nil
+                    Task { await deletePack(item) }
+                }
+            )
+                .appFontScale(fontScale)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         // 3回ごとの取込で表示するリワード広告ゲート。
         // 視聴完了なら取込＋回数を進める。広告が見られないときは取込のみ（回数は進めず次回再挑戦）。
@@ -332,27 +337,30 @@ struct PublicPackGalleryView: View {
     }
 
     private func row(_ item: PublicPackSummary) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // 名前行：自分のパックは右上に削除ボタン
-            HStack(alignment: .top, spacing: 8) {
-                Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                if item.isMine {
-                    deleteButton(item)
+        Button {
+            // セル全体のタップで詳細シートを開く
+            sharingItem = item
+            GALogger.log(.feature_use(name: "public_pack_detail", source: "public_pack_gallery", detail: "open"))
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                // 名前行の末尾に詳細表示を示す矢印だけを置く
+                HStack(alignment: .top, spacing: 8) {
+                    Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+                        .font(.headline)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
                 }
-            }
 
-            if item.memo.isEmpty == false {
-                Text(item.memo)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
+                if item.memo.isEmpty == false {
+                    Text(item.memo)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
 
-            // 左側に「件数行＋公開日行」の2行、右側のボタンはその2行に跨って上下中央
-            HStack(alignment: .center, spacing: 8) {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 12) {
                         Label("\(item.itemCount)", systemImage: "checklist")
@@ -375,18 +383,19 @@ struct PublicPackGalleryView: View {
                             .lineLimit(1)
                     }
                 }
-
-                Spacer(minLength: 8)
-
-                // 取込ボタンは自分のパックも含め常に右下に配置
-                importButton(item)
             }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 14))
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .buttonStyle(.plain)
+        .disabled(rowStatus[item.id] != nil)
+        .accessibilityLabel(Text(item.name.isEmpty ? String(localized: "no.name") : item.name))
+        .accessibilityHint(Text("public.pack.share.accessibility.hint"))
         // 処理中・結果表示の半透明カバー
         .overlay {
             if let state = rowStatus[item.id] {
@@ -427,44 +436,6 @@ struct PublicPackGalleryView: View {
                     .padding(.horizontal, 12)
                 }
             }
-    }
-
-    private func importButton(_ item: PublicPackSummary) -> some View {
-        Button {
-            handleImportTapped(item)
-        } label: {
-            Label {
-                // 達人モードではアイコンのみ
-                if isExpertMode == false {
-                    Text("public.pack.import")
-                }
-            } icon: {
-                Image(systemName: "square.and.arrow.down")
-            }
-            .font(.caption.weight(.semibold))
-        }
-        .buttonStyle(.borderedProminent)
-        .disabled(rowStatus[item.id] != nil)
-    }
-
-    private func deleteButton(_ item: PublicPackSummary) -> some View {
-        Button(role: .destructive) {
-            // 確認アラートを出してから削除する
-            pendingDeleteItem = item
-        } label: {
-            Label {
-                // 達人モードではアイコンのみ
-                if isExpertMode == false {
-                    Text("delete")
-                }
-            } icon: {
-                Image(systemName: "trash")
-            }
-            .font(.caption.weight(.semibold))
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(.red)
-        .disabled(rowStatus[item.id] != nil)
     }
 
     // MARK: - データ取得
@@ -568,7 +539,6 @@ struct PublicPackGalleryView: View {
     /// 自分が公開したパックを削除する
     @MainActor
     private func deletePack(_ item: PublicPackSummary) async {
-        pendingDeleteItem = nil
         if rowStatus[item.id] != nil { return }
         rowStatus[item.id] = .loading
         do {
@@ -665,4 +635,299 @@ struct PublicPackGalleryView: View {
         return "\(grams)g"
     }
 
+}
+
+/// 公開パックの概要、取込、共有、作者用削除をまとめるシート
+private struct PublicPackDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let item: PublicPackSummary
+    let onImport: () -> Void
+    let onDelete: () -> Void
+
+    @State private var didCopy = false
+    @State private var showShareHelp = false
+    @State private var showDeleteConfirm = false
+
+    /// 公開日時の表示用フォーマッタ
+    private static let publishedAtFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.dateFormat = "yyyy/MM/dd HH:mm"
+        return formatter
+    }()
+
+    /// 対応言語をコードではなく母語名で表示する
+    private static let nativeLanguageNames: [String: String] = [
+        "ja": "日本語",
+        "en": "English",
+        "de": "Deutsch",
+        "es": "Español",
+        "fr": "Français",
+        "it": "Italiano",
+        "ko": "한국어",
+        "zh-Hant": "繁體中文",
+    ]
+
+    private var shareURL: URL {
+        AzukiApi.shared.publicPackShareURL(publishedId: item.id)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 20) {
+                    summarySection
+                    importButton
+                    Divider()
+                    shareSection
+
+                    if item.isMine {
+                        Divider()
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            Label("delete", systemImage: "trash")
+                                .font(.body.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.red)
+                    }
+                }
+                .padding(20)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(Text("public.pack.sheet.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .safeAreaInset(edge: .bottom) {
+                if SnapshotSupport.isRunningSnapshot == false {
+                    VStack(spacing: 0) {
+                        Divider()
+                        AdMobBannerView(
+                            adUnitID: ADMOB_BANNER_UnitID,
+                            size: CGSize(width: 320, height: 50)
+                        )
+                        .frame(height: 50)
+                        .padding(.vertical, 4)
+                    }
+                    .background(.bar, ignoresSafeAreaEdges: .bottom)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "chevron.down")
+                            .imageScale(.large)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+        .overlay {
+            if showShareHelp {
+                shareHelpDialog
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                    .zIndex(1)
+            }
+        }
+        .alert("public.pack.delete.confirm", isPresented: $showDeleteConfirm) {
+            Button("delete", role: .destructive) {
+                // 作者確認済みの削除だけを親画面へ渡す
+                dismiss()
+                onDelete()
+            }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+        }
+    }
+
+    /// 共有リンクの説明を不透過背景で表示する
+    private var shareHelpDialog: some View {
+        ZStack {
+            Color.black.opacity(0.38)
+                .ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 18) {
+                Text("public.pack.share.title")
+                    .font(.title3.weight(.bold))
+
+                Text("public.pack.share.description")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showShareHelp = false
+                    }
+                } label: {
+                    Text("OK")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(Color(.systemBackground))
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color(.separator), lineWidth: 0.5)
+            }
+            .shadow(color: .black.opacity(0.2), radius: 18, y: 8)
+            .padding(.horizontal, 32)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    /// パック概要を省略せず表示する
+    private var summarySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(item.name.isEmpty ? String(localized: "no.name") : item.name)
+                .font(.title2.weight(.semibold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if item.memo.isEmpty == false {
+                Text(item.memo)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                detailRow("public.pack.field.group.count", systemImage: "square.stack.3d.up", value: String(item.groupCount))
+                detailRow("public.pack.field.item.count", systemImage: "checklist", value: String(item.itemCount))
+                detailRow("public.pack.field.weight", systemImage: "scalemass", value: weightText(item.totalWeight))
+                detailRow("public.pack.field.download.count", systemImage: "arrow.down.circle", value: String(item.downloadCount))
+                detailRow("public.pack.field.author", systemImage: "person", value: item.author)
+                detailRow("public.pack.field.language", systemImage: "globe", value: languageName(item.locale))
+                detailRow(
+                    "public.pack.field.published.at",
+                    systemImage: "calendar",
+                    value: item.publishedAt.map { Self.publishedAtFormatter.string(from: $0) } ?? "-"
+                )
+            }
+        }
+    }
+
+    /// 項目名と値をアイコン付きの1行で表示する
+    private func detailRow(_ title: LocalizedStringKey, systemImage: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: systemImage)
+                .frame(width: 20)
+                .foregroundStyle(.secondary)
+            Text(title)
+                .foregroundStyle(.secondary)
+            Text(verbatim: ":")
+                .foregroundStyle(.secondary)
+            Text(verbatim: value)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.callout)
+    }
+
+    /// 共有リンクの直前に取込操作を配置する
+    private var importButton: some View {
+        Button {
+            // シートを閉じてから親画面の取込フローへ渡す
+            dismiss()
+            onImport()
+        } label: {
+            Label("public.pack.import", systemImage: "square.and.arrow.down")
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+        }
+        .buttonStyle(.borderedProminent)
+    }
+
+    /// localeコードを母語名へ変換する
+    private func languageName(_ locale: String?) -> String {
+        guard let locale, locale.isEmpty == false else { return "-" }
+        return Self.nativeLanguageNames[locale] ?? locale.uppercased()
+    }
+
+    /// 共有URLとヘルプ、コピー操作をまとめる
+    private var shareSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Label("public.pack.share.title", systemImage: "link")
+                    .font(.headline)
+                Spacer(minLength: 8)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showShareHelp = true
+                    }
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .imageScale(.large)
+                }
+                .accessibilityLabel(Text("public.pack.share.help.button"))
+            }
+
+            // URL自体をタップした場合も同じコピー操作にする
+            Button(action: copyLink) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    Text(shareURL.absoluteString)
+                        .font(.footnote.monospaced())
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .padding(.horizontal, 12)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button(action: copyLink) {
+                Label("public.pack.share.copy", systemImage: "doc.on.doc")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+            }
+            .buttonStyle(.bordered)
+            .tint(.green)
+
+            if didCopy {
+                Label("public.pack.share.copied", systemImage: "checkmark.circle.fill")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.green)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    /// 公開パックURLをコピーし、短時間だけ完了表示を出す
+    private func copyLink() {
+        UIPasteboard.general.string = shareURL.absoluteString
+        GALogger.log(.feature_use(name: "public_pack_share", source: "public_pack_gallery", detail: "copy"))
+        withAnimation(.easeInOut(duration: 0.2)) {
+            didCopy = true
+        }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_800_000_000)
+            withAnimation(.easeInOut(duration: 0.2)) {
+                didCopy = false
+            }
+        }
+    }
+
+    /// 総重量の表示用テキスト
+    private func weightText(_ grams: Int) -> String {
+        if 1000 <= grams {
+            return String(format: "%.1fkg", Double(grams) / 1000.0)
+        }
+        return "\(grams)g"
+    }
 }
