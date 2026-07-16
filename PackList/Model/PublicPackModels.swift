@@ -1,5 +1,13 @@
 import Foundation
 
+// 公式作者名と誤認される固定のニックネームを端末側で軽く拒否する
+func isUnavailableAuthorNickname(_ nickname: String) -> Bool {
+    let normalized = nickname
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .lowercased(with: Locale(identifier: "en_US_POSIX"))
+    return normalized.hasPrefix("sumpo")
+}
+
 /// 公開パック一覧・検索の1件（他ユーザー向け。作者ニックネームを含む）
 /// createdAt/updatedAt はUI表示に使わないため、デコード対象から外して日付フォーマット差異を避ける
 struct PublicPackSummary: Decodable, Identifiable {

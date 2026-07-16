@@ -99,10 +99,15 @@ struct PackEditView: View {
         .alert("publish.nickname.title", isPresented: $showNicknamePrompt) {
             TextField("publish.nickname.placeholder", text: $nicknameDraft)
             Button("publish.nickname.save.publish") { confirmNickname(useDraft: true) }
+                .disabled(isUnavailableAuthorNickname(nicknameDraft))
             Button("publish.nickname.anonymous.publish") { confirmNickname(useDraft: false) }
             Button("cancel", role: .cancel) {}
         } message: {
-            Text("publish.privacy.notice")
+            if isUnavailableAuthorNickname(nicknameDraft) {
+                Text("publish.nickname.already.used")
+            } else {
+                Text("publish.privacy.notice")
+            }
         }
         // 2回目以降の公開時：プライバシー注意つき確認
         .alert("publish.confirm.title", isPresented: $showPublishConfirm) {
@@ -485,6 +490,10 @@ struct PackEditView: View {
     /// ニックネーム入力の確定。useDraft=false は「匿名のまま公開」
     private func confirmNickname(useDraft: Bool) {
         let trimmed = nicknameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        // ボタン状態に関係なく固定名の保存を防ぐ
+        if useDraft && isUnavailableAuthorNickname(trimmed) {
+            return
+        }
         authorNickname = useDraft ? trimmed : ""
         authorNicknameConfigured = true
         Task { await performPublish() }

@@ -240,10 +240,16 @@ struct SettingView: View {
         @MainActor
         private func save() async {
             if isSaving { return }
+            let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+            // 公式作者名と誤認される固定名は通信前に拒否する
+            if isUnavailableAuthorNickname(trimmed) {
+                statusMessage = String(localized: "publish.nickname.already.used")
+                focused = true
+                return
+            }
             focused = false
             isSaving = true
             defer { isSaving = false }
-            let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
             do {
                 let userId = creditStore.regenerateUserIdIfNeeded()
                 // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
