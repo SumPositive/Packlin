@@ -252,6 +252,11 @@
 					};
 					C3D2BB6B2E6A7967002B900A = {
 						CreatedOnToolsVersion = 16.3;
+						SystemCapabilities = {
+							com.apple.AssociatedDomains = {
+								enabled = 1;
+							};
+						};
 					};
 					C3D2BB7A2E6A7969002B900A = {
 						CreatedOnToolsVersion = 16.3;

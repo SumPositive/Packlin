@@ -12,6 +12,12 @@ import FirebaseAnalytics
 import FirebaseCrashlytics
 import GoogleMobileAds  // iOSのみ、MacやVisionには対応せずエラーになる
 
+/// Universal Link取込の結果をユーザーへ通知する
+private struct PublicPackLinkAlert: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+}
 
 @main
 struct AppMain: App {
@@ -24,6 +30,11 @@ struct AppMain: App {
     @StateObject private var historyService = UndoStackService()
     @AppStorage(AppStorageKey.appearanceMode) private var appearanceMode: AppearanceMode = .default
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
+    @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
+    @State private var importingPublicPackID: String?
+    @State private var pendingPublicPackID: String?
+    @State private var importedPublicPackID: String?
+    @State private var publicPackLinkAlert: PublicPackLinkAlert?
 
 //    /// UIテストやシミュレータ・プレビューではFirebase関連初期化を抑止するフラグ
 //    private let isFirebaseEnabled: Bool
@@ -144,6 +155,31 @@ struct AppMain: App {
             .preferredColorScheme(appearanceMode.colorScheme)
             // 設定の文字サイズを全画面に適用（自動以外は固定の Dynamic Type を強制）
             .appFontScale(fontScale)
+            // カスタムURL経由でも同じ公開パック取込処理へ渡す
+            .onOpenURL { url in
+                handlePublicPackURL(url)
+            }
+            // Universal Linkから渡されたWeb URLを受け取る
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                guard let url = activity.webpageURL else { return }
+                handlePublicPackURL(url)
+            }
+            .overlay {
+                if importingPublicPackID != nil {
+                    // 起動直後の通信中も取込処理中であることを示す
+                    ProgressView()
+                        .padding(18)
+                        .background(.regularMaterial, in: Circle())
+                        .accessibilityLabel(Text("public.pack.import"))
+                }
+            }
+            .alert(item: $publicPackLinkAlert) { alert in
+                Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
         .environmentObject(creditStore)
         .environmentObject(historyService)
@@ -166,6 +202,119 @@ struct AppMain: App {
             }
         }
 
+    }
+
+    /// Packlinの公開パック共有URLだけを受け付ける
+    private static func publicPackID(from url: URL) -> String? {
+        guard url.scheme?.lowercased() == "https",
+              url.host?.lowercased() == "azuki-api.azukid.com" else { return nil }
+
+        let components = url.pathComponents.filter { $0 != "/" }
+        guard components.count == 3,
+              components[0] == "packlin",
+              components[1] == "public",
+              let uuid = UUID(uuidString: components[2]) else { return nil }
+        return uuid.uuidString.lowercased()
+    }
+
+    /// Universal Linkを取込キューへ渡し、同じ通知の二重処理を防ぐ
+    @MainActor
+    private func handlePublicPackURL(_ url: URL) {
+        guard let publishedID = Self.publicPackID(from: url),
+              publishedID != importedPublicPackID else { return }
+
+        if let importingPublicPackID {
+            if importingPublicPackID != publishedID {
+                pendingPublicPackID = publishedID
+            }
+            return
+        }
+        startPublicPackImport(publishedID: publishedID)
+    }
+
+    /// 公開パックを1件ずつ取り込み、待機中のリンクがあれば続けて処理する
+    @MainActor
+    private func startPublicPackImport(publishedID: String) {
+        importingPublicPackID = publishedID
+        Task { @MainActor in
+            let succeeded = await importPublicPackFromLink(publishedID: publishedID)
+            if succeeded {
+                importedPublicPackID = publishedID
+            }
+            importingPublicPackID = nil
+
+            if let nextID = pendingPublicPackID {
+                pendingPublicPackID = nil
+                if nextID != importedPublicPackID {
+                    startPublicPackImport(publishedID: nextID)
+                }
+            }
+        }
+    }
+
+    /// 共有リンクの公開パックを検証してSwiftDataへ保存する
+    @MainActor
+    private func importPublicPackFromLink(publishedID: String) async -> Bool {
+        guard let container = sharedModelContainer else {
+            publicPackLinkAlert = PublicPackLinkAlert(
+                title: String(localized: "import.failed"),
+                message: String(localized: "network.seems.down.please.try.again")
+            )
+            return false
+        }
+
+        do {
+            let userID = creditStore.regenerateUserIdIfNeeded()
+            let dto = try await AzukiApi.shared.importPublicPack(publishedId: publishedID, userId: userID)
+            // Packlin形式以外の応答をローカルDBへ入れない
+            guard dto.productName == PACK_JSON_DTO_PRODUCT_NAME,
+                  dto.copyright == PACK_JSON_DTO_COPYRIGHT,
+                  dto.version == PACK_JSON_DTO_VERSION else {
+                throw AzukiAPIError.decoding
+            }
+
+            let context = container.mainContext
+            // 取込失敗時のロールバックで既存編集を失わないよう先に保存する
+            if context.hasChanges {
+                try context.save()
+            }
+            let descriptor = FetchDescriptor<M1Pack>()
+            let packs = try context.fetch(descriptor).sorted { $0.order < $1.order }
+            let insertionIndex = insertionPosition == .head ? 0 : packs.count
+            let newOrder = sparseOrderForInsertion(items: packs, index: insertionIndex) {
+                normalizeSparseOrders(packs)
+            }
+            let importedPack = PackImporter.insertPack(from: dto, into: context, order: newOrder)
+            do {
+                try context.save()
+            } catch {
+                // 保存できなかった追加分だけを破棄する
+                context.rollback()
+                throw error
+            }
+
+            let itemCount = dto.groups.reduce(0) { $0 + $1.items.count }
+            GALogger.log(.public_pack_result(action: "import_link", isSuccess: true, itemCount: itemCount,
+                                             errorDomain: nil, errorCode: nil, message: nil))
+            // 一覧へ戻して、取り込んだパックが見える位置まで移動する
+            navigationStore.showPackList(packID: importedPack.id)
+            let importedMessage = String(localized: "public.pack.imported")
+            let message = dto.name.isEmpty ? importedMessage : "\(dto.name)\n\(importedMessage)"
+            publicPackLinkAlert = PublicPackLinkAlert(
+                title: String(localized: "import.done"),
+                message: message
+            )
+            return true
+        } catch {
+            let info = publicPackErrorInfo(error)
+            GALogger.log(.public_pack_result(action: "import_link", isSuccess: false, itemCount: nil,
+                                             errorDomain: info.domain, errorCode: info.code, message: info.message))
+            publicPackLinkAlert = PublicPackLinkAlert(
+                title: String(localized: "import.failed"),
+                message: error.localizedDescription
+            )
+            return false
+        }
     }
 
     /// 破損した SQLite ストアを .bak にリネームし、次回起動時にクリーンな状態で起動できるようにする

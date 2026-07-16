@@ -11,6 +11,7 @@ struct PackListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var history: UndoStackService
+    @EnvironmentObject private var navigationStore: NavigationStore
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // 表示モード（初心者／上級者）をAppStorageで永続化
@@ -134,6 +135,13 @@ struct PackListView: View {
                 }
                 .onChange(of: sortedPacks.map(\.id)) { _, _ in
                     scrollToNewPackIfReady(scrollProxy)
+                }
+                .onChange(of: navigationStore.packListScrollTargetID) { _, packID in
+                    applyExternalScrollTarget(packID)
+                }
+                .onAppear {
+                    // コールドスタートで先に届いた表示要求も取りこぼさない
+                    applyExternalScrollTarget(navigationStore.packListScrollTargetID)
                 }
             }
             .safeAreaInset(edge: .top) { // ヘッダ部
@@ -489,6 +497,14 @@ struct PackListView: View {
             }
             scrollTargetPackID = nil
         }
+    }
+
+    /// Universal Link取込で追加されたパックを既存スクロール処理へ渡す
+    private func applyExternalScrollTarget(_ packID: M1Pack.ID?) {
+        guard let packID else { return }
+        scrollTargetPackAnchor = insertionPosition == .head ? .top : .bottom
+        scrollTargetPackID = packID
+        navigationStore.packListScrollTargetID = nil
     }
 
     /// Drag-Drop-Move
