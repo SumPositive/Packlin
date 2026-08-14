@@ -331,11 +331,11 @@ struct PackListView: View {
                 .presentationDetents([.height(SettingView_HEIGHT), .large])
                 .presentationDragIndicator(.visible)
         }
-        // 初心者モード時のAI新規作成メニューから遷移するシート
+        // パック追加メニューからチャッピーとの新規会話を開く
         .sheet(isPresented: $isShowAiCreateSheet) {
-            ChappySheetView()
+            ChappyConversationView(basePack: nil)
                 .appFontScale(fontScale)
-                .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         // 公開パックから取得するシート
@@ -543,7 +543,7 @@ private struct PackAddPopoverView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             optionButton(
-                title: "let.chappy.ai.make",
+                title: "chappy.conversation.entry",
                 systemImage: "sparkles",
                 action: onChappy
             )

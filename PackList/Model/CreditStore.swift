@@ -1,8 +1,5 @@
-//
-//  CreditStore.swift
-//  PackList
-//
-//  Created by sumpo on 2025/10/12.
+//  AIクレジット管理
+//  端末残高とサーバー同期用ユーザーIDを安全に保持する
 //
 
 import Foundation
@@ -19,6 +16,7 @@ final class CreditStore: ObservableObject {
 
     private let keychain: KeychainStorage
     private let keychainBalanceKey = "azuki.credit.balance"
+    private let creditScaleKey = "azuki.credit.scale"
 
     init(keychain: KeychainStorage = KeychainStorage()) {
         self.keychain = keychain
@@ -26,8 +24,16 @@ final class CreditStore: ObservableObject {
         self.userId = AzukiUserIdentifier.loadOrCreate(keychain: keychain)
 
         if let storedInKeychain = keychain.loadInt(forKey: keychainBalanceKey) {
-            // Keychainに保存済みならそのまま採用する
-            self.credits = storedInKeychain
+            // 旧利用券は1枚を100クレジットとして一度だけ換算する
+            if keychain.loadInt(forKey: creditScaleKey) == 100 {
+                self.credits = storedInKeychain
+            } else {
+                // 破損した極端な値でも乗算オーバーフローを起こさない
+                let (scaled, overflowed) = storedInKeychain.multipliedReportingOverflow(by: 100)
+                self.credits = overflowed ? Int.max : max(0, scaled)
+                keychain.saveInt(self.credits, forKey: keychainBalanceKey)
+                keychain.saveInt(100, forKey: creditScaleKey)
+            }
         } else {
 //            // 旧バージョンのデータ移行：UserDefaultsに値があれば読み出してKeychainへ移す
 //            let storedValue = userDefaults.integer(forKey: storageKey)
@@ -36,6 +42,7 @@ final class CreditStore: ObservableObject {
 //                keychain.saveInt(storedValue, forKey: keychainBalanceKey)
 //            } else {
                 self.credits = 0
+                keychain.saveInt(100, forKey: creditScaleKey)
 //            }
         }
     }
@@ -90,6 +97,12 @@ final class CreditStore: ObservableObject {
         persist()
     }
 
+    /// サーバー移行後の残高を受信した時点で新クレジット単位を確定する
+    func overwriteFromServer(credits amount: Int) {
+        keychain.saveInt(100, forKey: creditScaleKey)
+        overwrite(credits: amount)
+    }
+
     /// 現在の残高を初期化したい場合用
     func reset() {
         credits = 0
@@ -103,6 +116,7 @@ final class CreditStore: ObservableObject {
         AzukiUserIdentifier.delete(keychain: keychain)
         // クレジットも同時にクリアし、Keychainから削除してからメモリ上の値を0にそろえる
         keychain.deleteItem(forKey: keychainBalanceKey)
+        keychain.deleteItem(forKey: creditScaleKey)
         credits = 0
         // デバッグでuserIdを空にすると旧ユーザー向けのアクセストークンが残ってしまうため、
         // サーバーの認証エラーを避ける目的でアクセストークンとリフレッシュトークンも破棄する

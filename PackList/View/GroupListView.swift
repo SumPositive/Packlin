@@ -40,7 +40,7 @@ struct GroupListView: View {
     // それでも編集中はツールバー操作を抑制したいので、フラグ名は流用
     private var isShowingPopup: Bool { editingGroup != nil }
 
-    // Group一覧の下に固定表示するメニュー（縦幅を抑えてアイコン＋短文を横並びに）
+    // Group一覧の下に固定表示するメニュー
     private var footerMenu: some View {
         VStack(spacing: 0) {
             COLOR_LIST_SEPARATOR
@@ -90,57 +90,12 @@ struct GroupListView: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                VStack(spacing: 4) {
-                    Button {
-                        // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
-                        showAiCreateSheet = true
-                        GALogger.log(.feature_use(name: "ai_create", source: "group_list_footer", detail: "pack"))
-                    } label: {
-                        // チャッピー相談ボタンもカプセル風にし、短い文言で高さを抑える
-                        HStack(spacing: 10) {
-                            Image(systemName: "sparkles")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(Color.accentColor)
-
-                            Text(LocalizedStringKey("chappy"))
-                                // 同様に小さめ・軽めのフォントで縦幅を抑える
-                                .font(.footnote.weight(.regular))
-                                .foregroundStyle(Color.primary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 1)
-                        // 右側ボタンも同じカプセル風の塗りと線を適用して統一感を出す
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.systemBackground).opacity(0.6))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
-
-                    if isBeginnerMode {
-                        // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
-                        Text(LocalizedStringKey("ask.chappy.ai.tweak"))
-                            .font(.caption2)
-                            .lineLimit(3)
-                            .minimumScaleFactor(0.7)
-                            .allowsTightening(true)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 16)
             // フッターメニュー全体の上下余白を詰めて、画面占有を抑える
             .padding(.vertical, isBeginnerMode ? 8 : 6)
             .background(.ultraThinMaterial)
-            // フッターのボタン名（アイテム縦覧・チャッピー）と初心者ヘルプを「大」までで頭打ち
+            // フッターのボタン名と初心者ヘルプを「大」までで頭打ち
             .cappedAtLargeFontSize()
         }
     }
@@ -151,6 +106,30 @@ struct GroupListView: View {
             ScrollViewReader { scrollProxy in
                 List {
                     Section {
+                        Button {
+                            // 現在のパックを会話の前提としてチャッピーへ渡す
+                            showAiCreateSheet = true
+                            GALogger.log(.feature_use(name: "ai_conversation", source: "group_list_first_row", detail: "open"))
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "sparkles")
+                                    .imageScale(.large)
+                                    .foregroundStyle(Color.accentColor)
+                                Text("chappy.conversation.entry")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Image(systemName: "chevron.forward")
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+
                         ForEach(sortedGroups) { group in
                             ZStack {
                                 GroupRowView(group: group, isHeader: false) { selected, _ in
@@ -423,10 +402,10 @@ struct GroupListView: View {
                 .presentationDragIndicator(.hidden)
         }
         .sheet(isPresented: $showAiCreateSheet) {
-            // 現在のパック情報をそのままAIへ渡し、修正提案を依頼できるようにする
-            ChappySheetView(basePack: pack)
+            // 現在のパック情報を会話の前提として渡す
+            ChappyConversationView(basePack: pack)
                 .appFontScale(fontScale)
-                .presentationDetents([.height(ChappySheetView_HEIGHT), .large])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         .safeAreaInset(edge: .bottom) {

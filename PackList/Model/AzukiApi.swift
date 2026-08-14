@@ -101,6 +101,36 @@ final class AzukiApi {
         let adRewardBalance: Int
     }
 
+    /// チャッピー会話へ渡す直近メッセージ
+    struct ChappyHistoryItem: Codable {
+        let role: String
+        let content: String
+    }
+
+    /// チャッピー会話APIが返す応答と任意のパック提案
+    struct ChappyConversationResult: Decodable {
+        let message: String
+        let proposedPack: PackJsonDTO?
+        let chargedCredits: Int
+        let balance: Int
+
+        private enum CodingKeys: String, CodingKey {
+            case message
+            case proposedPack
+            case chargedCredits
+            case balance
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            message = try container.decode(String.self, forKey: .message)
+            // AI提案だけが不正でも会話本文と残高は受け取り、画面全体の失敗を避ける
+            proposedPack = try? container.decodeIfPresent(PackJsonDTO.self, forKey: .proposedPack)
+            chargedCredits = try container.decode(Int.self, forKey: .chargedCredits)
+            balance = try container.decode(Int.self, forKey: .balance)
+        }
+    }
+
     private let session: URLSession
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
@@ -215,6 +245,65 @@ final class AzukiApi {
                                  error: AzukiAPIError.decoding)
             throw AzukiAPIError.decoding
         }
+    }
+
+    /// チャッピーと会話し、必要な場合だけ完全なパック提案を受け取る
+    func converseWithChappy(userId: String,
+                            requestId: UUID,
+                            message: String,
+                            history: [ChappyHistoryItem],
+                            basePack: PackJsonDTO?,
+                            tone: ChappyResponseTone,
+                            languageCode: String?) async throws -> ChappyConversationResult {
+        struct ConversationRequest: Encodable {
+            let userId: String
+            let requestId: UUID
+            let message: String
+            let history: [ChappyHistoryItem]
+            let basePack: PackJsonDTO?
+            let tone: String
+            let languageCode: String?
+        }
+
+        guard let url = makeURL(path: "/api/chappy/conversation") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let body = ConversationRequest(
+            userId: userId,
+            requestId: requestId,
+            message: message,
+            history: history,
+            basePack: basePack,
+            tone: tone.rawValue,
+            languageCode: languageCode
+        )
+
+        // 一時障害だけを同じrequestIdで再送し、完了済み応答の回収と二重課金防止を両立する
+        let retryDelays: [UInt64] = [1_000_000_000, 2_000_000_000, 4_000_000_000, 8_000_000_000]
+        var lastError: Error = AzukiAPIError.invalidResponse
+        for attempt in 0...retryDelays.count {
+            do {
+                let data = try await sendJSONRequest(
+                    url: url,
+                    body: body,
+                    authorization: .required,
+                    retryCount: attempt
+                )
+                do {
+                    return try decoder.decode(ChappyConversationResult.self, from: data)
+                } catch {
+                    throw AzukiAPIError.decoding
+                }
+            } catch {
+                lastError = error
+                guard attempt < retryDelays.count,
+                      shouldRetryChappyConversation(after: error) else {
+                    throw error
+                }
+                try await Task.sleep(nanoseconds: retryDelays[attempt])
+            }
+        }
+        throw lastError
     }
 
     /// サーバーに保存されている最新のクレジット残高や広告特典の状態を取得する
@@ -476,7 +565,12 @@ final class AzukiApi {
     }
 
     /// 共通のJSON POST送信をまとめ、認証ヘッダの付与やエンコードを一括で行う
-    private func sendJSONRequest<T: Encodable>(url: URL, body: T, authorization: AuthorizationRequirement) async throws -> Data {
+    private func sendJSONRequest<T: Encodable>(
+        url: URL,
+        body: T,
+        authorization: AuthorizationRequirement,
+        retryCount: Int = 0
+    ) async throws -> Data {
         let payload: Data
         do {
             payload = try encoder.encode(body)
@@ -492,7 +586,39 @@ final class AzukiApi {
         }
 
         let request = try await makeRequest(url: url, method: "POST", body: payload, authorization: authorization)
-        return try await send(request: request)
+        return try await send(request: request, retryCount: retryCount)
+    }
+
+    /// AI会話で安全に再送できる一時障害だけを判定する
+    private func shouldRetryChappyConversation(after error: Error) -> Bool {
+        if let apiError = error as? AzukiAPIError {
+            switch apiError {
+            case .server(let statusCode):
+                return [408, 429, 500, 502, 503, 504].contains(statusCode)
+            case .serverError(let message):
+                return [
+                    "request_in_progress",
+                    "openai_failed",
+                    "invalid_json",
+                    "invalid_response"
+                ].contains(message)
+            default:
+                return false
+            }
+        }
+
+        let nsError = error as NSError
+        guard nsError.domain == NSURLErrorDomain else { return false }
+        let retryableCodes: Set<URLError.Code> = [
+            .timedOut,
+            .cannotFindHost,
+            .cannotConnectToHost,
+            .networkConnectionLost,
+            .dnsLookupFailed,
+            .notConnectedToInternet,
+            .resourceUnavailable
+        ]
+        return retryableCodes.contains(URLError.Code(rawValue: nsError.code))
     }
 
     /// 認証ヘッダやAcceptヘッダを共通設定する
@@ -980,13 +1106,13 @@ final class AzukiApi {
                               retryCount: retryCount)
                 throw AzukiAPIError.serverError(message: msg)
             }
-            //throw AzukiAPIError.server(statusCode: status)
+            // エラー本文がない一時障害もHTTP状態で判定し、AI会話側の安全な再送につなげる
             logApiFailure(request: request,
                           statusCode: status,
                           serverErrorCode: nil,
-                          error: AzukiAPIError.serverError(message: "(\(status))" + httpResponse.description),
+                          error: AzukiAPIError.server(statusCode: status),
                           retryCount: retryCount)
-            throw AzukiAPIError.serverError(message: "(\(status))" + httpResponse.description)
+            throw AzukiAPIError.server(statusCode: status)
         } catch let error as AzukiAPIError {
             throw error
         } catch {

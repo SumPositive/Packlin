@@ -4,3 +4,6 @@
  */
 
 "CFBundleDisplayName" = "モチメモ";
+"NSMicrophoneUsageDescription" = "チャッピーへの音声入力にマイクを使用します";
+"NSSpeechRecognitionUsageDescription" = "チャッピーへの音声入力を端末内で文字に変換します";
+"NSLocalNetworkUsageDescription" = "デバッグ中のazuki-api接続にローカルネットワークを使用します";

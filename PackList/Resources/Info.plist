@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- DEBUG実機からMacのローカルAPIへ接続する -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>デバッグ中のazuki-api接続にローカルネットワークを使用します</string>
+	<!-- チャッピーの端末内音声入力に必要な権限説明 -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>チャッピーへの音声入力にマイクを使用します</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>チャッピーへの音声入力を端末内で文字に変換します</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-7576639777972199~3753311359</string>
 <key>SKAdNetworkItems</key>

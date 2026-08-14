@@ -3,3 +3,6 @@
  */
 
 "CFBundleDisplayName" = "Packlin";
+"NSMicrophoneUsageDescription" = "Packlin 會使用麥克風輸入給 Chappy 的語音";
+"NSSpeechRecognitionUsageDescription" = "Packlin 會在此裝置上將給 Chappy 的語音轉換成文字";
+"NSLocalNetworkUsageDescription" = "Packlin 在除錯時會使用本地網路連線至 azuki-api";

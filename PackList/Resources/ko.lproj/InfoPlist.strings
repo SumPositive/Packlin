@@ -3,3 +3,6 @@
  */
 
 "CFBundleDisplayName" = "Packlin";
+"NSMicrophoneUsageDescription" = "Packlin은 Chappy 음성 입력에 마이크를 사용합니다";
+"NSSpeechRecognitionUsageDescription" = "Packlin은 이 기기에서 Chappy 음성 입력을 텍스트로 변환합니다";
+"NSLocalNetworkUsageDescription" = "Packlin은 디버깅 중 azuki-api에 연결하기 위해 로컬 네트워크를 사용합니다";

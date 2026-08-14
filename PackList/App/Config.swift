@@ -232,6 +232,8 @@ enum AppStorageKey {
     static let appearanceMode = "setting.appearanceMode"
     // 文字サイズ（自動／標準／大／特大）
     static let fontScale = "setting.fontScale"
+    // チャッピーの応答トーン
+    static let chappyResponseTone = "setting.chappyResponseTone"
     // 行の表示行数（name／memo）
     static let rowTextLines = "setting.rowTextLines"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
@@ -297,21 +299,18 @@ let PACK_FILE_UTTYPE = UTType(filenameExtension: PACK_FILE_EXTENSION) ?? .data /
 
 //-------------------------------------- azuki-api / OpenAI 関連
 /// azuki-api のベースURL。実行時に403などが発生した場合はConfigで差し替える想定
-#if DEBUG && targetEnvironment(simulator)
-//------------------------- DEBUGモード（シミュレータのみ）
-// シミュレータではローカルスタブ（ngrok経由）に接続する。
-// DEBUGモードでも実機は下の #else 側（本番）に接続する。
-// Local server
-// ATS設定：App Transport Security Settings：Allow Arbitrary Loads=Yes
-// ローカルサーバを起動する
-//   % npx wrangler dev --local
-// 実機接続するため ngrok により localhost を公開する
-//   $ ngrok http 8787　　＜起動により表示された公開URLを下記へコピペする
-let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")! // ← ngrok の URL に差し替える
+#if DEBUG
+//------------------------- DEBUGモード（ローカル接続）
+// Mac側は `npx wrangler dev --ip 0.0.0.0 --port 8787` で起動する
+#if targetEnvironment(simulator)
+let AZUKI_API_BASE_URL = URL(string: "http://127.0.0.1:8787")!
 #else
-//------------------------- 本番接続（RELEASEモード全般、および DEBUGモードの実機）
+// macOSのworkerdはLAN接続を切断するため、ngrok経由でMacの8787番へ接続する
+let AZUKI_API_BASE_URL = URL(string: "https://muriel-chestnutty-unprecedentedly.ngrok-free.dev")!
+#endif
+#else
+//------------------------- 本番接続（RELEASEモード全般）
 // TestFlightでは、RELEASEモードで本番同様だが、購入はSandboxテストモードで動作するので課金されない！
-// DEBUGモードの実機もここに来るため、実機デバッグ時は本番サーバに接続する。
 // Cloudflare Workers & Pagesへデプロイする
 //   % npx wrangler deploy
 // 本番 Deploy server
@@ -330,7 +329,7 @@ struct AzukiCreditPurchaseOption: Hashable {
     let priceYen: Int
     /// 英語表示向けの税込価格（ドル）
     let priceUsd: Decimal
-    /// 加算されるAI利用券の枚数
+    /// 加算されるAIクレジット数
     let tickets: Int
 
     /// 端末のLocaleから実際に利用すべき商品IDを決定する
@@ -360,7 +359,7 @@ struct AzukiCreditPurchaseOption: Hashable {
 
     /// アプリのLocaleに応じた価格文字列を返す
     /// - Parameter locale: SwiftUIから渡される現在のLocale
-    /// - Returns: 「¥50」や「$0.50」のような通貨文字列
+    /// - Returns: 「¥50」や「$0.49」のような通貨文字列
     func localizedPriceString(for locale: Locale) -> String {
         // 日本語のLocaleでは円表記にする
         if isJapan(locale: locale) {
@@ -394,15 +393,15 @@ struct AzukiCreditPurchaseOption: Hashable {
 
     /// ロケールに応じたボタン表示文言を返す
     /// - Parameter locale: 文字列判定に利用するLocale
-    /// - Returns: 日本語なら「5枚：¥50」、英語なら「Get 5 tickets: $0.50」など
+    /// - Returns: 「100クレジット：¥50」など
     func localizedButtonTitle(for locale: Locale) -> String {
         let priceText = localizedPriceString(for: locale)
-        if isJapan(locale: locale) {
-            // 日本語環境では従来の表記を踏襲する
-            return "\(tickets)枚：\(priceText)"
-        }
-        // 英語環境では「credits」を用いた案内に切り替える
-        return "Get \(tickets) tickets: \(priceText)"
+        // クレジット単位と価格を各言語の書式へ当てはめる
+        return String(
+            format: String(localized: "chappy.purchase.option", defaultValue: "%lldクレジット：%@"),
+            Int64(tickets),
+            priceText
+        )
     }
 
     /// Localeの地域情報から日本かどうかを判定する
@@ -427,19 +426,21 @@ struct AzukiCreditPurchaseOption: Hashable {
 ///  IDを変更や追加した場合、azuki-api側の環境変数 IAP_PRODUCT_CREDIT_MAP を更新すること
 let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
     AzukiCreditPurchaseOption(
-        productIdJapan:  "AiTickets_1_JPY", // 日本：¥50 / +1枚
-        productIdGlobal: "AiTickets_1_USD", // 他地域：$0.49 / +1tickets
+        productIdJapan:  "AiTickets_1_JPY", // 日本：¥50 / +100クレジット
+        productIdGlobal: "AiTickets_1_USD", // 他地域：$0.49 / +100クレジット
         priceYen: 50,
         priceUsd: 0.49,
-        tickets: 1
+        tickets: 100
     ),
     AzukiCreditPurchaseOption(
-        productIdJapan:  "AiTickets_5_JPY", // 日本：¥150 / +5枚
-        productIdGlobal: "AiTickets_5_USD", // 他地域：$1.49 / +5tickets
+        productIdJapan:  "AiTickets_5_JPY", // 日本：¥150 / +500クレジット
+        productIdGlobal: "AiTickets_5_USD", // 他地域：$1.49 / +500クレジット
         priceYen: 150,
         priceUsd: 1.49,
-        tickets: 5
+        tickets: 500
     ),
 ]
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
-let CHATGPT_GENERATION_CREDIT_COST = 1
+let CHATGPT_GENERATION_CREDIT_COST = 100
+/// 会話1回で一時確保する最大クレジット数
+let CHAPPY_CONVERSATION_MAX_CREDIT_COST = 6

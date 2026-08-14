@@ -261,7 +261,7 @@ CloudflareやNeonの無料枠内に収めたい
 - 
 -----
 fastlane メタデータを更新して
-3.5.0 審査提出中、README.mdの開発メモ、公開アプリパネル、取扱説明を更新して
+3.5.0 審査中、README.mdの開発メモ、公開アプリパネル、取扱説明を更新して
 -----
 cd /Users/sumpositive/GitLocal/Packlin
 fastlane preview_metadata
