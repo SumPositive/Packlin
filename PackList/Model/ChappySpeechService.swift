@@ -8,6 +8,12 @@ import Speech
 
 @MainActor
 final class ChappySpeechService: NSObject, ObservableObject {
+    /// 端末で選択できる読み上げ音声
+    struct VoiceOption: Identifiable {
+        let id: String
+        let name: String
+    }
+
     @Published private(set) var isListening = false
     @Published private(set) var isSpeaking = false
     @Published private(set) var isOnDeviceRecognitionAvailable = false
@@ -133,8 +139,28 @@ final class ChappySpeechService: NSObject, ObservableObject {
         stopRecognitionResources()
     }
 
-    /// チャッピーの返答を端末の音声合成で読み上げる
-    func speak(_ text: String, languageCode: String?, onFinished: (() -> Void)? = nil) {
+    /// 現在の言語で利用できる読み上げ音声を返す
+    func availableVoices(languageCode: String?) -> [VoiceOption] {
+        let requestedLanguage = Locale(identifier: languageCode ?? Locale.current.identifier)
+            .language.languageCode?.identifier
+        return AVSpeechSynthesisVoice.speechVoices()
+            .filter { voice in
+                let voiceLanguage = Locale(identifier: voice.language).language.languageCode?.identifier
+                return requestedLanguage == nil || voiceLanguage == requestedLanguage
+            }
+            .map { VoiceOption(id: $0.identifier, name: $0.name) }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    /// チャッピーの返答を選択された声質で読み上げる
+    func speak(
+        _ text: String,
+        languageCode: String?,
+        voiceIdentifier: String? = nil,
+        tempo: Double = 1,
+        pitch: Double = 1,
+        onFinished: (() -> Void)? = nil
+    ) {
         stopListening()
         stopSpeaking()
         errorMessage = nil
@@ -150,8 +176,22 @@ final class ChappySpeechService: NSObject, ObservableObject {
         speechCompletion = onFinished
         isSpeaking = true
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate
+        let selectedVoice = voiceIdentifier.flatMap { AVSpeechSynthesisVoice(identifier: $0) }
+        let requestedLanguage = Locale(identifier: languageCode ?? Locale.current.identifier)
+            .language.languageCode?.identifier
+        let selectedLanguage = selectedVoice.flatMap {
+            Locale(identifier: $0.language).language.languageCode?.identifier
+        }
+        // 保存済み音声の言語が現在と異なる場合は端末の自動選択へ戻す
+        utterance.voice = selectedLanguage == requestedLanguage
+            ? selectedVoice
+            : AVSpeechSynthesisVoice(language: languageCode)
+        // 端末が許容する範囲へ収め、保存値の破損でも読み上げを継続する
+        utterance.rate = min(
+            AVSpeechUtteranceMaximumSpeechRate,
+            max(AVSpeechUtteranceMinimumSpeechRate, AVSpeechUtteranceDefaultSpeechRate * Float(tempo))
+        )
+        utterance.pitchMultiplier = min(2, max(0.5, Float(pitch)))
         activeUtterance = utterance
         synthesizer.speak(utterance)
     }

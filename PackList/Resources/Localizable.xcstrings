@@ -3237,6 +3237,18 @@
         }
       }
     },
+    "chappy.voice.automatic" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Automatisch" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Automatic" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Automático" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Automatique" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Automatico" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "自動" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "자동" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "自動" } }
+      }
+    },
     "chappy.voice.conversation.ended" : {
       "localizations" : {
         "de" : { "stringUnit" : { "state" : "translated", "value" : "Gesprächsmodus beendet" } },
@@ -3321,6 +3333,18 @@
         "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "正在聆聽" } }
       }
     },
+    "chappy.voice.pitch" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tonhöhe" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pitch" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tono" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Hauteur" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Altezza" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "声の高さ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "음높이" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "音高" } }
+      }
+    },
     "chappy.voice.preparing" : {
       "localizations" : {
         "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespräch wird vorbereitet" } },
@@ -3333,6 +3357,42 @@
         "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "正在準備對話" } }
       }
     },
+    "chappy.voice.preview" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Anhören" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preview" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Escuchar" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écouter" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ascolta" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "試聴" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미리 듣기" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "試聽" } }
+      }
+    },
+    "chappy.voice.preview.text" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Hallo, ich bin Chappy." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hello, I'm Chappy." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Hola, soy Chappy." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Bonjour, je suis Chappy." } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ciao, sono Chappy." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "こんにちは。チャッピーです" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "안녕하세요. 채피입니다." } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "您好，我是 Chappy。" } }
+      }
+    },
+    "chappy.voice.settings" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespräch und Stimme" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Conversation & Voice" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conversación y voz" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Conversation et voix" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Conversazione e voce" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "会話・音声設定" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대화 및 음성 설정" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "對話與語音設定" } }
+      }
+    },
     "chappy.voice.speaking" : {
       "localizations" : {
         "de" : { "stringUnit" : { "state" : "translated", "value" : "Chappy spricht" } },
@@ -3343,6 +3403,30 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "チャッピーが話しています" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "Chappy가 말하고 있습니다" } },
         "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "Chappy 正在說話" } }
+      }
+    },
+    "chappy.voice.tempo" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Sprechtempo" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Speaking speed" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Velocidad" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vitesse" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Velocità" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "話す速さ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "말하기 속도" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "語速" } }
+      }
+    },
+    "chappy.voice.type" : {
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Stimme" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Voice" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Voz" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Voix" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Voce" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "声の種類" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "음성" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "聲音" } }
       }
     },
     "chappy.voice.input" : {

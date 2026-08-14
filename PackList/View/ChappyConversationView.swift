@@ -28,6 +28,9 @@ struct ChappyConversationView: View {
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     @AppStorage(AppStorageKey.chappyResponseTone) private var tone: ChappyResponseTone = .gentle
+    @AppStorage(AppStorageKey.chappyVoiceIdentifier) private var voiceIdentifier = ""
+    @AppStorage(AppStorageKey.chappyVoiceTempo) private var voiceTempo = 1.0
+    @AppStorage(AppStorageKey.chappyVoicePitch) private var voicePitch = 1.0
     @StateObject private var speech = ChappySpeechService()
     @State private var messages: [ChappyConversationMessage] = []
     @State private var input = ""
@@ -41,6 +44,7 @@ struct ChappyConversationView: View {
     @State private var alertMessage: String?
     @State private var retryRequestId: UUID?
     @State private var retryMessage: String?
+    @State private var voiceOptions: [ChappySpeechService.VoiceOption] = []
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
@@ -70,17 +74,6 @@ struct ChappyConversationView: View {
                         Image(systemName: "chevron.down")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Picker(String(localized: "chappy.response.tone", defaultValue: "応答トーン"), selection: $tone) {
-                            ForEach(ChappyResponseTone.allCases) { option in
-                                Text(option.localizedName).tag(option)
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "text.bubble")
-                    }
-                }
             }
             .task {
                 guard hasAttemptedAutomaticVoiceStart == false else { return }
@@ -103,6 +96,7 @@ struct ChappyConversationView: View {
             }
             .onAppear {
                 isConversationViewVisible = true
+                normalizeVoiceSettings()
             }
             .onDisappear {
                 isConversationViewVisible = false
@@ -202,6 +196,7 @@ struct ChappyConversationView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 12) {
+                    voiceSettings
                     if messages.isEmpty {
                         Text(String(localized: "chappy.conversation.empty", defaultValue: "持ち物の作成、変更、確認について話しかけてください"))
                             .font(.callout)
@@ -228,10 +223,119 @@ struct ChappyConversationView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .onChange(of: messages.count) { _, _ in
-                if let last = messages.last {
+                // 最初の挨拶では設定欄を残し、会話が進んだら最新発言へ送る
+                if 1 < messages.count, let last = messages.last {
                     withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
                 }
             }
+        }
+    }
+
+    private var voiceSettings: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label(String(localized: "chappy.voice.settings", defaultValue: "会話・音声設定"), systemImage: "waveform")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    previewVoice()
+                } label: {
+                    Label(String(localized: "chappy.voice.preview", defaultValue: "試聴"), systemImage: "speaker.wave.2")
+                }
+                .buttonStyle(.bordered)
+                .disabled(isVoiceConversationActive || isSending)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Label(String(localized: "chappy.response.tone", defaultValue: "応答トーン"), systemImage: "text.bubble")
+                    .font(.subheadline)
+                Picker(String(localized: "chappy.response.tone", defaultValue: "応答トーン"), selection: $tone) {
+                    ForEach(ChappyResponseTone.allCases) { option in
+                        Text(option.localizedName).tag(option)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+            }
+
+            settingPickerRow(
+                title: String(localized: "chappy.voice.type", defaultValue: "声の種類"),
+                systemImage: "person.crop.circle"
+            ) {
+                Picker(String(localized: "chappy.voice.type", defaultValue: "声の種類"), selection: $voiceIdentifier) {
+                    Text(String(localized: "chappy.voice.automatic", defaultValue: "自動")).tag("")
+                    ForEach(voiceOptions) { option in
+                        Text(option.name).tag(option.id)
+                    }
+                }
+            }
+
+            voiceSliderRow(
+                title: String(localized: "chappy.voice.tempo", defaultValue: "話す速さ"),
+                systemImage: "speedometer",
+                value: $voiceTempo,
+                range: 0.75...1.25
+            )
+            voiceSliderRow(
+                title: String(localized: "chappy.voice.pitch", defaultValue: "声の高さ"),
+                systemImage: "tuningfork",
+                value: $voicePitch,
+                range: 0.8...1.2
+            )
+        }
+        .padding(12)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 12)
+    }
+
+    private func settingPickerRow<Content: View>(
+        title: String,
+        systemImage: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: 8) {
+            Label(title, systemImage: systemImage)
+                .font(.subheadline)
+            Spacer(minLength: 8)
+            content()
+                .labelsHidden()
+                .pickerStyle(.menu)
+        }
+    }
+
+    private func voiceSliderRow(
+        title: String,
+        systemImage: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>
+    ) -> some View {
+        VStack(spacing: 4) {
+            HStack {
+                Label(title, systemImage: systemImage)
+                    .font(.subheadline)
+                Spacer()
+                Text(String(format: "%.2f×", value.wrappedValue))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            Slider(value: value, in: range, step: 0.05)
+        }
+    }
+
+    private func previewVoice() {
+        let sample = String(localized: "chappy.voice.preview.text", defaultValue: "こんにちは。チャッピーです")
+        speak(sample)
+    }
+
+    private func normalizeVoiceSettings() {
+        // 保存値と現在の端末音声を照合し、安全な範囲へ戻す
+        voiceTempo = min(1.25, max(0.75, voiceTempo))
+        voicePitch = min(1.2, max(0.8, voicePitch))
+        voiceOptions = speech.availableVoices(languageCode: preferredLanguageCode())
+        if voiceIdentifier.isEmpty == false,
+           voiceOptions.contains(where: { $0.id == voiceIdentifier }) == false {
+            voiceIdentifier = ""
         }
     }
 
@@ -254,7 +358,7 @@ struct ChappyConversationView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
             if message.role == .assistant {
                 Button {
-                    speech.speak(message.content, languageCode: preferredLanguageCode())
+                    speak(message.content)
                 } label: {
                     Image(systemName: "speaker.wave.2")
                 }
@@ -452,10 +556,23 @@ struct ChappyConversationView: View {
 
     private func speakThenListen(_ message: String) {
         guard isVoiceConversationActive else { return }
-        speech.speak(message, languageCode: preferredLanguageCode()) {
+        speak(message) {
             guard isVoiceConversationActive else { return }
             beginAutomaticListening()
         }
+    }
+
+    private func speak(_ message: String, onFinished: (() -> Void)? = nil) {
+        // 空文字は端末の自動音声、値があれば選択した音声を使用する
+        let selectedVoiceIdentifier = voiceIdentifier.isEmpty ? nil : voiceIdentifier
+        speech.speak(
+            message,
+            languageCode: preferredLanguageCode(),
+            voiceIdentifier: selectedVoiceIdentifier,
+            tempo: voiceTempo,
+            pitch: voicePitch,
+            onFinished: onFinished
+        )
     }
 
     private func beginAutomaticListening() {

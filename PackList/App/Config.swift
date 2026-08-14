@@ -234,6 +234,12 @@ enum AppStorageKey {
     static let fontScale = "setting.fontScale"
     // チャッピーの応答トーン
     static let chappyResponseTone = "setting.chappyResponseTone"
+    // チャッピーの読み上げ音声
+    static let chappyVoiceIdentifier = "setting.chappyVoiceIdentifier"
+    // チャッピーの読み上げテンポ
+    static let chappyVoiceTempo = "setting.chappyVoiceTempo"
+    // チャッピーの読み上げ音程
+    static let chappyVoicePitch = "setting.chappyVoicePitch"
     // 行の表示行数（name／memo）
     static let rowTextLines = "setting.rowTextLines"
     // 編集操作に応じて自動で並び替え　　Auto Reorder on Edit
