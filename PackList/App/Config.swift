@@ -448,5 +448,7 @@ let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [
 ]
 /// 1回の生成で消費するクレジット数。サーバー側と数値を合わせるため定数化
 let CHATGPT_GENERATION_CREDIT_COST = 100
-/// 会話1回で一時確保する最大クレジット数
-let CHAPPY_CONVERSATION_MAX_CREDIT_COST = 6
+/// テキスト会話の1応答で一時確保する最大クレジット数
+let CHAPPY_CONVERSATION_MAX_CREDIT_COST = 12
+/// Realtime音声の応答開始に必要な最小クレジット数
+let CHAPPY_REALTIME_RESPONSE_MIN_CREDIT_COST = 20

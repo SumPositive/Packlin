@@ -73,6 +73,41 @@ struct PackJsonDTO: Codable {
     }
 }
 
+/// チャッピーが返すパックの部分変更
+struct PackChangeDTO: Codable {
+    enum Action: String, Codable {
+        case createPack = "create_pack"
+        case updatePack = "update_pack"
+        case addGroup = "add_group"
+        case updateGroup = "update_group"
+        case deleteGroup = "delete_group"
+        case moveGroup = "move_group"
+        case addItem = "add_item"
+        case updateItem = "update_item"
+        case deleteItem = "delete_item"
+        case moveItem = "move_item"
+    }
+
+    enum Placement: String, Codable {
+        case head
+        case tail
+        case after
+    }
+
+    let action: Action
+    let targetId: String?
+    let parentId: String?
+    let referenceId: String?
+    let placement: Placement?
+    let afterId: String?
+    let name: String?
+    let memo: String?
+    let check: Bool?
+    let stock: Int?
+    let need: Int?
+    let weight: Int?
+}
+
 extension M1Pack {
     func exportRepresentation() -> PackJsonDTO {
         PackJsonDTO(
@@ -106,6 +141,23 @@ extension M1Pack {
                 .map { $0.exportRepresentation() }
         )
     }
+
+    /// AI差分が現在要素を特定できるよう内部IDを保持して書き出す
+    func conversationRepresentation() -> PackJsonDTO {
+        PackJsonDTO(
+            productName: PACK_JSON_DTO_PRODUCT_NAME,
+            copyright: PACK_JSON_DTO_COPYRIGHT,
+            version: PACK_JSON_DTO_VERSION,
+            id: id,
+            order: order,
+            name: name,
+            memo: memo,
+            createdAt: createdAt,
+            groups: child
+                .sorted { $0.order < $1.order }
+                .map { $0.conversationRepresentation() }
+        )
+    }
 }
 
 extension M2Group {
@@ -120,6 +172,19 @@ extension M2Group {
                 .map { $0.exportRepresentation() }
         )
     }
+
+    /// AI差分向けにグループとアイテムのIDを保持する
+    func conversationRepresentation() -> PackJsonDTO.Group {
+        PackJsonDTO.Group(
+            id: id,
+            order: order,
+            name: name,
+            memo: memo,
+            items: child
+                .sorted { $0.order < $1.order }
+                .map { $0.conversationRepresentation() }
+        )
+    }
 }
 
 extension M3Item {
@@ -127,6 +192,20 @@ extension M3Item {
         PackJsonDTO.Group.Item(
             id: nil, // 読み込み側で生成
             order: nil,
+            name: name,
+            memo: memo,
+            check: check,
+            stock: stock,
+            need: need,
+            weight: weight
+        )
+    }
+
+    /// AI差分向けにアイテムIDを保持する
+    func conversationRepresentation() -> PackJsonDTO.Group.Item {
+        PackJsonDTO.Group.Item(
+            id: id,
+            order: order,
             name: name,
             memo: memo,
             check: check,

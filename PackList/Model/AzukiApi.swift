@@ -29,6 +29,7 @@ enum AzukiAPIError: LocalizedError {
     case publishQuotaExceeded
     case publishPayloadTooLarge
     case packNotFound
+    case noPackChanges
 
     var errorDescription: String? {
         switch self {
@@ -77,6 +78,9 @@ enum AzukiAPIError: LocalizedError {
             case .packNotFound: // 公開パックが見つからない
                 return String(localized: "public.pack.not.found",
                               defaultValue: "このパックは見つかりませんでした。削除された可能性があります")
+            case .noPackChanges: // AI提案に実質的な変更がない
+                return String(localized: "chappy.pack.no.changes",
+                              defaultValue: "変更内容を確認できませんでした。追加や変更したい内容をもう少し具体的に教えてください")
         }
         
         /// アプリユーザに見せるメッセージ
@@ -107,16 +111,22 @@ final class AzukiApi {
         let content: String
     }
 
-    /// チャッピー会話APIが返す応答と任意のパック提案
+    /// 会話中に実際へ反映した変更の履歴
+    struct ChappyAppliedChange: Codable {
+        let request: String
+        let result: String
+    }
+
+    /// チャッピー会話APIが返す応答と部分変更
     struct ChappyConversationResult: Decodable {
         let message: String
-        let proposedPack: PackJsonDTO?
+        let changes: [PackChangeDTO]
         let chargedCredits: Int
         let balance: Int
 
         private enum CodingKeys: String, CodingKey {
             case message
-            case proposedPack
+            case changes
             case chargedCredits
             case balance
         }
@@ -124,11 +134,18 @@ final class AzukiApi {
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             message = try container.decode(String.self, forKey: .message)
-            // AI提案だけが不正でも会話本文と残高は受け取り、画面全体の失敗を避ける
-            proposedPack = try? container.decodeIfPresent(PackJsonDTO.self, forKey: .proposedPack)
+            // 質問への回答では差分が返らないため空配列を許容する
+            changes = try container.decodeIfPresent([PackChangeDTO].self, forKey: .changes) ?? []
             chargedCredits = try container.decode(Int.self, forKey: .chargedCredits)
             balance = try container.decode(Int.self, forKey: .balance)
         }
+    }
+
+    /// WebRTC開始APIが返すSDPとサーバー残高
+    struct ChappyRealtimeSessionResult: Decodable {
+        let sdp: String
+        let sessionId: String
+        let balance: Int
     }
 
     private let session: URLSession
@@ -247,11 +264,12 @@ final class AzukiApi {
         }
     }
 
-    /// チャッピーと会話し、必要な場合だけ完全なパック提案を受け取る
+    /// チャッピーと会話し、必要な場合だけパック差分を受け取る
     func converseWithChappy(userId: String,
                             requestId: UUID,
                             message: String,
                             history: [ChappyHistoryItem],
+                            appliedChanges: [ChappyAppliedChange],
                             basePack: PackJsonDTO?,
                             tone: ChappyResponseTone,
                             languageCode: String?) async throws -> ChappyConversationResult {
@@ -260,6 +278,7 @@ final class AzukiApi {
             let requestId: UUID
             let message: String
             let history: [ChappyHistoryItem]
+            let appliedChanges: [ChappyAppliedChange]
             let basePack: PackJsonDTO?
             let tone: String
             let languageCode: String?
@@ -273,6 +292,7 @@ final class AzukiApi {
             requestId: requestId,
             message: message,
             history: history,
+            appliedChanges: appliedChanges,
             basePack: basePack,
             tone: tone.rawValue,
             languageCode: languageCode
@@ -304,6 +324,112 @@ final class AzukiApi {
             }
         }
         throw lastError
+    }
+
+    /// WebRTCのSDPを交換し、Realtime音声会話を開始する
+    func startChappyRealtimeSession(userId: String,
+                                    requestId: UUID,
+                                    offerSdp: String,
+                                    history: [ChappyHistoryItem],
+                                    appliedChanges: [ChappyAppliedChange],
+                                    basePack: PackJsonDTO?,
+                                    tone: ChappyResponseTone,
+                                    languageCode: String?,
+                                    voice: String,
+                                    voiceTempo: Double,
+                                    voicePitch: Double) async throws -> ChappyRealtimeSessionResult {
+        struct RealtimeSessionRequest: Encodable {
+            let userId: String
+            let requestId: UUID
+            let sdp: String
+            let history: [ChappyHistoryItem]
+            let appliedChanges: [ChappyAppliedChange]
+            let basePack: PackJsonDTO?
+            let tone: String
+            let languageCode: String?
+            let voice: String
+            let voiceTempo: Double
+            let voicePitch: Double
+        }
+
+        guard let url = makeURL(path: "/api/chappy/realtime/session") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let body = RealtimeSessionRequest(
+            userId: userId,
+            requestId: requestId,
+            sdp: offerSdp,
+            history: history,
+            appliedChanges: appliedChanges,
+            basePack: basePack,
+            tone: tone.rawValue,
+            languageCode: languageCode,
+            voice: voice,
+            voiceTempo: voiceTempo,
+            voicePitch: voicePitch
+        )
+        // 同じSDPとrequestIdで一時障害だけ再送し、課金予約の重複を防ぐ
+        let retryDelays: [UInt64] = [1_000_000_000, 2_000_000_000]
+        var lastError: Error = AzukiAPIError.invalidResponse
+        for attempt in 0...retryDelays.count {
+            do {
+                let data = try await sendJSONRequest(
+                    url: url,
+                    body: body,
+                    authorization: .required,
+                    retryCount: attempt
+                )
+                do {
+                    return try decoder.decode(ChappyRealtimeSessionResult.self, from: data)
+                } catch {
+                    throw AzukiAPIError.decoding
+                }
+            } catch {
+                lastError = error
+                guard attempt < retryDelays.count,
+                      shouldRetryChappyConversation(after: error) else {
+                    throw error
+                }
+                try await Task.sleep(nanoseconds: retryDelays[attempt])
+            }
+        }
+        throw lastError
+    }
+
+    /// WebRTCの開通を通知し、サーバー側へ最初の応答開始を許可する
+    func markChappyRealtimeSessionReady(userId: String, sessionId: String) async throws {
+        struct RealtimeReadyRequest: Encodable {
+            let userId: String
+            let sessionId: String
+        }
+
+        guard let url = makeURL(path: "/api/chappy/realtime/ready") else {
+            throw AzukiAPIError.invalidURL
+        }
+        _ = try await sendJSONRequest(
+            url: url,
+            body: RealtimeReadyRequest(userId: userId, sessionId: sessionId),
+            authorization: .required,
+            retryCount: 0
+        )
+    }
+
+    /// WebRTC会話の終了を通知し、サーバー側の接続と予約を片付ける
+    func endChappyRealtimeSession(userId: String, sessionId: String) async throws {
+        struct RealtimeEndRequest: Encodable {
+            let userId: String
+            let sessionId: String
+        }
+
+        guard let url = makeURL(path: "/api/chappy/realtime/end") else {
+            throw AzukiAPIError.invalidURL
+        }
+        _ = try await sendJSONRequest(
+            url: url,
+            body: RealtimeEndRequest(userId: userId, sessionId: sessionId),
+            authorization: .required,
+            retryCount: 0
+        )
     }
 
     /// サーバーに保存されている最新のクレジット残高や広告特典の状態を取得する
@@ -1065,6 +1191,18 @@ final class AzukiApi {
                     throw AzukiAPIError.publishPayloadTooLarge
                 }
             }
+            if status == 422 {
+                let serverErrorCode = decodeServerErrorCode(from: data)
+                if serverErrorCode == "no_pack_changes" {
+                    // 実質的に同じ提案は成功表示せず、会話画面で再指定を促す
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.noPackChanges,
+                                  retryCount: retryCount)
+                    throw AzukiAPIError.noPackChanges
+                }
+            }
             // Hono（Cloudflare Workers）からの2xxレスポンスのみ成功扱いとし、それ以外は個別にハンドリングする
             if 199 < status && status < 300 {
                 logApiSuccess(request: request, statusCode: status, retryCount: retryCount)
@@ -1246,6 +1384,9 @@ final class AzukiApi {
                 return ("AzukiAPIError", "publish_payload_too_large", apiError.localizedDescription)
             case .packNotFound:
                 return ("AzukiAPIError", "pack_not_found", apiError.localizedDescription)
+            case .noPackChanges:
+                // AIが実内容を変更しなかった応答として個別に集計する
+                return ("AzukiAPIError", "no_pack_changes", apiError.localizedDescription)
             }
         }
         return ("Error", "unknown", String(describing: error))

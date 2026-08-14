@@ -11,6 +11,7 @@
 		C3562EB430007A2D00539096 /* PacklinSnapshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3562EB030007A2D00539096 /* PacklinSnapshotUITests.swift */; };
 		C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C36757AC2E80330F0098BB22 /* GoogleMobileAds */; };
 		C39A862C2F9356DC00644F0F /* AZDial in Frameworks */ = {isa = PBXBuildFile; productRef = C39A862B2F9356DC00644F0F /* AZDial */; };
+		C3A7B10230A1000100A7B102 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = C3A7B10130A1000100A7B101 /* WebRTC */; };
 		C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */; };
 		C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
@@ -89,6 +90,7 @@
 		C3D2BB692E6A7967002B900A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				C3A7B10230A1000100A7B102 /* WebRTC in Frameworks */,
 				C36757AD2E80330F0098BB22 /* GoogleMobileAds in Frameworks */,
 				C3F1A1A12E90F10000ABCD00 /* FirebaseAnalytics in Frameworks */,
 				C3F1A1A22E90F10000ABCD00 /* FirebaseCrashlytics in Frameworks */,
@@ -184,6 +186,7 @@
 			);
 			name = Packlin;
 			packageProductDependencies = (
+				C3A7B10130A1000100A7B101 /* WebRTC */,
 				C36757AC2E80330F0098BB22 /* GoogleMobileAds */,
 				C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */,
 				C3F1A1A52E90F10000ABCD00 /* FirebaseCrashlytics */,
@@ -285,6 +288,7 @@
 			mainGroup = C3D2BB632E6A7967002B900A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				C3A7B10030A1000100A7B100 /* XCRemoteSwiftPackageReference "WebRTC" */,
 				C36756712E7FA08D0098BB22 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				C39A862A2F9356DC00644F0F /* XCRemoteSwiftPackageReference "AZDial" */,
@@ -960,6 +964,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		C3A7B10030A1000100A7B100 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 151.0.0;
+			};
+		};
 		C3F1A19F2E90F0F000ABCD00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -981,6 +993,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C39A862A2F9356DC00644F0F /* XCRemoteSwiftPackageReference "AZDial" */;
 			productName = AZDial;
+		};
+		C3A7B10130A1000100A7B101 /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3A7B10030A1000100A7B100 /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
 		};
 		C3F1A1A42E90F10000ABCD00 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

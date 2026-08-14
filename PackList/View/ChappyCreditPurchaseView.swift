@@ -6,6 +6,8 @@ import StoreKit
 import SwiftUI
 
 struct ChappyCreditPurchaseView: View {
+    let reason: String?
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
     @EnvironmentObject private var creditStore: CreditStore
@@ -17,6 +19,12 @@ struct ChappyCreditPurchaseView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 18) {
+                if let reason, reason.isEmpty == false {
+                    Label(reason, systemImage: "exclamationmark.circle.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.orange)
+                }
+
                 Text(String(format: String(localized: "chappy.credits.balance", defaultValue: "残高 %lld クレジット"), Int64(creditStore.credits)))
                     .font(.headline)
 

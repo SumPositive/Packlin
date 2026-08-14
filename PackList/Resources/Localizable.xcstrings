@@ -1990,6 +1990,7 @@
       }
     },
     "chappy.apply.proposal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2150,49 +2151,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mit Chappy (KI) sprechen"
+            "value" : "Sprechen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Talk with Chappy (AI)"
+            "value" : "Talk"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hablar con Chappy (IA)"
+            "value" : "Conversar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Parler avec Chappy (IA)"
+            "value" : "Discuter"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Parla con Chappy (IA)"
+            "value" : "Conversa"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "チャッピー(AI)と会話する"
+            "value" : "会話する"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chappy(AI)와 대화하기"
+            "value" : "대화하기"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "與 Chappy（AI）對話"
+            "value" : "對話"
           }
         }
       }
@@ -2354,6 +2355,7 @@
       }
     },
     "chappy.credits.insufficient" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2401,6 +2403,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "點數不足"
+          }
+        }
+      }
+    },
+    "chappy.credits.insufficient.guide" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Unterhaltung wurde wegen unzureichender Credits beendet. Kaufe Credits, um fortzufahren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The conversation ended because you do not have enough credits. Purchase credits to continue."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conversación terminó porque no tienes suficientes créditos. Compra créditos para continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conversation s’est arrêtée car vous n’avez pas assez de crédits. Achetez des crédits pour continuer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conversazione è terminata perché non hai crediti sufficienti. Acquista crediti per continuare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クレジットが不足したため会話を終了しました。続けるにはクレジットを購入してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "크레딧이 부족하여 대화를 종료했습니다. 계속하려면 크레딧을 구매해 주세요."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點數不足，因此對話已結束。請購買點數以繼續。"
           }
         }
       }
@@ -2613,7 +2667,112 @@
         }
       }
     },
+    "chappy.pack.created" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde erstellt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created “%@”."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha creado «%@»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » a été créé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” è stato creato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」を作成しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” 팩을 만들었습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已建立「%@」"
+          }
+        }
+      }
+    },
+    "chappy.pack.no.changes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Änderung konnte nicht bestätigt werden. Beschreibe bitte genauer, was hinzugefügt oder geändert werden soll."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The change could not be confirmed. Please describe what you want to add or change in a little more detail."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo confirmar el cambio. Describe con más detalle qué quieres añadir o modificar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La modification n’a pas pu être confirmée. Décrivez plus précisément ce que vous souhaitez ajouter ou modifier."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile confermare la modifica. Descrivi più precisamente cosa vuoi aggiungere o cambiare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更内容を確認できませんでした。追加や変更したい内容をもう少し具体的に教えてください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경 내용을 확인할 수 없습니다. 추가하거나 변경할 내용을 조금 더 구체적으로 알려 주세요."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法確認變更內容。請更具體說明要新增或修改的內容。"
+          }
+        }
+      }
+    },
     "chappy.pack.proposal.ready" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2665,7 +2824,61 @@
         }
       }
     },
+    "chappy.pack.updated" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde aktualisiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated “%@”."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha actualizado «%@»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » a été mis à jour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” è stato aggiornato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」に変更しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” 팩을 변경했습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已更新「%@」"
+          }
+        }
+      }
+    },
     "chappy.proposal.applied" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3238,195 +3451,423 @@
       }
     },
     "chappy.voice.automatic" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Automatisch" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Automatic" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Automático" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Automatique" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Automatico" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "自動" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "자동" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "自動" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatico"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        }
       }
     },
     "chappy.voice.conversation.ended" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gesprächsmodus beendet" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Conversation mode ended" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo de conversación finalizado" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mode conversation terminé" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Modalità conversazione terminata" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "会話モードを終了しました" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대화 모드를 종료했습니다" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "已結束對話模式" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesprächsmodus beendet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversation mode ended"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de conversación finalizado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode conversation terminé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modalità conversazione terminata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話モードを終了しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대화 모드를 종료했습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已結束對話模式"
+          }
+        }
       }
     },
     "chappy.voice.conversation.start" : {
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gesprächsmodus starten" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start conversation mode" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar modo de conversación" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Démarrer le mode conversation" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Avvia modalità conversazione" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "会話モードを開始" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대화 모드 시작" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "開始對話模式" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesprächsmodus starten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start conversation mode"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar modo de conversación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrer le mode conversation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia modalità conversazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話モードを開始"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대화 모드 시작"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始對話模式"
+          }
+        }
       }
     },
     "chappy.voice.conversation.stop" : {
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gesprächsmodus beenden" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "End conversation mode" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Finalizar modo de conversación" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Terminer le mode conversation" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Termina modalità conversazione" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "会話モードを終了" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대화 모드 종료" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "結束對話模式" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesprächsmodus beenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End conversation mode"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizar modo de conversación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminer le mode conversation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina modalità conversazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話モードを終了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대화 모드 종료"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結束對話模式"
+          }
+        }
       }
     },
     "chappy.voice.error.retry" : {
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Die Verbindung ist fehlgeschlagen. Erneut versuchen?" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The connection failed. Would you like to retry?" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "La conexión falló. ¿Quieres volver a intentarlo?" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "La connexion a échoué. Voulez-vous réessayer ?" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Connessione non riuscita. Vuoi riprovare?" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "通信に失敗しました。リトライしますか" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "연결에 실패했습니다. 다시 시도할까요?" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "連線失敗。要重試嗎？" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Verbindung ist fehlgeschlagen. Erneut versuchen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The connection failed. Would you like to retry?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conexión falló. ¿Quieres volver a intentarlo?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La connexion a échoué. Voulez-vous réessayer ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connessione non riuscita. Vuoi riprovare?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通信に失敗しました。リトライしますか"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결에 실패했습니다. 다시 시도할까요?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線失敗。要重試嗎？"
+          }
+        }
+      }
+    },
+    "chappy.voice.response.timeout" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Antwort erhalten. Erneut versuchen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There was no response. Would you like to retry?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hubo respuesta. ¿Quieres volver a intentarlo?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune réponse reçue. Voulez-vous réessayer ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna risposta ricevuta. Vuoi riprovare?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "応答がありません。リトライしますか"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "응답이 없습니다. 다시 시도할까요?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有收到回應。要重試嗎？"
+          }
+        }
       }
     },
     "chappy.voice.greeting.create" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Welche Packliste möchtest du erstellen?" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "What kind of packing list would you like to create?" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Qué tipo de lista quieres crear?" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Quelle liste souhaitez-vous créer ?" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Che tipo di lista vuoi creare?" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "どのようなパックを作成しますか" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "어떤 패킹 목록을 만들까요?" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "您想建立什麼樣的行李清單？" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welche Packliste möchtest du erstellen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What kind of packing list would you like to create?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué tipo de lista quieres crear?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle liste souhaitez-vous créer ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Che tipo di lista vuoi creare?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どのようなパックを作成しますか"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어떤 패킹 목록을 만들까요?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您想建立什麼樣的行李清單？"
+          }
+        }
       }
     },
     "chappy.voice.greeting.edit" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Was möchtest du mit dieser Packliste machen?" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "What would you like to do with this packing list?" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Qué quieres hacer con esta lista?" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Que souhaitez-vous faire avec cette liste ?" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Cosa vuoi fare con questa lista?" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "このパックについて、どのようなことをしますか" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 패킹 목록으로 무엇을 할까요?" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "您想如何處理這份行李清單？" } }
-      }
-    },
-    "chappy.voice.listening" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ich höre zu" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Listening" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Escuchando" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écoute en cours" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "In ascolto" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "聞いています" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "듣고 있습니다" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "正在聆聽" } }
-      }
-    },
-    "chappy.voice.pitch" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tonhöhe" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pitch" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tono" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Hauteur" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Altezza" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "声の高さ" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "음높이" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "音高" } }
-      }
-    },
-    "chappy.voice.preparing" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespräch wird vorbereitet" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preparing conversation" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Preparando la conversación" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Préparation de la conversation" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Preparazione della conversazione" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "会話を準備しています" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대화를 준비하고 있습니다" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "正在準備對話" } }
-      }
-    },
-    "chappy.voice.preview" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Anhören" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preview" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Escuchar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Écouter" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ascolta" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "試聴" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미리 듣기" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "試聽" } }
-      }
-    },
-    "chappy.voice.preview.text" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Hallo, ich bin Chappy." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hello, I'm Chappy." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Hola, soy Chappy." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Bonjour, je suis Chappy." } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ciao, sono Chappy." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "こんにちは。チャッピーです" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "안녕하세요. 채피입니다." } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "您好，我是 Chappy。" } }
-      }
-    },
-    "chappy.voice.settings" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespräch und Stimme" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Conversation & Voice" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conversación y voz" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Conversation et voix" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Conversazione e voce" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "会話・音声設定" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "대화 및 음성 설정" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "對話與語音設定" } }
-      }
-    },
-    "chappy.voice.speaking" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Chappy spricht" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Chappy is speaking" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Chappy está hablando" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Chappy parle" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Chappy sta parlando" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "チャッピーが話しています" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Chappy가 말하고 있습니다" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "Chappy 正在說話" } }
-      }
-    },
-    "chappy.voice.tempo" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Sprechtempo" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Speaking speed" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Velocidad" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vitesse" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Velocità" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "話す速さ" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "말하기 속도" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "語速" } }
-      }
-    },
-    "chappy.voice.type" : {
-      "localizations" : {
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Stimme" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Voice" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Voz" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Voix" } },
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Voce" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "声の種類" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "음성" } },
-        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "聲音" } }
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was möchtest du mit dieser Packliste machen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would you like to do with this packing list?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué quieres hacer con esta lista?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que souhaitez-vous faire avec cette liste ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosa vuoi fare con questa lista?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このパックについて、どのようなことをしますか"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 패킹 목록으로 무엇을 할까요?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您想如何處理這份行李清單？"
+          }
+        }
       }
     },
     "chappy.voice.input" : {
@@ -3477,6 +3918,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "語音輸入"
+          }
+        }
+      }
+    },
+    "chappy.voice.listening" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich höre zu"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listening"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuchando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écoute en cours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In ascolto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞いています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "듣고 있습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在聆聽"
           }
         }
       }
@@ -3585,6 +4078,320 @@
         }
       }
     },
+    "chappy.voice.pitch" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tonhöhe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pitch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tono"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hauteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altezza"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "声の高さ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "음높이"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音高"
+          }
+        }
+      }
+    },
+    "chappy.voice.preparing" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gespräch wird vorbereitet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing conversation"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando la conversación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de la conversation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparazione della conversazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話を準備しています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대화를 준비하고 있습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在準備對話"
+          }
+        }
+      }
+    },
+    "chappy.voice.preview" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhören"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuchar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écouter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ascolta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試聴"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리 듣기"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試聽"
+          }
+        }
+      }
+    },
+    "chappy.voice.preview.text" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hallo, ich bin Chappy."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hello, I'm Chappy."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hola, soy Chappy."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bonjour, je suis Chappy."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciao, sono Chappy."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "こんにちは。チャッピーです"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안녕하세요. 채피입니다."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您好，我是 Chappy。"
+          }
+        }
+      }
+    },
+    "chappy.voice.settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gespräch und Stimme"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversation & Voice"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversación y voz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversation et voix"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversazione e voce"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会話・音声設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대화 및 음성 설정"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對話與語音設定"
+          }
+        }
+      }
+    },
+    "chappy.voice.speaking" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy spricht"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy is speaking"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy está hablando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy parle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy sta parlando"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャッピーが話しています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy가 말하고 있습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chappy 正在說話"
+          }
+        }
+      }
+    },
     "chappy.voice.start.failed" : {
       "localizations" : {
         "de" : {
@@ -3633,6 +4440,110 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法開始語音輸入"
+          }
+        }
+      }
+    },
+    "chappy.voice.tempo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprechtempo"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speaking speed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velocidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vitesse"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velocità"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "話す速さ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "말하기 속도"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語速"
+          }
+        }
+      }
+    },
+    "chappy.voice.type" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimme"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voice"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voix"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voce"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "声の種類"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "음성"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聲音"
           }
         }
       }
@@ -12669,6 +13580,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重置並重新啟動"
+          }
+        }
+      }
+    },
+    "retry" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リトライ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重試"
           }
         }
       }

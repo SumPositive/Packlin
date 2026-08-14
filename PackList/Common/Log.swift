@@ -15,6 +15,17 @@ private func isFirebaseConfigured() -> Bool {
     return FirebaseApp.app() != nil
 }
 
+/// Firebase Analyticsの文字列上限に合わせてパラメータを整形する
+private func logAnalyticsEvent(_ name: String, parameters: [String: Any]? = nil) {
+    // エラー本文の改行を除去し、全String値を最大100文字へ制限する
+    let normalized = parameters?.mapValues { value -> Any in
+        guard let string = value as? String else { return value }
+        let singleLine = string.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+        return String(singleLine.prefix(100))
+    }
+    Analytics.logEvent(name, parameters: normalized)
+}
+
 
 enum LogLevel: Int, Comparable {
     case info = 0
@@ -60,7 +71,7 @@ func log(_ level: LogLevel,
         case .error, .fatal:
             // Firebase未初期化の場合はAnalytics送信を行わない
             if isFirebaseConfigured() {
-                Analytics.logEvent("error_occured", parameters: [
+                logAnalyticsEvent("error_occured", parameters: [
                     "error_domain": function,
                     "error_code": -1,
                     "error_message": printOut
@@ -175,17 +186,17 @@ struct GALogger {
         }
         switch event {
             case .app_launch:
-                Analytics.logEvent("app_launch", parameters: nil)
+                logAnalyticsEvent("app_launch")
                 
             case let .function(name, option):
-                Analytics.logEvent("function", parameters: [
+                logAnalyticsEvent("function", parameters: [
                     "name": name,
                     "option": option
                 ])
 
             case let .settings_snapshot(settings):
                 // 個人情報を含めず、利用設定の分布だけを集計する
-                Analytics.logEvent("settings_snapshot", parameters: [
+                logAnalyticsEvent("settings_snapshot", parameters: [
                     "insertion_position": settings.insertionPosition,
                     "show_need_weight": settings.showNeedWeight,
                     "weight_display_in_kg": settings.weightDisplayInKg,
@@ -202,14 +213,14 @@ struct GALogger {
 
             case let .setting_changed(key, value):
                 // 設定変更の発生頻度と変更後の値だけを集計する
-                Analytics.logEvent("setting_changed", parameters: [
+                logAnalyticsEvent("setting_changed", parameters: [
                     "setting_key": key,
                     "setting_value": value
                 ])
 
             case let .feature_use(name, source, detail):
                 // 機能単位の利用頻度を比較し、削減候補や改善対象を見つける
-                Analytics.logEvent("feature_use", parameters: [
+                logAnalyticsEvent("feature_use", parameters: [
                     "feature_name": name,
                     "source": source,
                     "detail": detail ?? ""
@@ -217,7 +228,7 @@ struct GALogger {
 
             case let .operation(name, target, source, detail, count):
                 // 操作パターンを集計し、手間の多い導線を見つける
-                Analytics.logEvent("operation", parameters: [
+                logAnalyticsEvent("operation", parameters: [
                     "operation_name": name,
                     "target": target,
                     "source": source,
@@ -226,7 +237,7 @@ struct GALogger {
                 ])
 
             case let .packlin_request(source, requirementLength, hasBasePack, generatedItemsCount):
-                Analytics.logEvent("packlin_request", parameters: [
+                logAnalyticsEvent("packlin_request", parameters: [
                     "source": source,
                     "requirement_length_bucket": requirementLengthBucket(requirementLength),
                     "has_base_pack": hasBasePack,
@@ -234,25 +245,25 @@ struct GALogger {
                 ])
 
             case let .pack_generated(source, itemsCount):
-                Analytics.logEvent("pack_generated", parameters: [
+                logAnalyticsEvent("pack_generated", parameters: [
                     "source": source,                // "user","ai","template" など
                     "items_count": itemsCount        // Int
                 ])
                 
             case let .purchase(productId, price, currency):
-                Analytics.logEvent("purchase", parameters: [
+                logAnalyticsEvent("purchase", parameters: [
                     "product_id": productId,
                     "value": price,                  // GA4汎用: 課金額などは value
                     "currency": currency            // "JPY" 等
                 ])
                 
             case let .credit_balance(remaining):
-                Analytics.logEvent("credit_balance", parameters: [
+                logAnalyticsEvent("credit_balance", parameters: [
                     "remaining": remaining
                 ])
                 
             case let .error_occured(domain, code, message):
-                Analytics.logEvent("error_occured", parameters: [
+                logAnalyticsEvent("error_occured", parameters: [
                     "error_domain": domain,
                     "error_code": code,
                     "error_message": message ?? ""
@@ -260,7 +271,7 @@ struct GALogger {
 
             case let .api_result(name, method, isSuccess, statusCode, errorDomain, errorCode, message, retryCount):
                 // API単位の成功・失敗を集計する
-                Analytics.logEvent("api_result", parameters: [
+                logAnalyticsEvent("api_result", parameters: [
                     "api_name": name,
                     "method": method,
                     "success": isSuccess,
@@ -273,7 +284,7 @@ struct GALogger {
 
             case let .chappy_send_result(source, isSuccess, requestTokens, responseTokens, errorDomain, errorCode, message):
                 // チャッピー送信が広告視聴か購入券かを含めて記録する
-                Analytics.logEvent("chappy_send_result", parameters: [
+                logAnalyticsEvent("chappy_send_result", parameters: [
                     "source": source,
                     "success": isSuccess,
                     "request_tokens": requestTokens ?? -1,
@@ -285,7 +296,7 @@ struct GALogger {
 
             case let .purchase_verify_result(status, isSuccess, productId, transactionId, balance, duplicate, errorDomain, errorCode, message):
                 // 購入検証の状態と成功/失敗を記録する
-                Analytics.logEvent("purchase_verify_result", parameters: [
+                logAnalyticsEvent("purchase_verify_result", parameters: [
                     "status": status,
                     "success": isSuccess,
                     "product_id": productId,
@@ -299,7 +310,7 @@ struct GALogger {
                 
             case let .public_pack_result(action, isSuccess, itemCount, errorDomain, errorCode, message):
                 // 公開保存・取込・削除の利用回数と成功/失敗・エラー内訳を集計する
-                Analytics.logEvent("public_pack_result", parameters: [
+                logAnalyticsEvent("public_pack_result", parameters: [
                     "action": action,                  // "publish" / "import" / "delete"
                     "success": isSuccess,
                     "item_count": itemCount ?? -1,
@@ -310,7 +321,7 @@ struct GALogger {
 
             case let .screen_view(name):
                 // GA4は自動スクリーン計測もあるが、SwiftUIは明示送信が安定
-                Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+                logAnalyticsEvent(AnalyticsEventScreenView, parameters: [
                     AnalyticsParameterScreenName: name
                 ])
         }
