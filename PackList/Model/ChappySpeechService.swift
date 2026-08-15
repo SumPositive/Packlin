@@ -262,12 +262,8 @@ final class ChappySpeechService: NSObject, ObservableObject {
     }
 
     private func requestMicrophoneAuthorization() async -> Bool {
-        // iOS 17以降のアプリ単位APIでマイク権限を確認する
-        await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
-            AVAudioApplication.requestRecordPermission(completionHandler: { granted in
-                continuation.resume(returning: granted)
-            })
-        }
+        // iOS 18以降のアプリ単位APIでマイク権限を確認する
+        await AVAudioApplication.requestRecordPermission()
     }
 }
 

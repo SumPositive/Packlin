@@ -200,12 +200,8 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
     }
 
     private func requestMicrophonePermission() async -> Bool {
-        // iOS 17以降のアプリ単位APIでマイク権限を確認する
-        await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
-            AVAudioApplication.requestRecordPermission(completionHandler: { granted in
-                continuation.resume(returning: granted)
-            })
-        }
+        // iOS 18以降のアプリ単位APIでマイク権限を確認する
+        await AVAudioApplication.requestRecordPermission()
     }
 
     private func createOffer(on connection: RTCPeerConnection) async throws -> RTCSessionDescription {
@@ -324,6 +320,18 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             responseTimeoutTask = nil
             isSpeaking = false
             isProcessing = false
+            if isOutputTruncated(event) {
+                // 生成上限による未完了文を正常な応答として会話を続けない
+                connectionState = .failed
+                let message = String(
+                    localized: "chappy.voice.response.truncated",
+                    defaultValue: "応答が途中で切れました。リトライしますか"
+                )
+                errorMessage = message
+                onResponseCompleted?()
+                onError?(message)
+                return
+            }
             isListening = true
             handleResponseDone(event)
             onResponseCompleted?()
@@ -369,6 +377,16 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             }
             onToolCall?(ToolCall(callId: callId, name: name, arguments: arguments))
         }
+    }
+
+    private func isOutputTruncated(_ event: [String: Any]) -> Bool {
+        // Realtimeの未完了理由を確認し、出力上限到達だけを明示的に扱う
+        guard let response = event["response"] as? [String: Any],
+              response["status"] as? String != "completed",
+              let details = response["status_details"] as? [String: Any] else {
+            return false
+        }
+        return details["reason"] as? String == "max_output_tokens"
     }
 
     private func handleControlItem(_ event: [String: Any]) {
