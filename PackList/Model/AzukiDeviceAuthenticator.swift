@@ -64,7 +64,7 @@ actor AzukiDeviceAuthenticator {
     private let identityStorageKey = "com.azukid.azuki-api.device.identity"
     /// アテステーション日時を保存する Keychain キー（再アテストの判断材料として保持）
     private let attestedAtKey = "com.azukid.azuki-api.device.attestedAt"
-    /// /api/device/register 完了フラグを保存する Keychain キー
+    /// /api/v2/device/register 完了フラグを保存する Keychain キー
     private let registeredKey = "com.azukid.azuki-api.device.registered"
     /// ISO8601 フォーマッタを毎回生成するとコストが高いため、インスタンスを使い回す
     private let isoFormatter: ISO8601DateFormatter
@@ -150,7 +150,7 @@ actor AzukiDeviceAuthenticator {
         keychain.deleteItem(forKey: registeredKey)
     }
 
-    /// /api/device/register への送信が完了したことを Keychain へ記録する
+    /// /api/v2/device/register への送信が完了したことを Keychain へ記録する
     func confirmDeviceRegistration() {
         keychain.saveString("1", forKey: registeredKey)
     }

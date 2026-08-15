@@ -51,6 +51,8 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
     private var sessionLimitTask: Task<Void, Never>?
     private var responseTimeoutTask: Task<Void, Never>?
     private var isAudioSessionActive = false
+    private var isMicrophoneSuppressed = false
+    private var ignoredInputItemIds = Set<String>()
 
     /// マイク許可を確認し、SDP交換後にRealtime音声接続を開始する
     func start(exchangeSdp: @escaping (String) async throws -> String) async throws {
@@ -155,6 +157,8 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         peerConnection?.close()
         peerConnection = nil
         audioTrack = nil
+        isMicrophoneSuppressed = false
+        ignoredInputItemIds.removeAll()
         connectionState = .disconnected
         isListening = false
         isSpeaking = false
@@ -202,6 +206,12 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
     private func requestMicrophonePermission() async -> Bool {
         // iOS 18以降のアプリ単位APIでマイク権限を確認する
         await AVAudioApplication.requestRecordPermission()
+    }
+
+    private func setMicrophoneEnabled(_ isEnabled: Bool) {
+        // 応答音声をユーザー発話として拾わないよう送信トラックを切り替える
+        audioTrack?.isEnabled = isEnabled
+        isMicrophoneSuppressed = isEnabled == false
     }
 
     private func createOffer(on connection: RTCPeerConnection) async throws -> RTCSessionDescription {
@@ -283,20 +293,38 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         }
         switch type {
         case "input_audio_buffer.speech_started":
+            if isMicrophoneSuppressed {
+                // 停止直前の残留音声はユーザー発話として表示しない
+                if let itemId = event["item_id"] as? String {
+                    ignoredInputItemIds.insert(itemId)
+                }
+                return
+            }
             responseTimeoutTask?.cancel()
             responseTimeoutTask = nil
             isListening = true
             isSpeaking = false
             isProcessing = false
         case "input_audio_buffer.speech_stopped":
+            if isMicrophoneSuppressed {
+                if let itemId = event["item_id"] as? String {
+                    ignoredInputItemIds.insert(itemId)
+                }
+                return
+            }
             isListening = false
             isProcessing = true
             startResponseTimeout()
         case "response.created":
+            setMicrophoneEnabled(false)
             isListening = false
             isProcessing = true
             startResponseTimeout()
         case "conversation.item.input_audio_transcription.completed":
+            if let itemId = event["item_id"] as? String,
+               ignoredInputItemIds.remove(itemId) != nil {
+                return
+            }
             if let transcript = event["transcript"] as? String,
                transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
                 onUserTranscript?(transcript)
@@ -315,10 +343,23 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             }
             isSpeaking = true
             isProcessing = false
+        case "output_audio_buffer.started":
+            responseTimeoutTask?.cancel()
+            responseTimeoutTask = nil
+            setMicrophoneEnabled(false)
+            ensureSpeakerOutputIfNeeded()
+            isListening = false
+            isSpeaking = true
+            isProcessing = false
+        case "output_audio_buffer.stopped", "output_audio_buffer.cleared":
+            // 実際の再生終了後にマイクを戻し、次の発話を受け付ける
+            setMicrophoneEnabled(true)
+            isListening = true
+            isSpeaking = false
+            isProcessing = false
         case "response.done":
             responseTimeoutTask?.cancel()
             responseTimeoutTask = nil
-            isSpeaking = false
             isProcessing = false
             if isOutputTruncated(event) {
                 // 生成上限による未完了文を正常な応答として会話を続けない
@@ -332,7 +373,6 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
                 onError?(message)
                 return
             }
-            isListening = true
             handleResponseDone(event)
             onResponseCompleted?()
         case "conversation.item.created":
@@ -340,6 +380,7 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         case "error":
             responseTimeoutTask?.cancel()
             responseTimeoutTask = nil
+            setMicrophoneEnabled(true)
             connectionState = .failed
             errorMessage = String(localized: "chappy.voice.error.retry", defaultValue: "通信に失敗しました。リトライしますか")
             onError?(errorMessage ?? "")

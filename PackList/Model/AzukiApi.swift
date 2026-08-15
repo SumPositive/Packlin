@@ -98,8 +98,10 @@ enum AzukiAPIError: LocalizedError {
 /// - Note: iOS側では決済処理そのものはStoreKit任せとし、azuki-apiはレシート検証とOpenAI代理実行を提供する想定
 final class AzukiApi {
     static let shared = AzukiApi()
+    // 配信済みアプリの旧APIと分離し、現行アプリはv2を明示して利用する
+    private static let currentAPIBasePath = "/api/v2"
 
-    /// /api/credit/check が返すクレジット状況
+    /// /api/v2/credit/check が返すクレジット状況
     struct CreditStatus {
         let balance: Int
         let adRewardBalance: Int
@@ -220,7 +222,7 @@ final class AzukiApi {
             let languageCode: String?
         }
 
-        guard let url = makeURL(path: "/api/openai") else {
+        guard let url = makeAPIURL(path: "/openai") else {
             throw AzukiAPIError.invalidURL
         }
         // リクエスト パラメータ
@@ -284,7 +286,7 @@ final class AzukiApi {
             let languageCode: String?
         }
 
-        guard let url = makeURL(path: "/api/chappy/conversation") else {
+        guard let url = makeAPIURL(path: "/chappy/conversation") else {
             throw AzukiAPIError.invalidURL
         }
         let body = ConversationRequest(
@@ -352,7 +354,7 @@ final class AzukiApi {
             let voicePitch: Double
         }
 
-        guard let url = makeURL(path: "/api/chappy/realtime/session") else {
+        guard let url = makeAPIURL(path: "/chappy/realtime/session") else {
             throw AzukiAPIError.invalidURL
         }
         let body = RealtimeSessionRequest(
@@ -403,7 +405,7 @@ final class AzukiApi {
             let sessionId: String
         }
 
-        guard let url = makeURL(path: "/api/chappy/realtime/ready") else {
+        guard let url = makeAPIURL(path: "/chappy/realtime/ready") else {
             throw AzukiAPIError.invalidURL
         }
         _ = try await sendJSONRequest(
@@ -421,7 +423,7 @@ final class AzukiApi {
             let sessionId: String
         }
 
-        guard let url = makeURL(path: "/api/chappy/realtime/end") else {
+        guard let url = makeAPIURL(path: "/chappy/realtime/end") else {
             throw AzukiAPIError.invalidURL
         }
         _ = try await sendJSONRequest(
@@ -447,7 +449,7 @@ final class AzukiApi {
 
         let queryItems = [URLQueryItem(name: "userId", value: userId)]
 
-        guard let url = makeURL(path: "/api/credit/check", queryItems: queryItems) else {
+        guard let url = makeAPIURL(path: "/credit/check", queryItems: queryItems) else {
             throw AzukiAPIError.invalidURL
         }
 
@@ -503,7 +505,7 @@ final class AzukiApi {
     ///   - receipt: StoreKitトランザクションのJWS等、サーバーでハッシュ化する生データ
     ///   - grantCredits: 付与予定のクレジット数（サーバー側の定義と一致する必要がある）
     /// - Returns: サーバーが更新した最新残高
-    /// デバイスがまだサーバーへ登録されていない場合に /api/device/register を呼び出す
+    /// デバイスがまだサーバーへ登録されていない場合に /api/v2/device/register を呼び出す
     /// - Parameter userId: 登録に紐づけるユーザー ID
     private func registerDeviceIfNeeded(userId: String) async throws {
         guard await deviceAuthenticator.isDeviceRegistered() == false else { return }
@@ -530,7 +532,7 @@ final class AzukiApi {
             let attestation: String
             let attestationChallenge: String
         }
-        guard let url = makeURL(path: "/api/device/register") else {
+        guard let url = makeAPIURL(path: "/device/register") else {
             throw AzukiAPIError.invalidURL
         }
         let body = RegisterRequest(
@@ -586,11 +588,11 @@ final class AzukiApi {
         }
 
         do {
-            guard let url = makeURL(path: "/api/iap/verify") else {
+            guard let url = makeAPIURL(path: "/iap/verify") else {
                 throw AzukiAPIError.invalidURL
             }
 
-            // 初回のみ /api/device/register で端末公開鍵を登録する（以降は assertion のみ）
+            // 初回のみ /api/v2/device/register で端末公開鍵を登録する（以降は assertion のみ）
             do {
                 try await registerDeviceIfNeeded(userId: userId)
             } catch let error as AzukiDeviceAuthenticator.AuthenticatorError {
@@ -676,9 +678,10 @@ final class AzukiApi {
         }
     }
 
-    /// 相対パスからURLを構築し、必要であればクエリを付与する
-    private func makeURL(path: String, queryItems: [URLQueryItem]? = nil) -> URL? {
-        guard let baseURL = URL(string: path, relativeTo: AZUKI_API_BASE_URL) else {
+    /// v2の相対パスからURLを構築し、必要であればクエリを付与する
+    private func makeAPIURL(path: String, queryItems: [URLQueryItem]? = nil) -> URL? {
+        let versionedPath = "\(Self.currentAPIBasePath)\(path)"
+        guard let baseURL = URL(string: versionedPath, relativeTo: AZUKI_API_BASE_URL) else {
             return nil
         }
         guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true) else {
@@ -845,7 +848,7 @@ final class AzukiApi {
             guard let refreshToken = self.refreshTokenStore.currentTokenIfValid() else {
                 return nil
             }
-            guard let url = self.makeURL(path: "/api/auth/refresh") else {
+            guard let url = self.makeAPIURL(path: "/auth/refresh") else {
                 throw AzukiAPIError.invalidURL
             }
             // サーバーへ端末IDを提示できなければリフレッシュ要件を満たせないため、そのまま終了する
@@ -1109,7 +1112,7 @@ final class AzukiApi {
             if status == 401 {
                 let serverErrorCode = decodeServerErrorCode(from: data)
                 let authorization = request.value(forHTTPHeaderField: "Authorization") ?? ""
-                let isRefreshEndpoint = request.url?.path == "/api/auth/refresh"
+                let isRefreshEndpoint = request.url?.path == "\(Self.currentAPIBasePath)/auth/refresh"
                 if allowRetryAfterRefresh,
                    authorization.isEmpty == false,
                    isRefreshEndpoint == false,
@@ -1473,7 +1476,7 @@ final class AzukiApi {
             let totalWeight: Int
             let payload: PackJsonDTO
         }
-        guard let url = makeURL(path: "/api/packs/publish") else {
+        guard let url = makeAPIURL(path: "/packs/publish") else {
             throw AzukiAPIError.invalidURL
         }
         let body = PublishRequest(userId: userId,
@@ -1516,7 +1519,7 @@ final class AzukiApi {
 
     /// 公開済みパックを削除する（作者本人のみ）
     func unpublishPack(publishedId: String) async throws {
-        guard let url = makeURL(path: "/api/packs/\(publishedId)") else {
+        guard let url = makeAPIURL(path: "/packs/\(publishedId)") else {
             throw AzukiAPIError.invalidURL
         }
         let request = try await makeRequest(url: url, method: "DELETE", body: nil, authorization: .required)
@@ -1526,7 +1529,7 @@ final class AzukiApi {
     /// 自分が公開しているパック一覧を取得する（公開管理画面用）
     func fetchMyPublishedPacks() async throws -> [OwnPublishedSummary] {
         struct Response: Decodable { let items: [OwnPublishedSummary] }
-        guard let url = makeURL(path: "/api/packs/mine") else {
+        guard let url = makeAPIURL(path: "/packs/mine") else {
             throw AzukiAPIError.invalidURL
         }
         let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .required)
@@ -1567,7 +1570,7 @@ final class AzukiApi {
         if let locale, locale.isEmpty == false {
             queryItems.append(URLQueryItem(name: "locale", value: locale))
         }
-        guard let url = makeURL(path: "/api/packs", queryItems: queryItems) else {
+        guard let url = makeAPIURL(path: "/packs", queryItems: queryItems) else {
             throw AzukiAPIError.invalidURL
         }
         // 一覧は匿名でも引けるため認証は任意
@@ -1584,7 +1587,7 @@ final class AzukiApi {
     /// - Parameter userId: 取得数カウント・自己取得除外のためのユーザーID
     func importPublicPack(publishedId: String, userId: String) async throws -> PackJsonDTO {
         let queryItems = [URLQueryItem(name: "userId", value: userId)]
-        guard let url = makeURL(path: "/api/packs/\(publishedId)/import", queryItems: queryItems) else {
+        guard let url = makeAPIURL(path: "/packs/\(publishedId)/import", queryItems: queryItems) else {
             throw AzukiAPIError.invalidURL
         }
         // 取得は POST だが本文は不要。トークンがあれば付与、無ければ userId クエリでカウントする
@@ -1600,7 +1603,7 @@ final class AzukiApi {
     /// サーバーに保存されている作者ニックネームを取得する（未設定なら空文字）
     func fetchNickname() async throws -> String {
         struct Response: Decodable { let nickname: String }
-        guard let url = makeURL(path: "/api/user/nickname") else {
+        guard let url = makeAPIURL(path: "/user/nickname") else {
             throw AzukiAPIError.invalidURL
         }
         let request = try await makeRequest(url: url, method: "GET", body: nil, authorization: .required)
@@ -1618,7 +1621,7 @@ final class AzukiApi {
     func updateNickname(userId: String, nickname: String) async throws -> String {
         struct Request: Encodable { let userId: String; let nickname: String }
         struct Response: Decodable { let nickname: String }
-        guard let url = makeURL(path: "/api/user/nickname") else {
+        guard let url = makeAPIURL(path: "/user/nickname") else {
             throw AzukiAPIError.invalidURL
         }
         let payload: Data
