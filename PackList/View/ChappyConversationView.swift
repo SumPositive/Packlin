@@ -701,12 +701,17 @@ struct ChappyConversationView: View {
             let request = messages.last(where: { $0.role == .user })?.content ?? ""
             appliedChanges.append(AzukiApi.ChappyAppliedChange(
                 request: String(request.prefix(600)),
-                result: String(arguments.message.prefix(600))
+                result: String(appliedChangeSummary(arguments.changes).prefix(600))
             ))
             if 12 < appliedChanges.count {
                 appliedChanges.removeFirst(appliedChanges.count - 12)
             }
-            realtime.sendToolOutput(callId: toolCall.callId, success: true, currentPack: currentPack?.conversationRepresentation())
+            realtime.sendToolOutput(
+                callId: toolCall.callId,
+                success: true,
+                currentPack: currentPack?.conversationRepresentation(),
+                appliedOperations: arguments.changes.map(\.action.rawValue)
+            )
         } catch {
             // 適用失敗時は現在データを維持し、AIへ再提案を求める
             realtime.sendToolOutput(callId: toolCall.callId, success: false, currentPack: currentPack?.conversationRepresentation())
@@ -796,6 +801,16 @@ struct ChappyConversationView: View {
         basePack ?? createdPack
     }
 
+    private func appliedChangeSummary(_ changes: [PackChangeDTO]) -> String {
+        // AIの自己申告ではなく、実際に適用した操作と名称を会話履歴へ残す
+        changes.map { change in
+            [change.action.rawValue, change.name, change.targetId]
+                .compactMap { $0 }
+                .joined(separator: ":")
+        }
+        .joined(separator: ",")
+    }
+
     private func applyChanges(_ changes: [PackChangeDTO]) throws -> M1Pack {
         let insertionIndex = insertionPosition == .head ? 0 : sortedPacks.count
         let newOrder = sparseOrderForInsertion(items: sortedPacks, index: insertionIndex) {
@@ -810,6 +825,8 @@ struct ChappyConversationView: View {
                 in: modelContext,
                 newPackOrder: newOrder
             )
+            // 保存まで成功した変更だけをRealtimeへ成功として返す
+            try modelContext.save()
         }
         guard let appliedPack else { throw PackChangeApplicationError.invalidChanges }
         // 新規作成後も同じ会話内で続けて変更できるよう対象を保持する

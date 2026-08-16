@@ -10,6 +10,11 @@ import Foundation
 
 @MainActor
 final class ChappyRealtimeService: NSObject, ObservableObject {
+    private struct AudioTurn {
+        var startMilliseconds: Double?
+        var endMilliseconds: Double?
+    }
+
     struct ToolCall {
         let callId: String
         let name: String
@@ -53,6 +58,8 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
     private var isAudioSessionActive = false
     private var isMicrophoneSuppressed = false
     private var ignoredInputItemIds = Set<String>()
+    private var audioTurns = [String: AudioTurn]()
+    private let minimumAudioTurnMilliseconds = 300.0
 
     /// マイク許可を確認し、SDP交換後にRealtime音声接続を開始する
     func start(exchangeSdp: @escaping (String) async throws -> String) async throws {
@@ -126,16 +133,24 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
     }
 
     /// ツール適用結果を会話へ戻し、次の自然な応答へつなげる
-    func sendToolOutput(callId: String, success: Bool, currentPack: PackJsonDTO?) {
+    func sendToolOutput(callId: String,
+                        success: Bool,
+                        currentPack: PackJsonDTO?,
+                        appliedOperations: [String] = []) {
+        let groupCount = currentPack?.groups.count ?? 0
+        let itemCount = currentPack?.groups.reduce(0) { $0 + $1.items.count } ?? 0
         let result: [String: Any] = [
             "success": success,
+            "appliedOperations": appliedOperations,
+            "resultGroupCount": groupCount,
+            "resultItemCount": itemCount,
             "currentPack": currentPack.map { packDictionary($0) } ?? NSNull()
         ]
         guard let resultData = try? JSONSerialization.data(withJSONObject: result),
               let resultText = String(data: resultData, encoding: .utf8) else {
             return
         }
-        sendEvent([
+        let didSend = sendEvent([
             "type": "conversation.item.create",
             "item": [
                 "type": "function_call_output",
@@ -143,6 +158,14 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
                 "output": resultText
             ]
         ])
+        guard didSend else {
+            // 差分結果を返せない場合は無反応にせず再試行できる状態へ戻す
+            notifyRetryableError()
+            return
+        }
+        isListening = false
+        isProcessing = true
+        startResponseTimeout()
     }
 
     /// WebRTC接続と音声セッションを終了する
@@ -159,6 +182,7 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         audioTrack = nil
         isMicrophoneSuppressed = false
         ignoredInputItemIds.removeAll()
+        audioTurns.removeAll()
         connectionState = .disconnected
         isListening = false
         isSpeaking = false
@@ -269,12 +293,13 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         throw ChappyRealtimeError.dataChannelOpenTimeout
     }
 
-    private func sendEvent(_ value: [String: Any]) {
+    @discardableResult
+    private func sendEvent(_ value: [String: Any]) -> Bool {
         guard dataChannel?.readyState == .open,
               let data = try? JSONSerialization.data(withJSONObject: value) else {
-            return
+            return false
         }
-        dataChannel?.sendData(RTCDataBuffer(data: data, isBinary: false))
+        return dataChannel?.sendData(RTCDataBuffer(data: data, isBinary: false)) ?? false
     }
 
     private func packDictionary(_ pack: PackJsonDTO) -> Any {
@@ -300,6 +325,12 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
                 }
                 return
             }
+            if let itemId = event["item_id"] as? String {
+                audioTurns[itemId] = AudioTurn(
+                    startMilliseconds: numberValue(event["audio_start_ms"]),
+                    endMilliseconds: nil
+                )
+            }
             responseTimeoutTask?.cancel()
             responseTimeoutTask = nil
             isListening = true
@@ -312,23 +343,46 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
                 }
                 return
             }
+            if let itemId = event["item_id"] as? String {
+                var turn = audioTurns[itemId] ?? AudioTurn()
+                turn.endMilliseconds = numberValue(event["audio_end_ms"])
+                audioTurns[itemId] = turn
+            }
             isListening = false
             isProcessing = true
             startResponseTimeout()
         case "response.created":
-            setMicrophoneEnabled(false)
+            // WebRTCのエコー抑制を使い、AI音声中もユーザーの割り込みを受け付ける
+            setMicrophoneEnabled(true)
             isListening = false
             isProcessing = true
             startResponseTimeout()
         case "conversation.item.input_audio_transcription.completed":
             if let itemId = event["item_id"] as? String,
                ignoredInputItemIds.remove(itemId) != nil {
+                audioTurns.removeValue(forKey: itemId)
                 return
             }
+            let itemId = event["item_id"] as? String
+            let turn = itemId.flatMap { audioTurns.removeValue(forKey: $0) }
             if let transcript = event["transcript"] as? String,
-               transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
-                onUserTranscript?(transcript)
+               isValidAudioTranscript(transcript, turn: turn) {
+                onUserTranscript?(transcript.trimmingCharacters(in: .whitespacesAndNewlines))
+            } else {
+                // 誤検知した発話では応答を待たず、そのまま聞き取りへ戻る
+                responseTimeoutTask?.cancel()
+                responseTimeoutTask = nil
+                isListening = true
+                isProcessing = false
             }
+        case "conversation.item.input_audio_transcription.failed":
+            if let itemId = event["item_id"] as? String {
+                audioTurns.removeValue(forKey: itemId)
+            }
+            responseTimeoutTask?.cancel()
+            responseTimeoutTask = nil
+            isListening = true
+            isProcessing = false
         case "response.output_audio_transcript.done", "response.audio_transcript.done":
             if let transcript = event["transcript"] as? String,
                transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
@@ -346,7 +400,7 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         case "output_audio_buffer.started":
             responseTimeoutTask?.cancel()
             responseTimeoutTask = nil
-            setMicrophoneEnabled(false)
+            setMicrophoneEnabled(true)
             ensureSpeakerOutputIfNeeded()
             isListening = false
             isSpeaking = true
@@ -378,22 +432,42 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         case "conversation.item.created":
             handleControlItem(event)
         case "error":
-            responseTimeoutTask?.cancel()
-            responseTimeoutTask = nil
+            // Realtimeのイベントエラーは接続断ではないため、応答監視を残して会話を継続する
             setMicrophoneEnabled(true)
-            connectionState = .failed
-            errorMessage = String(localized: "chappy.voice.error.retry", defaultValue: "通信に失敗しました。リトライしますか")
-            onError?(errorMessage ?? "")
+            if isProcessing == false {
+                isListening = true
+                isSpeaking = false
+            }
         default:
             break
         }
+    }
+
+    private func numberValue(_ value: Any?) -> Double? {
+        guard let number = value as? NSNumber else { return nil }
+        let result = number.doubleValue
+        return result.isFinite && 0 <= result ? result : nil
+    }
+
+    private func isValidAudioTranscript(_ transcript: String, turn: AudioTurn?) -> Bool {
+        let normalized = transcript.precomposedStringWithCompatibilityMapping
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalized.isEmpty == false,
+              normalized.unicodeScalars.contains(where: CharacterSet.alphanumerics.contains) else {
+            return false
+        }
+        guard let start = turn?.startMilliseconds,
+              let end = turn?.endMilliseconds else {
+            return true
+        }
+        return minimumAudioTurnMilliseconds <= max(0, end - start)
     }
 
     private func startResponseTimeout() {
         responseTimeoutTask?.cancel()
         // 応答イベントが失われても考え中のまま残さず、再試行できる状態へ戻す
         responseTimeoutTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 20 * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: 35 * 1_000_000_000)
             guard Task.isCancelled == false, let self, self.isProcessing else { return }
             let message = String(
                 localized: "chappy.voice.response.timeout",
@@ -403,6 +477,19 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             self.errorMessage = message
             self.onError?(message)
         }
+    }
+
+    private func notifyRetryableError() {
+        responseTimeoutTask?.cancel()
+        responseTimeoutTask = nil
+        setMicrophoneEnabled(true)
+        connectionState = .failed
+        let message = String(
+            localized: "chappy.voice.error.retry",
+            defaultValue: "通信に失敗しました。リトライしますか"
+        )
+        errorMessage = message
+        onError?(message)
     }
 
     private func handleResponseDone(_ event: [String: Any]) {
