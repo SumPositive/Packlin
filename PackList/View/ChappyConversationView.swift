@@ -22,6 +22,15 @@ private struct ChappyRealtimeToolArguments: Decodable {
     let changes: [PackChangeDTO]
 }
 
+private struct ChappyLocalPackSearchArguments: Decodable {
+    let query: String
+    let limit: Int?
+}
+
+private struct ChappyLocalPackDetailsArguments: Decodable {
+    let packId: String
+}
+
 private struct ChappyRealtimeVoiceOption: Identifiable {
     let id: String
     let name: String
@@ -96,6 +105,10 @@ struct ChappyConversationView: View {
                 }
             }
             .task {
+                // 接続先変更などで保存済みトークンが拒否された場合に、会話画面内で再発行できるようにする
+                await AzukiApi.shared.registerTokenRecoveryHandler {
+                    await recoverAccessTokenForConversation()
+                }
                 guard hasAttemptedAutomaticVoiceStart == false else { return }
                 hasAttemptedAutomaticVoiceStart = true
                 // 端末残高が不足する場合だけサーバーと同期して開始遅延を抑える
@@ -116,6 +129,10 @@ struct ChappyConversationView: View {
                 isConversationViewVisible = false
                 isPreparingVoiceConversation = false
                 endVoiceConversation()
+                // 会話画面を閉じた後にビューを保持し続けないよう復旧処理を解除する
+                Task {
+                    await AzukiApi.shared.clearTokenRecoveryHandler()
+                }
             }
             .sheet(isPresented: $isShowingPurchase, onDismiss: {
                 purchaseReason = nil
@@ -688,8 +705,28 @@ struct ChappyConversationView: View {
     }
 
     private func handleRealtimeToolCall(_ toolCall: ChappyRealtimeService.ToolCall) {
-        guard toolCall.name == "apply_pack_changes",
-              let data = toolCall.arguments.data(using: .utf8),
+        switch toolCall.name {
+        case "apply_pack_changes":
+            applyRealtimePackChanges(toolCall)
+        case "search_local_packs":
+            searchLocalPacks(toolCall)
+        case "get_local_pack_details":
+            sendLocalPackDetails(toolCall)
+        case "search_public_packs", "get_public_pack_summary":
+            // 公開パック参照はazuki-api側が実行するため端末から重複応答しない
+            return
+        default:
+            realtime.sendToolResult(
+                callId: toolCall.callId,
+                toolName: toolCall.name,
+                success: false,
+                result: ["error": "unsupported_tool"]
+            )
+        }
+    }
+
+    private func applyRealtimePackChanges(_ toolCall: ChappyRealtimeService.ToolCall) {
+        guard let data = toolCall.arguments.data(using: .utf8),
               let arguments = try? JSONDecoder().decode(ChappyRealtimeToolArguments.self, from: data),
               arguments.changes.isEmpty == false else {
             realtime.sendToolOutput(callId: toolCall.callId, success: false, currentPack: currentPack?.conversationRepresentation())
@@ -716,6 +753,117 @@ struct ChappyConversationView: View {
             // 適用失敗時は現在データを維持し、AIへ再提案を求める
             realtime.sendToolOutput(callId: toolCall.callId, success: false, currentPack: currentPack?.conversationRepresentation())
         }
+    }
+
+    private func searchLocalPacks(_ toolCall: ChappyRealtimeService.ToolCall) {
+        guard let data = toolCall.arguments.data(using: .utf8),
+              let arguments = try? JSONDecoder().decode(ChappyLocalPackSearchArguments.self, from: data) else {
+            realtime.sendToolResult(
+                callId: toolCall.callId,
+                toolName: toolCall.name,
+                success: false,
+                result: ["error": "invalid_arguments"]
+            )
+            return
+        }
+        let terms = arguments.query
+            .precomposedStringWithCompatibilityMapping
+            .split(whereSeparator: \Character.isWhitespace)
+            .map { String($0).localizedLowercase }
+        let limit = min(5, max(1, arguments.limit ?? 5))
+        let packs = sortedPacks.compactMap { pack -> (pack: M1Pack, score: Int)? in
+            let searchText = localPackSearchText(pack).localizedLowercase
+            let score = terms.reduce(0) { result, term in
+                result + (searchText.localizedCaseInsensitiveContains(term) ? 1 : 0)
+            }
+            return 0 < score ? (pack, score) : nil
+        }.sorted { left, right in
+            if left.score != right.score { return right.score < left.score }
+            return left.pack.order < right.pack.order
+        }.prefix(limit).map { value -> [String: Any] in
+            let pack = value.pack
+            return [
+                "id": pack.id,
+                "name": pack.name,
+                "memo": pack.memo,
+                "groupCount": pack.child.count,
+                "itemCount": pack.child.reduce(0) { $0 + $1.child.count },
+                "totalWeight": pack.needWeight,
+                "groupNames": pack.child.sorted { $0.order < $1.order }.map(\.name)
+            ]
+        }
+        realtime.sendToolResult(
+            callId: toolCall.callId,
+            toolName: toolCall.name,
+            success: true,
+            result: ["packs": Array(packs)]
+        )
+    }
+
+    private func sendLocalPackDetails(_ toolCall: ChappyRealtimeService.ToolCall) {
+        guard let data = toolCall.arguments.data(using: .utf8),
+              let arguments = try? JSONDecoder().decode(ChappyLocalPackDetailsArguments.self, from: data),
+              let pack = sortedPacks.first(where: { $0.id == arguments.packId }) else {
+            realtime.sendToolResult(
+                callId: toolCall.callId,
+                toolName: toolCall.name,
+                success: false,
+                result: ["error": "pack_not_found"]
+            )
+            return
+        }
+        realtime.sendToolResult(
+            callId: toolCall.callId,
+            toolName: toolCall.name,
+            success: true,
+            result: ["pack": localPackDetails(pack)]
+        )
+    }
+
+    private func localPackSearchText(_ pack: M1Pack) -> String {
+        let groupText = pack.child.map { group in
+            let itemText = group.child.map { "\($0.name) \($0.memo)" }.joined(separator: " ")
+            return "\(group.name) \(group.memo) \(itemText)"
+        }.joined(separator: " ")
+        return "\(pack.name) \(pack.memo) \(groupText)"
+    }
+
+    private func localPackDetails(_ pack: M1Pack) -> [String: Any] {
+        let maximumItemCount = 160
+        var returnedItemCount = 0
+        let groups = pack.child.sorted { $0.order < $1.order }.map { group -> [String: Any] in
+            let items = group.child.sorted { $0.order < $1.order }.compactMap { item -> [String: Any]? in
+                guard returnedItemCount < maximumItemCount else { return nil }
+                returnedItemCount += 1
+                return [
+                    "id": item.id,
+                    "name": String(item.name.prefix(120)),
+                    "memo": String(item.memo.prefix(160)),
+                    "check": item.check,
+                    "stock": item.stock,
+                    "need": item.need,
+                    "weight": item.weight
+                ]
+            }
+            return [
+                "id": group.id,
+                "name": String(group.name.prefix(120)),
+                "memo": String(group.memo.prefix(160)),
+                "items": items
+            ]
+        }
+        let totalItemCount = pack.child.reduce(0) { $0 + $1.child.count }
+        // 大規模パックでもツール出力を一定量に保ち、Realtime応答停止を防ぐ
+        return [
+            "id": pack.id,
+            "name": String(pack.name.prefix(120)),
+            "memo": String(pack.memo.prefix(300)),
+            "groupCount": pack.child.count,
+            "totalItemCount": totalItemCount,
+            "returnedItemCount": returnedItemCount,
+            "truncated": maximumItemCount < totalItemCount,
+            "groups": groups
+        ]
     }
 
     private func speak(_ message: String) {
@@ -843,6 +991,19 @@ struct ChappyConversationView: View {
             creditStore.overwriteFromServer(credits: status.balance)
         } catch {
             // オフライン時は端末に保存した残高表示を維持する
+        }
+    }
+
+    @MainActor
+    private func recoverAccessTokenForConversation() async -> Bool {
+        do {
+            // 認証任意の残高照会から現在の接続先用トークンを再発行する
+            let userId = creditStore.regenerateUserIdIfNeeded()
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: userId)
+            creditStore.overwriteFromServer(credits: status.balance)
+            return AzukiApi.shared.hasValidAccessToken()
+        } catch {
+            return false
         }
     }
 

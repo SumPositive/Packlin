@@ -352,6 +352,7 @@ final class AzukiApi {
             let voice: String
             let voiceTempo: Double
             let voicePitch: Double
+            let toolCapabilities: [String]
         }
 
         guard let url = makeAPIURL(path: "/chappy/realtime/session") else {
@@ -368,7 +369,9 @@ final class AzukiApi {
             languageCode: languageCode,
             voice: voice,
             voiceTempo: voiceTempo,
-            voicePitch: voicePitch
+            voicePitch: voicePitch,
+            // 新しい端末内参照ツールを処理できることをサーバーへ明示する
+            toolCapabilities: ["local_pack_reference_v1"]
         )
         // 同じSDPとrequestIdで一時障害だけ再送し、課金予約の重複を防ぐ
         let retryDelays: [UInt64] = [1_000_000_000, 2_000_000_000]
@@ -445,6 +448,7 @@ final class AzukiApi {
             let accessTokenExpiresAt: Double?
             let refreshToken: String?
             let refreshTokenExpiresAt: Double?
+            let refreshTokenDeviceId: String?
         }
 
         let queryItems = [URLQueryItem(name: "userId", value: userId)]
@@ -464,7 +468,8 @@ final class AzukiApi {
                     accessToken: response.accessToken,
                     accessTokenExpiresAt: response.accessTokenExpiresAt,
                     refreshToken: response.refreshToken,
-                    refreshTokenExpiresAt: response.refreshTokenExpiresAt
+                    refreshTokenExpiresAt: response.refreshTokenExpiresAt,
+                    refreshTokenDeviceId: response.refreshTokenDeviceId
                 )
                 return CreditStatus(balance: response.balance, adRewardBalance: response.adRewardBalance ?? 0)
             } catch {
@@ -585,6 +590,7 @@ final class AzukiApi {
             let accessTokenExpiresAt: Double?
             let refreshToken: String?
             let refreshTokenExpiresAt: Double?
+            let refreshTokenDeviceId: String?
         }
 
         do {
@@ -649,7 +655,8 @@ final class AzukiApi {
                     accessToken: response.accessToken,
                     accessTokenExpiresAt: response.accessTokenExpiresAt,
                     refreshToken: response.refreshToken,
-                    refreshTokenExpiresAt: response.refreshTokenExpiresAt
+                    refreshTokenExpiresAt: response.refreshTokenExpiresAt,
+                    refreshTokenDeviceId: response.refreshTokenDeviceId ?? deviceId
                 )
                 let isDuplicate = response.duplicate ?? false
                 GALogger.log(
@@ -787,13 +794,18 @@ final class AzukiApi {
         accessToken: String?,
         accessTokenExpiresAt: Double?,
         refreshToken: String?,
-        refreshTokenExpiresAt: Double?
+        refreshTokenExpiresAt: Double?,
+        refreshTokenDeviceId: String?
     ) {
         if let token = accessToken, let expiresAt = accessTokenExpiresAt {
             accessTokenStore.save(token: token, expiresAtMilliseconds: expiresAt)
         }
         if let refresh = refreshToken, let refreshExpiresAt = refreshTokenExpiresAt {
-            refreshTokenStore.save(token: refresh, expiresAtMilliseconds: refreshExpiresAt)
+            refreshTokenStore.save(
+                token: refresh,
+                expiresAtMilliseconds: refreshExpiresAt,
+                deviceId: refreshTokenDeviceId
+            )
         }
     }
 
@@ -845,16 +857,21 @@ final class AzukiApi {
             if let existing = self.accessTokenStore.currentTokenIfValid() {
                 return existing
             }
-            guard let refreshToken = self.refreshTokenStore.currentTokenIfValid() else {
+            guard let credential = self.refreshTokenStore.currentCredentialIfValid() else {
                 return nil
             }
+            let refreshToken = credential.token
             guard let url = self.makeAPIURL(path: "/auth/refresh") else {
                 throw AzukiAPIError.invalidURL
             }
-            // サーバーへ端末IDを提示できなければリフレッシュ要件を満たせないため、そのまま終了する
-            guard let identity = await self.deviceAuthenticator.currentIdentity() else {
-                return nil
+            // credit/checkの論理端末とApp Attest端末を混同しないよう発行元IDを優先する
+            let refreshDeviceId: String?
+            if let storedDeviceId = credential.deviceId {
+                refreshDeviceId = storedDeviceId
+            } else {
+                refreshDeviceId = await self.deviceAuthenticator.currentIdentity()?.deviceId
             }
+            guard let refreshDeviceId else { return nil }
 
             struct StageOneRequest: Encodable {
                 let refreshToken: String
@@ -864,7 +881,7 @@ final class AzukiApi {
             let firstPayload: Data
             do {
                 // 第1段階ではリフレッシュトークンと端末IDのみを送信し、チャレンジ発行を促す
-                firstPayload = try self.encoder.encode(StageOneRequest(refreshToken: refreshToken, deviceId: identity.deviceId))
+                firstPayload = try self.encoder.encode(StageOneRequest(refreshToken: refreshToken, deviceId: refreshDeviceId))
             } catch {
                 throw AzukiAPIError.encoding
             }
@@ -910,6 +927,7 @@ final class AzukiApi {
                 let accessTokenExpiresAt: Double
                 let refreshToken: String
                 let refreshTokenExpiresAt: Double
+                let refreshTokenDeviceId: String?
             }
 
             struct RefreshChallengeEnvelope: Decodable {
@@ -929,7 +947,8 @@ final class AzukiApi {
                     accessToken: decoded.accessToken,
                     accessTokenExpiresAt: decoded.accessTokenExpiresAt,
                     refreshToken: decoded.refreshToken,
-                    refreshTokenExpiresAt: decoded.refreshTokenExpiresAt
+                    refreshTokenExpiresAt: decoded.refreshTokenExpiresAt,
+                    refreshTokenDeviceId: decoded.refreshTokenDeviceId ?? refreshDeviceId
                 )
                 return decoded.accessToken
             }
@@ -953,11 +972,18 @@ final class AzukiApi {
                                    error: logError,
                                    retryCount: 0)
                 if status == 401 || status == 400 {
-                    if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
+                    if serverErrorCode == "invalid_refresh_token"
+                        || serverErrorCode == "refresh_token_expired"
+                        || serverErrorCode == "refresh_token_reuse_detected" {
                         self.refreshTokenStore.clear()
                         self.accessTokenStore.clear()
-                        // トークンが失効している場合、端末鍵も再登録が必要となるため一緒に破棄する
-                        await self.deviceAuthenticator.invalidateIdentity()
+                        // トークン失効だけではApp Attest鍵の異常を意味しないため端末鍵は維持する
+                        return nil
+                    }
+                    if serverErrorCode == "device_mismatch" {
+                        // 発行元IDが無い旧保存データを破棄し、認証任意APIから再発行する
+                        self.refreshTokenStore.clear()
+                        self.accessTokenStore.clear()
                         return nil
                     }
                     if serverErrorCode == "device_revoked" || serverErrorCode == "invalid_device" || serverErrorCode == "challenge_failed" {
@@ -1012,7 +1038,8 @@ final class AzukiApi {
                         stageTwoBody = try self.encoder.encode(
                             StageTwoRequest(
                                 refreshToken: refreshToken,
-                                deviceId: identity.deviceId,
+                                // 第1段階で提示した発行元deviceIdを第2段階でも維持する
+                                deviceId: refreshDeviceId,
                                 challengeId: challenge.challengeId,
                                 nonce: challenge.nonce,
                                 signature: signaturePayload.signature,
@@ -1071,6 +1098,29 @@ final class AzukiApi {
         await tokenRecoveryHandlerBox.update(handler: nil)
     }
 
+    /// サーバーに拒否された認証情報を更新し、再送に使うアクセストークンを取得する
+    private func recoverAccessTokenAfterUnauthorized() async throws -> String? {
+        // 有効期限内でも接続先や署名鍵が変わると拒否されるため、古い値を先に破棄する
+        accessTokenStore.clear()
+        do {
+            if let refreshed = try await refreshAccessTokenIfPossible() {
+                return refreshed
+            }
+        } catch is CancellationError {
+            // 画面終了によるキャンセルは別の再発行処理へ進めず、そのまま上位へ返す
+            throw CancellationError()
+        } catch {
+            // 接続先変更などで更新トークンも拒否された場合は、下の再発行経路へ切り替える
+        }
+
+        // リフレッシュできない場合は残高照会など、画面側が用意した再発行経路を一度だけ使う
+        if let handler = await tokenRecoveryHandlerBox.currentHandler() {
+            _ = await handler()
+            return accessTokenStore.currentTokenIfValid()
+        }
+        return nil
+    }
+
     /// デバッグ操作などで userId をリセットした際に、古いユーザーに紐づく認証情報を捨てる
     /// - Note: Keychain を手動削除したあとに再度購入テストを行うとき、旧トークンが残っていると `401-forbiddenUser` に繋がるため、明示的にリセットする
     func clearAuthenticationStateForUserReset() {
@@ -1116,14 +1166,16 @@ final class AzukiApi {
                 if allowRetryAfterRefresh,
                    authorization.isEmpty == false,
                    isRefreshEndpoint == false,
-                   let refreshed = try await refreshAccessTokenIfPossible() {
+                   let refreshed = try await recoverAccessTokenAfterUnauthorized() {
                     var retriedRequest = request
                     retriedRequest.setValue("Bearer \(refreshed)", forHTTPHeaderField: "Authorization")
                     return try await send(request: retriedRequest, allowRetryAfterRefresh: false, retryCount: retryCount + 1)
                 }
                 // サーバー側でアクセストークンが拒否されたため、Keychainに残っている値も破棄する
                 accessTokenStore.clear()
-                if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
+                if serverErrorCode == "invalid_refresh_token"
+                    || serverErrorCode == "refresh_token_expired"
+                    || serverErrorCode == "refresh_token_reuse_detected" {
                     refreshTokenStore.clear()
                 }
                 if serverErrorCode == "device_revoked" || serverErrorCode == "invalid_device" || serverErrorCode == "challenge_failed" {
@@ -1311,6 +1363,12 @@ final class AzukiApi {
         let apiName = request.url?.path ?? "unknown"
         let method = request.httpMethod ?? "unknown"
         let info = analyticsErrorInfo(from: error)
+        #if DEBUG
+        // 認証情報を含めず、実機デバッグで失敗したAPIだけを判別できるようにする
+        let statusText = statusCode.map(String.init) ?? "network"
+        let serverCodeText = serverErrorCode ?? info.code
+        print("[AzukiApi] \(method) \(apiName) failed status=\(statusText) code=\(serverCodeText)")
+        #endif
         GALogger.log(
             .api_result(
                 name: apiName,

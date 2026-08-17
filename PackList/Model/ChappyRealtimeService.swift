@@ -58,6 +58,7 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
     private var isAudioSessionActive = false
     private var isMicrophoneSuppressed = false
     private var ignoredInputItemIds = Set<String>()
+    private var handledToolCallIds = Set<String>()
     private var audioTurns = [String: AudioTurn]()
     private let minimumAudioTurnMilliseconds = 300.0
 
@@ -140,13 +141,30 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         let groupCount = currentPack?.groups.count ?? 0
         let itemCount = currentPack?.groups.reduce(0) { $0 + $1.items.count } ?? 0
         let result: [String: Any] = [
-            "success": success,
             "appliedOperations": appliedOperations,
             "resultGroupCount": groupCount,
             "resultItemCount": itemCount,
             "currentPack": currentPack.map { packDictionary($0) } ?? NSNull()
         ]
-        guard let resultData = try? JSONSerialization.data(withJSONObject: result),
+        sendToolResult(
+            callId: callId,
+            toolName: "apply_pack_changes",
+            success: success,
+            result: result
+        )
+    }
+
+    /// 端末で実行した参照ツールの結果をRealtime会話へ返す
+    func sendToolResult(callId: String,
+                        toolName: String,
+                        success: Bool,
+                        result: [String: Any]) {
+        let output: [String: Any] = [
+            "tool": toolName,
+            "success": success,
+            "result": result
+        ]
+        guard let resultData = try? JSONSerialization.data(withJSONObject: output),
               let resultText = String(data: resultData, encoding: .utf8) else {
             return
         }
@@ -159,7 +177,7 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             ]
         ])
         guard didSend else {
-            // 差分結果を返せない場合は無反応にせず再試行できる状態へ戻す
+            // ツール結果を返せない場合は無反応にせず再試行できる状態へ戻す
             notifyRetryableError()
             return
         }
@@ -182,6 +200,7 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
         audioTrack = nil
         isMicrophoneSuppressed = false
         ignoredInputItemIds.removeAll()
+        handledToolCallIds.removeAll()
         audioTurns.removeAll()
         connectionState = .disconnected
         isListening = false
@@ -415,6 +434,13 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             responseTimeoutTask?.cancel()
             responseTimeoutTask = nil
             isProcessing = false
+            if isResponseCancelledByUserTurn(event) {
+                // ユーザーの割り込みによる取消は正常な会話継続として聞き取りへ戻す
+                isListening = true
+                isSpeaking = false
+                onResponseCompleted?()
+                return
+            }
             if isOutputTruncated(event) {
                 // 生成上限による未完了文を正常な応答として会話を続けない
                 connectionState = .failed
@@ -427,17 +453,33 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
                 onError?(message)
                 return
             }
+            if isResponseCompleted(event) == false {
+                // 失敗や未完了を成功扱いせず、待機表示を終えて再試行できるようにする
+                onResponseCompleted?()
+                notifyRetryableError()
+                return
+            }
             handleResponseDone(event)
             onResponseCompleted?()
         case "conversation.item.created":
             handleControlItem(event)
         case "error":
-            // Realtimeのイベントエラーは接続断ではないため、応答監視を残して会話を継続する
             setMicrophoneEnabled(true)
-            if isProcessing == false {
+            #if DEBUG
+            // 会話内容を出さず、OpenAIの障害種別だけを実機デバッグへ残す
+            if let error = event["error"] as? [String: Any] {
+                let code = error["code"] as? String ?? "unknown"
+                let type = error["type"] as? String ?? "unknown"
+                print("[ChappyRealtime] error code=\(code) type=\(type)")
+            }
+            #endif
+            guard isProcessing else {
                 isListening = true
                 isSpeaking = false
+                return
             }
+            // 応答生成中のエラーを無視すると考え中のまま残るため、直ちに再試行へ切り替える
+            notifyRetryableError()
         default:
             break
         }
@@ -503,6 +545,8 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
                   let arguments = item["arguments"] as? String else {
                 continue
             }
+            // 同じ応答完了イベントが再配信されてもツールを二重実行しない
+            guard handledToolCallIds.insert(callId).inserted else { continue }
             onToolCall?(ToolCall(callId: callId, name: name, arguments: arguments))
         }
     }
@@ -515,6 +559,21 @@ final class ChappyRealtimeService: NSObject, ObservableObject {
             return false
         }
         return details["reason"] as? String == "max_output_tokens"
+    }
+
+    private func isResponseCompleted(_ event: [String: Any]) -> Bool {
+        guard let response = event["response"] as? [String: Any] else { return false }
+        return response["status"] as? String == "completed"
+    }
+
+    private func isResponseCancelledByUserTurn(_ event: [String: Any]) -> Bool {
+        guard let response = event["response"] as? [String: Any],
+              response["status"] as? String == "cancelled",
+              let details = response["status_details"] as? [String: Any],
+              let reason = details["reason"] as? String else {
+            return false
+        }
+        return reason == "turn_detected" || reason == "client_cancelled"
     }
 
     private func handleControlItem(_ event: [String: Any]) {

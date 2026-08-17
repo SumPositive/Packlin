@@ -10,10 +10,17 @@ import Foundation
 /// azuki-api が払い出すリフレッシュトークンを Keychain へ保存・復元するヘルパ
 /// - Note: 有効期限切れ直前での連続リフレッシュを避けるため、少し余裕を持って破棄する
 final class AzukiRefreshTokenStore {
+    struct Credential {
+        let token: String
+        let deviceId: String?
+    }
+
     /// Keychain へ保存する際のトークン本体キー
     private let tokenKey = "com.azukid.azuki-api.refreshToken"
     /// リフレッシュトークンの有効期限(ミリ秒)を保存する際のキー
     private let expiryKey = "com.azukid.azuki-api.refreshTokenExpiry"
+    /// リフレッシュトークンを発行したサーバー側deviceIdの保存キー
+    private let deviceIdKey = "com.azukid.azuki-api.refreshTokenDeviceId"
     /// 有効期限チェック時に設ける猶予秒数
     private let leewaySeconds: TimeInterval = 60
     /// Keychain へ実際にアクセスするためのユーティリティ
@@ -26,6 +33,11 @@ final class AzukiRefreshTokenStore {
     /// 保存済みのリフレッシュトークンが期限内かを確認して返す
     /// - Returns: 期限を満たしていればトークン文字列、無ければ nil
     func currentTokenIfValid() -> String? {
+        return currentCredentialIfValid()?.token
+    }
+
+    /// 有効なトークンと発行元deviceIdをまとめて返す
+    func currentCredentialIfValid() -> Credential? {
         guard let storedToken = keychain.loadString(forKey: tokenKey)?.trimmingCharacters(in: .whitespacesAndNewlines),
               storedToken.isEmpty == false else {
             return nil
@@ -45,14 +57,19 @@ final class AzukiRefreshTokenStore {
             clear()
             return nil
         }
-        return storedToken
+        let storedDeviceId = keychain.loadString(forKey: deviceIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return Credential(
+            token: storedToken,
+            deviceId: storedDeviceId?.isEmpty == false ? storedDeviceId : nil
+        )
     }
 
     /// リフレッシュトークンと期限を Keychain へ保存する
     /// - Parameters:
     ///   - token: サーバーが払い出したリフレッシュトークン
     ///   - expiresAtMilliseconds: UNIX エポック基準の有効期限（ミリ秒）
-    func save(token: String, expiresAtMilliseconds: Double) {
+    func save(token: String, expiresAtMilliseconds: Double, deviceId: String?) {
         let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             clear()
@@ -65,11 +82,19 @@ final class AzukiRefreshTokenStore {
         let normalizedExpiry = String(expiresAtMilliseconds)
         keychain.saveString(trimmed, forKey: tokenKey)
         keychain.saveString(normalizedExpiry, forKey: expiryKey)
+        if let normalizedDeviceId = deviceId?.trimmingCharacters(in: .whitespacesAndNewlines),
+           normalizedDeviceId.isEmpty == false {
+            keychain.saveString(normalizedDeviceId, forKey: deviceIdKey)
+        } else {
+            // 旧API応答では発行元が不明なため、以前の値を誤用しない
+            keychain.deleteItem(forKey: deviceIdKey)
+        }
     }
 
     /// Keychain からリフレッシュトークン情報を削除する
     func clear() {
         keychain.deleteItem(forKey: tokenKey)
         keychain.deleteItem(forKey: expiryKey)
+        keychain.deleteItem(forKey: deviceIdKey)
     }
 }
