@@ -911,6 +911,13 @@ struct SettingView: View {
         @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
         @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
 
+        // プルダウンの展開状態（AZDropdownPicker 用）
+        @State private var isDisplayModeExpanded = false
+        @State private var isAppearanceModeExpanded = false
+        @State private var isFontScaleExpanded = false
+        @State private var isRowTextLinesExpanded = false
+        @State private var isInsertionPositionExpanded = false
+
         // GALoggerのため変更前の設定値を記録する
         @State var ona_insertionPosition: InsertionPosition?
         @State var ona_showNeedWeight: Bool?
@@ -926,9 +933,7 @@ struct SettingView: View {
 
             VStack(alignment: .leading, spacing: 20) {
                 // 表示モード（初心者／上級者）
-                AdaptiveRadioRow(options: DisplayMode.allCases,
-                                 selection: $displayMode,
-                                 minOptionWidth: 88) {
+                AZAdaptiveControlRow {
                     Label {
                         Text("view.mode")
                             .font(.callout)
@@ -936,14 +941,18 @@ struct SettingView: View {
                         Image(systemName: "lightbulb.2")
                             .symbolRenderingMode(.hierarchical)
                     }
-                } label: { mode in
-                    Text(mode.localizedKey)
+                } control: {
+                    AZDropdownPicker(options: DisplayMode.allCases,
+                                     selection: $displayMode,
+                                     isExpanded: $isDisplayModeExpanded,
+                                     minWidth: 150) { mode in
+                        Text(mode.localizedKey)
+                    }
                 }
+                .zIndex(isDisplayModeExpanded ? 65 : 0)
 
                 // 外観モード（システム追従／ライト／ダーク）
-                AdaptiveRadioRow(options: AppearanceMode.allCases,
-                                 selection: $appearanceMode,
-                                 minOptionWidth: 70) {
+                AZAdaptiveControlRow {
                     Label {
                         Text("appearance")
                             .font(.callout)
@@ -951,14 +960,18 @@ struct SettingView: View {
                         Image(systemName: "circle.lefthalf.filled")
                             .symbolRenderingMode(.hierarchical)
                     }
-                } label: { mode in
-                    Text(mode.localizedKey)
+                } control: {
+                    AZDropdownPicker(options: AppearanceMode.allCases,
+                                     selection: $appearanceMode,
+                                     isExpanded: $isAppearanceModeExpanded,
+                                     minWidth: 150) { mode in
+                        Text(mode.localizedKey)
+                    }
                 }
+                .zIndex(isAppearanceModeExpanded ? 64 : 0)
 
                 // 文字サイズ（自動／標準／大／特大）
-                AdaptiveRadioRow(options: FontScale.allCases,
-                                 selection: $fontScale,
-                                 minOptionWidth: 60) {
+                AZAdaptiveControlRow {
                     Label {
                         Text("font.size")
                             .font(.callout)
@@ -966,14 +979,18 @@ struct SettingView: View {
                         Image(systemName: "textformat.size")
                             .symbolRenderingMode(.hierarchical)
                     }
-                } label: { scale in
-                    Text(scale.localizedKey)
+                } control: {
+                    AZDropdownPicker(options: FontScale.allCases,
+                                     selection: $fontScale,
+                                     isExpanded: $isFontScaleExpanded,
+                                     minWidth: 150) { scale in
+                        Text(scale.localizedKey)
+                    }
                 }
+                .zIndex(isFontScaleExpanded ? 63 : 0)
 
                 // 行の表示行数を切り替える
-                AdaptiveRadioRow(options: RowTextLines.allCases,
-                                 selection: $rowTextLines,
-                                 minOptionWidth: 56) {
+                AZAdaptiveControlRow {
                     Label {
                         Text("details")
                             .font(.callout)
@@ -981,14 +998,18 @@ struct SettingView: View {
                         Image(systemName: "text.justify")
                             .symbolRenderingMode(.hierarchical)
                     }
-                } label: { setting in
-                    Text(setting.localizedKey)
+                } control: {
+                    AZDropdownPicker(options: RowTextLines.allCases,
+                                     selection: $rowTextLines,
+                                     isExpanded: $isRowTextLinesExpanded,
+                                     minWidth: 150) { setting in
+                        Text(setting.localizedKey)
+                    }
                 }
+                .zIndex(isRowTextLinesExpanded ? 62 : 0)
 
-                // 新規追加の位置（アイコン選択）
-                AdaptiveRadioRow(options: InsertionPosition.allCases,
-                                 selection: $insertionPosition,
-                                 minOptionWidth: 70) {
+                // 新規追加の位置（アイコン＋名称）
+                AZAdaptiveControlRow {
                     Label {
                         Text("add.position")
                             .font(.callout)
@@ -998,11 +1019,22 @@ struct SettingView: View {
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(COLOR_ADD_ACTION)
                     }
-                } label: { position in
-                    Image(systemName: position.iconSFname)
-                        .imageScale(.medium)
-                        .symbolRenderingMode(.hierarchical)
+                } control: {
+                    AZDropdownPicker(options: InsertionPosition.allCases,
+                                     selection: $insertionPosition,
+                                     isExpanded: $isInsertionPositionExpanded,
+                                     minWidth: 150) { position in
+                        // プルダウンではアイコンだけだと意味が伝わりにくいので名称も添える
+                        HStack(spacing: 6) {
+                            Image(systemName: position.iconSFname)
+                                .imageScale(.medium)
+                                .symbolRenderingMode(.hierarchical)
+                            Text(position.localizedKey)
+                        }
+                    }
                 }
+                .zIndex(isInsertionPositionExpanded ? 61 : 0)
+
                 // 必要重量を表示
                 Toggle(isOn: $showNeedWeight) {
                     Label {
