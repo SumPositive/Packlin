@@ -104,13 +104,6 @@ struct PackListView: View {
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
                         .environment(\.defaultMinListRowHeight, 0)
-
-                        // パックが6件以上ある一覧に限り、パック追加セルの下にバナー広告を1つだけ表示する
-                        if sortedPacks.count >= 6 {
-                            listBannerRow
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        }
                     }
                     footer: {
                         if isBeginnerMode {
@@ -144,176 +137,184 @@ struct PackListView: View {
                     applyExternalScrollTarget(navigationStore.packListScrollTargetID)
                 }
             }
-            .safeAreaInset(edge: .top) { // ヘッダ部
-                HStack {
-                    // 設定ボタンと説明
-                    VStack(spacing: 6) {
-                        Button {
-                            // Setting
-                            GALogger.log(.feature_use(name: "settings", source: "pack_list_header", detail: "open"))
-                            popupAnchor = nil // 中央
-                            isShowSetting = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                                .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
-                        }
-                        .buttonStyle(.borderless)
-                        .disabled(isShowingEditSheet)
-
-                        if isBeginnerMode {
-                            // 初心者向け：ボタンの役割をテキストで補足
-                            Text("open.settings")
-                                .font(.caption2)
-                                .lineLimit(3)
-                                .minimumScaleFactor(0.7)
-                                .allowsTightening(true)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
-                    .frame(width: 50)
-                    .padding(.horizontal, 4)
-
-                    // Undoボタンと説明
-                    VStack(spacing: 6) {
-                        Button {
-                            // 履歴サービスへ委譲して巻き戻す
-                            GALogger.log(.operation(name: "undo", target: "history", source: "pack_list_header", detail: nil, count: nil))
-                            history.undo(context: modelContext)
-                        } label: {
-                            Image(systemName: "arrow.uturn.backward")
-                                .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        }
-                        .buttonStyle(.borderless)
-                        .disabled(!history.canUndo || isShowingEditSheet)
-
-                        if isBeginnerMode {
-                            // 初心者向け：巻き戻し操作の説明
-                            Text("undo.last.change")
-                                .font(.caption2)
-                                .lineLimit(3)
-                                .minimumScaleFactor(0.7)
-                                .allowsTightening(true)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
-                    .frame(maxWidth: 55)
-                    .padding(.horizontal, 4)
-
-                    Spacer()
-
-                    // タイトル表示は見出しとして常に同じ大きさで見せたいので、Dynamic Typeの拡大縮小に左右されない固定サイズを指定
-                    Text("app.title")
-                        .font(.system(size: 15))
-                        .lineLimit(1)
-                        .frame(minWidth: 50)
-
-                    Spacer()
-
-                    // Redoボタンと説明
-                    VStack(spacing: 6) {
-                        Button {
-                            // 履歴サービスを用いて直前の変更にやり直す
-                            GALogger.log(.operation(name: "redo", target: "history", source: "pack_list_header", detail: nil, count: nil))
-                            history.redo(context: modelContext)
-                        } label: {
-                            Image(systemName: "arrow.uturn.forward")
-                                .imageScale(.small)
-                                .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                        }
-                        .buttonStyle(.borderless)
-                        .disabled(!history.canRedo || isShowingEditSheet)
-
-                        if isBeginnerMode {
-                            // 初心者向け：Redoの役割を説明
-                            Text("redo.undone.change")
-                                .font(.caption2)
-                                .lineLimit(3)
-                                .minimumScaleFactor(0.7)
-                                .allowsTightening(true)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
-                    .frame(maxWidth: 55)
-                    .padding(.horizontal, 4)
-
-                    // 新しいパック追加と説明
-                    VStack(spacing: 6) {
-                        Button {
-                            // 標準Menuは文字サイズ対応しにくいため、独自popoverで選択肢を表示する
-                            isShowingPackAddPopover = true
-                        } label: {
-                            // パック追加はカバン＋プラスの合成アイコンにする
-                            ZStack {
-                                Image(systemName: "case")
+            .safeAreaInset(edge: .top, spacing: 0) { // ヘッダ部＋広告帯
+                VStack(spacing: 0) {
+                    HStack {
+                        // 設定ボタンと説明
+                        VStack(spacing: 6) {
+                            Button {
+                                // Setting
+                                GALogger.log(.feature_use(name: "settings", source: "pack_list_header", detail: "open"))
+                                popupAnchor = nil // 中央
+                                isShowSetting = true
+                            } label: {
+                                Image(systemName: "gearshape")
                                     .imageScale(.large)
                                     .symbolRenderingMode(.hierarchical)
-                                Image(systemName: "plus")
-                                    .font(.system(size: 17, weight: .regular))
-                                    .symbolRenderingMode(.hierarchical)
-                                    .padding(.top, 4)
+                                    .symbolEffect(.rotate.byLayer, options: .repeat(.periodic(delay: 3.0))) // 回転
                             }
-                            .foregroundStyle(COLOR_ADD_ACTION)
-                        }
-                        .buttonStyle(.borderless)
-                        .disabled(isShowingEditSheet)
-                        // スクショ撮影用: パック追加ポップオーバーを開くボタン
-                        .accessibilityIdentifier("packAdd_button")
-                        .popover(
-                            isPresented: $isShowingPackAddPopover,
-                            attachmentAnchor: .point(.bottom),
-                            arrowEdge: .top
-                        ) {
-                            PackAddPopoverView(
-                                fontScale: fontScale,
-                                onChappy: {
-                                    isShowingPackAddPopover = false
-                                    // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
-                                    GALogger.log(.feature_use(name: "ai_create", source: "pack_list_add_popover", detail: "pack"))
-                                    isShowAiCreateSheet = true
-                                },
-                                onManual: {
-                                    isShowingPackAddPopover = false
-                                    // これまで通り自分で項目を入力して作成するパターン
-                                    addPack()
-                                },
-                                onPublicGallery: {
-                                    isShowingPackAddPopover = false
-                                    // 公開パックの一覧・検索から取り込むフローへ誘導
-                                    GALogger.log(.feature_use(name: "public_pack", source: "pack_list_add_popover", detail: "open_gallery"))
-                                    isShowPublicGallery = true
-                                }
-                            )
-                            .presentationCompactAdaptation(.popover)
-                        }
+                            .buttonStyle(.borderless)
+                            .disabled(isShowingEditSheet)
 
-                        if isBeginnerMode {
-                            // 初心者向け：新規パック追加の説明
-                            Text("add.new.pack")
-                                .font(.caption2)
-                                .lineLimit(3)
-                                .minimumScaleFactor(0.7)
-                                .allowsTightening(true)
-                                .foregroundStyle(COLOR_ADD_ACTION)
-                                .multilineTextAlignment(.center)
+                            if isBeginnerMode {
+                                // 初心者向け：ボタンの役割をテキストで補足
+                                Text("open.settings")
+                                    .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
                         }
+                        .frame(width: 50)
+                        .padding(.horizontal, 4)
+
+                        // Undoボタンと説明
+                        VStack(spacing: 6) {
+                            Button {
+                                // 履歴サービスへ委譲して巻き戻す
+                                GALogger.log(.operation(name: "undo", target: "history", source: "pack_list_header", detail: nil, count: nil))
+                                history.undo(context: modelContext)
+                            } label: {
+                                Image(systemName: "arrow.uturn.backward")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(!history.canUndo || isShowingEditSheet)
+
+                            if isBeginnerMode {
+                                // 初心者向け：巻き戻し操作の説明
+                                Text("undo.last.change")
+                                    .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: 55)
+                        .padding(.horizontal, 4)
+
+                        Spacer()
+
+                        // タイトル表示は見出しとして常に同じ大きさで見せたいので、Dynamic Typeの拡大縮小に左右されない固定サイズを指定
+                        Text("app.title")
+                            .font(.system(size: 15))
+                            .lineLimit(1)
+                            .frame(minWidth: 50)
+
+                        Spacer()
+
+                        // Redoボタンと説明
+                        VStack(spacing: 6) {
+                            Button {
+                                // 履歴サービスを用いて直前の変更にやり直す
+                                GALogger.log(.operation(name: "redo", target: "history", source: "pack_list_header", detail: nil, count: nil))
+                                history.redo(context: modelContext)
+                            } label: {
+                                Image(systemName: "arrow.uturn.forward")
+                                    .imageScale(.small)
+                                    .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(!history.canRedo || isShowingEditSheet)
+
+                            if isBeginnerMode {
+                                // 初心者向け：Redoの役割を説明
+                                Text("redo.undone.change")
+                                    .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(maxWidth: 55)
+                        .padding(.horizontal, 4)
+
+                        // 新しいパック追加と説明
+                        VStack(spacing: 6) {
+                            Button {
+                                // 標準Menuは文字サイズ対応しにくいため、独自popoverで選択肢を表示する
+                                isShowingPackAddPopover = true
+                            } label: {
+                                // パック追加はカバン＋プラスの合成アイコンにする
+                                ZStack {
+                                    Image(systemName: "case")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical)
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 17, weight: .regular))
+                                        .symbolRenderingMode(.hierarchical)
+                                        .padding(.top, 4)
+                                }
+                                .foregroundStyle(COLOR_ADD_ACTION)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(isShowingEditSheet)
+                            // スクショ撮影用: パック追加ポップオーバーを開くボタン
+                            .accessibilityIdentifier("packAdd_button")
+                            .popover(
+                                isPresented: $isShowingPackAddPopover,
+                                attachmentAnchor: .point(.bottom),
+                                arrowEdge: .top
+                            ) {
+                                PackAddPopoverView(
+                                    fontScale: fontScale,
+                                    onChappy: {
+                                        isShowingPackAddPopover = false
+                                        // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
+                                        GALogger.log(.feature_use(name: "ai_create", source: "pack_list_add_popover", detail: "pack"))
+                                        isShowAiCreateSheet = true
+                                    },
+                                    onManual: {
+                                        isShowingPackAddPopover = false
+                                        // これまで通り自分で項目を入力して作成するパターン
+                                        addPack()
+                                    },
+                                    onPublicGallery: {
+                                        isShowingPackAddPopover = false
+                                        // 公開パックの一覧・検索から取り込むフローへ誘導
+                                        GALogger.log(.feature_use(name: "public_pack", source: "pack_list_add_popover", detail: "open_gallery"))
+                                        isShowPublicGallery = true
+                                    }
+                                )
+                                .presentationCompactAdaptation(.popover)
+                            }
+
+                            if isBeginnerMode {
+                                // 初心者向け：新規パック追加の説明
+                                Text("add.new.pack")
+                                    .font(.caption2)
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.7)
+                                    .allowsTightening(true)
+                                    .foregroundStyle(COLOR_ADD_ACTION)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .frame(width: 66)
+                        .padding(.horizontal, 4)
                     }
-                    .frame(width: 66)
-                    .padding(.horizontal, 4)
+                    // iPadのマルチウィンドウで左上のシステムアイコンに隠れないよう、ヘッダー全体を右へずらす
+                    .padding(.leading, ipadWindowControlInset())
+                    .tint(.primary) // ヘッダ部は.accentColorにしない
+                    .frame(height: headerHeight)
+                    .padding(.horizontal, 16)
+                    .background(.thinMaterial)
+                    // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
+                    .cappedAtLargeFontSize()
+
+                    // ヘッダーの直下にバナー広告を1本だけ敷く（Vitalin・Nenrinと同じ構成）。
+                    // 中身が空だと safeAreaInset のインセットが確定せず画面全体へ膨張するため、
+                    // HeaderBannerView 側は非表示時も高さ0の実体を返す
+                    HeaderBannerView()
                 }
-                // iPadのマルチウィンドウで左上のシステムアイコンに隠れないよう、ヘッダー全体を右へずらす
-                .padding(.leading, ipadWindowControlInset())
-                .tint(.primary) // ヘッダ部は.accentColorにしない
-                .frame(height: headerHeight)
-                .padding(.horizontal, 16)
                 .background(.thinMaterial)
-                // 初心者ヘルプ・タイトル・パンくずを「大」までで頭打ち
-                .cappedAtLargeFontSize()
             }
         }
         // Pack編集はポップアップからシート表示へ移行
@@ -347,20 +348,6 @@ struct PackListView: View {
                 .presentationDragIndicator(.hidden)
                 .interactiveDismissDisabled()
         }
-    }
-
-    /// パック一覧に挟むバナー広告行（10番目のパックの直後に表示）
-    /// 高さは固定せず内容に追従させる（読み込み中ラベルやエラー表示で高さが変わり、
-    /// 固定すると次の行に重なるため）
-    private var listBannerRow: some View {
-        AdMobBannerView(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 320, height: 50)
-        )
-        .frame(maxWidth: .infinity)
-        // 広告と一覧項目の間隔を広めに取り、誤タップを防ぐ
-        // （Vitalinで間隔が狭く誤タップを招くとして配信停止された経緯を踏まえた対応）
-        .padding(.vertical, 20)
     }
 
     /// フッター：ボタンの説明

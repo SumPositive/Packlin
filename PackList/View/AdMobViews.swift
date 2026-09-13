@@ -491,6 +491,83 @@ final class RewardedInterstitialAdLoader: NSObject, ObservableObject, FullScreen
     }
 }
 
+/// パック一覧のヘッダー直下に敷く 320×50 のバナー帯。
+/// Vitalin（体調メモ）・Nenrin（年輪）と同じく、一覧の上部に1本だけ置く。
+struct HeaderBannerView: View {
+    /// 縦方向の余裕。.compact は iPhone 横向きのように画面が低い状態を指す
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    var body: some View {
+        // fastlane snapshot 撮影時は広告を出さない（App Store スクショに広告を映さない）。
+        // safeAreaInset のインセットが確定するよう高さ0の実体を返す
+        if SnapshotSupport.isRunningSnapshot {
+            Color.clear.frame(height: 0)
+        } else {
+            heightAwareBody
+        }
+    }
+
+    /// 画面の高さが足りないときだけ広告と帯を畳む。
+    ///
+    /// 判定は向きではなく verticalSizeClass で行う。.compact になるのは
+    /// iPhone の横向きのように縦が詰まった状態だけで、iPad は横向きでも
+    /// .regular のままなので広告はそのまま出る（Split View や Slide Over も同様）。
+    private var isHeightConstrained: Bool {
+        verticalSizeClass == .compact
+    }
+
+    /// 高さが足りないときは高さ0にして safeAreaInset ごと畳む。
+    /// 50pt＋上下余白の帯が、低い画面では一覧を大きく圧迫するため。
+    ///
+    /// バナー自体は破棄せず畳むだけにする。作り直すと再リクエストが飛び、
+    /// 回転を往復するたびに無効トラフィックとみなされ得るため。
+    private var heightAwareBody: some View {
+        bannerBody
+            .frame(height: isHeightConstrained ? 0 : nil)
+            .opacity(isHeightConstrained ? 0 : 1)
+            .clipped()
+            // 畳んでいる間は広告に触れないようにする
+            .allowsHitTesting(!isHeightConstrained)
+            .accessibilityHidden(isHeightConstrained)
+    }
+
+    private var bannerBody: some View {
+        AdMobBannerRepresentable(
+            adUnitID: ADMOB_BANNER_UnitID,
+            size: CGSize(width: 320, height: 50),
+            onReceiveAd: {},
+            onFailToReceiveAd: { error in
+                // 配信できなかった場合も画面には何も出さず、詳細だけ記録する
+                logError(error, domain: "banner_ad_load", message: "ヘッダーバナー広告ロード失敗")
+                Crashlytics.crashlytics().record(error: error)
+            },
+            reloadToken: Self.staticReloadToken
+        )
+        // 広告サイズと表示領域を一致させる
+        .frame(width: 320, height: 50)
+        .frame(maxWidth: .infinity)
+        // 上下のタップできる要素（ヘッダーのボタン・パック行）との間を空ける。
+        // 誤タップを防ぐだけでなく、広告がアプリの操作面と地続きに
+        // 見えないようにするためにも要る
+        // （Vitalinで間隔が狭く誤タップを招くとして配信停止された経緯を踏まえた対応）
+        .padding(.vertical, 20)
+        // 広告の載る面だけ地を一段沈め、アプリのUIではないと分かるようにする。
+        // 角丸や左右余白を付けるとアプリのカードに見えてしまうため、
+        // 画面端まで届く帯にし、下端の区切り線だけで面を分ける
+        .background(Color(uiColor: .tertiarySystemFill))
+        .overlay(alignment: .bottom) {
+            // 広告帯の下に引く区切り線。面の境界だけを示す細さに留める
+            Rectangle()
+                .fill(Color.secondary.opacity(0.15))
+                .frame(height: 0.5)
+        }
+    }
+
+    /// 画面が再描画されてもバナーを作り直さないための固定トークン。
+    /// 1バナーにつき1リクエストに保ち、無効トラフィックを避ける
+    private static let staticReloadToken = UUID()
+}
+
 /// SwiftUIでAdMobバナーを表示するビュー
 struct AdMobBannerView: View {
     let adUnitID: String
