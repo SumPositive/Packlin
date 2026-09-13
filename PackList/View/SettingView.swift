@@ -379,8 +379,9 @@ struct SettingView: View {
         return String(rawId[rawId.startIndex..<endIndex])
     }
 
-    /// アプリの取扱説明
+    /// 取扱説明
     struct InformationView: View {
+        @Environment(\.openURL) private var openURL
         @Environment(\.dynamicTypeSize) private var dynamicTypeSize
         @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
         @State private var showSafari = false
@@ -473,29 +474,49 @@ struct SettingView: View {
         }
         
         var body: some View {
-            Button(action: {
-                // Safariを開く前にページ存在を確認する
-                Task { await openGuide() }
-                GALogger.log(.feature_use(name: "user_guide", source: "settings", detail: "open"))
-            }) {
-                Label {
+            VStack(alignment: .leading, spacing: 16) {
+                Button(action: {
+                    // Safariを開く前にページ存在を確認する
+                    Task { await openGuide() }
+                    GALogger.log(.feature_use(name: "user_guide", source: "settings", detail: "open"))
+                }) {
                     Text("about.how.use")
                         .font(.body.weight(.bold))
                         .foregroundColor(.accentColor)
-                } icon: {
-                    Image(systemName: "info.circle")
-                        .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            .disabled(isResolvingGuideURL)
-            .sheet(isPresented: $showSafari) {
-                if let url = resolvedGuideURL {
-                    SafariView(url: url)
-                } else {
-                    Text("can.t.show.info")
+                .buttonStyle(.plain)
+                .disabled(isResolvingGuideURL)
+                .sheet(isPresented: $showSafari) {
+                    if let url = resolvedGuideURL {
+                        SafariView(url: url)
+                    } else {
+                        Text("can.t.show.info")
+                    }
                 }
+
+                // アプリを評価する（App Store のレビュー入力欄を直接開く）
+                Button(action: {
+                    // requestReview は表示可否をOSが決めるため、押しても何も起きないことがある。
+                    // ボタンからは App Store を直接開く
+                    if let url = APP_STORE_REVIEW_URL {
+                        openURL(url)
+                    }
+                    GALogger.log(.feature_use(name: "app_review", source: "settings", detail: "open"))
+                }) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("rate.this.app")
+                            .font(.body.weight(.bold))
+                            .foregroundColor(.accentColor)
+                        // 要望や提案もレビューへ記入できることを案内する
+                        Text("rate.this.app.description")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -1133,10 +1154,7 @@ struct SettingView: View {
     }
     /// 応援・寄付
     struct DonationView: View {
-        @State private var showAd = false
-        @State private var showAdMovie = false
         @State private var showDonate = false
-        @State private var showRewardThankYou = false // 広告視聴後にお礼アラートを出すためのフラグ
         @State private var showTipSheet = false
 
         var body: some View {
@@ -1166,35 +1184,6 @@ struct SettingView: View {
                         TipSheetView()
                     }
 
-                    // 広告を見て応援する（ボタン）
-                    Button(action: {
-                        showAd = true
-                    }) {
-                        Text("watch.ad.support")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.brown)
-                    .padding(.horizontal, 32)
-                }
-                .sheet(isPresented: $showAd) {
-                    // バナーも動画もまとめて閲覧できる新しいシートを表示
-                    AdMobAdSheetView(
-                        onRewardEarned: {
-                            // 広告の視聴完了を検知してお礼を伝える
-                            showRewardThankYou = true
-                        },
-                        rewardTrialDescription: String(localized: "watch.end.support.dev.chip.only")
-                    )
-                }
-                // 視聴完了後にささやかな感謝を伝える
-                .alert(
-                    String(localized: "thanks.watching"),
-                    isPresented: $showRewardThankYou
-                ) {
-                    Button(String(localized: "OK")) {}
-                } message: {
-                    Text(String(localized: "thanks.support.ll.keep.improving.hope"))
                 }
             }
         }

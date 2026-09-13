@@ -16,6 +16,14 @@ import UniformTypeIdentifiers
 //-------------------------------------- DEBUG
 let DEBUG_SHOW_ORDER_ID = false
 
+//-------------------------------------- App Store
+// App Store のアプリID（モチメモ Packlin）
+let APP_STORE_ID = "495525984"
+// レビュー入力欄を開いた状態で App Store アプリを表示する。
+// https:// だと Safari が先に受け取り、リダイレクトで action= が落ちて
+// 「アドレスが無効です」になるため、App Store を直接指す itms-apps:// を使う
+let APP_STORE_REVIEW_URL = URL(string: "itms-apps://apps.apple.com/app/id\(APP_STORE_ID)?action=write-review")
+
 //-------------------------------------- アルゴリズム定数
 let ORDER_SPARSE: Int = 1000 // スパース間隔（.orderをまばらにして挿入時に中間値を使い、全更新を減らす）
 
