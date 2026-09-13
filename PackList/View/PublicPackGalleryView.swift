@@ -148,16 +148,12 @@ struct PublicPackGalleryView: View {
                 controlBar
                 Divider()
                 listContent
-                // フッターのバナー広告（スクショ撮影時は審査用スクショに広告を写さないため非表示）
-                if SnapshotSupport.isRunningSnapshot == false && sharingItem == nil {
-                    Divider()
-                    AdMobBannerView(
-                        adUnitID: ADMOB_BANNER_UnitID,
-                        size: CGSize(width: 320, height: 50)
-                    )
-                    .frame(height: 50)
-                    .padding(.vertical, 4)
-                }
+                // フッターのバナー広告。パック一覧の上部と同じ帯にして、
+                // 広告面がアプリのUIと地続きに見えないようにする。
+                // 詳細シートには広告を置かないので、この1本だけを出しっぱなしにする
+                // （出し入れするとバナーが作り直されて再リクエストが飛ぶため）
+                // （スクショ撮影時の非表示は HeaderBannerView 側で行う）
+                HeaderBannerView(placement: .bottom)
                 // ※ 一覧の中身はスクショ時も実サーバから取得する（管理者が公開したサンプルを表示）
             }
             .background(Color(.systemGroupedBackground))
@@ -701,20 +697,6 @@ private struct PublicPackDetailSheet: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle(Text("public.pack.sheet.title"))
             .navigationBarTitleDisplayMode(.inline)
-            .safeAreaInset(edge: .bottom) {
-                if SnapshotSupport.isRunningSnapshot == false {
-                    VStack(spacing: 0) {
-                        Divider()
-                        AdMobBannerView(
-                            adUnitID: ADMOB_BANNER_UnitID,
-                            size: CGSize(width: 320, height: 50)
-                        )
-                        .frame(height: 50)
-                        .padding(.vertical, 4)
-                    }
-                    .background(.bar, ignoresSafeAreaEdges: .bottom)
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button { dismiss() } label: {
