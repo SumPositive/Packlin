@@ -261,6 +261,8 @@ Packlin と azuki-api の詳細設計を DESIGN.md に目次を付けて書き�
 設定：広告を見て応援する　を廃止
 設定：アプリの取扱説明の下に Nenrinの設定にある　アプリを評価する　を同様に実装したい
 
+パック一覧の上部に VitalinやNenrinと同様に バナー広告を表示したい
+公開パックシート下部の広告バナーの背景をパック上部のような帯にしたい
 
 
 
@@ -274,7 +276,7 @@ Packlin と azuki-api の詳細設計を DESIGN.md に目次を付けて書き�
 - 
 -----
 fastlane メタデータを更新して
-3.5.0 審査中、README.mdの開発メモ、公開アプリパネル、取扱説明を更新して
+3.5.0 準備中、公開アプリパネル、取扱説明を更新して
 -----
 cd /Users/sumpositive/GitLocal/Packlin
 fastlane preview_metadata
@@ -282,6 +284,11 @@ fastlane upload_metadata
 ---
 fastlane screenshots
 fastlane upload_screenshots
+---
+本日 3.5.0 公開中、公開アプリパネル、取扱説明 を更新して
 ------------------------------------------------
+Codex: AppStore レビューを取得して集計分析する
+$app-store-review-summary
+-----
 
 

@@ -509,9 +509,15 @@ struct HeaderBannerView: View {
     /// 縦方向の余裕。.compact は iPhone 横向きのように画面が低い状態を指す
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
+    /// 広告取得失敗後のフォアグラウンド復帰を検知する
+    @Environment(\.scenePhase) private var scenePhase
+
     /// 画面が再描画されてもバナーを作り直さないための固定トークン。
     /// 1バナーにつき1リクエストに保ち、無効トラフィックを避ける
     @State private var reloadToken = UUID()
+
+    /// 広告取得失敗後の表示と自動再試行を管理する状態
+    @State private var didFailToLoad = false
 
     var body: some View {
         // fastlane snapshot 撮影時は広告を出さない（App Store スクショに広告を映さない）。
@@ -520,6 +526,11 @@ struct HeaderBannerView: View {
             Color.clear.frame(height: 0)
         } else {
             heightAwareBody
+                .onChange(of: scenePhase) { _, newPhase in
+                    guard newPhase == .active, didFailToLoad else { return }
+                    // 通信状態が改善した可能性があるため、フォア復帰時にだけ再取得する
+                    retryLoadingAd()
+                }
         }
     }
 
@@ -548,18 +559,36 @@ struct HeaderBannerView: View {
     }
 
     private var bannerBody: some View {
-        AdMobBannerRepresentable(
-            adUnitID: ADMOB_BANNER_UnitID,
-            size: CGSize(width: 320, height: 50),
-            onReceiveAd: {},
-            onFailToReceiveAd: { error in
-                // 配信できなかった場合も画面には何も出さず、詳細だけ記録する
-                logError(error, domain: "banner_ad_load", message: "ヘッダーバナー広告ロード失敗")
-                Crashlytics.crashlytics().record(error: error)
-            },
-            reloadToken: reloadToken
-        )
-        // 広告サイズと表示領域を一致させる
+        ZStack {
+            AdMobBannerRepresentable(
+                adUnitID: ADMOB_BANNER_UnitID,
+                size: CGSize(width: 320, height: 50),
+                onReceiveAd: {
+                    // 広告を取得できたら再試行表示を消す
+                    didFailToLoad = false
+                },
+                onFailToReceiveAd: { error in
+                    // 帯は残したまま再試行できる状態へ切り替える
+                    didFailToLoad = true
+                    logError(error, domain: "banner_ad_load", message: "ヘッダーバナー広告ロード失敗")
+                    Crashlytics.crashlytics().record(error: error)
+                },
+                reloadToken: reloadToken
+            )
+            // トークン更新時にバナー本体を作り直して再取得する
+            .id(reloadToken)
+
+            if didFailToLoad {
+                // 操作を要求せず、次のフォアグラウンド復帰時に自動再試行する
+                Text(adUnavailableMessage)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        // 広告と再試行表示の領域を一致させる
         .frame(width: 320, height: 50)
         .frame(maxWidth: .infinity)
         // 上下のタップできる要素（ヘッダーのボタン・パック行）との間を空ける。
@@ -587,6 +616,12 @@ struct HeaderBannerView: View {
         case .bottom:
             return .top
         }
+    }
+
+    /// バナー本体を作り直して広告取得を再試行する
+    private func retryLoadingAd() {
+        didFailToLoad = false
+        reloadToken = UUID()
     }
 
 }
