@@ -938,6 +938,25 @@ struct SettingView: View {
         @State private var isFontScaleExpanded = false
         @State private var isRowTextLinesExpanded = false
         @State private var isInsertionPositionExpanded = false
+        @State private var showFontScaleHelp = false  // 文字サイズのヘルプシート表示有無
+
+        /// 以前「標準／大／特大」を選んだ人だけ、戻せるよう選択肢を残す（Deferin・Calclin と同じ方式）
+        /// 文字サイズを変えると画面ごと作り直されて @State が初期化されるため、
+        /// 判定はアプリ起動後に初めて設定画面を開いた時の1回だけにする（自動に変えても次回起動までは戻せる）
+        private static let showsFontScalePicker = UserDefaults.standard.string(forKey: AppStorageKey.fontScale)
+            .flatMap(FontScale.init(rawValue:)).map { $0 != .system } ?? false
+
+        /// 「設定アプリで変更できます」。訳文の [..](app-settings:) をリンクにして下線を付ける
+        /// app-settings: は設定アプリのこのアプリのページを開く公開URL
+        /// （文字サイズの画面を直接開く公開URLは無いため、設定アプリを開くところまでにする）
+        private var fontScaleSystemNote: AttributedString {
+            AttributedString(localized: "font.size.systemNote").underliningLinks()
+        }
+
+        /// 選択肢が残っている人が「自動」にした時の「次回から設定アプリで変更できます」
+        private var fontScaleSystemNextNote: AttributedString {
+            AttributedString(localized: "font.size.systemNoteNext").underliningLinks()
+        }
 
         // GALoggerのため変更前の設定値を記録する
         @State var ona_insertionPosition: InsertionPosition?
@@ -991,24 +1010,55 @@ struct SettingView: View {
                 }
                 .zIndex(isAppearanceModeExpanded ? 64 : 0)
 
-                // 文字サイズ（自動／標準／大／特大）
-                AZAdaptiveControlRow {
-                    Label {
-                        Text("font.size")
-                            .font(.callout)
-                    } icon: {
-                        Image(systemName: "textformat.size")
-                            .symbolRenderingMode(.hierarchical)
+                // 文字サイズ（端末の設定に従う「自動」へ誘導する）
+                VStack(alignment: .leading, spacing: 4) {
+                    AZAdaptiveControlRow {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Label {
+                                Text("font.size")
+                                    .font(.callout)
+                            } icon: {
+                                Image(systemName: "textformat.size")
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            // 説明が長いので、項目名の右の (?) からシートで読ませる
+                            HelpQuestionButton(accessibilityLabel: "font.size") {
+                                showFontScaleHelp = true
+                            }
+                        }
+                    } control: {
+                        // 「自動」の人には選択肢の代わりに、システム設定で変えられることを示す
+                        if Self.showsFontScalePicker {
+                            AZDropdownPicker(options: FontScale.allCases,
+                                             selection: $fontScale,
+                                             isExpanded: $isFontScaleExpanded,
+                                             minWidth: 150) { scale in
+                                Text(scale.localizedKey)
+                            }
+                        } else {
+                            // 「設定アプリ」の部分だけ下線付きのリンクにし、押すと設定アプリを開く
+                            Text(fontScaleSystemNote)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.trailing)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
                     }
-                } control: {
-                    AZDropdownPicker(options: FontScale.allCases,
-                                     selection: $fontScale,
-                                     isExpanded: $isFontScaleExpanded,
-                                     minWidth: 150) { scale in
-                        Text(scale.localizedKey)
+
+                    // 自動にしても次回起動までは選択肢が残るので、次回からの変更先を伝える
+                    if Self.showsFontScalePicker && fontScale.followsSystem {
+                        Text(fontScaleSystemNextNote)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .multilineTextAlignment(.trailing)
                     }
                 }
                 .zIndex(isFontScaleExpanded ? 63 : 0)
+                .helpTextSheet(isPresented: $showFontScaleHelp,
+                               text: "help.font.size",
+                               link: fontScaleSystemNote,
+                               fontScale: fontScale)
 
                 // 行の表示行数を切り替える
                 AZAdaptiveControlRow {
@@ -1034,11 +1084,9 @@ struct SettingView: View {
                     Label {
                         Text("add.position")
                             .font(.callout)
-                            .foregroundStyle(COLOR_ADD_ACTION)
                     } icon: {
                         Image(systemName: "plus.circle")
                             .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(COLOR_ADD_ACTION)
                     }
                 } control: {
                     AZDropdownPicker(options: InsertionPosition.allCases,
