@@ -67,43 +67,50 @@ private extension View {
 }
 
 /// プルダウンの見た目をまとめて差し替えるためのスタイル
+/// 既定値は Calclin の設定プルダウン（カプセル型・選択値は太字アクセント色）に揃えている
 struct AZPickerStyle {
-    /// 選択ボタン・候補枠の角丸
+    /// 選択ボタン・候補枠をカプセル型にする（false のとき cornerRadius の角丸）
+    var isCapsule: Bool = true
+    /// 選択ボタン・候補枠の角丸（isCapsule が false のときだけ使う）
     var cornerRadius: CGFloat = 8
     /// 選択ボタンの背景色
-    var panelBackground: Color = Color(.secondarySystemGroupedBackground)
+    var panelBackground: Color = Color(.systemBackground).opacity(0.96)
     /// ドロップダウン候補の背景色
     var optionBackground: Color = Color(.systemBackground)
     /// 選択中の候補に重ねるアクセント背景の濃さ
-    var selectedBackgroundOpacity: Double = 0.14
-    /// 通常時の選択ボタン・候補の枠線の濃さ
-    var borderOpacity: Double = 0.35
-    /// 選択中または展開中の枠線の濃さ
+    var selectedBackgroundOpacity: Double = 0.16
+    /// 通常時の選択ボタンの枠線の濃さ
+    var borderOpacity: Double = 0.20
+    /// 展開中の選択ボタンの枠線の濃さ
     var selectedBorderOpacity: Double = 0.55
+    /// 通常時の候補の枠線の濃さ
+    var optionBorderOpacity: Double = 0.10
+    /// 選択中の候補の枠線の濃さ
+    var optionSelectedBorderOpacity: Double = 0.62
     /// 選択ボタンの影の濃さ
-    var shadowOpacity: Double = 0
+    var shadowOpacity: Double = 0.06
     /// 選択ボタンの影のぼかし
-    var shadowRadius: CGFloat = 0
+    var shadowRadius: CGFloat = 1.5
     /// 選択ボタンの影の縦方向位置
-    var shadowY: CGFloat = 0
+    var shadowY: CGFloat = 1
     /// ドロップダウン候補一覧パネルの影の濃さ
-    var popoverShadowOpacity: Double = 0.10
+    var popoverShadowOpacity: Double = 0
     /// ドロップダウン候補一覧パネルの影のぼかし
-    var popoverShadowRadius: CGFloat = 5
+    var popoverShadowRadius: CGFloat = 0
     /// ドロップダウン候補一覧パネルの影の縦方向位置
-    var popoverShadowY: CGFloat = 2
+    var popoverShadowY: CGFloat = 0
     /// ドロップダウン各候補の枠内配置
-    var dropdownOptionAlignment: Alignment = .leading
+    var dropdownOptionAlignment: Alignment = .center
     /// ドロップダウン候補一覧内で候補枠を並べる横方向基準
-    var dropdownOptionStackAlignment: HorizontalAlignment = .leading
+    var dropdownOptionStackAlignment: HorizontalAlignment = .center
     /// ドロップダウン各候補の複数行テキスト配置
-    var dropdownOptionTextAlignment: TextAlignment = .leading
+    var dropdownOptionTextAlignment: TextAlignment = .center
     /// ドロップダウン候補一覧パネル内側の余白
-    var dropdownPopoverPadding: CGFloat = 10
+    var dropdownPopoverPadding: CGFloat = 6
     /// ドロップダウン各候補枠内の左右余白
-    var dropdownOptionHorizontalPadding: CGFloat = 16
+    var dropdownOptionHorizontalPadding: CGFloat = 10
     /// ドロップダウン各候補枠内の上下余白
-    var dropdownOptionVerticalPadding: CGFloat = 10
+    var dropdownOptionVerticalPadding: CGFloat = 8
     /// ドロップダウン候補一覧だけに適用する文字サイズ範囲
     var dropdownPopoverDynamicTypeRange: ClosedRange<DynamicTypeSize> = DynamicTypeSize.xSmall...DynamicTypeSize.accessibility5
     /// ドロップダウン選択中表示と候補一覧の幅不足時処理
@@ -119,10 +126,37 @@ struct AZPickerStyle {
     /// 標準のフォーム向けスタイル
     static let form = AZPickerStyle()
 
+    /// 選択ボタン・候補枠の形
+    var shape: AZPickerShape {
+        AZPickerShape(isCapsule: isCapsule, cornerRadius: cornerRadius)
+    }
+
     /// ドロップダウンの幅不足時処理だけを差し替える
     func dropdownTextFitMode(_ mode: AZPickerTextFitMode) -> AZPickerStyle {
         var copy = self
         copy.dropdownTextFitMode = mode
+        return copy
+    }
+}
+
+/// カプセル型／角丸四角を切り替えられる形
+/// AnyShape は strokeBorder（InsettableShape）に使えないため専用に用意する
+struct AZPickerShape: InsettableShape {
+    var isCapsule: Bool
+    var cornerRadius: CGFloat
+    var insetAmount: CGFloat = 0
+
+    func path(in rect: CGRect) -> Path {
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        if isCapsule {
+            return Capsule(style: .continuous).path(in: rect)
+        }
+        return RoundedRectangle(cornerRadius: max(0, cornerRadius - insetAmount), style: .continuous).path(in: rect)
+    }
+
+    func inset(by amount: CGFloat) -> AZPickerShape {
+        var copy = self
+        copy.insetAmount += amount
         return copy
     }
 }
@@ -187,11 +221,11 @@ struct AZDropdownPicker<Option: Hashable & Identifiable, Label: View>: View {
                 alignment: .center
             )
             .background(
-                RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                style.shape
                     .fill(style.panelBackground)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                style.shape
                     .strokeBorder(
                         isExpanded ? Color.accentColor.opacity(style.selectedBorderOpacity) : Color.secondary.opacity(style.borderOpacity),
                         lineWidth: isExpanded ? 1.2 : 1
@@ -206,11 +240,11 @@ struct AZDropdownPicker<Option: Hashable & Identifiable, Label: View>: View {
     private var selectedLabel: some View {
         if style.preservesLabelForegroundStyle {
             label(selection)
-                .font(.subheadline)
+                .font(.subheadline.weight(.semibold))
                 .azPickerTextFit(style.dropdownTextFitMode, alignment: .center)
         } else {
             label(selection)
-                .font(.subheadline)
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(style.dropdownSelectedValueColor)
                 .azPickerTextFit(style.dropdownTextFitMode, alignment: .center)
         }
@@ -341,7 +375,8 @@ struct AZDropdownPopoverModifier<PopoverContent: View>: ViewModifier {
                     .presentationCompactAdaptation(.popover)
                     .presentationBackground(backgroundColor)
                     // popoverの不透明背景を使い、内側パネルの角欠けを避ける
-                    .padding(6)
+                    // 候補が吹き出しの丸い縁に寄らないよう余白を取る
+                    .padding(8)
             }
             .background {
                 GeometryReader { proxy in
@@ -418,13 +453,13 @@ struct AZDropdownOptionButton<Label: View>: View {
             .padding(.vertical, style.dropdownOptionVerticalPadding)
             .frame(minWidth: minWidth, maxWidth: .infinity, alignment: style.dropdownOptionAlignment)
             .background(
-                RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                style.shape
                     .fill(isSelected ? Color.accentColor.opacity(style.selectedBackgroundOpacity) : style.optionBackground)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+                style.shape
                     .strokeBorder(
-                        isSelected ? Color.accentColor.opacity(style.selectedBorderOpacity) : Color.secondary.opacity(style.borderOpacity),
+                        isSelected ? Color.accentColor.opacity(style.optionSelectedBorderOpacity) : Color.secondary.opacity(style.optionBorderOpacity),
                         lineWidth: isSelected ? 1.2 : 1
                     )
             )
