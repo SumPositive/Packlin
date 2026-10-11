@@ -382,20 +382,7 @@ struct ItemEditView: View {
                         placeholder: "new.item",
                         text: $item.name,
                         isFocused: focusBinding(for: .name),
-                        minHeight: 64,
                         maxLength: APP_MAX_NAME_LEN,
-                        backgroundColor: COLOR_BACK_INPUT,
-                        cornerRadius: sectionCornerRadius
-                    )
-                }
-                // メモ
-                EditorSection(title: "memo") {
-                    PacklinMemoEditor(
-                        placeholder: nil,
-                        text: $item.memo,
-                        isFocused: focusBinding(for: .memo),
-                        minHeight: 64,
-                        maxLength: APP_MAX_MEMO_LEN,
                         backgroundColor: COLOR_BACK_INPUT,
                         cornerRadius: sectionCornerRadius
                     )
@@ -410,10 +397,8 @@ struct ItemEditView: View {
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
                         quantityCheckButton
-                    }
-                    ItemQuantityEditor(item: item)
-                    HStack {
                         Spacer()
+                        // ダイアル設定はタイトル行の右端に置く
                         Button {
                             isShowingDialSettings = true
                         } label: {
@@ -422,8 +407,7 @@ struct ItemEditView: View {
                         }
                         .buttonStyle(.borderless)
                     }
-                    // 必要数ダイアルの下に余白を作って設定ボタンを置く
-                    .padding(.top, 30)
+                    ItemQuantityEditor(item: item)
                 }
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)
@@ -434,6 +418,22 @@ struct ItemEditView: View {
                             isDraggingInsideQuantitySection = false
                         }
                 )
+
+                // タグ（パック内のタグから複数選択。無ければ追加）
+                EditorSection(title: "tags", helpText: "help.tags") {
+                    ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius)
+                }
+                // メモ
+                EditorSection(title: "memo") {
+                    PacklinMemoEditor(
+                        placeholder: nil,
+                        text: $item.memo,
+                        isFocused: focusBinding(for: .memo),
+                        maxLength: APP_MAX_MEMO_LEN,
+                        backgroundColor: COLOR_BACK_INPUT,
+                        cornerRadius: sectionCornerRadius
+                    )
+                }
             }
             .padding(.horizontal, contentHorizontalPadding)
             .padding(.vertical, 12)
@@ -769,6 +769,7 @@ struct ItemEditView: View {
         item.stock = 0
         item.need = 1
         item.weight = 0
+        item.tags = []
         // フォーカスを.nameへ
         //focusedField = .name
     }
@@ -904,6 +905,7 @@ struct ItemEditView: View {
                                  stock: item.stock,
                                  need: item.need,
                                  weight: item.weight,
+                                 tags: item.tags,
                                  order: newOrder,
                                  parent: destinationGroup)
             modelContext.insert(newItem)
@@ -1409,23 +1411,40 @@ struct ItemMoveSheetView: View {
 }
 
 private struct EditorSection<Content: View>: View {
+    @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     private let title: LocalizedStringKey?
+    /// 指定するとタイトルの右に (?) を置き、押すとこの説明をシートで出す
+    private let helpText: LocalizedStringKey?
     private let content: Content
+    @State private var showHelp = false
 
-    init(title: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) {
+    init(title: LocalizedStringKey? = nil,
+         helpText: LocalizedStringKey? = nil,
+         @ViewBuilder content: () -> Content) {
         self.title = title
+        self.helpText = helpText
         self.content = content()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             if let title {
-                Text(title)
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(title)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                    if helpText != nil {
+                        HelpQuestionButton(accessibilityLabel: title) {
+                            showHelp = true
+                        }
+                    }
+                }
             }
             content
         }
+        .helpTextSheet(isPresented: $showHelp,
+                       text: helpText ?? "",
+                       fontScale: fontScale)
     }
 }

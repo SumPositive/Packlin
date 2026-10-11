@@ -194,6 +194,7 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
                                  stock: 0,            // 在庫もリセット
                                  need: item.need,     // 必要数は引き継ぐ
                                  weight: item.weight, // 個重量は引き継ぐ
+                                 tags: item.tags,     // タグも引き継ぐ
                                  order: item.order,
                                  parent: newGroup)
             mc.insert(newItem)

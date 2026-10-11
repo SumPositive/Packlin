@@ -418,6 +418,7 @@ struct GroupEditView: View {
                                      stock: item.stock,
                                      need: item.need,
                                      weight: item.weight,
+                                     tags: item.tags,
                                      order: item.order,
                                      parent: newGroup)
                 modelContext.insert(newItem)

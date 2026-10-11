@@ -39,6 +39,8 @@ struct PackJsonDTO: Codable {
             let stock: Int?
             let need: Int
             let weight: Int
+            /// タグ。旧形式のJSONには無いので任意扱い（空のときは書き出さない）
+            var tags: [String]? = nil
         }
 
         let id: M2Group.ID?
@@ -132,7 +134,8 @@ extension M3Item {
             check: check,
             stock: stock,
             need: need,
-            weight: weight
+            weight: weight,
+            tags: tags.isEmpty ? nil : tags
         )
     }
 }

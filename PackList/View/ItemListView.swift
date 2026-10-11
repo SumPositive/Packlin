@@ -654,6 +654,7 @@ struct ItemListView: View {
                                      stock: sourceItem.stock,
                                      need: sourceItem.need,
                                      weight: sourceItem.weight,
+                                     tags: sourceItem.tags,
                                      order: sourceItem.order,
                                      parent: destinationGroup)
                 modelContext.insert(newItem)

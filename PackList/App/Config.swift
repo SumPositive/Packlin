@@ -119,6 +119,8 @@ let APP_MAX_ITEM_ROWS : Int = 100
 
 let APP_MAX_NAME_LEN : Int = 200     // .name 文字数
 let APP_MAX_MEMO_LEN : Int = 200     // .memo 文字数
+let APP_MAX_TAG_LEN : Int = 16       // タグ1つの文字数
+let APP_MAX_ITEM_TAGS : Int = 20     // アイテム1つに付けられるタグ数
 
 let APP_MAX_WEIGHT_NUM : Int = 999999   // (g)
 let APP_MAX_STOCK_NUM : Int  = 999      // 個数

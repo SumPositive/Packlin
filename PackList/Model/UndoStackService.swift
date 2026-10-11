@@ -26,6 +26,7 @@ final class UndoStackService: ObservableObject {
                     let stock: Int
                     let need: Int
                     let weight: Int
+                    let tags: [String]
                 }
 
                 let id: M2Group.ID
@@ -329,7 +330,8 @@ final class UndoStackService: ObservableObject {
                         check: item.check,
                         stock: item.stock,
                         need: item.need,
-                        weight: item.weight
+                        weight: item.weight,
+                        tags: item.tags
                     )
                 }
                 return Snapshot.Pack.Group(
@@ -568,6 +570,7 @@ final class UndoStackService: ObservableObject {
                               stock: itemSnapshot.stock,
                               need: itemSnapshot.need,
                               weight: itemSnapshot.weight,
+                              tags: itemSnapshot.tags,
                               order: itemSnapshot.order,
                               parent: group)
                 context.insert(item)
@@ -582,6 +585,7 @@ final class UndoStackService: ObservableObject {
             item.stock = itemSnapshot.stock
             item.need = itemSnapshot.need
             item.weight = itemSnapshot.weight
+            item.tags = itemSnapshot.tags
             item.order = itemSnapshot.order
             orderedItems.append(item)
         }

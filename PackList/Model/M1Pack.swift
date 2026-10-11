@@ -33,6 +33,46 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
+    /// パック内のアイテムに付いているタグの一覧（重複なし・名前順）
+    /// タグは独立したデータを持たず、アイテムで使われているものを集めて一覧にする
+    var allTags: [String] {
+        let tags = Set(child.flatMap { $0.child.flatMap(\.tags) })
+        return tags.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    /// タグごとの付いているアイテム数
+    var tagItemCounts: [String: Int] {
+        var counts: [String: Int] = [:]
+        for group in child {
+            for item in group.child {
+                for tag in item.tags {
+                    counts[tag, default: 0] += 1
+                }
+            }
+        }
+        return counts
+    }
+
+    /// タグが1つも付いていないアイテム数
+    var untaggedItemCount: Int {
+        child.reduce(0) { sum, group in
+            sum + group.child.filter { $0.tags.isEmpty }.count
+        }
+    }
+
+    /// パック内のタグを、付いているアイテム数の多い順に並べる（同数は名前順）
+    var tagsByItemCount: [String] {
+        let counts = tagItemCounts
+        return counts.keys.sorted { lhs, rhs in
+            let lhsCount = counts[lhs] ?? 0
+            let rhsCount = counts[rhs] ?? 0
+            if lhsCount != rhsCount {
+                return rhsCount < lhsCount
+            }
+            return lhs.localizedStandardCompare(rhs) == .orderedAscending
+        }
+    }
+
     init(id: ID = shortUUID(),
          name: String,
          memo: String = "",
@@ -215,6 +255,7 @@ final class M1Pack {
                                      stock: 0,            // 在庫もリセット
                                      need: item.need,     // 必要数は引き継ぐ
                                      weight: item.weight, // 個重量は引き継ぐ
+                                     tags: item.tags,     // タグも引き継ぐ
                                      order: item.order,
                                      parent: newGroup)
                 mc.insert(newItem)

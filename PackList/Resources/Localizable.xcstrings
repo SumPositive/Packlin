@@ -4821,6 +4821,58 @@
         }
       }
     },
+    "help.tags" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Tags ordnest du deine Objekte\n\nGib oben etwas ein, um einen Tag zu suchen\n\nWird er nicht gefunden, tippe auf „Hinzufügen“, um ihn als neuen Tag zu vergeben\n\nTippe auf einen Tag, um ihn zu vergeben oder zu entfernen, und du kannst mehrere Tags vergeben\n\nHalte einen Tag gedrückt, um ihn umzubenennen, und Objekte in diesem Pack mit demselben Tag ändern sich mit\n\nWähle unter „Objekte durchsuchen“ einen Tag, um nur Objekte mit diesem Tag anzuzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags help you sort your items\n\nType in the field above to find a tag\n\nIf it is not found, tap \"Add\" to attach it as a new tag\n\nTap a tag to attach or remove it, and you can attach several tags\n\nPress and hold a tag to rename it, and items in this pack with the same tag change too\n\nIn Item browse, choose a tag to show only items with that tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las etiquetas sirven para clasificar tus ítems\n\nEscribe en el campo de arriba para buscar una etiqueta\n\nSi no aparece, toca «Añadir» para ponerla como etiqueta nueva\n\nToca una etiqueta para ponerla o quitarla, y puedes poner varias etiquetas\n\nMantén pulsada una etiqueta para renombrarla, y los ítems de este pack con la misma etiqueta también cambian\n\nEn Explorar ítems, elige una etiqueta para mostrar solo los ítems que la tienen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tags servent à classer vos éléments\n\nSaisissez dans le champ ci-dessus pour chercher un tag\n\nS’il est introuvable, touchez « Ajouter » pour l’attribuer comme nouveau tag\n\nTouchez un tag pour l’attribuer ou le retirer, et vous pouvez en attribuer plusieurs\n\nMaintenez un tag appuyé pour le renommer, et les éléments de ce pack ayant le même tag changent aussi\n\nDans Parcourir les éléments, choisissez un tag pour n’afficher que les éléments qui l’ont"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I tag servono a classificare i tuoi elementi\n\nScrivi nel campo in alto per cercare un tag\n\nSe non lo trovi, tocca «Aggiungi» per assegnarlo come nuovo tag\n\nTocca un tag per assegnarlo o toglierlo, e puoi assegnarne più di uno\n\nTieni premuto un tag per rinominarlo, e cambiano anche gli elementi di questo pack con lo stesso tag\n\nIn Sfoglia elementi, scegli un tag per mostrare solo gli elementi che lo hanno"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグはアイテムの分類に使います\n\n上の欄に入力すると、タグを探せます\n\n見つからないときは「追加」を押すと、新しいタグとして付けられます\n\nタグを押すと付け外しでき、複数のタグを付けられます\n\nタグを長押しすると名前を変更でき、このパックで同じタグが付いたアイテムもまとめて変わります\n\nアイテム縦覧でタグを選ぶと、そのタグのアイテムだけに絞り込めます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그는 항목을 분류하는 데 사용합니다\n\n위 칸에 입력하면 태그를 찾을 수 있습니다\n\n찾지 못하면 ‘추가’를 눌러 새 태그로 붙일 수 있습니다\n\n태그를 누르면 붙이거나 뗄 수 있으며, 여러 태그를 붙일 수 있습니다\n\n태그를 길게 누르면 이름을 바꿀 수 있고, 이 팩에서 같은 태그가 붙은 항목도 함께 바뀝니다\n\n항목 둘러보기에서 태그를 고르면 그 태그가 붙은 항목만 표시됩니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤可用來分類物品\n\n在上方欄位輸入即可尋找標籤\n\n找不到時，點按「新增」即可加上新標籤\n\n點按標籤可加上或移除，也可以加上多個標籤\n\n長按標籤可變更名稱，這個行李包中有相同標籤的物品也會一起變更\n\n在物品瀏覽中選擇標籤，即可只顯示有該標籤的物品"
+          }
+        }
+      }
+    },
     "import.done" : {
       "localizations" : {
         "de" : {
@@ -11495,6 +11547,7 @@
       }
     },
     "search.items" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11542,6 +11595,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜尋物品"
+          }
+        }
+      }
+    },
+    "search.tags.items" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags und Objekte suchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search tags and items"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar etiquetas e ítems"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher tags et éléments"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca tag ed elementi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグとアイテムを検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그와 항목 검색"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋標籤與物品"
           }
         }
       }
@@ -12275,6 +12380,318 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你的支持會鼓勵我們持續改進這個 App"
+          }
+        }
+      }
+    },
+    "tag.add.button" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增"
+          }
+        }
+      }
+    },
+    "tag.empty" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oben eingeben, um einen Tag hinzuzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type above to add a tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe arriba para añadir una etiqueta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez ci-dessus pour ajouter un tag"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrivi sopra per aggiungere un tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上の欄に入力してタグを追加できます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위 칸에 입력해 태그를 추가할 수 있습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在上方欄位輸入即可新增標籤"
+          }
+        }
+      }
+    },
+    "tag.none" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne Tag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin etiqueta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans tag"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senza tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグなし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그 없음"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無標籤"
+          }
+        }
+      }
+    },
+    "tag.rename.button" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbenennen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renombrar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renommer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "變更"
+          }
+        }
+      }
+    },
+    "tag.search.placeholder" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag suchen (oder neu hinzufügen)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find a tag (or add a new one)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar etiqueta (o añadir una nueva)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chercher un tag (ou en ajouter un)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca un tag (o aggiungine uno)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグを探す（無ければ追加）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그 찾기(없으면 추가)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尋找標籤（沒有就新增）"
+          }
+        }
+      }
+    },
+    "tags" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiquetas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤"
           }
         }
       }

@@ -73,6 +73,7 @@ struct PackImporter {
                     stock: sanitizedItem.stock,
                     need: sanitizedItem.need,
                     weight: sanitizedItem.weight,
+                    tags: sanitizedItem.tags,
                     order: itemIndex * ORDER_SPARSE,
                     parent: group
                 )
@@ -146,6 +147,7 @@ struct PackImporter {
                     stock: sanitizedItem.stock,
                     need: sanitizedItem.need,
                     weight: sanitizedItem.weight,
+                    tags: sanitizedItem.tags,
                     order: itemIndex * ORDER_SPARSE,
                     parent: group
                 )
@@ -188,6 +190,7 @@ private extension PackImporter {
             let stock: Int
             let need: Int
             let weight: Int
+            let tags: [String]
         }
 
         /// PackJsonDTO から構築。すべてのフィールドをクランプ・切り詰めする
@@ -237,7 +240,8 @@ private extension PackImporter {
                             // バックアップ復元時のみ元の値を尊重するが、念のため範囲クランプは実施する。
                             stock: Sanitizer.clampedStock(item.stock ?? 0),
                             need: Sanitizer.clampedNeed(item.need),
-                            weight: Sanitizer.clampedWeight(item.weight)
+                            weight: Sanitizer.clampedWeight(item.weight),
+                            tags: M3Item.sanitizedTags(item.tags ?? [])
                         )
                     }
                 return SanitizedGroup(

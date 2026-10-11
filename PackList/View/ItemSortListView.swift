@@ -27,6 +27,11 @@ struct ItemSortListView: View {
     @State private var popupAnchor: CGPoint?
     @State private var cachedItems: [M3Item] = []
     @State private var searchText: String = ""
+    /// 絞り込みに選んだタグ（単一選択。そのタグが付いたアイテムだけを表示する）
+    @State private var selectedTag: String?
+    /// 「タグなし」を選んだとき true（タグが1つも付いていないアイテムだけを表示する）
+    /// selectedTag とは同時に選ばない
+    @State private var isUntaggedSelected = false
 
     private var baseSortedItems: [M3Item] {
         sortOption.sortedItems(from: pack).filter { $0.parent != nil }
@@ -43,11 +48,25 @@ struct ItemSortListView: View {
 
     private var filteredItems: [M3Item] {
         let keyword = trimmedSearchText
-        guard !keyword.isEmpty else { return displayedItems }
+        guard !keyword.isEmpty || selectedTag != nil || isUntaggedSelected else { return displayedItems }
         return displayedItems.filter { item in
-            item.name.localizedCaseInsensitiveContains(keyword) ||
-            item.memo.localizedCaseInsensitiveContains(keyword)
+            // 選んだタグが付いているものに絞る
+            if let selectedTag, !item.tags.contains(selectedTag) { return false }
+            if isUntaggedSelected, !item.tags.isEmpty { return false }
+            guard !keyword.isEmpty else { return true }
+            return item.name.localizedCaseInsensitiveContains(keyword) ||
+                item.memo.localizedCaseInsensitiveContains(keyword) ||
+                item.tags.contains { $0.localizedCaseInsensitiveContains(keyword) }
         }
+    }
+
+    /// 検索欄の下に出すタグ一覧
+    /// 入力中はその文字を含むタグに絞るが、選択中のタグは外せるよう常に残す
+    private var visibleTags: [String] {
+        let tags = pack.tagsByItemCount
+        let keyword = trimmedSearchText
+        guard !keyword.isEmpty else { return tags }
+        return tags.filter { $0 == selectedTag || $0.localizedCaseInsensitiveContains(keyword) }
     }
 
     private var baseSortedItemIDs: [M3Item.ID] {
@@ -380,14 +399,14 @@ struct ItemSortListView: View {
         }
     }
 
-    /// アイテムを検索
+    /// タグとアイテムを検索
     private var searchHeader: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 6) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
 
-                TextField(LocalizedStringKey("search.items"), text: $searchText)
+                TextField(LocalizedStringKey("search.tags.items"), text: $searchText)
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
@@ -409,9 +428,63 @@ struct ItemSortListView: View {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color(uiColor: .secondarySystemBackground))
             )
+            .padding(.horizontal, 50)
+
+            // タグ一覧（選ぶとアイテムを絞り込む）。一覧の場所を取らないよう横スクロール1行にする
+            // パックにタグが1つでもあれば「タグなし」も並べる
+            if !pack.allTags.isEmpty {
+                let tags = visibleTags
+                let untaggedIndex = untaggedChipIndex(in: tags)
+                ScrollView(.horizontal) {
+                    HStack(spacing: 8) {
+                        ForEach(tags[..<untaggedIndex], id: \.self) { tag in
+                            tagChip(tag)
+                        }
+                        TagChip(title: String(localized: "tag.none"),
+                                isSelected: isUntaggedSelected,
+                                isSpecial: true) {
+                            isUntaggedSelected.toggle()
+                            selectedTag = nil
+                        }
+                        ForEach(tags[untaggedIndex...], id: \.self) { tag in
+                            tagChip(tag)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 2)
+                }
+                .scrollIndicators(.hidden)
+                // タグの丸ボタンが大きくなりすぎないよう「大」までで頭打ち
+                .cappedAtLargeFontSize()
+            }
         }
-        .padding(.horizontal, 50)
         .padding(.bottom, 4)
+        .onChange(of: pack.allTags) { _, newTags in
+            // どのアイテムからも外されたタグは選択からも外す
+            if let selectedTag, !newTags.contains(selectedTag) {
+                self.selectedTag = nil
+            }
+            // タグが1つも無くなると一覧ごと消えるので「タグなし」の選択も外す
+            if newTags.isEmpty {
+                isUntaggedSelected = false
+            }
+        }
+    }
+
+    /// 絞り込み用のタグボタン
+    private func tagChip(_ tag: String) -> some View {
+        TagChip(title: tag, isSelected: tag == selectedTag) {
+            // 選択中をもう一度押すと解除、別のタグを押すと切り替える
+            selectedTag = (tag == selectedTag) ? nil : tag
+            isUntaggedSelected = false
+        }
+    }
+
+    /// 「タグなし」もアイテム数の多い順の位置に入れる（同数のときは通常のタグの後ろ）
+    private func untaggedChipIndex(in tags: [String]) -> Int {
+        let counts = pack.tagItemCounts
+        let untaggedCount = pack.untaggedItemCount
+        return tags.firstIndex { (counts[$0] ?? 0) < untaggedCount } ?? tags.count
     }
 
     private func updateUndoRedo() {

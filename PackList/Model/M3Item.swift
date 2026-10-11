@@ -21,6 +21,8 @@ final class M3Item {
     var stock: Int  // 在庫数
     var need: Int   // 必要数
     var weight: Int // 重量(g)
+    /// タグ（絞り込み用）。既存DBの軽量マイグレーションのため既定値を持たせる
+    var tags: [String] = []
 
     @Relationship(inverse: \M2Group.child) var parent: M2Group?
 
@@ -33,6 +35,7 @@ final class M3Item {
          stock: Int = 0,
          need: Int = 1,     // 初期1にした
          weight: Int = 0,
+         tags: [String] = [],
          order: Int = 0,
          parent: M2Group? = nil) {
         self.id = id
@@ -42,6 +45,7 @@ final class M3Item {
         self.stock = stock
         self.need = need
         self.weight = weight
+        self.tags = tags
         self.order = order
         self.parent = parent
     }
@@ -112,6 +116,7 @@ final class M3Item {
                              stock: 0,            // 在庫もリセット
                              need: self.need,     // 必要数は引き継ぐ
                              weight: self.weight, // 個重量は引き継ぐ
+                             tags: self.tags,     // タグも引き継ぐ
                              order: newOrder,
                              parent: parent)
         // DB追加
@@ -124,5 +129,16 @@ final class M3Item {
         parent.normalizeItemOrder()
     }
 
+    /// タグを安全な形にそろえる（前後の空白を除き、空・重複を捨て、文字数と個数を制限する）
+    static func sanitizedTags(_ tags: [String]) -> [String] {
+        var result: [String] = []
+        for raw in tags {
+            let tag = String(raw.trimmingCharacters(in: .whitespacesAndNewlines).prefix(APP_MAX_TAG_LEN))
+            guard !tag.isEmpty, !result.contains(tag) else { continue }
+            result.append(tag)
+            if APP_MAX_ITEM_TAGS <= result.count { break }
+        }
+        return result
+    }
 }
 
