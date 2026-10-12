@@ -447,6 +447,11 @@ struct AzukiCreditPurchaseOption: Hashable {
     }
 }
 
+/// AI利用券の購入を受け付けるか
+/// false の間はチャッピーの購入メニューを出さず、利用券が無いときは広告を見て送信する案内にする
+/// （過去に購入済みの利用券や、購入トランザクションの復旧処理はそのまま動く）
+let AI_TICKET_PURCHASE_ENABLED = false
+
 /// 購入オプション定義      productIdは、App Store Connect アプリ内課金の「製品ID」
 ///  IDを変更や追加した場合、azuki-api側の環境変数 IAP_PRODUCT_CREDIT_MAP を更新すること
 let AZUKI_CREDIT_PURCHASE_OPTIONS: [AzukiCreditPurchaseOption] = [

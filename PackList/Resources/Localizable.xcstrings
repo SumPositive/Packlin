@@ -12552,6 +12552,59 @@
         }
       }
     },
+    "short.ai.tickets.watch.ad" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast keine KI-Tickets. Sieh dir eine Werbung an, um zu senden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have no AI tickets. Watch an ad to send"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tienes tickets de IA. Mira un anuncio para enviar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous n’avez pas de tickets IA. Regardez une publicité pour envoyer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non hai ticket IA. Guarda una pubblicità per inviare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI利用券がありません。広告を見て送信してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 이용권이 없습니다. 광고를 보고 보내 주세요"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有 AI 使用券。請觀看廣告後送出"
+          }
+        }
+      }
+    },
     "short.count" : {
       "localizations" : {
         "de" : {

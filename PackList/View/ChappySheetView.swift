@@ -451,8 +451,10 @@ struct ChappyView: View {
                 )
             }
 
-            // AI利用券購入
-            creditPurchaseMenu
+            // AI利用券購入（無効の間は出さない）
+            if AI_TICKET_PURCHASE_ENABLED {
+                creditPurchaseMenu
+            }
 
         }
         .padding(16)
@@ -783,14 +785,18 @@ struct ChappyView: View {
 
     /// クレジット不足時のフィードバック。画面表示中は画面内メッセージ、閉じていれば失敗通知を送る
     private func presentCreditShortageFeedback() async {
+        // 購入が無効の間は「下のメニューから購入」ではなく広告での送信へ案内する
+        let message = AI_TICKET_PURCHASE_ENABLED
+            ? String(localized: "short.ai.tickets.grab.more.below")
+            : String(localized: "short.ai.tickets.watch.ad")
         let viewVisible = await MainActor.run { isViewVisible }
         if viewVisible {
             await MainActor.run {
-                inlineGenerationFeedback = .failure(message: String(localized: "short.ai.tickets.grab.more.below"))
+                inlineGenerationFeedback = .failure(message: message)
             }
             return
         }
-        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: String(localized: "short.ai.tickets.grab.more.below"))
+        await LocalNotificationManager.shared.notifyPackGenerationFailed(message: message)
     }
 
     /// OpenAI経由の生成リクエストを実行し、必要に応じてトークン再取得を挟む
@@ -975,6 +981,8 @@ struct ChappyView: View {
     /// AI利用回数券購入
     /// - Parameter option: Configで定義した購入オプション構造体
     private func purchaseCredits(option: AzukiCreditPurchaseOption) {
+        // 購入が無効の間は呼ばれない想定だが、念のため受け付けない
+        guard AI_TICKET_PURCHASE_ENABLED else { return }
         // Localeから現在のストア商品IDを導出しておき、Task内で安全に利用する
         let currentLocale = locale
         let productId = option.productId(for: currentLocale)
@@ -1198,6 +1206,8 @@ struct ChappyView: View {
     /// StoreKit 2 から商品情報を取得し、`storeProducts` へキャッシュする
     /// - Note: 初期表示時にまとめて取得し、以降はキャッシュを利用することでレスポンスを向上させる
     private func loadProductsIfNeeded() async {
+        // 購入が無効の間は商品情報を取りに行かない
+        guard AI_TICKET_PURCHASE_ENABLED else { return }
         let alreadyLoaded = await MainActor.run { storeProducts.isEmpty == false }
         if alreadyLoaded {
             return
@@ -1546,7 +1556,10 @@ struct ChappyView: View {
                 case .requirementMissing:
                     return String(localized: "type.request.first")
                 case .creditRequired:
-                    return String(localized: "please.buy.ai.ticket")
+                    // 購入が無効の間は広告での送信へ案内する
+                    return AI_TICKET_PURCHASE_ENABLED
+                        ? String(localized: "please.buy.ai.ticket")
+                        : String(localized: "short.ai.tickets.watch.ad")
             }
         }
 
