@@ -783,6 +783,12 @@ private struct PublicPackDetailSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
+                // 分類方式（グループ式／タグ式）。取り込むと同じ方式のパックになる
+                detailRow("classify.mode",
+                          systemImage: item.packClassifyMode == .tag ? "tag" : "square.stack.3d.up",
+                          value: item.packClassifyMode == .tag
+                              ? String(localized: "classify.mode.tag")
+                              : String(localized: "classify.mode.group"))
                 detailRow("public.pack.field.group.count", systemImage: "square.stack.3d.up", value: String(item.groupCount))
                 detailRow("public.pack.field.item.count", systemImage: "checklist", value: String(item.itemCount))
                 detailRow("public.pack.field.weight", systemImage: "scalemass", value: weightText(item.totalWeight))

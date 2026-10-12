@@ -48,6 +48,8 @@ struct PackJsonDTO: Codable {
         let name: String
         let memo: String
         let items: [Item]
+        /// タグ式で追加したアイテムの入れ物（「タグ式グループ」）なら true。旧形式には無いので任意扱い
+        var isTagModeGroup: Bool? = nil
     }
 
     /// 生成元アプリを識別するための名称（JSONではProductNameキー）
@@ -60,6 +62,8 @@ struct PackJsonDTO: Codable {
     let memo: String
     let createdAt: Date
     let groups: [Group]
+    /// 分類方式（PackClassifyMode.rawValue: "group" / "tag"）。旧形式には無いので任意扱いで、無ければグループ式
+    var classifyMode: String? = nil
 
     /// ChatGPTへ指示するキー名に合わせてプロパティをマッピング
     enum CodingKeys: String, CodingKey {
@@ -72,6 +76,7 @@ struct PackJsonDTO: Codable {
         case memo
         case createdAt
         case groups
+        case classifyMode
     }
 }
 
@@ -88,7 +93,8 @@ extension M1Pack {
             createdAt: createdAt,
             groups: child
                 .sorted { $0.order < $1.order }
-                .map { $0.exportRepresentation() }
+                .map { $0.exportRepresentation() },
+            classifyMode: classifyMode.rawValue
         )
     }
 
@@ -105,7 +111,8 @@ extension M1Pack {
             createdAt: createdAt,
             groups: child
                 .sorted { $0.order < $1.order }
-                .map { $0.exportRepresentation() }
+                .map { $0.exportRepresentation() },
+            classifyMode: classifyMode.rawValue
         )
     }
 }
@@ -119,7 +126,9 @@ extension M2Group {
             memo: memo,
             items: child
                 .sorted { $0.order < $1.order }
-                .map { $0.exportRepresentation() }
+                .map { $0.exportRepresentation() },
+            // 「タグ式グループ」だけ印を付ける（それ以外は書き出さない）
+            isTagModeGroup: parent?.tagModeGroupID == id ? true : nil
         )
     }
 }

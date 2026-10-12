@@ -51,6 +51,8 @@ struct PackImporter {
             createdAt: sanitized.createdAt,
             order: order
         )
+        // 分類方式（旧形式は nil のままグループ式）
+        pack.classifyModeRaw = sanitized.classifyMode?.rawValue
         context.insert(pack)
 
         // sanitized.groups は既に order/index で安定ソート＆件数クランプ済み
@@ -63,6 +65,10 @@ struct PackImporter {
             )
             context.insert(group)
             pack.child.append(group)
+            // 「タグ式グループ」の印があれば、取り込み先でも同じ役割にする（最初の1つだけ）
+            if sanitizedGroup.isTagModeGroup, pack.tagModeGroupID == nil {
+                pack.tagModeGroupID = group.id
+            }
 
             for (itemIndex, sanitizedItem) in sanitizedGroup.items.enumerated() {
                 let item = M3Item(
@@ -99,6 +105,10 @@ struct PackImporter {
         pack.name = sanitized.name
         pack.memo = sanitized.memo
         pack.createdAt = sanitized.createdAt
+        // 分類方式も取り込み内容に合わせる（旧形式は nil でグループ式）
+        pack.classifyModeRaw = sanitized.classifyMode?.rawValue
+        // タグ式グループは下で作り直すグループから付け直す
+        pack.tagModeGroupID = nil
 
         // === 旧データを掃除する ===
         // 上書き取り込みでは既存のグループ・アイテムを全て消してから DTO を流し込む。
@@ -138,6 +148,10 @@ struct PackImporter {
             )
             context.insert(group)
             pack.child.append(group)
+            // 「タグ式グループ」の印があれば、取り込み先でも同じ役割にする（最初の1つだけ）
+            if sanitizedGroup.isTagModeGroup, pack.tagModeGroupID == nil {
+                pack.tagModeGroupID = group.id
+            }
 
             for (itemIndex, sanitizedItem) in sanitizedGroup.items.enumerated() {
                 let item = M3Item(
@@ -176,11 +190,14 @@ private extension PackImporter {
         let memo: String
         let createdAt: Date
         let groups: [SanitizedGroup]
+        /// 分類方式。未知の値や旧形式は nil（グループ式）
+        let classifyMode: PackClassifyMode?
 
         struct SanitizedGroup {
             let name: String
             let memo: String
             let items: [SanitizedItem]
+            let isTagModeGroup: Bool
         }
 
         struct SanitizedItem {
@@ -198,6 +215,7 @@ private extension PackImporter {
             self.name = Sanitizer.clampedName(dto.name)
             self.memo = Sanitizer.clampedMemo(dto.memo)
             self.createdAt = Sanitizer.clampedDate(dto.createdAt)
+            self.classifyMode = dto.classifyMode.flatMap(PackClassifyMode.init(rawValue:))
 
             // === グループのソート＋件数制限 ===
             // 1. 入力配列を index 付きにして order/index で安定ソート
@@ -247,7 +265,8 @@ private extension PackImporter {
                 return SanitizedGroup(
                     name: Sanitizer.clampedName(groupDTO.name),
                     memo: Sanitizer.clampedMemo(groupDTO.memo),
-                    items: Array(items)
+                    items: Array(items),
+                    isTagModeGroup: groupDTO.isTagModeGroup == true
                 )
             }
         }

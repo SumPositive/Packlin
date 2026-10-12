@@ -25,6 +25,12 @@ struct PublicPackSummary: Decodable, Identifiable {
     let isMine: Bool
     /// 公開日時（エポックミリ秒）。端末側でローカル時刻・分まで整形する
     let publishedAtMs: Double?
+    /// 分類方式（"group" / "tag"）。サーバーが返さない旧版や未知の値はグループ式として扱う
+    let classifyMode: String?
+
+    var packClassifyMode: PackClassifyMode {
+        classifyMode.flatMap(PackClassifyMode.init(rawValue:)) ?? .group
+    }
 
     /// 公開日時の Date 表現
     var publishedAt: Date? {
