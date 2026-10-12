@@ -91,17 +91,16 @@ struct PackRowView: View {
                     }
                     // 公開中バッジはアイコン下端にオーバーレイで重ねる。
                     // 行の高さを増やさないため、VStackで縦積みにはしない（name/memo間に隙間ができるのを防ぐ）。
-                    // タグ式アイコンも同じくアイコン下に重ね、公開中バッジはその下に続ける
-                    .overlay(alignment: .bottom) {
+                    // タグ式はバッグの取っ手にタグがぶら下がった形にする
+                    .overlay(alignment: .top) {
                         if isTagMode {
                             tagModeIcon
-                                .offset(y: 18) // パックアイコンから少し離して下にはみ出させる
                         }
                     }
                     .overlay(alignment: .bottom) {
                         if isPublished {
                             publishedBadge
-                                .offset(y: isTagMode ? 31 : 9) // タグ式アイコンがあればその下へ
+                                .offset(y: 9) // アイコンのすぐ下にはみ出させる
                         }
                     }
                     .padding(.leading, 0)
@@ -191,10 +190,25 @@ struct PackRowView: View {
 
 private extension PackRowView {
     /// タグ式パックの目印（グループ式は何も出さない）
+    /// 穴を上にして、取っ手の右端から少し傾いて垂れ下がるように置く
+    /// 位置や傾きを調整するときは offset と rotationEffect の値を変える
     var tagModeIcon: some View {
         Image(systemName: "tag.fill")
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(COLOR_TAG)
+            // バッグの線と重なっても形が分かるよう、背景色で縁取る
+            .background(
+                Image(systemName: "tag.fill")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Color(.systemBackground))
+                    .scaleEffect(1.35)
+            )
+            // tag.fill は穴の側が右上を向いた斜めの形なので、左へ45°回すと穴が真上になる
+            // さらに少し左へ回して、本体が右下へ振れて垂れ下がるように見せる
+            .rotationEffect(.degrees(-50))
+            // 穴が取っ手の右端に掛かる位置
+            .offset(x: 8, y: 4)
+            .allowsHitTesting(false)
     }
 
     /// 「公開中」を示す小さなバッジ。バッグアイコンの真下に控えめに表示する。
