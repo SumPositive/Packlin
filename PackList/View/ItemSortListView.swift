@@ -28,6 +28,8 @@ struct ItemSortListView: View {
     @State private var popupAnchor: CGPoint?
     @State private var cachedItems: [M3Item] = []
     @State private var searchText: String = ""
+    /// 検索欄の入力中か（キーボード外のタップで閉じるため）
+    @FocusState private var isSearchFocused: Bool
     /// 絞り込みに選んだタグ（単一選択。そのタグが付いたアイテムだけを表示する）
     @State private var selectedTag: String?
     /// 「タグなし」を選んだとき true（タグが1つも付いていないアイテムだけを表示する）
@@ -215,6 +217,16 @@ struct ItemSortListView: View {
                     }
                 }
                 .listStyle(.plain)
+                // 一覧をスクロールしたらキーボードを閉じる
+                .scrollDismissesKeyboard(.immediately)
+                // 入力中に一覧をタップしたら、行を開かずにキーボードだけ閉じる
+                .overlay {
+                    if isSearchFocused {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture { isSearchFocused = false }
+                    }
+                }
                 .scrollIndicators(.hidden, axes: .vertical)
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
@@ -550,6 +562,7 @@ struct ItemSortListView: View {
                         .foregroundStyle(.secondary)
 
                     TextField(LocalizedStringKey("search.tags.items"), text: $searchText)
+                        .focused($isSearchFocused)
                         .textFieldStyle(.plain)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
@@ -595,6 +608,7 @@ struct ItemSortListView: View {
                                     isSpecial: true) {
                                 isUntaggedSelected.toggle()
                                 selectedTag = nil
+                                isSearchFocused = false
                             }
                             // 「タグなし」は常にあるので、これで1行分の高さを測る
                             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
@@ -652,6 +666,8 @@ struct ItemSortListView: View {
             // 選択中をもう一度押すと解除、別のタグを押すと切り替える
             selectedTag = (tag == selectedTag) ? nil : tag
             isUntaggedSelected = false
+            // タグを選んだら絞り込み結果が見えるよう、キーボードを閉じる
+            isSearchFocused = false
         }
     }
 

@@ -153,6 +153,8 @@ struct AppMain: App {
                 }
             }
             .preferredColorScheme(appearanceMode.colorScheme)
+            // 入力欄の外をタップしたらキーボードを閉じる（シートやアラートを含む全画面共通）
+            .dismissesKeyboardOnOutsideTap()
             // 設定の文字サイズを全画面に適用（自動以外は固定の Dynamic Type を強制）
             .appFontScale(fontScale)
             // カスタムURL経由でも同じ公開パック取込処理へ渡す
