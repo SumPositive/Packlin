@@ -27,6 +27,33 @@ struct PackEditView: View {
     @State private var shareURL: URL?
     @State private var isPresentingShare = false
     @State private var isTogglingCheck = false
+    @State private var isClassifyModeExpanded = false
+    @State private var showClassifyModeHelp = false  // 分類方式のヘルプシート表示有無
+    /// シート中身（ScrollView の内側）の実測高さ。シートを中身ぴったりで開くために使う
+    @State private var contentHeight: CGFloat = 0
+
+    /// 測っていない部分の高さ（ナビゲーションバーとシート上端の余白）
+    private let sheetChromeHeight: CGFloat = 64
+
+    /// 中身ぴったりで開ける上限（これを超えたら .large へ引き上げられるようにする）
+    private var sheetMaxFittedHeight: CGFloat {
+        UIScreen.main.bounds.height * 0.85
+    }
+
+    /// 中身が上限に収まらないか（このときだけハンドルを出して引き上げられるようにする）
+    private var isSheetOverflowing: Bool {
+        sheetMaxFittedHeight < contentHeight + sheetChromeHeight
+    }
+
+    /// シートを開く高さ。中身が分かるまでは従来の 500 で待つ
+    private var sheetHeight: CGFloat {
+        guard 0 < contentHeight else { return 500 }
+        return min(contentHeight + sheetChromeHeight, sheetMaxFittedHeight)
+    }
+
+    private var sheetDetents: Set<PresentationDetent> {
+        isSheetOverflowing ? [.height(sheetHeight), .large] : [.height(sheetHeight)]
+    }
 
     // 公開保存まわり
     @State private var showNicknamePrompt = false
@@ -56,29 +83,36 @@ struct PackEditView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     actionBar
 
-                    editCard(title: "pack.name", minHeight: 74) {
+                    // 名称・メモは1行分から始め、入力に応じて全文が見えるまで広がる
+                    editCard(title: "pack.name") {
                         PacklinMemoEditor(
                             placeholder: "enter.name.new.pack",
                             text: $pack.name,
                             isFocused: nameFocusBinding,
-                            minHeight: 58,
                             maxLength: APP_MAX_NAME_LEN
                         )
                     }
 
-                    editCard(title: "memo", minHeight: 112) {
+                    editCard(title: "memo") {
                         PacklinMemoEditor(
                             placeholder: nil,
                             text: $pack.memo,
                             isFocused: memoFocusBinding,
-                            minHeight: 96,
                             maxLength: APP_MAX_MEMO_LEN
                         )
                     }
+
+                    classifyModeRow
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
                 .padding(.bottom, 20)
+                // ScrollView の中身を測る（外枠を測ると開いている高さが返ってしまう）
+                // 名称・メモの入力で行が増えると、シートも一緒に伸びる
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                    guard 0 < height else { return }
+                    contentHeight = height
+                }
             }
             // スクロール位置表示は全画面で出さない
             .scrollIndicators(.hidden)
@@ -89,6 +123,9 @@ struct PackEditView: View {
                 navigationToolbar
             }
         }
+        // 中身ぴったりの高さで開き、収まらないときだけハンドルを出して全画面へ引き上げられるようにする
+        .presentationDetents(sheetDetents)
+        .presentationDragIndicator(isSheetOverflowing ? .visible : .hidden)
         .sheet(isPresented: $isPresentingShare, onDismiss: cleanupShareResource) {
             if let shareURL {
                 // パックファイルを標準共有シートへ渡す
@@ -190,6 +227,45 @@ struct PackEditView: View {
                 nameIsFocused = true
             }
         }
+    }
+
+    /// 分類方式（グループ式／タグ式）
+    /// タグ式にするとパックを開いたときグループ一覧の代わりにアイテム縦覧を出す
+    private var classifyModeRow: some View {
+        AZAdaptiveControlRow {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("classify.mode")
+                    .font(.callout)
+                // 違いの説明は項目名の右の (?) からシートで読ませる
+                HelpQuestionButton(accessibilityLabel: "classify.mode") {
+                    showClassifyModeHelp = true
+                }
+            }
+        } control: {
+            AZDropdownPicker(options: PackClassifyMode.allCases,
+                             selection: $pack.classifyMode,
+                             isExpanded: $isClassifyModeExpanded,
+                             minWidth: 150) { mode in
+                // タグ式はパック一覧の目印と同じタグアイコンを前に付ける
+                HStack(spacing: 4) {
+                    if mode == .tag {
+                        Image(systemName: "tag.fill")
+                            .foregroundStyle(COLOR_TAG)
+                    }
+                    Text(mode.localizedKey)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .zIndex(isClassifyModeExpanded ? 65 : 0)
+        .helpTextSheet(isPresented: $showClassifyModeHelp,
+                       text: "help.classify.mode",
+                       fontScale: fontScale)
     }
 
     private var actionBar: some View {
@@ -301,7 +377,7 @@ struct PackEditView: View {
     }
 
     private func editCard<Content: View>(title: LocalizedStringKey,
-                                         minHeight: CGFloat,
+                                         minHeight: CGFloat = 0,
                                          @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)

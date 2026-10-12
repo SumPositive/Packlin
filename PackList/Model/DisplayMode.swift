@@ -28,6 +28,23 @@ enum DisplayMode: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+/// パックの分類方式
+enum PackClassifyMode: String, CaseIterable, Identifiable, Codable {
+    case group  // グループ式：パック＞グループ＞アイテム
+    case tag    // タグ式：パック＞アイテム縦覧（タグで絞り込む）
+
+    var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .group:
+            return "classify.mode.group"
+        case .tag:
+            return "classify.mode.tag"
+        }
+    }
+}
+
 /// アプリ全体の外観を切り替えるためのモード
 enum AppearanceMode: String, CaseIterable, Identifiable, Codable {
     static let `default`: AppearanceMode = .automatic

@@ -319,10 +319,9 @@ struct PackListView: View {
         }
         // Pack編集はポップアップからシート表示へ移行
         .sheet(item: $editingPack) { pack in
+            // シートの高さとハンドル表示は PackEditView 側で中身に合わせて決める
             PackEditView(pack: pack)
                 .appFontScale(fontScale)
-                .presentationDetents([.height(500)])
-                .presentationDragIndicator(.hidden)
         }
         // 設定画面もシート表示へ変更
         .sheet(isPresented: $isShowSetting) {
@@ -435,6 +434,8 @@ struct PackListView: View {
             }
 
             let newPack = M1Pack(name: "", order: newOrder)
+            // 新規パックはタグ式で始める（既存パックはグループ式のまま）
+            newPack.classifyMode = .tag
             modelContext.insert(newPack)
 
             // 追加後のスクロール対象として新規Pack IDだけ保持する
@@ -460,6 +461,8 @@ struct PackListView: View {
             }
 
             let pack = M1Pack(name: "", order: newOrder)
+            // 新規パックはタグ式で始める（既存パックはグループ式のまま）
+            pack.classifyMode = .tag
             modelContext.insert(pack)
 
             newPack = pack

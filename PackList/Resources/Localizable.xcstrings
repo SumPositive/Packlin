@@ -2462,6 +2462,165 @@
         }
       }
     },
+    "classify.mode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordnen nach"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize by"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizar por"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classer par"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizza per"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分類方式"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "분류 방식"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分類方式"
+          }
+        }
+      }
+    },
+    "classify.mode.group" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groups"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grupos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループ式"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "群組"
+          }
+        }
+      }
+    },
+    "classify.mode.tag" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiquetas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグ式"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤"
+          }
+        }
+      }
+    },
     "clear" : {
       "localizations" : {
         "de" : {
@@ -4764,6 +4923,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "群組是把物品分裝到收納袋等的小單位"
+          }
+        }
+      }
+    },
+    "help.classify.mode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppen ordnet die Objekte eines Packs in Gruppen\n\nTags öffnet direkt „Objekte durchsuchen“, ohne die Gruppenliste\n\nBei Tags ordnest du Objekte mit Tags und wählst einen Tag, um sie einzugrenzen\n\nMit Tags hinzugefügte Objekte landen in der „Tag-Modus-Gruppe“, die du siehst, wenn du zurück zu Gruppen wechselst\n\nDu kannst jederzeit wechseln, und es gehen keine Objekte oder Tags verloren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groups sorts the items in a pack into groups\n\nTags opens Item browse right away, without the group list\n\nWith Tags, you sort items by attaching tags and choose a tag to narrow them down\n\nItems added with Tags go into the \"Tag-mode group\", which you can see when you switch back to Groups\n\nYou can switch at any time, and no items or tags are lost"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grupos organiza los ítems del pack en grupos\n\nEtiquetas abre directamente Explorar ítems, sin pasar por la lista de grupos\n\nCon Etiquetas, clasificas los ítems poniéndoles etiquetas y eliges una etiqueta para filtrarlos\n\nLos ítems añadidos con Etiquetas van al «Grupo modo etiquetas», que verás al volver a Grupos\n\nPuedes cambiar en cualquier momento, y no se pierden ítems ni etiquetas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes range les éléments du pack dans des groupes\n\nTags ouvre directement Parcourir les éléments, sans passer par la liste des groupes\n\nAvec Tags, vous classez les éléments en leur attribuant des tags et choisissez un tag pour les filtrer\n\nLes éléments ajoutés avec Tags vont dans le « Groupe mode tags », visible quand vous revenez à Groupes\n\nVous pouvez changer à tout moment, sans perdre d’éléments ni de tags"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppi organizza gli elementi del pack in gruppi\n\nTag apre subito Sfoglia elementi, senza passare dall’elenco dei gruppi\n\nCon Tag, classifichi gli elementi assegnando tag e scegli un tag per filtrarli\n\nGli elementi aggiunti con Tag finiscono nel «Gruppo modalità tag», visibile quando torni a Gruppi\n\nPuoi cambiare in qualsiasi momento, senza perdere elementi o tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループ式は、パックの中をグループに分けてアイテムを整理します\n\nタグ式は、パックを開くとグループ一覧を通らずにアイテム縦覧が表示されます\n\nタグ式では、アイテムにタグを付けて分類し、タグを選んで絞り込めます\n\nタグ式で追加したアイテムは「タグ式グループ」に入り、グループ式に戻すとそのグループで見られます\n\nいつでも切り替えられ、アイテムやタグは消えません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹은 팩 안의 항목을 그룹으로 나누어 정리합니다\n\n태그는 팩을 열면 그룹 목록 없이 바로 항목 둘러보기가 표시됩니다\n\n태그에서는 항목에 태그를 붙여 분류하고, 태그를 골라 걸러 볼 수 있습니다\n\n태그에서 추가한 항목은 ‘태그식 그룹’에 들어가며, 그룹으로 되돌리면 그 그룹에서 볼 수 있습니다\n\n언제든 바꿀 수 있으며, 항목과 태그는 사라지지 않습니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "群組會將行李包中的物品分成群組整理\n\n標籤在開啟行李包時不經過群組列表，直接顯示物品瀏覽\n\n使用標籤時，可為物品加上標籤來分類，並選擇標籤篩選\n\n以標籤新增的物品會放入「標籤式群組」，切回群組後即可在該群組中看到\n\n可隨時切換，物品與標籤都不會消失"
           }
         }
       }
@@ -12484,6 +12696,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在上方欄位輸入即可新增標籤"
+          }
+        }
+      }
+    },
+    "tag.mode.group.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag-Modus-Gruppe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag-mode group"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grupo modo etiquetas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupe mode tags"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppo modalità tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグ式グループ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그식 그룹"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤式群組"
           }
         }
       }

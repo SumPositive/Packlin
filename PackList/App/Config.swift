@@ -155,6 +155,14 @@ let COLOR_ADD_ACTION: Color = Color(UIColor { traitCollection in
         return UIColor(red: 0.22, green: 0.52, blue: 0.30, alpha: 1.0)
     }
 })
+// タグの色（薄い金色）。パック一覧のタグ式アイコン・分類方式の選択・選択中のタグボタンで統一する
+let COLOR_TAG: Color = Color(UIColor { traitCollection in
+    if traitCollection.userInterfaceStyle == .dark {
+        return UIColor(red: 0.93, green: 0.80, blue: 0.46, alpha: 1.0)
+    } else {
+        return UIColor(red: 0.80, green: 0.63, blue: 0.24, alpha: 1.0)
+    }
+})
 
 // View背景
 let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)

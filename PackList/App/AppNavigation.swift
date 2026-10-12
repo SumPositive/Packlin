@@ -90,7 +90,13 @@ struct GroupListScene: View {
 
     var body: some View {
         if let pack = packs.first {
-            GroupListView(pack: pack)
+            // タグ式はグループ一覧の代わりにアイテム縦覧を出す
+            // パンくずの「パック」も groupList へ戻すので、ここで切り替えれば全経路が揃う
+            if pack.classifyMode == .tag {
+                ItemSortListView(pack: pack, sortOption: .unchecked)
+            } else {
+                GroupListView(pack: pack)
+            }
         } else {
             Text("no.packs.found")
         }

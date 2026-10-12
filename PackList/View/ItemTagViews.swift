@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-/// タグの丸ボタン。選択中はアクセント色で塗る（設定のプルダウン候補と同じ見た目）
+/// タグの丸ボタン。選択中はタグ色（COLOR_TAG）で塗る
 struct TagChip: View {
     let title: String
     let isSelected: Bool
@@ -23,19 +23,19 @@ struct TagChip: View {
 
     private var borderColor: Color {
         if isEditing { return Color.orange }
-        return isSelected ? Color.accentColor.opacity(0.62) : Color.secondary.opacity(0.25)
+        return isSelected ? COLOR_TAG.opacity(0.62) : Color.secondary.opacity(0.25)
     }
 
     private var chipLabel: some View {
         Text(title)
             .font(.subheadline.weight(isSelected ? .semibold : .regular))
-            .foregroundStyle(isSelected ? Color.accentColor : (isSpecial ? Color.secondary : Color.primary))
+            .foregroundStyle(isSelected ? COLOR_TAG : (isSpecial ? Color.secondary : Color.primary))
             .lineLimit(1)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(
                 Capsule(style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.16)
+                    .fill(isSelected ? COLOR_TAG.opacity(0.16)
                           : (isSpecial ? Color(.secondarySystemBackground) : Color(.systemBackground)))
             )
             .overlay(

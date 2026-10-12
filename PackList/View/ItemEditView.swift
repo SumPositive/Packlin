@@ -571,11 +571,12 @@ struct ItemEditView: View {
                 // パック＞グループ＞アイテムのパンくずを並べ、各名称は画面幅の1/4までに抑える
                 BreadcrumbView(
                     packName: pack.name.placeholder("new.pack"),
-                    groupName: group.name.placeholder("new.group"),
+                    // タグ式はグループを見せないのでパンくずからも外す
+                    groupName: pack.classifyMode == .tag ? nil : group.name.placeholder("new.group"),
                     itemName: item.name.placeholder("new.item"),
                     rootAction: { navigationStore.path = NavigationPath() },
                     packAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id)]) },
-                    groupAction: { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id), AppDestination.itemList(packID: pack.id, groupID: group.id)]) },
+                    groupAction: pack.classifyMode == .tag ? nil : { navigationStore.path = NavigationPath([AppDestination.groupList(packID: pack.id), AppDestination.itemList(packID: pack.id, groupID: group.id)]) },
                     itemAction: nil
                 )
             }

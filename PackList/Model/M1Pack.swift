@@ -25,6 +25,19 @@ final class M1Pack {
     /// SwiftData のオプショナル追加なので既存DBは自動で軽量マイグレーションされる。
     var publishedId: String?
 
+    /// 分類方式（PackClassifyMode の rawValue）。`nil` はグループ式。
+    /// 既存DBのパックは nil のまま読み込まれるのでグループ式になり、新規パックだけ作成時にタグ式を入れる。
+    var classifyModeRaw: String?
+
+    var classifyMode: PackClassifyMode {
+        get { classifyModeRaw.flatMap(PackClassifyMode.init(rawValue:)) ?? .group }
+        set { classifyModeRaw = newValue.rawValue }
+    }
+
+    /// タグ式で追加したアイテムの入れ先グループのID（「タグ式グループ」）
+    /// グループ式へ戻したときに、タグ式で足したアイテムが1つのグループにまとまって見えるようにする
+    var tagModeGroupID: String?
+
     @Relationship(deleteRule: .cascade) var child: [M2Group] = []
 
     var stock: Int { child.reduce(0) { $0 + $1.stock } }
@@ -85,6 +98,22 @@ final class M1Pack {
         self.order = order
     }
     
+    /// タグ式でアイテムを追加するときの入れ先グループ（「タグ式グループ」）
+    /// 初回に末尾へ作り、以後は同じグループへ入れる。名前を変えても ID で辿るので同じグループのまま。
+    /// 削除されていたら作り直す
+    func groupForNewItem() -> M2Group {
+        if let tagModeGroupID,
+           let group = child.first(where: { $0.id == tagModeGroupID }) {
+            return group
+        }
+        let group = M2Group(name: String(localized: "tag.mode.group.name"),
+                            order: nextGroupOrder(),
+                            parent: self)
+        modelContext?.insert(group)
+        tagModeGroupID = group.id
+        return group
+    }
+
     /// 子グループの order を連番に整理する
     /// - Note: 表示順は List 側で order を基準にソートするため、ここでは child 配列を書き換えない。
     ///         order だけを唯一の真実源として扱い、配列の順番は放置する。
@@ -230,6 +259,7 @@ final class M1Pack {
                              memo: self.memo,
                              createdAt: Date(),
                              order: newOrder)
+        newPack.classifyModeRaw = self.classifyModeRaw
         mc.insert(newPack)
 
         // === Step 2: 配下の Group / Item を再帰的に複製 ===
@@ -245,6 +275,10 @@ final class M1Pack {
                                    order: group.order,
                                    parent: newPack)
             mc.insert(newGroup)
+            // タグ式グループは複製先でも同じ役割を引き継ぐ（次の追加で2つ目ができないように）
+            if group.id == self.tagModeGroupID {
+                newPack.tagModeGroupID = newGroup.id
+            }
 
             // Group 配下の Item も同様に Array(...) で固定してから複製
             let items = Array(group.child)

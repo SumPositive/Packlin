@@ -14,6 +14,7 @@ struct ItemSortListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationStore: NavigationStore
+    @EnvironmentObject private var history: UndoStackService
 
     @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
@@ -75,8 +76,21 @@ struct ItemSortListView: View {
 
     private var isShowingPopup: Bool { editingItem != nil }
 
+    /// タグ式パックではこの画面がパック直下になる（グループ一覧を経由しない）
+    private var isTagMode: Bool { pack.classifyMode == .tag }
+
     // 説明文表示判定をまとめておく
     private var isBeginnerMode: Bool { displayMode == .beginner }
+    /// ヘッダー左右の余白。アイテム編集画面と同じく、大きい文字では詰めてボタン位置を揃える
+    private var headerHorizontalPadding: CGFloat {
+        switch fontScale {
+        case .large, .xLarge:
+            return 8
+        default:
+            return 16
+        }
+    }
+
     // ヘッダーの高さを表示モードで変える
     private var headerHeight: CGFloat {
         // 初心者ヘルプを欠けさせないよう、文字サイズに応じてヘッダーを高くする
@@ -216,6 +230,20 @@ struct ItemSortListView: View {
                                 .listRowBackground(COLOR_ROW_BACK)
                             }
                         }
+
+                        // タグ式はグループ一覧が無いので、ここからアイテムを追加する
+                        if isTagMode {
+                            AppendAtEndRowView(systemImage: "plus.circle",
+                                               fontScale: fontScale,
+                                               showsText: isBeginnerMode) {
+                                addItemAndNavigate(source: "item_browse_append_end_row")
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowBackground(COLOR_ROW_BACK)
+                            // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
+                            .environment(\.defaultMinListRowHeight, 0)
+                        }
                     }
                 }
                 .listStyle(.plain)
@@ -230,7 +258,8 @@ struct ItemSortListView: View {
             .safeAreaInset(edge: .top) {
                 // PackListと同じヘッダー構成で、視線移動しやすいボタン配置に揃える
                 VStack(alignment: .center, spacing: 6) {
-                    HStack(alignment: .top, spacing: 0) {
+                    // アイテム編集・アイテム一覧と同じく上下中央揃えにして、ボタン位置を揃える
+                    HStack(spacing: 0) {
                         // 戻るボタンと初心者向け説明
                         VStack(spacing: 6) {
                             Button {
@@ -244,7 +273,7 @@ struct ItemSortListView: View {
                             .disabled(isShowingPopup)
 
                             if isBeginnerMode {
-                                Text("back.groups")
+                                Text(LocalizedStringKey(isTagMode ? "back.packs" : "back.groups"))
                                     .font(.caption2)
                                     .lineLimit(3)
                                     .minimumScaleFactor(0.7)
@@ -322,7 +351,35 @@ struct ItemSortListView: View {
                         .frame(maxWidth: 55)
                         .padding(.horizontal, 4)
 
-                        Spacer(minLength: 66)
+                        if isTagMode {
+                            // 新しいアイテム追加と説明（タグ式のみ。グループ式はグループ内で追加する）
+                            VStack(spacing: 6) {
+                                Button {
+                                    addItemAndNavigate(source: "item_browse_header")
+                                } label: {
+                                    Image(systemName: "plus.circle")
+                                        .imageScale(.large)
+                                        .symbolRenderingMode(.hierarchical)
+                                        .foregroundStyle(COLOR_ADD_ACTION)
+                                }
+                                .buttonStyle(.borderless)
+                                .disabled(isShowingPopup)
+
+                                if isBeginnerMode {
+                                    Text("add.new.item")
+                                        .font(.caption2)
+                                        .lineLimit(3)
+                                        .minimumScaleFactor(0.7)
+                                        .allowsTightening(true)
+                                        .foregroundStyle(COLOR_ADD_ACTION)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                            .frame(width: 74)
+                            .padding(.horizontal, 4)
+                        } else {
+                            Spacer(minLength: 66)
+                        }
                     }
 
                     // パック名のみのパンくずも最大幅を1/4に抑えて表示する
@@ -340,7 +397,7 @@ struct ItemSortListView: View {
                 .padding(.leading, ipadWindowControlInset())
                 .tint(.primary)
                 .frame(height: headerHeight)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, headerHorizontalPadding)
                 // ヘッダーの上下余白を抑えてリスト領域を広げる
                 .padding(.vertical, 3)
                 .background(.thinMaterial)
@@ -396,6 +453,40 @@ struct ItemSortListView: View {
         )
         .safeAreaInset(edge: .bottom) {
             sortFooterMenu
+        }
+    }
+
+    /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して編集画面へ遷移する
+    /// 縦覧は並べ替え表示なので、ヘッダーと末尾セルのどちらから追加しても同じ動きにする
+    private func addItemAndNavigate(source: String) {
+        GALogger.log(.operation(name: "add", target: "item", source: source, detail: "tail", count: nil))
+        var newItem: M3Item?
+
+        history.perform(context: modelContext) {
+            let group = pack.groupForNewItem()
+            let items = group.child.sorted { $0.order < $1.order }
+            let newOrder = sparseOrderForInsertion(items: items, index: items.count) {
+                // order のみを整え、child 配列を並べ替えない
+                normalizeSparseOrders(items)
+            }
+            // 絞り込み中のタグがあれば最初から付けておく（追加直後に一覧から消えないように）
+            let item = M3Item(name: "",
+                              tags: selectedTag.map { [$0] } ?? [],
+                              order: newOrder,
+                              parent: group)
+            modelContext.insert(item)
+            newItem = item
+        }
+
+        if let newItem, let group = newItem.parent {
+            navigationStore.path.append(
+                AppDestination.itemEdit(
+                    packID: pack.id,
+                    groupID: group.id,
+                    itemID: newItem.id,
+                    sort: sortOption
+                )
+            )
         }
     }
 

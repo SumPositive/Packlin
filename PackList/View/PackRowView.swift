@@ -56,6 +56,8 @@ struct PackRowView: View {
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // 公開中かどうか（publishedId があれば公開中）
     private var isPublished: Bool { pack.publishedId != nil }
+    // タグ式かどうか（パックアイコン下に目印を出す）
+    private var isTagMode: Bool { pack.classifyMode == .tag }
 
     
     var body: some View {
@@ -89,10 +91,17 @@ struct PackRowView: View {
                     }
                     // 公開中バッジはアイコン下端にオーバーレイで重ねる。
                     // 行の高さを増やさないため、VStackで縦積みにはしない（name/memo間に隙間ができるのを防ぐ）。
+                    // タグ式アイコンも同じくアイコン下に重ね、公開中バッジはその下に続ける
+                    .overlay(alignment: .bottom) {
+                        if isTagMode {
+                            tagModeIcon
+                                .offset(y: 18) // パックアイコンから少し離して下にはみ出させる
+                        }
+                    }
                     .overlay(alignment: .bottom) {
                         if isPublished {
                             publishedBadge
-                                .offset(y: 9) // アイコンのすぐ下にはみ出させる
+                                .offset(y: isTagMode ? 31 : 9) // タグ式アイコンがあればその下へ
                         }
                     }
                     .padding(.leading, 0)
@@ -181,6 +190,13 @@ struct PackRowView: View {
 }
 
 private extension PackRowView {
+    /// タグ式パックの目印（グループ式は何も出さない）
+    var tagModeIcon: some View {
+        Image(systemName: "tag.fill")
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(COLOR_TAG)
+    }
+
     /// 「公開中」を示す小さなバッジ。バッグアイコンの真下に控えめに表示する。
     /// 文字は折り返さず、極小フォントで幅を取らないようにする。
     @ViewBuilder
