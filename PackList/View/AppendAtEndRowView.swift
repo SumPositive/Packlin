@@ -22,6 +22,8 @@ struct AppendAtEndRowView: View {
     let fontScale: FontScale
     var usesPackAddIcon = false
     var showsText = false
+    /// 行の右端に添える表示（アイテム縦覧の合計重量など）。追加ボタンは中央のまま
+    var trailingAccessory: AnyView? = nil
     let action: () -> Void
 
     var body: some View {
@@ -59,6 +61,12 @@ struct AppendAtEndRowView: View {
                 .buttonStyle(.plain)
 
                 Spacer(minLength: 0)
+            }
+            .overlay(alignment: .trailing) {
+                if let trailingAccessory {
+                    trailingAccessory
+                        .padding(.trailing, 8)
+                }
             }
 
             // 上の余白（誤タップ防止ギャップ）と釣り合わせ、ボタンをセルの縦中央に置く

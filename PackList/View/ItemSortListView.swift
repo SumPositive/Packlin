@@ -223,7 +223,8 @@ struct ItemSortListView: View {
                         if isTagMode {
                             AppendAtEndRowView(systemImage: "plus.circle",
                                                fontScale: fontScale,
-                                               showsText: isBeginnerMode) {
+                                               showsText: isBeginnerMode,
+                                               trailingAccessory: AnyView(displayedWeightTotal)) {
                                 addItemAndNavigate(source: "item_browse_append_end_row")
                             }
                             .listRowSeparator(.hidden)
@@ -490,6 +491,17 @@ struct ItemSortListView: View {
         if let newItem {
             openDetailSheet(newItem, expanded: true)
         }
+    }
+
+    /// 表示中（絞り込み後）のアイテムの合計重量。パック行と同じ表記で末尾追加の行の右端に出す
+    private var displayedWeightTotal: some View {
+        let items = filteredItems
+        let stockWeight = items.reduce(0) { $0 + $1.weight * $1.stock }
+        let needWeight = items.reduce(0) { $0 + $1.weight * $1.need }
+        let isSufficient = !items.isEmpty && items.allSatisfy { $0.need == 0 || $0.need <= $0.stock }
+        return WeightTotalCapsule(stockWeight: stockWeight,
+                                  needWeight: needWeight,
+                                  isSufficient: isSufficient)
     }
 
     /// タグ式のアイテムシートを開く
