@@ -44,6 +44,10 @@ struct ItemSortListView: View {
     @State private var tagContentHeight: CGFloat = 0
     /// ドラッグ開始時の行数（ドラッグ中だけ値を持つ）
     @State private var tagRowsAtDragStart: Int?
+    /// タグ式でシートに出しているアイテム
+    @State private var detailItem: M3Item?
+    /// シートを最初から広げて開くか（新しいアイテムを追加したとき）
+    @State private var detailStartsExpanded = false
     /// 並べ替え条件プルダウンの展開状態
     @State private var isSortPickerExpanded = false
     /// 逆順にしている並べ替え条件。同じ条件をもう一度選ぶと切り替わり、別の条件を選ぶと正順へ戻す
@@ -181,17 +185,31 @@ struct ItemSortListView: View {
                     Section {
                         ForEach(filteredItems) { item in
                             if let group = item.parent {
-                                NavigationLink(
-                                    value: AppDestination.itemEdit(
-                                        packID: pack.id,
-                                        groupID: group.id,
-                                        itemID: item.id,
-                                        sort: sortOption
-                                    )
-                                ) {
-                                    ItemRowView(item: item) { selected, point in
-                                        editingItem = selected
-                                        popupAnchor = point
+                                Group {
+                                    if isTagMode {
+                                        // タグ式は画面を移らず、シートで最小限の詳細を出す（広げると全部を編集）
+                                        // 数量カプセルのタップも同じシートを開く（数量はシートで変える）
+                                        Button {
+                                            openDetailSheet(item, expanded: false)
+                                        } label: {
+                                            ItemRowView(item: item) { selected, _ in
+                                                openDetailSheet(selected, expanded: false)
+                                            }
+                                        }
+                                    } else {
+                                        NavigationLink(
+                                            value: AppDestination.itemEdit(
+                                                packID: pack.id,
+                                                groupID: group.id,
+                                                itemID: item.id,
+                                                sort: sortOption
+                                            )
+                                        ) {
+                                            ItemRowView(item: item) { selected, point in
+                                                editingItem = selected
+                                                popupAnchor = point
+                                            }
+                                        }
                                     }
                                 }
                                 .buttonStyle(.plain)
@@ -417,6 +435,15 @@ struct ItemSortListView: View {
                 .zIndex(1)
             }
         }
+        .sheet(item: $detailItem) { item in
+            ItemDetailSheet(pack: pack,
+                            item: item,
+                            startsExpanded: detailStartsExpanded,
+                            adjacentItemProvider: { current, offset in
+                                adjacentDisplayedItem(from: current, offset: offset)
+                            })
+            .appFontScale(fontScale)
+        }
         .contentShape(Rectangle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
@@ -437,7 +464,7 @@ struct ItemSortListView: View {
         )
     }
 
-    /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して編集画面へ遷移する
+    /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して、広げたアイテムシートで開く
     /// 縦覧は並べ替え表示なので、ヘッダーと末尾セルのどちらから追加しても同じ動きにする
     private func addItemAndNavigate(source: String) {
         GALogger.log(.operation(name: "add", target: "item", source: source, detail: "tail", count: nil))
@@ -459,16 +486,25 @@ struct ItemSortListView: View {
             newItem = item
         }
 
-        if let newItem, let group = newItem.parent {
-            navigationStore.path.append(
-                AppDestination.itemEdit(
-                    packID: pack.id,
-                    groupID: group.id,
-                    itemID: newItem.id,
-                    sort: sortOption
-                )
-            )
+        // 新しいアイテムは名称から入力するので、シートを最初から広げて開く
+        if let newItem {
+            openDetailSheet(newItem, expanded: true)
         }
+    }
+
+    /// タグ式のアイテムシートを開く
+    private func openDetailSheet(_ item: M3Item, expanded: Bool) {
+        detailStartsExpanded = expanded
+        detailItem = item
+    }
+
+    /// シートの前へ・次へでたどる隣のアイテム（縦覧に表示中の並び・絞り込みのまま）
+    private func adjacentDisplayedItem(from current: M3Item, offset: Int) -> M3Item? {
+        guard offset != 0 else { return nil }
+        let items = filteredItems
+        guard let index = items.firstIndex(where: { $0.id == current.id }) else { return nil }
+        let destination = index + offset
+        return items.indices.contains(destination) ? items[destination] : nil
     }
 
     // タグ一覧のレイアウト定数

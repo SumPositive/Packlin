@@ -34,6 +34,8 @@ struct ItemEditView: View {
     let onDismiss: () -> Void
     let onSelectItem: (M3Item) -> Void
     let adjacentItemProvider: ((M3Item, Int) -> M3Item?)?
+    /// シートの中に出しているか（タグ式のアイテムシート）。左上の戻るボタンを下向きにする
+    let isInSheet: Bool
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var history: UndoStackService
@@ -280,13 +282,15 @@ struct ItemEditView: View {
          item: M3Item,
          onDismiss: @escaping () -> Void,
          onSelectItem: @escaping (M3Item) -> Void,
-         adjacentItemProvider: ((M3Item, Int) -> M3Item?)? = nil) {
+         adjacentItemProvider: ((M3Item, Int) -> M3Item?)? = nil,
+         isInSheet: Bool = false) {
         self.pack = pack
         self.group = group
         self._item = Bindable(item)
         self.onDismiss = onDismiss
         self.onSelectItem = onSelectItem
         self.adjacentItemProvider = adjacentItemProvider
+        self.isInSheet = isInSheet
         self._selectedPackID = State(initialValue: pack.id)
         self._selectedGroupID = State(initialValue: group.id)
     }
@@ -502,14 +506,21 @@ struct ItemEditView: View {
                 HStack(spacing: 0) {
                     // 戻る＋説明
                     VStack(spacing: 6) {
-                        Button {
-                            onDismiss()
-                        } label: {
-                            Image(systemName: "chevron.backward")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
+                        if isInSheet {
+                            // シートの中では、アイテムシートの閉じるボタンと同じ丸い下向きボタンにする
+                            SheetCircleButton(systemImage: "chevron.down",
+                                              accessibilityLabel: "close.sheet",
+                                              action: onDismiss)
+                        } else {
+                            Button {
+                                onDismiss()
+                            } label: {
+                                Image(systemName: "chevron.backward")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless)
 
                         if isBeginnerMode {
                             Text("back.items")
@@ -1117,7 +1128,8 @@ struct ItemQuickEditView: View {
 }
 
 // 数量 編集
-private struct ItemQuantityEditor: View {
+/// タグ式のアイテムシート（小さい状態）でも使うので private にしない
+struct ItemQuantityEditor: View {
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @Bindable var item: M3Item
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
