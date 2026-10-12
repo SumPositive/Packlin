@@ -62,6 +62,8 @@ struct ItemEditView: View {
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
     @State private var isDraggingInsideQuantitySection = false
+    /// 数量の操作をダイアルにするか（既定はステッパ）。右上のボタンでタップの都度切り替える
+    @AppStorage(AppStorageKey.itemQuantityUsesDial) private var quantityUsesDial = false
     @State private var isShowingDialSettings = false
 
     /// === Fix 7: Undo グループ開閉のバランス保証フラグ ===
@@ -398,19 +400,36 @@ struct ItemEditView: View {
                             .foregroundStyle(.secondary)
                         quantityCheckButton
                         Spacer()
-                        // ダイアル設定はタイトル行の右端に置く
+                        // ダイアル設定はダイアル表示のときだけ出す
+                        if quantityUsesDial {
+                            Button {
+                                isShowingDialSettings = true
+                            } label: {
+                                Label("item.quantity.dialSettings", systemImage: "slider.horizontal.3")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                        // ダイアル／ステッパの切り替え。ボタンには「切り替え先」を出す
                         Button {
-                            isShowingDialSettings = true
+                            withAnimation(.easeInOut(duration: 0.18)) {
+                                quantityUsesDial.toggle()
+                            }
                         } label: {
-                            Label("item.quantity.dialSettings", systemImage: "slider.horizontal.3")
+                            Label(quantityUsesDial ? "item.quantity.mode.stepper" : "item.quantity.mode.dial",
+                                  systemImage: quantityUsesDial ? "plus.forwardslash.minus" : "dial.medium")
                                 .font(.caption.weight(.semibold))
                         }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
                     }
                     ItemQuantityEditor(item: item)
                 }
+                // ダイアル操作中は右スワイプで閉じないよう、数量欄でのドラッグを記録する
+                // minimumDistance を 0 にするとタップまで奪い、ステッパ（UIKit）が反応しなくなるので 1 にする
+                // （閉じるスワイプの判定は 30pt からなので、それより先にここが立つ）
                 .simultaneousGesture(
-                    DragGesture(minimumDistance: 0)
+                    DragGesture(minimumDistance: 1)
                         .onChanged { _ in
                             isDraggingInsideQuantitySection = true
                         }
@@ -1075,6 +1094,8 @@ private struct ItemQuantityEditor: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(PacklinDialSettings.styleKey) private var dialStyleID = DialStyle.shape.id
     @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
+    /// ダイアルのみ／ステッパのみを切り替える（既定はステッパ）
+    @AppStorage(AppStorageKey.itemQuantityUsesDial) private var usesDial = false
 
     init(item: M3Item) {
         self._item = Bindable(item)
@@ -1143,47 +1164,8 @@ private struct ItemQuantityEditor: View {
         horizontalSizeClass == .compact
     }
 
-    // タイトル（個重量・在庫数・必要数）は「大」までで頭打ちなので、
-    // FontScale が large 以上のときは「大」基準で十分な幅を確保すれば常に1行に収まる
-    private var titleColumnWidth: CGFloat {
-        switch fontScale {
-        case .system, .standard:
-            return usesCompactMetrics ? 44 : 56
-        case .large, .xLarge:
-            return usesCompactMetrics ? 64 : 72
-        }
-    }
-
-    // 数値は「特大」のままユーザー設定で表示するため、xLarge ではさらに広めの枠を取る
-    private var valueColumnWidth: CGFloat {
-        switch fontScale {
-        case .system, .standard:
-            return usesCompactMetrics ? 58 : 75
-        case .large:
-            return usesCompactMetrics ? 76 : 90
-        case .xLarge:
-            return usesCompactMetrics ? 94 : 112
-        }
-    }
-
     private var valueHorizontalPadding: CGFloat {
         usesCompactMetrics ? 6 : 10
-    }
-
-    // 単位（g・個 / pcs など）も「大」までで頭打ち。
-    // 英語の "pcs"（3文字）が1行で収まる幅を確保し、数値枠とも被らないようにする
-    private var unitColumnWidth: CGFloat {
-        switch fontScale {
-        case .system, .standard:
-            return usesCompactMetrics ? 18 : 30
-        case .large, .xLarge:
-            return usesCompactMetrics ? 30 : 38
-        }
-    }
-
-    // 特大では数値が大きいぶん、単位とダイアルの間を広げて被りを避ける
-    private var unitDialSpacing: CGFloat {
-        fontScale == .xLarge ? 10 : 4
     }
 
     private var numberFont: Font {
@@ -1199,65 +1181,81 @@ private struct ItemQuantityEditor: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
-                HStack(alignment: .center, spacing: 0) {
-                    // 見出し（個重量・在庫数・必要数 / Weight per item など）
-                    // 「大」までで頭打ちにする。短い名前（日本語など）は1行、
-                    // 長い名前（英語の "Weight per item"）は2行で折り返して欠落を防ぐ
+        // 個重量・在庫数・必要数を均等幅の3列に並べ、各列は 見出し → 入力欄 → ダイアル の縦積みにする
+        // Grid の行で揃えるので、見出しが2行に折り返す言語でも入力欄とダイアルの高さが列間で揃う
+        Grid(horizontalSpacing: 8, verticalSpacing: 6) {
+            // 見出し（個重量・在庫数・必要数 / Weight per item など）
+            // 「大」までで頭打ちにし、長い名前（英語の "Weight per item"）は2行で折り返して欠落を防ぐ
+            GridRow(alignment: .bottom) {
+                ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
                     Text(field.title)
                         .font(usesCompactMetrics ? .caption2 : .caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(3)
+                        .lineLimit(2)
                         .minimumScaleFactor(0.7)
                         .allowsTightening(true)
-                        .multilineTextAlignment(.leading)
-                        .frame(width: titleColumnWidth, alignment: .leading)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                         .cappedAtLargeFontSize()
-                    // タップでテンキーシートを開く数値表示（数値はユーザー設定の文字サイズそのまま）
-                    Button {
-                        activeFieldIndex = index
-                    } label: {
-                        Text("\(field.binding.wrappedValue)")
-                            .font(numberFont)
-                            .monospacedDigit()
+                }
+            }
+
+            // 入力欄。タップでテンキーシートを開く（数値はユーザー設定の文字サイズそのまま）
+            GridRow {
+                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
+                    HStack(alignment: .firstTextBaseline, spacing: 3) {
+                        Button {
+                            activeFieldIndex = index
+                        } label: {
+                            Text("\(field.binding.wrappedValue)")
+                                .font(numberFont)
+                                .monospacedDigit()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                                .allowsTightening(true)
+                                .multilineTextAlignment(.trailing)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, valueHorizontalPadding)
+                                .background(COLOR_BACK_INPUT)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.primary)
+                        // 単位（「大」までで頭打ち）
+                        Text(field.unit)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                             .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                            .allowsTightening(true)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: valueColumnWidth)
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, valueHorizontalPadding)
-                            .background(COLOR_BACK_INPUT)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .fixedSize()
+                            .cappedAtLargeFontSize()
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.primary)
-                    // 単位（「大」までで頭打ち）
-                    Text(field.unit)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(width: unitColumnWidth)
-                        .cappedAtLargeFontSize()
-                    Spacer()
-                        .frame(width: unitDialSpacing)
-                    // ダイアル（Stepperの代わり）
-                    // GeometryReader で残りスペースを計測し dialWidth に渡す
-                    // 文字サイズが大きいときはタイトル/値/単位の枠が広がるため、
-                    // ダイアルは残り幅に合わせて自動的に狭くなる（最小80pt）
-                    GeometryReader { geo in
-                        AZDialView(
-                            value: field.binding,
-                            min: 0,
-                            max: field.maxValue,
-                            step: field.step,
-                            stepperStep: 0,
-                            style: dialStyle,
-                            dialWidth: max(80, min(220, geo.size.width)),
-                            tuning: dialTuning
-                        )
+                    .frame(maxWidth: .infinity)
+                }
+            }
+
+            // 入力欄の下に、ダイアルのみ／ステッパのみのどちらかを列幅いっぱいで置く
+            GridRow {
+                ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
+                    if usesDial {
+                        GeometryReader { geo in
+                            AZDialView(
+                                value: field.binding,
+                                min: 0,
+                                max: field.maxValue,
+                                step: field.step,
+                                stepperStep: 0,
+                                style: dialStyle,
+                                dialWidth: geo.size.width,
+                                tuning: dialTuning
+                            )
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 44)
+                    } else {
+                        Stepper("", value: field.binding, in: 0...field.maxValue, step: field.step)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity)
                     }
-                    .frame(minWidth: 80, maxWidth: .infinity, minHeight: 44, maxHeight: 44)
                 }
             }
         }

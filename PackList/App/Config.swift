@@ -278,6 +278,8 @@ enum AppStorageKey {
     static let itemBrowseTagRows = "itemBrowse.tagRows"
     // アイテム縦覧で逆順にしている並べ替え条件（ItemSortOption.rawValue、空なら全て正順）
     static let itemBrowseReversedSort = "itemBrowse.reversedSort"
+    // アイテム詳細の数量をダイアルで操作する（false はステッパ）
+    static let itemQuantityUsesDial = "itemEdit.quantityUsesDial"
 }
 
 //-------------------------------------- 公開パック（モチメモ）
