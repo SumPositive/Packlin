@@ -173,7 +173,8 @@ struct ItemEditScene: View {
 
     private var availableItems: [M3Item] {
         if let sort, let pack = packs.first {
-            return sort.sortedItems(from: pack).filter { $0.parent != nil }
+            // 縦覧で逆順にしていれば、前後移動も同じ並びでたどる
+            return sort.sortedItems(from: pack, reversed: sort.isReversedInBrowse).filter { $0.parent != nil }
         }
         return groupItems
     }

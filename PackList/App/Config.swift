@@ -274,6 +274,10 @@ enum AppStorageKey {
     static let authorNicknameConfigured = "publish.authorNicknameConfigured"
     // 公開パックの取込回数（累計）。一定回数ごとにリワード広告を挟むための判定に使う
     static let publicPackImportCount = "publicPack.importCount"
+    // アイテム縦覧のタグ一覧の表示行数（ハンドルのドラッグで変更）
+    static let itemBrowseTagRows = "itemBrowse.tagRows"
+    // アイテム縦覧で逆順にしている並べ替え条件（ItemSortOption.rawValue、空なら全て正順）
+    static let itemBrowseReversedSort = "itemBrowse.reversedSort"
 }
 
 //-------------------------------------- 公開パック（モチメモ）

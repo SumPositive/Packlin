@@ -4,6 +4,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 import FirebaseAnalytics
 
 /// 並べ替え一覧
@@ -16,7 +17,6 @@ struct ItemSortListView: View {
     @EnvironmentObject private var navigationStore: NavigationStore
     @EnvironmentObject private var history: UndoStackService
 
-    @AppStorage(AppStorageKey.autoItemReorder) private var autoItemReorder: Bool = DEF_autoItemReorder
     // PackListと共通の表示モードを参照し、初心者向け説明を切り替える
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
@@ -34,13 +34,31 @@ struct ItemSortListView: View {
     /// selectedTag とは同時に選ばない
     @State private var isUntaggedSelected = false
 
+    /// タグ一覧の表示行数（1〜tagMaxRows）。ハンドルの上下ドラッグで変更し永続化する
+    @AppStorage(AppStorageKey.itemBrowseTagRows) private var tagRows: Int = 2
+    /// タグボタン1行分の実測高さ（0 は未測定）
+    @State private var tagChipHeight: CGFloat = 0
+    /// タグ一覧全体の実測高さ（0 は未測定）
+    @State private var tagContentHeight: CGFloat = 0
+    /// ドラッグ開始時の行数（ドラッグ中だけ値を持つ）
+    @State private var tagRowsAtDragStart: Int?
+    /// 並べ替え条件プルダウンの展開状態
+    @State private var isSortPickerExpanded = false
+    /// 逆順にしている並べ替え条件。同じ条件をもう一度選ぶと切り替わり、別の条件を選ぶと正順へ戻す
+    @AppStorage(AppStorageKey.itemBrowseReversedSort) private var reversedSortRaw = ""
+    private var isSortReversed: Bool { reversedSortRaw == sortOption.rawValue }
+
     private var baseSortedItems: [M3Item] {
-        sortOption.sortedItems(from: pack).filter { $0.parent != nil }
+        sortOption.sortedItems(from: pack, reversed: isSortReversed).filter { $0.parent != nil }
     }
 
-    private var displayedItems: [M3Item] {
-        // トグルのON/OFFに関わらず、キャッシュ側は最新順を握っておく
-        autoItemReorder ? baseSortedItems : cachedItems
+    /// 表示順は常に固定（常時並べ替えは廃止）。変更しても行は動かさず、並べ替え条件のタップで並べ直す
+    private var displayedItems: [M3Item] { cachedItems }
+
+    /// 表示中の並びが、今の並べ替え条件の最新順からずれているか
+    /// ずれていれば並べ替え条件をグレーにして、タップで並べ直せることを示す
+    private var isSortOutdated: Bool {
+        cachedItems.map(\.id) != baseSortedItemIDs
     }
 
     private var trimmedSearchText: String {
@@ -97,108 +115,58 @@ struct ItemSortListView: View {
         isBeginnerMode ? appHeaderHeightForBeginner(fontScale) : appHeaderHeightForExpert(fontScale)
     }
 
-    // 並べ替えを切り替えるためのフッターメニュー
-    private var sortFooterMenu: some View {
-        VStack(spacing: 0) {
-            COLOR_LIST_SEPARATOR
-                .frame(height: LIST_SEPARATOR_THICKNESS)
-                .ignoresSafeArea(edges: .horizontal)
+    /// 並べ替え条件の見た目。並びが古いときは選択値をグレーにする
+    private var sortPickerStyle: AZPickerStyle {
+        var style = AZPickerStyle.form
+        style.dropdownSelectedValueColor = isSortOutdated ? .secondary : .accentColor
+        return style
+    }
 
-            VStack(spacing: 6) {
-                HStack(alignment: .top, spacing: 10) {
-                    ForEach(ItemSortOption.allCases) { option in
-                        let isCurrent = option == sortOption
-
-                        VStack(spacing: 4) {
-                            Button {
-                                // タップ時は常時並べ替えの設定に関わらず強制的にリソートする
-                                refreshDisplayedItems(forceReset: true, forceResort: true)
-
-                                if isCurrent {
-                                    return
-                                }
-                                // スタックを増やさずに並べ替え画面を差し替えて、戻る操作を1回に抑える
-                                let destination = AppDestination.itemSortList(packID: pack.id, sort: option)
-                                withAnimation(.easeInOut(duration: 0.18)) {
-                                    navigationStore.replaceLast(with: destination)
-                                }
-                            } label: {
-                                Text(option.footerTitle)
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(isCurrent ? Color.accentColor : .primary)
-                                    // 狭い端末でも省略せず2行で読めるようにする
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.85)
-                                    .allowsTightening(true)
-                                    .multilineTextAlignment(.center)
-                                    .frame(maxWidth: .infinity, minHeight: 38)
-                                    .padding(.vertical, 6)
-                                    .padding(.horizontal, 4)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(isCurrent ? Color.accentColor.opacity(0.14) : Color(uiColor: .secondarySystemBackground))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .stroke(isCurrent ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1)
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                            // 選択中でも押下できることを示し、明瞭な発色を維持する
-                            .opacity(1.0)
-
-                            if isBeginnerMode {
-                                Text(option.beginnerGuide)
-                                    .font(.caption2)
-                                    .lineLimit(3)
-                                    .minimumScaleFactor(0.7)
-                                    .allowsTightening(true)
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
+    /// 並べ替え条件ボタンの開閉。並びが古い（グレー）ときのタップは、開かずに並べ直してアクセント色へ戻す
+    private var sortPickerExpansion: Binding<Bool> {
+        Binding(
+            get: { isSortPickerExpanded },
+            set: { expanded in
+                if expanded && isSortOutdated {
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        refreshDisplayedItems(forceReset: true, forceResort: true)
                     }
+                    return
+                }
+                isSortPickerExpanded = expanded
+            }
+        )
+    }
 
-                    // 変更があればすぐに並べ替えるトグルをフッターメニュー右端に集約する
-                    VStack(spacing: 6) {
-                        Button {
-                            autoItemReorder.toggle()
-                            // OFF→ONでもキャッシュを最新の並び順に揃える
-                            refreshDisplayedItems(forceReset: true, forceResort: true)
-                        } label: {
-                            VStack(spacing: 4) {
-                                Image(systemName: "arrow.up.and.down.and.sparkles")
-                                    .imageScale(.medium)
-                                    .symbolRenderingMode(.hierarchical)
-                                    .foregroundStyle(autoItemReorder ? Color.accentColor : Color.secondary)
-                                    .padding(8)
-                            }
-                            // 幅を圧縮してフッター全体の占有を抑える
-                            //.frame(maxWidth: isBeginnerMode ? 64 : 44, alignment: .trailing)
-                        }
-                        .buttonStyle(.borderless)
+    /// 昇順/降順を切り替えて並べ直す（右の昇降アイコンから）
+    private func toggleSortDirection() {
+        withAnimation(.easeInOut(duration: 0.18)) {
+            reversedSortRaw = isSortReversed ? "" : sortOption.rawValue
+            refreshDisplayedItems(forceReset: true, forceResort: true)
+        }
+    }
 
-                        if isBeginnerMode {
-                            Text("always.sort")
-                                .font(.caption2)
-                                .lineLimit(3)
-                                .minimumScaleFactor(0.7)
-                                .allowsTightening(true)
-                                .foregroundStyle(.secondary)
-                                //.multilineTextAlignment(.center)
-                        }
+    /// 並べ替え条件の選択。選んだ条件の縦覧へ差し替える（旧フッターのボタンと同じ動き）
+    private var sortSelection: Binding<ItemSortOption> {
+        Binding(
+            get: { sortOption },
+            set: { option in
+                // 同じ条件を選んだときは向きはそのままで並べ直す
+                guard option != sortOption else {
+                    withAnimation(.easeInOut(duration: 0.18)) {
+                        refreshDisplayedItems(forceReset: true, forceResort: true)
                     }
-                    //.frame(maxWidth: isBeginnerMode ? 64 : 52)
-                    .frame(maxWidth: 40)
+                    return
+                }
+                // 別の条件は正順から始める
+                reversedSortRaw = ""
+                // スタックを増やさずに並べ替え画面を差し替えて、戻る操作を1回に抑える
+                let destination = AppDestination.itemSortList(packID: pack.id, sort: option)
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    navigationStore.replaceLast(with: destination)
                 }
             }
-            .padding(.top, 8)
-            .padding(.horizontal, 14)
-            .background(.ultraThinMaterial)
-            // ソート順ボタン名と初心者ヘルプを「大」までで頭打ち
-            .cappedAtLargeFontSize()
-        }
+        )
     }
 
     var body: some View {
@@ -414,13 +382,17 @@ struct ItemSortListView: View {
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()
             }
-            .onChange(of: autoItemReorder) { _, _ in
-                // スイッチのON/OFFを問わず、一度は最新の並べ替えを反映する
+            .onChange(of: baseSortedItemIDs) { _, _ in
+                // 並びに変更があっても行は動かさず、追加・削除だけ反映する
+                refreshDisplayedItems()
+            }
+            // 並べ替え条件や向きが変わったときは必ず並べ直す
+            // 条件の切り替えは画面を差し替えるが、同じ型の画面が使い回されて onAppear が呼ばれないことがある
+            .onChange(of: sortOption) { _, _ in
                 refreshDisplayedItems(forceReset: true, forceResort: true)
             }
-            .onChange(of: baseSortedItemIDs) { _, _ in
-                // 並びに変更があった場合は現在のモードを尊重しつつキャッシュを更新
-                refreshDisplayedItems()
+            .onChange(of: isSortReversed) { _, _ in
+                refreshDisplayedItems(forceReset: true, forceResort: true)
             }
 
             if let item = editingItem {
@@ -451,9 +423,6 @@ struct ItemSortListView: View {
                     }
                 }
         )
-        .safeAreaInset(edge: .bottom) {
-            sortFooterMenu
-        }
     }
 
     /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して編集画面へ遷移する
@@ -490,61 +459,176 @@ struct ItemSortListView: View {
         }
     }
 
+    // タグ一覧のレイアウト定数
+    private let tagRowSpacing: CGFloat = 8
+    private let tagAreaVerticalPadding: CGFloat = 2
+    private let tagMaxRows = 5
+
+    /// タグボタン1行分の高さ（測れていればそれを、まだなら目安値を使う）
+    private var tagRowHeight: CGFloat { 0 < tagChipHeight ? tagChipHeight : 34 }
+
+    /// 指定行数に対応するタグ一覧の高さ
+    private func tagAreaHeight(for rows: Int) -> CGFloat {
+        let r = CGFloat(min(max(rows, 1), tagMaxRows))
+        return tagRowHeight * r + tagRowSpacing * (r - 1) + tagAreaVerticalPadding * 2
+    }
+
+    /// 実際に見せる高さ。タグが少なければ中身の高さまで縮める
+    private var tagAreaVisibleHeight: CGFloat {
+        let limit = tagAreaHeight(for: tagRows)
+        guard 0 < tagContentHeight else { return tagAreaHeight(for: 1) }
+        return min(tagContentHeight, limit)
+    }
+
+    /// タグ一覧の高さを変えるハンドル。上下ドラッグで行数を1〜tagMaxRowsに増減する
+    /// グローバル座標で指の移動量を測るので、ハンドル自身が動いても指との連動が崩れない
+    private var tagResizeHandle: some View {
+        Capsule()
+            .fill(Color(.tertiaryLabel))
+            .frame(width: 40, height: 5)
+            .frame(maxWidth: .infinity)   // 中央寄せ＋タップ領域を横いっぱいに
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 2, coordinateSpace: .global)
+                    .onChanged { value in
+                        let start = tagRowsAtDragStart ?? tagRows
+                        if tagRowsAtDragStart == nil { tagRowsAtDragStart = start }
+                        // 開始行数＋（移動量÷1行分）を四捨五入して目標行数にする
+                        let delta = Int((value.translation.height / (tagRowHeight + tagRowSpacing)).rounded())
+                        let target = min(max(start + delta, 1), tagMaxRows)
+                        if target != tagRows {
+                            tagRows = target
+                            UISelectionFeedbackGenerator().selectionChanged()
+                        }
+                    }
+                    .onEnded { _ in
+                        tagRowsAtDragStart = nil
+                    }
+            )
+            .accessibilityLabel(Text("tag.list.resize.a11y"))
+    }
+
     /// タグとアイテムを検索
     private var searchHeader: some View {
         VStack(spacing: 6) {
+            // 左に並べ替え条件、右に検索欄
             HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-
-                TextField(LocalizedStringKey("search.tags.items"), text: $searchText)
-                    .textFieldStyle(.plain)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-
-                if !trimmedSearchText.isEmpty {
-                    Button {
-                        searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.tertiary)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(LocalizedStringKey("clear"))
+                AZDropdownPicker(options: ItemSortOption.allCases,
+                                 selection: sortSelection,
+                                 isExpanded: sortPickerExpansion,
+                                 minWidth: 100,
+                                 style: sortPickerStyle) { option in
+                    Text(option.title)
                 }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(uiColor: .secondarySystemBackground))
-            )
-            .padding(.horizontal, 50)
+                .cappedAtLargeFontSize()
 
-            // タグ一覧（選ぶとアイテムを絞り込む）。一覧の場所を取らないよう横スクロール1行にする
+                // 昇順/降順（クレメモの決済一覧と同じアイコン）。条件のプルダウンとは別にタップで切り替える
+                Button(action: toggleSortDirection) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .scaleEffect(x: 1, y: isSortReversed ? -1 : 1)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(isSortOutdated ? Color.secondary : Color.accentColor)
+                        .frame(width: 36, height: 36)
+                        // 並べ替え条件のプルダウンと同じ見た目の真円で囲む
+                        .background(
+                            Circle().fill(AZPickerStyle.form.panelBackground)
+                        )
+                        .overlay(
+                            Circle().strokeBorder(Color.secondary.opacity(AZPickerStyle.form.borderOpacity), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(AZPickerStyle.form.shadowOpacity),
+                                radius: AZPickerStyle.form.shadowRadius, x: 0, y: AZPickerStyle.form.shadowY)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("sort.direction.toggle.a11y"))
+                .cappedAtLargeFontSize()
+
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+
+                    TextField(LocalizedStringKey("search.tags.items"), text: $searchText)
+                        .textFieldStyle(.plain)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+
+                    if !trimmedSearchText.isEmpty {
+                        Button {
+                            searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.tertiary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(LocalizedStringKey("clear"))
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color(uiColor: .secondarySystemBackground))
+                )
+            }
+            .padding(.horizontal, 16)
+
+            // タグ一覧（選ぶとアイテムを絞り込む）。クレメモの「よくある決済」と同じく折り返して並べ、
+            // 1行〜tagMaxRows 行の高さで表示する。溢れた行は縦スクロールで見せ、行数は下のハンドルで変える
             // パックにタグが1つでもあれば「タグなし」も並べる
             if !pack.allTags.isEmpty {
                 let tags = visibleTags
                 let untaggedIndex = untaggedChipIndex(in: tags)
-                ScrollView(.horizontal) {
-                    HStack(spacing: 8) {
-                        ForEach(tags[..<untaggedIndex], id: \.self) { tag in
-                            tagChip(tag)
+                VStack(spacing: 0) {
+                    ScrollView(.vertical) {
+                        // 行末に空きがあれば、後ろにある収まる幅のタグを繰り上げて詰める（並び順より詰め込みを優先）
+                        AZFlowLayout(spacing: 8,
+                                     rowSpacing: tagRowSpacing,
+                                     alignment: .leading,
+                                     packToFill: true) {
+                            ForEach(tags[..<untaggedIndex], id: \.self) { tag in
+                                tagChip(tag)
+                            }
+                            TagChip(title: String(localized: "tag.none"),
+                                    isSelected: isUntaggedSelected,
+                                    isSpecial: true) {
+                                isUntaggedSelected.toggle()
+                                selectedTag = nil
+                            }
+                            // 「タグなし」は常にあるので、これで1行分の高さを測る
+                            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                                tagChipHeight = height
+                            }
+                            ForEach(tags[untaggedIndex...], id: \.self) { tag in
+                                tagChip(tag)
+                            }
                         }
-                        TagChip(title: String(localized: "tag.none"),
-                                isSelected: isUntaggedSelected,
-                                isSpecial: true) {
-                            isUntaggedSelected.toggle()
-                            selectedTag = nil
-                        }
-                        ForEach(tags[untaggedIndex...], id: \.self) { tag in
-                            tagChip(tag)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, tagAreaVerticalPadding)
+                        // 全体の高さを測り、行数ぶんより少なければその高さまで縮める
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                            tagContentHeight = height
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 2)
+                    .frame(height: tagAreaVisibleHeight)
+                    .scrollIndicators(.hidden)
+                    .animation(.easeOut(duration: 0.18), value: tagRows)
+
+                    // 1行に収まらないときだけハンドルを出す
+                    if tagAreaHeight(for: 1) + 1 < tagContentHeight {
+                        tagResizeHandle
+                    }
                 }
-                .scrollIndicators(.hidden)
+                // ハンドルを含めたタグ一覧を1枚のパネルとして見せる（タグボタンの白が映える薄いグレー）
+                .padding(.horizontal, 10)
+                .padding(.top, 8)
+                .padding(.bottom, tagAreaHeight(for: 1) + 1 < tagContentHeight ? 0 : 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color(uiColor: .secondarySystemBackground))
+                )
+                .padding(.horizontal, 16)
                 // タグの丸ボタンが大きくなりすぎないよう「大」までで頭打ち
                 .cappedAtLargeFontSize()
             }
@@ -599,12 +683,7 @@ struct ItemSortListView: View {
     private func refreshDisplayedItems(forceReset: Bool = false, forceResort: Bool = false) {
         let items = baseSortedItems
 
-        guard !autoItemReorder else {
-            cachedItems = items
-            return
-        }
-
-        // 並べ替えスイッチがOFFでも、指示されたときは最新順に戻す
+        // 指示されたときは最新順に戻す
         if forceResort {
             cachedItems = items
             return
@@ -681,6 +760,17 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     /// pack配下の全Itemを並べ替える
     /// - Parameter pack: M1Pack
     /// - Returns: 並べ替えられたItem配列
+    /// - Parameter reversed: true なら逆順（アイテム縦覧で同じ条件をもう一度選んだとき）
+    func sortedItems(from pack: M1Pack, reversed: Bool) -> [M3Item] {
+        let items = sortedItems(from: pack)
+        return reversed ? Array(items.reversed()) : items
+    }
+
+    /// 縦覧で逆順にしている条件か（設定値を直接読む。前後移動など縦覧の外で並びを揃えるため）
+    var isReversedInBrowse: Bool {
+        UserDefaults.standard.string(forKey: AppStorageKey.itemBrowseReversedSort) == rawValue
+    }
+
     func sortedItems(from pack: M1Pack) -> [M3Item] {
         // pack配下の全Group
         let groups = pack.child.sorted { $0.order < $1.order }
