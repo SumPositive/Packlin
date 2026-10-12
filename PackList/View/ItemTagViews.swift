@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-/// タグの丸ボタン。選択中はタグ色（COLOR_TAG）で塗る
+/// タグの丸ボタン。選択中は背景と枠をタグ色（COLOR_TAG）にする
 struct TagChip: View {
     let title: String
     let isSelected: Bool
@@ -27,9 +27,11 @@ struct TagChip: View {
     }
 
     private var chipLabel: some View {
+        // 選択中も文字は太字にせず色も変えない（幅が変わると折り返しの詰め込みが組み直され、並びが入れ替わる）
+        // 選択は背景と枠のタグ色だけで示す
         Text(title)
-            .font(.subheadline.weight(isSelected ? .semibold : .regular))
-            .foregroundStyle(isSelected ? COLOR_TAG : (isSpecial ? Color.secondary : Color.primary))
+            .font(.subheadline)
+            .foregroundStyle(isSpecial ? Color.secondary : Color.primary)
             .lineLimit(1)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)

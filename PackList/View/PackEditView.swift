@@ -165,6 +165,12 @@ struct PackEditView: View {
                 publishingOverlay
             }
         }
+        .onChange(of: pack.classifyMode) { oldMode, newMode in
+            // グループ式→タグ式では、既存のグループ名をタグにしてアイテムに付ける（シート全体で1つの Undo に入る）
+            if oldMode == .group && newMode == .tag {
+                pack.tagItemsWithGroupNames()
+            }
+        }
         .onAppear {
             // === Fix 7: lifecycle 不均衡対策 ===
             // 二重 onAppear（NavigationStack のプッシュ復帰時など）を考慮し、

@@ -5093,49 +5093,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gruppen ordnet die Objekte eines Packs in Gruppen\n\nTags öffnet direkt „Objekte durchsuchen“, ohne die Gruppenliste\n\nBei Tags ordnest du Objekte mit Tags und wählst einen Tag, um sie einzugrenzen\n\nMit Tags hinzugefügte Objekte landen in der „Tag-Modus-Gruppe“, die du siehst, wenn du zurück zu Gruppen wechselst\n\nDu kannst jederzeit wechseln, und es gehen keine Objekte oder Tags verloren"
+            "value" : "Gruppen ordnet die Objekte eines Packs in Gruppen\n\nTags öffnet direkt „Objekte durchsuchen“, ohne die Gruppenliste\n\nBei Tags ordnest du Objekte mit Tags und wählst einen Tag, um sie einzugrenzen\n\nWenn du von Gruppen zu Tags wechselst, wird jeder Gruppenname als Tag an die Objekte dieser Gruppe vergeben\n\nMit Tags hinzugefügte Objekte landen in der „Tag-Modus-Gruppe“, die du siehst, wenn du zurück zu Gruppen wechselst\n\nDu kannst jederzeit wechseln, und es gehen keine Objekte oder Tags verloren"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Groups sorts the items in a pack into groups\n\nTags opens Item browse right away, without the group list\n\nWith Tags, you sort items by attaching tags and choose a tag to narrow them down\n\nItems added with Tags go into the \"Tag-mode group\", which you can see when you switch back to Groups\n\nYou can switch at any time, and no items or tags are lost"
+            "value" : "Groups sorts the items in a pack into groups\n\nTags opens Item browse right away, without the group list\n\nWith Tags, you sort items by attaching tags and choose a tag to narrow them down\n\nWhen you switch from Groups to Tags, each group name is attached as a tag to the items in that group\n\nItems added with Tags go into the \"Tag-mode group\", which you can see when you switch back to Groups\n\nYou can switch at any time, and no items or tags are lost"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Grupos organiza los ítems del pack en grupos\n\nEtiquetas abre directamente Explorar ítems, sin pasar por la lista de grupos\n\nCon Etiquetas, clasificas los ítems poniéndoles etiquetas y eliges una etiqueta para filtrarlos\n\nLos ítems añadidos con Etiquetas van al «Grupo modo etiquetas», que verás al volver a Grupos\n\nPuedes cambiar en cualquier momento, y no se pierden ítems ni etiquetas"
+            "value" : "Grupos organiza los ítems del pack en grupos\n\nEtiquetas abre directamente Explorar ítems, sin pasar por la lista de grupos\n\nCon Etiquetas, clasificas los ítems poniéndoles etiquetas y eliges una etiqueta para filtrarlos\n\nAl cambiar de Grupos a Etiquetas, el nombre de cada grupo se pone como etiqueta a los ítems de ese grupo\n\nLos ítems añadidos con Etiquetas van al «Grupo modo etiquetas», que verás al volver a Grupos\n\nPuedes cambiar en cualquier momento, y no se pierden ítems ni etiquetas"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Groupes range les éléments du pack dans des groupes\n\nTags ouvre directement Parcourir les éléments, sans passer par la liste des groupes\n\nAvec Tags, vous classez les éléments en leur attribuant des tags et choisissez un tag pour les filtrer\n\nLes éléments ajoutés avec Tags vont dans le « Groupe mode tags », visible quand vous revenez à Groupes\n\nVous pouvez changer à tout moment, sans perdre d’éléments ni de tags"
+            "value" : "Groupes range les éléments du pack dans des groupes\n\nTags ouvre directement Parcourir les éléments, sans passer par la liste des groupes\n\nAvec Tags, vous classez les éléments en leur attribuant des tags et choisissez un tag pour les filtrer\n\nQuand vous passez de Groupes à Tags, le nom de chaque groupe est attribué comme tag aux éléments de ce groupe\n\nLes éléments ajoutés avec Tags vont dans le « Groupe mode tags », visible quand vous revenez à Groupes\n\nVous pouvez changer à tout moment, sans perdre d’éléments ni de tags"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gruppi organizza gli elementi del pack in gruppi\n\nTag apre subito Sfoglia elementi, senza passare dall’elenco dei gruppi\n\nCon Tag, classifichi gli elementi assegnando tag e scegli un tag per filtrarli\n\nGli elementi aggiunti con Tag finiscono nel «Gruppo modalità tag», visibile quando torni a Gruppi\n\nPuoi cambiare in qualsiasi momento, senza perdere elementi o tag"
+            "value" : "Gruppi organizza gli elementi del pack in gruppi\n\nTag apre subito Sfoglia elementi, senza passare dall’elenco dei gruppi\n\nCon Tag, classifichi gli elementi assegnando tag e scegli un tag per filtrarli\n\nQuando passi da Gruppi a Tag, il nome di ogni gruppo viene assegnato come tag agli elementi di quel gruppo\n\nGli elementi aggiunti con Tag finiscono nel «Gruppo modalità tag», visibile quando torni a Gruppi\n\nPuoi cambiare in qualsiasi momento, senza perdere elementi o tag"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "グループ式は、パックの中をグループに分けてアイテムを整理します\n\nタグ式は、パックを開くとグループ一覧を通らずにアイテム縦覧が表示されます\n\nタグ式では、アイテムにタグを付けて分類し、タグを選んで絞り込めます\n\nタグ式で追加したアイテムは「タグ式グループ」に入り、グループ式に戻すとそのグループで見られます\n\nいつでも切り替えられ、アイテムやタグは消えません"
+            "value" : "グループ式は、パックの中をグループに分けてアイテムを整理します\n\nタグ式は、パックを開くとグループ一覧を通らずにアイテム縦覧が表示されます\n\nタグ式では、アイテムにタグを付けて分類し、タグを選んで絞り込めます\n\nグループ式からタグ式に変えると、グループ名がタグとしてそのグループのアイテムに付きます\n\nタグ式で追加したアイテムは「タグ式グループ」に入り、グループ式に戻すとそのグループで見られます\n\nいつでも切り替えられ、アイテムやタグは消えません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "그룹은 팩 안의 항목을 그룹으로 나누어 정리합니다\n\n태그는 팩을 열면 그룹 목록 없이 바로 항목 둘러보기가 표시됩니다\n\n태그에서는 항목에 태그를 붙여 분류하고, 태그를 골라 걸러 볼 수 있습니다\n\n태그에서 추가한 항목은 ‘태그식 그룹’에 들어가며, 그룹으로 되돌리면 그 그룹에서 볼 수 있습니다\n\n언제든 바꿀 수 있으며, 항목과 태그는 사라지지 않습니다"
+            "value" : "그룹은 팩 안의 항목을 그룹으로 나누어 정리합니다\n\n태그는 팩을 열면 그룹 목록 없이 바로 항목 둘러보기가 표시됩니다\n\n태그에서는 항목에 태그를 붙여 분류하고, 태그를 골라 걸러 볼 수 있습니다\n\n그룹에서 태그로 바꾸면, 그룹 이름이 태그로 그 그룹의 항목에 붙습니다\n\n태그에서 추가한 항목은 ‘태그식 그룹’에 들어가며, 그룹으로 되돌리면 그 그룹에서 볼 수 있습니다\n\n언제든 바꿀 수 있으며, 항목과 태그는 사라지지 않습니다"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "群組會將行李包中的物品分成群組整理\n\n標籤在開啟行李包時不經過群組列表，直接顯示物品瀏覽\n\n使用標籤時，可為物品加上標籤來分類，並選擇標籤篩選\n\n以標籤新增的物品會放入「標籤式群組」，切回群組後即可在該群組中看到\n\n可隨時切換，物品與標籤都不會消失"
+            "value" : "群組會將行李包中的物品分成群組整理\n\n標籤在開啟行李包時不經過群組列表，直接顯示物品瀏覽\n\n使用標籤時，可為物品加上標籤來分類，並選擇標籤篩選\n\n從群組切換為標籤時，群組名稱會作為標籤加到該群組的物品上\n\n以標籤新增的物品會放入「標籤式群組」，切回群組後即可在該群組中看到\n\n可隨時切換，物品與標籤都不會消失"
           }
         }
       }

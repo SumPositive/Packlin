@@ -114,6 +114,27 @@ final class M1Pack {
         return group
     }
 
+    /// グループ式からタグ式へ変えたとき、グループ名をタグにして配下のアイテムに付ける
+    /// - 「タグ式グループ」は元々タグ式で足したアイテムの入れ物なので対象外
+    /// - 名前が空のグループは付けるタグが無いので対象外
+    /// - 既に同じタグがあれば付け直さない（何度切り替えても重複しない）。上限や文字数は sanitizedTags に従う
+    func tagItemsWithGroupNames() {
+        for group in child where group.id != tagModeGroupID {
+            // 改行を含む名前もタグとして1行にそろえる
+            let tag = group.name
+                .components(separatedBy: .newlines)
+                .joined(separator: " ")
+                .trimmingCharacters(in: .whitespaces)
+            guard !tag.isEmpty else { continue }
+            for item in group.child {
+                let tags = M3Item.sanitizedTags(item.tags + [tag])
+                if tags != item.tags {
+                    item.tags = tags
+                }
+            }
+        }
+    }
+
     /// 子グループの order を連番に整理する
     /// - Note: 表示順は List 側で order を基準にソートするため、ここでは child 配列を書き換えない。
     ///         order だけを唯一の真実源として扱い、配列の順番は放置する。
