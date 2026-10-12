@@ -89,6 +89,78 @@ struct ItemEditView: View {
         }
     }
 
+    // MARK: - 操作ボタン（グループ式・タグ式で並べ方を変えるため部品にする）
+
+    private func previousItemButton(width buttonWidth: CGFloat) -> some View {
+        Button {
+            // (-1) 1つ前のアイテムを編集対象に切り替える
+            selectAdjacentItem(by: -1)
+        } label: {
+            actionButtonContent("back", systemImage: "arrow.up.circle")
+                .frame(width: buttonWidth, height: 44)
+                .background(COLOR_BACK_INPUT)
+                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                )
+        }
+        .accessibilityLabel(Text("back"))
+        .disabled(!canSelectPreviousItem)
+    }
+
+    private func nextItemButton(width buttonWidth: CGFloat) -> some View {
+        Button {
+            // (+1) 1つ次のアイテムを編集対象に切り替える
+            selectAdjacentItem(by: 1)
+        } label: {
+            actionButtonContent("next", systemImage: "arrow.down.circle")
+                .frame(width: buttonWidth, height: 44)
+                .background(COLOR_BACK_INPUT)
+                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                )
+        }
+        .accessibilityLabel(Text("next"))
+        .disabled(!canSelectNextItem)
+    }
+
+    private func copyItemButton(width buttonWidth: CGFloat) -> some View {
+        Button {
+            item.duplicate()
+            onDismiss()
+        } label: {
+            actionButtonContent("copy", systemImage: "plus.square.on.square")
+                .frame(width: buttonWidth, height: 44)
+                .background(COLOR_BACK_INPUT)
+                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                )
+        }
+        .accessibilityLabel(Text("copy"))
+    }
+
+    private func deleteItemButton(width buttonWidth: CGFloat) -> some View {
+        Button(role: .destructive) {
+            item.delete()
+            onDismiss()
+        } label: {
+            actionButtonContent("delete", systemImage: "trash")
+                .frame(width: buttonWidth, height: 44)
+                .background(COLOR_BACK_INPUT)
+                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                )
+        }
+        .accessibilityLabel(Text("delete"))
+    }
+
     private func actionButtonWidth(for availableWidth: CGFloat) -> CGFloat {
         // 4列ボタンが画面幅を超えないよう、実表示幅から1ボタン幅を逆算する
         let fittedWidth = (availableWidth - actionButtonSpacing * 3) / 4
@@ -236,145 +308,102 @@ struct ItemEditView: View {
                 EditorSection(title: "actions") {
                     GeometryReader { proxy in
                         let buttonWidth = actionButtonWidth(for: proxy.size.width)
-                        VStack {
+                        if pack.classifyMode == .tag {
+                            // タグ式はグループを見せないので、先頭/末尾追加・移動・消すを省いて1段にする
                             HStack(spacing: actionButtonSpacing) {
-                                // 上・前へ
-                                Button {
-                                    // (-1) 1つ前のアイテムを編集対象に切り替える
-                                    selectAdjacentItem(by: -1)
-                                } label: {
-                                    actionButtonContent("back", systemImage: "arrow.up.circle")
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
-                                }
-                                .accessibilityLabel(Text("back"))
-                                .disabled(!canSelectPreviousItem)
-
-                                // 先頭に追加
-                                Button {
-                                    addItemEdit(at: .head)
-                                } label: {
-                                    actionButtonContent("top", systemImage: "plus.circle")
-                                        .foregroundStyle(COLOR_ADD_ACTION)
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
-                                }
-                                .accessibilityLabel(Text("top"))
-                            
-                                // 複製
-                                Button {
-                                    item.duplicate()
-                                    onDismiss()
-                                } label: {
-                                    actionButtonContent("copy", systemImage: "plus.square.on.square")
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
-                                }
-                                .accessibilityLabel(Text("copy"))
-                            
-                                // 削除
-                                Button(role: .destructive) {
-                                    item.delete()
-                                    onDismiss()
-                                } label: {
-                                    actionButtonContent("delete", systemImage: "trash")
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
-                                }
-                                .accessibilityLabel(Text("delete"))
+                                previousItemButton(width: buttonWidth)
+                                nextItemButton(width: buttonWidth)
+                                copyItemButton(width: buttonWidth)
+                                deleteItemButton(width: buttonWidth)
                             }
-                            // 2段目
-                            HStack(spacing: actionButtonSpacing) {
-                                // 下・次へ
-                                Button {
-                                    // (+1) 1つ次のアイテムを編集対象に切り替える
-                                    selectAdjacentItem(by: 1)
-                                } label: {
-                                    actionButtonContent("next", systemImage: "arrow.down.circle")
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
-                                }
-                                .accessibilityLabel(Text("next"))
-                                .disabled(!canSelectNextItem)
+                            .frame(width: proxy.size.width, alignment: .leading)
+                        } else {
+                            VStack {
+                                HStack(spacing: actionButtonSpacing) {
+                                    // 上・前へ
+                                    previousItemButton(width: buttonWidth)
 
-                                // 末尾に追加
-                                Button {
-                                    addItemEdit(at: .tail)
-                                } label: {
-                                    actionButtonContent("bottom", systemImage: "plus.circle")
-                                        .foregroundStyle(COLOR_ADD_ACTION)
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
+                                    // 先頭に追加
+                                    Button {
+                                        addItemEdit(at: .head)
+                                    } label: {
+                                        actionButtonContent("top", systemImage: "plus.circle")
+                                            .foregroundStyle(COLOR_ADD_ACTION)
+                                            .frame(width: buttonWidth, height: 44)
+                                            .background(COLOR_BACK_INPUT)
+                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                            )
+                                    }
+                                    .accessibilityLabel(Text("top"))
+                            
+                                    // 複製
+                                    copyItemButton(width: buttonWidth)
+                            
+                                    // 削除
+                                    deleteItemButton(width: buttonWidth)
                                 }
-                                .accessibilityLabel(Text("bottom"))
+                                // 2段目
+                                HStack(spacing: actionButtonSpacing) {
+                                    // 下・次へ
+                                    nextItemButton(width: buttonWidth)
 
-                                // 移動
-                                Button {
-                                    prepareMoveSheet()
-                                    isShowingMoveSheet = true
-                                } label: {
-                                    actionButtonContent("move", systemImage: "hand.point.up.left.and.text")
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
-                                }
-                                .accessibilityLabel(Text("move"))
+                                    // 末尾に追加
+                                    Button {
+                                        addItemEdit(at: .tail)
+                                    } label: {
+                                        actionButtonContent("bottom", systemImage: "plus.circle")
+                                            .foregroundStyle(COLOR_ADD_ACTION)
+                                            .frame(width: buttonWidth, height: 44)
+                                            .background(COLOR_BACK_INPUT)
+                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                            )
+                                    }
+                                    .accessibilityLabel(Text("bottom"))
 
-                                // 消す
-                                Button(role: .destructive) {
-                                    // アイテムを初期値にリセット
-                                    resetItemToInitialState()
-                                } label: {
-                                    actionButtonContent("erase", systemImage: "eraser")
-                                        .frame(width: buttonWidth, height: 44)
-                                        .background(COLOR_BACK_INPUT)
-                                        .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                        )
+                                    // 移動
+                                    Button {
+                                        prepareMoveSheet()
+                                        isShowingMoveSheet = true
+                                    } label: {
+                                        actionButtonContent("move", systemImage: "hand.point.up.left.and.text")
+                                            .frame(width: buttonWidth, height: 44)
+                                            .background(COLOR_BACK_INPUT)
+                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                            )
+                                    }
+                                    .accessibilityLabel(Text("move"))
+
+                                    // 消す
+                                    Button(role: .destructive) {
+                                        // アイテムを初期値にリセット
+                                        resetItemToInitialState()
+                                    } label: {
+                                        actionButtonContent("erase", systemImage: "eraser")
+                                            .frame(width: buttonWidth, height: 44)
+                                            .background(COLOR_BACK_INPUT)
+                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                            )
+                                    }
+                                    .accentColor(Color(.systemPink))
+                                    .accessibilityLabel(Text("erase"))
                                 }
-                                .accentColor(Color(.systemPink))
-                                .accessibilityLabel(Text("erase"))
                             }
+                            .frame(width: proxy.size.width, alignment: .leading)
                         }
-                        .frame(width: proxy.size.width, alignment: .leading)
                     }
-                    .frame(height: 100)
+                    .frame(height: pack.classifyMode == .tag ? 44 : 100)
                     // 固定枠ボタンの文字が欠けないよう「大」までで頭打ち
                     .cappedAtLargeFontSize()
                 }
@@ -438,10 +467,6 @@ struct ItemEditView: View {
                         }
                 )
 
-                // タグ（パック内のタグから複数選択。無ければ追加）
-                EditorSection(title: "tags", helpText: "help.tags") {
-                    ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius)
-                }
                 // メモ
                 EditorSection(title: "memo") {
                     PacklinMemoEditor(
@@ -452,6 +477,10 @@ struct ItemEditView: View {
                         backgroundColor: COLOR_BACK_INPUT,
                         cornerRadius: sectionCornerRadius
                     )
+                }
+                // タグ（パック内のタグから複数選択。無ければ追加）
+                EditorSection(title: "tags", helpText: "help.tags") {
+                    ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius)
                 }
             }
             .padding(.horizontal, contentHorizontalPadding)
@@ -1205,7 +1234,12 @@ private struct ItemQuantityEditor: View {
                 ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
                     HStack(alignment: .firstTextBaseline, spacing: 3) {
                         Button {
-                            activeFieldIndex = index
+                            // テンキーはクレメモと同じく画面下へ即座に出す（下からせり上がるアニメーションなし）
+                            var transaction = Transaction()
+                            transaction.disablesAnimations = true
+                            withTransaction(transaction) {
+                                activeFieldIndex = index
+                            }
                         } label: {
                             Text("\(field.binding.wrappedValue)")
                                 .font(numberFont)
@@ -1260,22 +1294,35 @@ private struct ItemQuantityEditor: View {
             }
         }
         .padding(8)
-        .sheet(isPresented: Binding(
+        // クレメモの金額テンキー（簡易電卓付き）を流用。背面を薄く暗くして画面下部に固定表示する
+        .fullScreenCover(isPresented: Binding(
             get: { activeFieldIndex != nil },
-            set: { shown in if !shown { activeFieldIndex = nil } }
+            set: { shown in if !shown { closeKeypad() } }
         )) {
             if let idx = activeFieldIndex {
                 let field = fields[idx]
-                NumericKeypadSheet(
+                NumericKeypadOverlay(
                     title: field.title,
                     unit: field.unit,
                     placeholder: field.binding.wrappedValue,
-                    maxValue: field.maxValue
+                    maxValue: field.maxValue,
+                    onCancel: closeKeypad
                 ) { newValue in
                     field.binding.wrappedValue = newValue
+                    closeKeypad()
                 }
                 .appFontScale(fontScale)
+                .presentationBackground(.clear)
             }
+        }
+    }
+
+    /// テンキーを閉じる（出すときと同じくアニメーションなし）
+    private func closeKeypad() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            activeFieldIndex = nil
         }
     }
 }
