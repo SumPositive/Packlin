@@ -12136,49 +12136,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ab 1000g als kg anzeigen"
+            "value" : "Ab 1.000 g in kg anzeigen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scale from 1000g to kg"
+            "value" : "Show kg from 1,000g"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar kg desde 1000 g"
+            "value" : "Mostrar en kg desde 1000 g"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Afficher en kg dès 1000 g"
+            "value" : "Afficher en kg dès 1 000 g"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostra kg da 1000 g"
+            "value" : "Mostra in kg da 1.000 g"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重量計1000gからkg表示"
+            "value" : "重量1,000gからkg表示"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1000g부터 kg 표시"
+            "value" : "1,000g부터 kg 표시"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1000g 起顯示 kg"
+            "value" : "1,000g 起顯示 kg"
           }
         }
       }

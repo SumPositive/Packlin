@@ -24,6 +24,7 @@ struct ItemRowView: View {
     @AppStorage(AppStorageKey.displayMode) private var displayMode: DisplayMode = .default
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
+    @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
 
     @State private var rowFrame: CGRect?
 
@@ -84,6 +85,11 @@ struct ItemRowView: View {
     }
     private var weightLabelText: String? {
         guard 0 < item.weight else { return nil }
+        // 個重量も「重量1,000gからkg表示」の設定に従う（入力は常にg）
+        if weightDisplayInKg, 1000 <= item.weight {
+            let kilogram = Double(item.weight) / 1000.0
+            return "\(kilogram.oneDecimalGrouped)\(String(localized: "kg"))"
+        }
         return "\(item.weight.decimalGrouped)\(weightUnit)"
     }
     private var quantityLabelText: String {
