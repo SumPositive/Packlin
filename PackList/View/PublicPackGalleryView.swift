@@ -789,7 +789,12 @@ private struct PublicPackDetailSheet: View {
                           value: item.packClassifyMode == .tag
                               ? String(localized: "classify.mode.tag")
                               : String(localized: "classify.mode.group"))
-                detailRow("public.pack.field.group.count", systemImage: "square.stack.3d.up", value: String(item.groupCount))
+                // タグ式はグループが「タグ式グループ」だけなので、グループ数の代わりにタグ数を出す
+                if item.packClassifyMode == .tag {
+                    detailRow("public.pack.field.tag.count", systemImage: "number", value: item.tagCount.map(String.init) ?? "-")
+                } else {
+                    detailRow("public.pack.field.group.count", systemImage: "square.stack.3d.up", value: String(item.groupCount))
+                }
                 detailRow("public.pack.field.item.count", systemImage: "checklist", value: String(item.itemCount))
                 detailRow("public.pack.field.weight", systemImage: "scalemass", value: weightText(item.totalWeight))
                 detailRow("public.pack.field.download.count", systemImage: "arrow.down.circle", value: String(item.downloadCount))

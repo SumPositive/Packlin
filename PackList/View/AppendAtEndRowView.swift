@@ -24,7 +24,11 @@ struct AppendAtEndRowView: View {
     var showsText = false
     /// 行の右端に添える表示（アイテム縦覧の合計重量など）。追加ボタンは中央のまま
     var trailingAccessory: AnyView? = nil
+    /// 行の左端に添える操作（アイテム縦覧の「まとめて」など）。追加ボタンは中央のまま
+    var leadingAccessory: AnyView? = nil
     let action: () -> Void
+
+    private var hasAccessory: Bool { leadingAccessory != nil || trailingAccessory != nil }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,7 +36,13 @@ struct AppendAtEndRowView: View {
             Color.clear
                 .frame(height: APPEND_AT_END_ROW_TOP_GAP)
 
-            HStack {
+            // 左右に添える表示があるときは横に並べ、重ならないようにする（追加ボタンは間の中央）
+            HStack(spacing: 8) {
+                if let leadingAccessory {
+                    leadingAccessory
+                        .fixedSize()
+                }
+
                 Spacer(minLength: 0)
 
                 Button(action: action) {
@@ -45,8 +55,8 @@ struct AppendAtEndRowView: View {
                                 .foregroundStyle(COLOR_ADD_ACTION)
                         }
                     }
-                    // アイコンと文字を含む左右40ptだけをタップ範囲にする
-                    .padding(.horizontal, APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
+                    // アイコンと文字を含む左右40ptだけをタップ範囲にする（左右に添える表示があるときは詰める）
+                    .padding(.horizontal, hasAccessory ? 16 : APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
                     .padding(.vertical, APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
                     .background(
                         Capsule()
@@ -61,13 +71,13 @@ struct AppendAtEndRowView: View {
                 .buttonStyle(.plain)
 
                 Spacer(minLength: 0)
-            }
-            .overlay(alignment: .trailing) {
+
                 if let trailingAccessory {
                     trailingAccessory
-                        .padding(.trailing, 8)
+                        .fixedSize()
                 }
             }
+            .padding(.horizontal, hasAccessory ? 8 : 0)
 
             // 上の余白（誤タップ防止ギャップ）と釣り合わせ、ボタンをセルの縦中央に置く
             Color.clear

@@ -172,6 +172,8 @@ let COLOR_TAG_TEXT: Color = Color(UIColor { traitCollection in
         return UIColor(red: 0.42, green: 0.32, blue: 0.72, alpha: 1.0)
     }
 })
+// まとめて操作（選択モード）の色。行頭の選択丸と同じオレンジで、開始ボタン・下部の帯をそろえる
+let COLOR_BULK: Color = .orange
 
 // View背景
 let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)

@@ -637,17 +637,22 @@ struct PackEditView: View {
         showPublishResult = true
     }
 
-    /// 検索用テキスト（name・memo・グループ名・アイテム名を連結）
+    /// 検索用テキスト（name・memo・グループ名・アイテム名・タグを連結）
+    /// 「タグ式グループ」はアプリが付けた名前なので、検索対象に含めない
     private func buildPublishSearchText() -> String {
         var parts: [String] = [pack.name, pack.memo]
         for group in pack.child {
-            parts.append(group.name)
-            parts.append(group.memo)
+            if group.id != pack.tagModeGroupID {
+                parts.append(group.name)
+                parts.append(group.memo)
+            }
             for item in group.child {
                 parts.append(item.name)
                 parts.append(item.memo)
             }
         }
+        // タグ名でも探せるようにする（同じタグは1回だけ）
+        parts.append(contentsOf: pack.allTags)
         return parts.filter { $0.isEmpty == false }.joined(separator: " ")
     }
 

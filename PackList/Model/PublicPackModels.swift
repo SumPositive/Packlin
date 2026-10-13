@@ -27,6 +27,8 @@ struct PublicPackSummary: Decodable, Identifiable {
     let publishedAtMs: Double?
     /// 分類方式（"group" / "tag"）。サーバーが返さない旧版や未知の値はグループ式として扱う
     let classifyMode: String?
+    /// タグの種類数（payload から集計）。サーバーが返さない旧版では nil
+    let tagCount: Int?
 
     var packClassifyMode: PackClassifyMode {
         classifyMode.flatMap(PackClassifyMode.init(rawValue:)) ?? .group

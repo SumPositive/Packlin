@@ -101,6 +101,8 @@ struct ItemTagEditor: View {
     /// 名前を編集中のタグ（長押しで設定）。nil のときは通常の検索・追加
     @State private var editingTag: String?
     @FocusState private var isSearchFocused: Bool
+    /// 削除の確認を出しているタグ
+    @State private var deletingTag: String?
 
     private var keyword: String {
         String(searchText.trimmingCharacters(in: .whitespacesAndNewlines).prefix(APP_MAX_TAG_LEN))
@@ -158,6 +160,17 @@ struct ItemTagEditor: View {
                     }
                     .buttonStyle(.borderless)
                     .disabled(!canRename)
+
+                    // 編集中のタグを、このパックのすべてのアイテムから外す（確認あり）
+                    Button {
+                        deletingTag = editingTag
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.red)
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel(Text("tag.delete.button"))
                 }
                 // 入力した文字のタグが無いときだけ、消去ボタンの左に「追加」を出す
                 if canAddKeyword {
@@ -223,6 +236,24 @@ struct ItemTagEditor: View {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(backgroundColor)
         )
+        .alert("tag.delete.confirm.title",
+               isPresented: Binding(get: { deletingTag != nil },
+                                    set: { if !$0 { deletingTag = nil } })) {
+            Button("delete", role: .destructive) {
+                if let deletingTag {
+                    deleteTag(deletingTag)
+                }
+                deletingTag = nil
+            }
+            Button("cancel", role: .cancel) {
+                deletingTag = nil
+            }
+        } message: {
+            if let deletingTag {
+                Text(String(format: String(localized: "tag.delete.confirm.message"),
+                            deletingTag, itemCount(with: deletingTag)))
+            }
+        }
         // 前後のアイテムへ切り替えたときも、そのアイテムで一覧を作り直す
         .task(id: item.id) {
             searchText = ""
@@ -282,6 +313,29 @@ struct ItemTagEditor: View {
         } else {
             knownTags = knownTags.map { $0 == oldTag ? newTag : $0 }
         }
+        endEditing()
+        isSearchFocused = false
+    }
+
+    /// パック内でそのタグが付いているアイテム数（開いているアイテムがパック外でも数える）
+    private func itemCount(with tag: String) -> Int {
+        var count = pack.tagItemCounts[tag] ?? 0
+        if item.parent?.parent?.id != pack.id, item.tags.contains(tag) {
+            count += 1
+        }
+        return count
+    }
+
+    /// タグをパック内のすべてのアイテムから外し、一覧からも消す（元に戻すで戻せる）
+    private func deleteTag(_ tag: String) {
+        for group in pack.child {
+            for target in group.child where target.tags.contains(tag) {
+                target.tags.removeAll { $0 == tag }
+            }
+        }
+        // 開いているアイテムがパック外（移動直後など）でも外す
+        item.tags.removeAll { $0 == tag }
+        knownTags.removeAll { $0 == tag }
         endEditing()
         isSearchFocused = false
     }

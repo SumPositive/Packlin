@@ -29,11 +29,15 @@ struct ItemDetailSheet: View {
 
     /// 最初から広げて開くか（新しいアイテムを追加したとき）
     private let startsExpanded: Bool
+    /// 前へ・次へで表示中のアイテムが変わったとき（一覧の強調表示を追従させる）
+    private let onCurrentItemChange: (M3Item) -> Void
 
     init(pack: M1Pack,
          item: M3Item,
          startsExpanded: Bool = false,
-         adjacentItemProvider: @escaping (M3Item, Int) -> M3Item?) {
+         adjacentItemProvider: @escaping (M3Item, Int) -> M3Item?,
+         onCurrentItemChange: @escaping (M3Item) -> Void = { _ in }) {
+        self.onCurrentItemChange = onCurrentItemChange
         self.pack = pack
         self.startsExpanded = startsExpanded
         self.adjacentItemProvider = adjacentItemProvider
@@ -58,7 +62,10 @@ struct ItemDetailSheet: View {
                     group: group,
                     item: currentItem,
                     onDismiss: { dismiss() },
-                    onSelectItem: { selected in currentItem = selected },
+                    onSelectItem: { selected in
+                        currentItem = selected
+                        onCurrentItemChange(selected)
+                    },
                     adjacentItemProvider: adjacentItemProvider,
                     isInSheet: true
                 )

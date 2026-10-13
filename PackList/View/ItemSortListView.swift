@@ -44,8 +44,19 @@ struct ItemSortListView: View {
     @State private var tagContentHeight: CGFloat = 0
     /// ドラッグ開始時の行数（ドラッグ中だけ値を持つ）
     @State private var tagRowsAtDragStart: Int?
+    /// タグ式の「まとめて」選択モード
+    @State private var isBulkMode = false
+    @State private var selectedBulkIDs: Set<M3Item.ID> = []
+    @State private var isShowingBulkTagSheet = false
+    @State private var isShowingBulkUntagSheet = false
+    @State private var isShowingBulkCopySheet = false
+    @State private var isConfirmingBulkDelete = false
+    /// まとめて操作の結果（コピー完了など）
+    @State private var bulkResultMessage: String?
     /// タグ式でシートに出しているアイテム
     @State private var detailItem: M3Item?
+    /// シートで表示中のアイテム（前へ・次へで変わる）。一覧の行を強調表示する
+    @State private var highlightedItemID: M3Item.ID?
     /// シートを最初から広げて開くか（新しいアイテムを追加したとき）
     @State private var detailStartsExpanded = false
     /// 並べ替え条件プルダウンの展開状態
@@ -181,6 +192,7 @@ struct ItemSortListView: View {
                 // アイテムを検索
                 searchHeader
                 // 並べ替え一覧
+                ScrollViewReader { listProxy in
                 List {
                     Section {
                         ForEach(filteredItems) { item in
@@ -189,11 +201,20 @@ struct ItemSortListView: View {
                                     if isTagMode {
                                         // タグ式は画面を移らず、シートで最小限の詳細を出す（広げると全部を編集）
                                         // 数量カプセルのタップも同じシートを開く（数量はシートで変える）
+                                        // 「まとめて」選択中は、行のタップで選択を切り替える
                                         Button {
-                                            openDetailSheet(item, expanded: false)
+                                            if isBulkMode {
+                                                toggleBulkSelection(item)
+                                            } else {
+                                                openDetailSheet(item, expanded: false)
+                                            }
                                         } label: {
-                                            ItemRowView(item: item) { selected, _ in
+                                            ItemRowView(item: item,
+                                                        isBulkMoveMode: isBulkMode,
+                                                        isBulkMoveSelected: selectedBulkIDs.contains(item.id)) { selected, _ in
                                                 openDetailSheet(selected, expanded: false)
+                                            } onToggleBulkMoveSelection: {
+                                                toggleBulkSelection(item)
                                             }
                                         }
                                     } else {
@@ -213,6 +234,18 @@ struct ItemSortListView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
+                                // シートで開いているアイテムの行を、薄いアクセント色と左端の帯で示す
+                                .overlay {
+                                    if highlightedItemID == item.id {
+                                        ZStack(alignment: .leading) {
+                                            Color.accentColor.opacity(0.10)
+                                            Color.accentColor
+                                                .frame(width: 4)
+                                        }
+                                        .allowsHitTesting(false)
+                                    }
+                                }
+                                .id(item.id)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 .listRowBackground(COLOR_ROW_BACK)
@@ -224,9 +257,12 @@ struct ItemSortListView: View {
                             AppendAtEndRowView(systemImage: "plus.circle",
                                                fontScale: fontScale,
                                                showsText: isBeginnerMode,
-                                               trailingAccessory: AnyView(displayedWeightTotal)) {
+                                               trailingAccessory: AnyView(displayedWeightTotal),
+                                               leadingAccessory: isBulkMode ? nil : AnyView(bulkStartButton)) {
                                 addItemAndNavigate(source: "item_browse_append_end_row")
                             }
+                            .disabled(isBulkMode)
+                            .opacity(isBulkMode ? 0.45 : 1.0)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                             .listRowBackground(COLOR_ROW_BACK)
@@ -251,6 +287,14 @@ struct ItemSortListView: View {
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
                 .environment(\.defaultMinListRowHeight, rowTextLines.usesExtraSmallItemRow ? 38 : 44)
+                // シートで開いた行が下のシートに隠れないよう、画面の上寄りまでスクロールする
+                .onChange(of: highlightedItemID) { _, newID in
+                    guard let newID else { return }
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        listProxy.scrollTo(newID, anchor: UnitPoint(x: 0.5, y: 0.2))
+                    }
+                }
+                }
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
@@ -362,7 +406,7 @@ struct ItemSortListView: View {
                                         .foregroundStyle(COLOR_ADD_ACTION)
                                 }
                                 .buttonStyle(.borderless)
-                                .disabled(isShowingPopup)
+                                .disabled(isShowingPopup || isBulkMode)
 
                                 if isBeginnerMode {
                                     Text("add.new.item")
@@ -436,12 +480,62 @@ struct ItemSortListView: View {
                 .zIndex(1)
             }
         }
-        .sheet(item: $detailItem) { item in
+        // 「まとめて」選択中だけ、下部に選択数と操作メニューを出す
+        .safeAreaInset(edge: .bottom) {
+            if isBulkMode {
+                bulkFooter
+            }
+        }
+        .sheet(isPresented: $isShowingBulkTagSheet) {
+            BulkTagSheet(pack: pack, items: selectedBulkItems, mode: .add) { tags in
+                applyBulkTags(tags)
+                isShowingBulkTagSheet = false
+            }
+            .appFontScale(fontScale)
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isShowingBulkUntagSheet) {
+            BulkTagSheet(pack: pack, items: selectedBulkItems, mode: .remove) { tags in
+                removeBulkTags(tags)
+                isShowingBulkUntagSheet = false
+            }
+            .appFontScale(fontScale)
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isShowingBulkCopySheet) {
+            BulkCopyPackSheet(sourcePack: pack, itemCount: selectedBulkItems.count) { destination in
+                copyBulkItems(to: destination)
+                isShowingBulkCopySheet = false
+            }
+            .appFontScale(fontScale)
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .alert("bulk.delete.title", isPresented: $isConfirmingBulkDelete) {
+            Button("delete", role: .destructive) {
+                deleteBulkItems()
+            }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text(String(format: String(localized: "bulk.delete.message"), selectedBulkItems.count))
+        }
+        .alert(bulkResultMessage ?? "", isPresented: Binding(
+            get: { bulkResultMessage != nil },
+            set: { if !$0 { bulkResultMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        }
+        .sheet(item: $detailItem, onDismiss: { highlightedItemID = nil }) { item in
             ItemDetailSheet(pack: pack,
                             item: item,
                             startsExpanded: detailStartsExpanded,
                             adjacentItemProvider: { current, offset in
                                 adjacentDisplayedItem(from: current, offset: offset)
+                            },
+                            onCurrentItemChange: { current in
+                                highlightedItemID = current.id
                             })
             .appFontScale(fontScale)
         }
@@ -504,10 +598,232 @@ struct ItemSortListView: View {
                                   isSufficient: isSufficient)
     }
 
+    // MARK: - まとめて（タグ式）
+
+    /// 「まとめて」選択を始めるボタン（末尾追加の行の左端）
+    private var bulkStartButton: some View {
+        Button(action: beginBulkMode) {
+            Text("bulk.select")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(COLOR_BULK)
+                .lineLimit(1)
+                .fixedSize()
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(COLOR_BULK.opacity(0.10))
+                )
+                .overlay(
+                    Capsule(style: .continuous)
+                        .strokeBorder(COLOR_BULK.opacity(0.5), lineWidth: 1)
+                )
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(filteredItems.isEmpty)
+        .cappedAtLargeFontSize()
+    }
+
+    /// 選択中の下部：取消・選択数（全選択の切り替え）・操作メニュー
+    private var bulkFooter: some View {
+        VStack(spacing: 0) {
+            COLOR_LIST_SEPARATOR
+                .frame(height: LIST_SEPARATOR_THICKNESS)
+                .ignoresSafeArea(edges: .horizontal)
+
+            HStack(spacing: 10) {
+                Button("cancel") {
+                    endBulkMode()
+                }
+                .buttonStyle(.bordered)
+                .tint(COLOR_BULK)
+
+                // 表示中（絞り込み後）のアイテムをまとめて選ぶ・外す
+                Button {
+                    toggleSelectAllDisplayed()
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(String(format: String(localized: "bulk.selected.count"), selectedBulkItems.count))
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        Text(LocalizedStringKey(isAllDisplayedSelected ? "bulk.deselect.all" : "bulk.select.all"))
+                            .font(.caption)
+                            .foregroundStyle(COLOR_BULK)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Menu {
+                    Button {
+                        isShowingBulkTagSheet = true
+                    } label: {
+                        Label("bulk.action.tag", systemImage: "tag")
+                    }
+                    Button {
+                        isShowingBulkUntagSheet = true
+                    } label: {
+                        Label("bulk.action.untag", systemImage: "tag.slash")
+                    }
+                    // 選んだアイテムにタグが1つも無ければ外せない
+                    .disabled(selectedBulkItems.allSatisfy { $0.tags.isEmpty })
+                    Button {
+                        isShowingBulkCopySheet = true
+                    } label: {
+                        Label("bulk.action.copy", systemImage: "plus.square.on.square")
+                    }
+                    Button(role: .destructive) {
+                        isConfirmingBulkDelete = true
+                    } label: {
+                        Label("delete", systemImage: "trash")
+                    }
+                } label: {
+                    Text("bulk.action")
+                        .font(.body.weight(.semibold))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(Capsule().fill(COLOR_BULK))
+                        .foregroundStyle(.white)
+                }
+                .disabled(selectedBulkItems.isEmpty)
+                .opacity(selectedBulkItems.isEmpty ? 0.45 : 1.0)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(.ultraThinMaterial)
+        }
+        .cappedAtLargeFontSize()
+    }
+
+    /// 選択中のアイテム（並びは表示順。絞り込みで見えなくなった選択も含める）
+    private var selectedBulkItems: [M3Item] {
+        baseSortedItems.filter { selectedBulkIDs.contains($0.id) }
+    }
+
+    private var isAllDisplayedSelected: Bool {
+        let displayed = filteredItems
+        return !displayed.isEmpty && displayed.allSatisfy { selectedBulkIDs.contains($0.id) }
+    }
+
+    private func beginBulkMode() {
+        editingItem = nil
+        popupAnchor = nil
+        isSearchFocused = false
+        selectedBulkIDs.removeAll()
+        isBulkMode = true
+        GALogger.log(.feature_use(name: "bulk_action", source: "item_browse", detail: "start"))
+    }
+
+    private func endBulkMode() {
+        selectedBulkIDs.removeAll()
+        isBulkMode = false
+    }
+
+    private func toggleBulkSelection(_ item: M3Item) {
+        if selectedBulkIDs.contains(item.id) {
+            selectedBulkIDs.remove(item.id)
+        } else {
+            selectedBulkIDs.insert(item.id)
+        }
+    }
+
+    /// 表示中のアイテムを全部選ぶ。全部選ばれていれば表示中の分を外す
+    private func toggleSelectAllDisplayed() {
+        let displayedIDs = Set(filteredItems.map(\.id))
+        if isAllDisplayedSelected {
+            selectedBulkIDs.subtract(displayedIDs)
+        } else {
+            selectedBulkIDs.formUnion(displayedIDs)
+        }
+    }
+
+    /// 選んだアイテムにタグを付ける（既に付いていれば付け直さない。上限はタグの決まりに従う）
+    private func applyBulkTags(_ tags: [String]) {
+        let items = selectedBulkItems
+        guard !items.isEmpty, !tags.isEmpty else { return }
+        GALogger.log(.operation(name: "tag", target: "item", source: "bulk_action", detail: nil, count: items.count))
+        history.perform(context: modelContext) {
+            for item in items {
+                let merged = M3Item.sanitizedTags(item.tags + tags)
+                if merged != item.tags {
+                    item.tags = merged
+                }
+            }
+        }
+        endBulkMode()
+    }
+
+    /// 選んだアイテムからタグを外す
+    private func removeBulkTags(_ tags: [String]) {
+        let items = selectedBulkItems
+        guard !items.isEmpty, !tags.isEmpty else { return }
+        GALogger.log(.operation(name: "untag", target: "item", source: "bulk_action", detail: nil, count: items.count))
+        let removing = Set(tags)
+        history.perform(context: modelContext) {
+            for item in items where item.tags.contains(where: removing.contains) {
+                item.tags.removeAll { removing.contains($0) }
+            }
+        }
+        endBulkMode()
+    }
+
+    /// 選んだアイテムを別のパックへコピーする
+    /// - タグ式のパックへは「タグ式グループ」に入れる
+    /// - グループ式のパックへは、コピー元のパック名で新しいグループを作って入れる（どこから来たか分かるように）
+    private func copyBulkItems(to destination: M1Pack) {
+        let items = selectedBulkItems
+        guard !items.isEmpty else { return }
+        GALogger.log(.operation(name: "copy", target: "item", source: "bulk_action", detail: destination.classifyMode.rawValue, count: items.count))
+        history.perform(context: modelContext) {
+            let group: M2Group
+            if destination.classifyMode == .tag {
+                group = destination.groupForNewItem()
+            } else {
+                group = M2Group(name: pack.name, order: destination.nextGroupOrder(), parent: destination)
+                modelContext.insert(group)
+            }
+            var order = group.nextItemOrder()
+            for source in items {
+                // 進捗（チェック・在庫）は引き継がない（パック複製と同じ）
+                let copied = M3Item(name: source.name,
+                                    memo: source.memo,
+                                    check: false,
+                                    stock: 0,
+                                    need: source.need,
+                                    weight: source.weight,
+                                    tags: source.tags,
+                                    order: order,
+                                    parent: group)
+                modelContext.insert(copied)
+                order += ORDER_SPARSE
+            }
+        }
+        bulkResultMessage = String(format: String(localized: "bulk.copy.done"),
+                                   items.count,
+                                   destination.name.isEmpty ? String(localized: "new.pack") : destination.name)
+        endBulkMode()
+    }
+
+    /// 選んだアイテムを削除する
+    private func deleteBulkItems() {
+        let items = selectedBulkItems
+        guard !items.isEmpty else { return }
+        GALogger.log(.operation(name: "delete", target: "item", source: "bulk_action", detail: nil, count: items.count))
+        history.perform(context: modelContext) {
+            for item in items {
+                item.delete()
+            }
+        }
+        endBulkMode()
+    }
+
     /// タグ式のアイテムシートを開く
     private func openDetailSheet(_ item: M3Item, expanded: Bool) {
         detailStartsExpanded = expanded
         detailItem = item
+        highlightedItemID = item.id
     }
 
     /// シートの前へ・次へでたどる隣のアイテム（縦覧に表示中の並び・絞り込みのまま）
