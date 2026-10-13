@@ -21,23 +21,31 @@ struct TagChip: View {
     var onLongPress: (() -> Void)? = nil
     let action: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     private var borderColor: Color {
         if isEditing { return Color.orange }
-        return isSelected ? COLOR_TAG.opacity(0.62) : Color.secondary.opacity(0.25)
+        // ダークでは背景が暗くタグ色が沈むので、枠を濃くする
+        return isSelected ? COLOR_TAG.opacity(colorScheme == .dark ? 0.9 : 0.62) : Color.secondary.opacity(0.25)
+    }
+
+    /// 選択中の塗り。ダークでは薄い塗りだとくすんで見えるので、濃いめにして明るく見せる
+    private var selectedFill: Color {
+        COLOR_TAG.opacity(colorScheme == .dark ? 0.32 : 0.14)
     }
 
     private var chipLabel: some View {
-        // 選択中も文字は太字にせず色も変えない（幅が変わると折り返しの詰め込みが組み直され、並びが入れ替わる）
-        // 選択は背景と枠のタグ色だけで示す
+        // 選択中も文字は太字にしない（幅が変わると折り返しの詰め込みが組み直され、並びが入れ替わる）
+        // 選択は背景・枠のタグ色と、濃いタグ色の文字で示す
         Text(title)
             .font(.subheadline)
-            .foregroundStyle(isSpecial ? Color.secondary : Color.primary)
+            .foregroundStyle(isSelected ? COLOR_TAG_TEXT : (isSpecial ? Color.secondary : Color.primary))
             .lineLimit(1)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(
                 Capsule(style: .continuous)
-                    .fill(isSelected ? COLOR_TAG.opacity(0.16)
+                    .fill(isSelected ? selectedFill
                           : (isSpecial ? Color(.secondarySystemBackground) : Color(.systemBackground)))
             )
             .overlay(
@@ -190,7 +198,8 @@ struct ItemTagEditor: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                SettingFlowLayout(spacing: 8, rowSpacing: 8) {
+                // 左寄せで並べ、行末に空きがあれば後ろの収まるタグを繰り上げる（アイテム縦覧のタグ一覧と同じ）
+                AZFlowLayout(spacing: 8, rowSpacing: 8, alignment: .leading, packToFill: true) {
                     ForEach(visibleTags, id: \.self) { tag in
                         let isSelected = item.tags.contains(tag)
                         TagChip(title: tag,

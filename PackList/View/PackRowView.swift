@@ -193,9 +193,14 @@ private extension PackRowView {
     /// 穴を上にして、取っ手の右端から少し傾いて垂れ下がるように置く
     /// 位置や傾きを調整するときは offset と rotationEffect の値を変える
     var tagModeIcon: some View {
-        Image(systemName: "tag.fill")
+        // 選択中のタグボタンと同じ見せ方にそろえる（薄いタグ色の塗り＋濃いタグ色の線）
+        ZStack {
+            Image(systemName: "tag.fill")
+                .foregroundStyle(COLOR_TAG.opacity(0.35))
+            Image(systemName: "tag")
+                .foregroundStyle(COLOR_TAG_TEXT)
+        }
             .font(.system(size: 10, weight: .semibold))
-            .foregroundStyle(COLOR_TAG)
             // バッグの線と重なっても形が分かるよう、背景色で縁取る
             .background(
                 Image(systemName: "tag.fill")

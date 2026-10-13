@@ -155,12 +155,21 @@ let COLOR_ADD_ACTION: Color = Color(UIColor { traitCollection in
         return UIColor(red: 0.22, green: 0.52, blue: 0.30, alpha: 1.0)
     }
 })
-// タグの色（薄い金色）。パック一覧のタグ式アイコン・分類方式の選択・選択中のタグボタンで統一する
+// タグの色（ラベンダー）。パック一覧のタグ式アイコン・分類方式の選択・選択中のタグボタンの枠と塗りで統一する
+// 青（チェック・操作）・緑（追加）・赤（削除）・オレンジ（編集中）のどれとも系統が違う色にしている
 let COLOR_TAG: Color = Color(UIColor { traitCollection in
     if traitCollection.userInterfaceStyle == .dark {
-        return UIColor(red: 0.93, green: 0.80, blue: 0.46, alpha: 1.0)
+        return UIColor(red: 0.72, green: 0.62, blue: 1.00, alpha: 1.0)
     } else {
-        return UIColor(red: 0.80, green: 0.63, blue: 0.24, alpha: 1.0)
+        return UIColor(red: 0.56, green: 0.46, blue: 0.86, alpha: 1.0)
+    }
+})
+// 選択中タグの文字色（濃いラベンダー）。塗りの上でも読めるよう、ライトは濃く・ダークは明るくする
+let COLOR_TAG_TEXT: Color = Color(UIColor { traitCollection in
+    if traitCollection.userInterfaceStyle == .dark {
+        return UIColor(red: 0.80, green: 0.72, blue: 1.00, alpha: 1.0)
+    } else {
+        return UIColor(red: 0.42, green: 0.32, blue: 0.72, alpha: 1.0)
     }
 })
 
