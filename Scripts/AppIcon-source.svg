@@ -8,9 +8,9 @@
   <defs>
     <!-- 背景: 左上明→右下暗の赤茶グラデ -->
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#e5774f"/>
-      <stop offset="0.55" stop-color="#c05a46"/>
-      <stop offset="1" stop-color="#9b3e3b"/>
+      <stop offset="0" stop-color="#bd5f57"/>
+      <stop offset="0.55" stop-color="#9c4842"/>
+      <stop offset="1" stop-color="#6f2e2c"/>
     </linearGradient>
     <!-- 四角のわずかな縦グラデ(立体感) -->
     <linearGradient id="sqL" x1="0" y1="0" x2="0" y2="1">
