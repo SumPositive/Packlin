@@ -94,7 +94,6 @@ struct GroupRowView: View {
                           : "square")
                     .imageScale(.large)
                     .symbolRenderingMode(.hierarchical) // 奥行きや立体感のある見た目になる
-                    .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating) // Once
                     .padding(.leading, 0)
                     .padding(.trailing, 8)
                     .padding(.vertical, 8)

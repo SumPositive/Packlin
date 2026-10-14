@@ -1039,7 +1039,6 @@ struct ItemEditView: View {
                 .imageScale(.large)
                 .tint(item.need == 0 ? .secondary : .accentColor)
                 .symbolRenderingMode(.hierarchical)
-                .symbolEffect(.breathe.pulse.byLayer, options: .nonRepeating)
         }
         .buttonStyle(.borderless)
     }
