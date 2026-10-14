@@ -77,18 +77,18 @@ struct ItemSortListView: View {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// 今の絞り込み条件。アイテム詳細の前へ・次へでも同じ条件を使うので、NavigationStore に渡す
+    private var currentFilter: ItemBrowseFilter {
+        ItemBrowseFilter(packID: pack.id,
+                         tag: selectedTag,
+                         isUntagged: isUntaggedSelected,
+                         keyword: trimmedSearchText)
+    }
+
     private var filteredItems: [M3Item] {
-        let keyword = trimmedSearchText
-        guard !keyword.isEmpty || selectedTag != nil || isUntaggedSelected else { return displayedItems }
-        return displayedItems.filter { item in
-            // 選んだタグが付いているものに絞る
-            if let selectedTag, !item.tags.contains(selectedTag) { return false }
-            if isUntaggedSelected, !item.tags.isEmpty { return false }
-            guard !keyword.isEmpty else { return true }
-            return item.name.localizedCaseInsensitiveContains(keyword) ||
-                item.memo.localizedCaseInsensitiveContains(keyword) ||
-                item.tags.contains { $0.localizedCaseInsensitiveContains(keyword) }
-        }
+        let filter = currentFilter
+        guard filter.isActive else { return displayedItems }
+        return displayedItems.filter(filter.matches)
     }
 
     /// 検索欄の下に出すタグ一覧
@@ -426,6 +426,11 @@ struct ItemSortListView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .updateUndoRedo, object: nil)) { _ in
                 updateUndoRedo()
+            }
+            // 絞り込み条件を共有し、ここから開いたアイテム詳細の前へ・次へを絞り込みどおりにする
+            .onAppear { navigationStore.browseFilter = currentFilter }
+            .onChange(of: currentFilter) { _, filter in
+                navigationStore.browseFilter = filter
             }
             .onChange(of: baseSortedItemIDs) { _, _ in
                 // 並びに変更があっても行は動かさず、追加・削除だけ反映する

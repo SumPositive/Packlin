@@ -131,6 +131,7 @@ struct ItemEditScene: View {
     let sort: ItemSortOption?
 
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationStore: NavigationStore
     @Query private var packs: [M1Pack]
     @Query private var groupItems: [M3Item]
     @State private var currentItemID: M3Item.ID
@@ -174,7 +175,17 @@ struct ItemEditScene: View {
     private var availableItems: [M3Item] {
         if let sort, let pack = packs.first {
             // 縦覧で逆順にしていれば、前後移動も同じ並びでたどる
-            return sort.sortedItems(from: pack, reversed: sort.isReversedInBrowse).filter { $0.parent != nil }
+            let items = sort.sortedItems(from: pack, reversed: sort.isReversedInBrowse).filter { $0.parent != nil }
+            // 縦覧で絞り込んでいれば、前後移動も絞り込んだアイテムだけをたどる
+            // （編集でタグを外すなどして表示中のアイテムが条件から外れたときは、迷子にならないよう絞り込まない）
+            let filter = navigationStore.browseFilter
+            if filter.packID == pack.id, filter.isActive {
+                let filtered = items.filter(filter.matches)
+                if filtered.contains(where: { $0.id == currentItemID }) {
+                    return filtered
+                }
+            }
+            return items
         }
         return groupItems
     }
