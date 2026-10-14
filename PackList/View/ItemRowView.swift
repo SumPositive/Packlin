@@ -377,6 +377,8 @@ private extension ItemRowView {
             .contentShape(Rectangle())
         }
         .buttonStyle(BorderlessButtonStyle())
+        // スクショ撮影用: 数量部分（UIテストでタップして数量パネルを開く）
+        .accessibilityIdentifier("itemRow_quantity")
     }
 
     @ViewBuilder

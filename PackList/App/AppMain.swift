@@ -402,7 +402,11 @@ struct AppMain: App {
                 // Pack行
                 nextOrder += ORDER_SPARSE
                 // PackJsonDTO をDBへインポートする
-                PackImporter.insertPack(from: dto, into: context, order: nextOrder)
+                let pack = PackImporter.insertPack(from: dto, into: context, order: nextOrder)
+                // 新規パックと同じくタグ式で始める
+                // 同梱データはグループ式の構造なので、グループ式→タグ式の切り替えと同じくグループ名をタグにして付ける
+                pack.classifyMode = .tag
+                pack.tagItemsWithGroupNames()
             } catch {
                 // サンプル読み込み失敗をAnalyticsへ送り、同梱データ問題の検知に使う
                 logError(error, domain: "sample_pack_load", message: "サンプル読み込み失敗 \(fileName)")

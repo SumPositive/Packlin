@@ -6,11 +6,15 @@
 //  ※ 撮影専用ターゲットに置くことで、通常の Test 実行（Cmd+U / 既存 PackListUITests）
 //    では一切走らない。撮影は fastlane（capture_screenshots）からのみ起動する。
 //
-//  撮影カット:
-//    01PackList      … パック一覧（起動直後。サンプルパックが投入済み）
-//    02GroupList     … 先頭パックのグループ一覧
-//    03ItemList      … 先頭グループのアイテム一覧
-//    04PublicGallery … 公開パックから取得（実サーバのサンプル・広告なし）
+//  撮影カット（タグ式のサンプルパックで撮る。サンプルは初回起動時にタグ式で投入される）:
+//    01PackList      … パック一覧（起動直後。バッグにタグがぶら下がったタグ式のアイコン）
+//    02ItemBrowse    … 先頭パックのアイテム縦覧（先頭のタグで絞り込んだ状態）
+//    03QuantityPanel … 先頭アイテムの数量パネル（吹き出し）
+//    04ItemDetail    … 先頭アイテムのアイテム詳細（タグ・数量）
+//    05PublicGallery … 公開パックから取得（実サーバのサンプル・広告なし）
+//
+//  ※ サンプルパックは「パックが1つも無いとき」だけ投入されるので、撮影前にアプリを入れ直す
+//    （Snapfile の reinstall_app(true)）。古いデータが残るとグループ式のままになる。
 //
 //  遷移の考え方:
 //   - 先頭パック行/グループ行の遷移領域は透明な NavigationLink(Color.clear) で、
@@ -37,30 +41,45 @@ final class PacklinSnapshotUITests: XCTestCase {
         // 01: パック一覧
         snapshot("01PackList")
 
-        // 04: 公開パックから取得（★ push で深い画面に入る前に、ルートで撮る。
+        // 05: 公開パックから取得（★ push で深い画面に入る前に、ルートで撮る。
         //     こうすれば popToRoot 不要で確実にルートから popover を開ける）
         if tap(app, "packAdd_button") {
             sleep(1)
             // ポップオーバー内の「公開パックから取得」項目を identifier→実文言→座標で多段タップ
             if tapPublicGalleryOption(app) {
                 sleep(3) // 実サーバ取得を待つ
-                snapshot("04PublicGallery")
+                snapshot("05PublicGallery")
                 // シートを閉じてパック一覧へ戻る（下スワイプ or 閉じるボタン）
                 dismissSheet(app)
                 sleep(1)
             }
         }
 
-        // 02: 先頭パック → グループ一覧
-        if tapFirstRowNavigation(app, identifier: "packRow_first_open") {
-            sleep(2)
-            snapshot("02GroupList")
+        // 02: 先頭パック → アイテム縦覧（タグ式なのでグループ一覧を経由しない）
+        guard tapFirstRowNavigation(app, identifier: "packRow_first_open") else { return }
+        sleep(2)
+        // 先頭のタグで絞り込んで、タグ式らしい画面にする
+        if tap(app, "browseTag_first", timeout: 3) {
+            sleep(1)
+        }
+        snapshot("02ItemBrowse")
 
-            // 03: 先頭グループ → アイテム一覧
-            if tapFirstRowNavigation(app, identifier: "groupRow_first_open") {
-                sleep(2)
-                snapshot("03ItemList")
-            }
+        // 03: 先頭アイテムの数量部分 → 数量パネル（吹き出し）
+        if tap(app, "itemRow_quantity", timeout: 3) {
+            sleep(1)
+            snapshot("03QuantityPanel")
+            // 吹き出しの外（画面上部）をタップして閉じる
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).tap()
+            sleep(1)
+        }
+
+        // 04: 先頭アイテムの行（名称のあたり）→ アイテム詳細
+        let firstItemRow = app.cells.element(boundBy: 0)
+        if firstItemRow.waitForExistence(timeout: 3) {
+            // 左端のチェック丸と右端の数量を避け、名称のあたりを叩く
+            firstItemRow.coordinate(withNormalizedOffset: CGVector(dx: 0.35, dy: 0.5)).tap()
+            sleep(2)
+            snapshot("04ItemDetail")
         }
     }
 

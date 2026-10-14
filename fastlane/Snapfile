@@ -49,3 +49,9 @@ concurrent_simulators(false)
 # 失敗が続く場合は、実行前に `xcrun simctl shutdown all` +
 # `sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService` でクリーンにする。
 number_of_retries(3)
+
+# --- サンプルパックを毎回入れ直す ---
+# サンプルパックは「パックが1つも無いとき」だけ投入され、そのときタグ式に変換される。
+# 前回撮影のデータが残っているとグループ式の古いサンプルのままになるので、撮影ごとにアプリを入れ直す。
+reinstall_app(true)
+app_identifier("com.azukid.AzPackList5")

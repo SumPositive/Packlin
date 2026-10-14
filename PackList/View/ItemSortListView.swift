@@ -1005,6 +1005,8 @@ struct ItemSortListView: View {
             // タグを選んだら絞り込み結果が見えるよう、キーボードを閉じる
             isSearchFocused = false
         }
+        // スクショ撮影用: 一覧の先頭のタグ（UIテストでタップして絞り込む）
+        .accessibilityIdentifier(tag == visibleTags.first ? "browseTag_first" : "")
     }
 
     /// 「タグなし」もアイテム数の多い順の位置に入れる（同数のときは通常のタグの後ろ）
