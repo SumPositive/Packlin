@@ -1095,8 +1095,35 @@ struct ItemQuickEditView: View {
                 .allowsTightening(true)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal, 8)
+            // メモ（あれば名称の下に表示のみ）
+            if !item.memo.isEmpty {
+                Text(item.memo)
+                    .font(FONT_MEMO)
+                    .foregroundStyle(COLOR_MEMO)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .padding(.horizontal, 8)
+                    .padding(.top, -6)
+            }
             // 数量 編集
             ItemQuantityEditor(item: item)
+            // タグ（あれば数量の下に表示のみ。アイテム行のタグと同じ小さなカプセル）
+            if !item.tags.isEmpty {
+                AZFlowLayout(spacing: 4, rowSpacing: 4, alignment: .leading, packToFill: true) {
+                    ForEach(item.tags, id: \.self) { tag in
+                        Text(tag)
+                            .font(.caption)
+                            .foregroundStyle(COLOR_TAG_TEXT)
+                            .lineLimit(1)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(COLOR_TAG.opacity(0.16)))
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+                .cappedAtLargeFontSize()
+            }
         }
         .padding(8)
         // ダイアル（最小幅80pt）が3列ゆったり収まる幅にする。最大460pt、最低300pt

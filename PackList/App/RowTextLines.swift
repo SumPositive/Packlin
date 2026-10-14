@@ -24,12 +24,13 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
     /// 設定画面での表示用ラベル
     var localizedKey: LocalizedStringKey {
         switch self {
+        // 行数ではなく「何を出すか」で選ぶ名前にする（タグやメモが空なら、その行は出ないため）
         case .threeLines:
-            return "3.lines"
+            return "row.lines.tags.memo"
         case .twoLines:
-            return "2.lines"
+            return "row.lines.tags"
         case .oneLine:
-            return "1.line"
+            return "row.lines.basic"
         case .minimal:
             return "min"
         case .extraSmall:
@@ -37,35 +38,16 @@ enum RowTextLines: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// name 部分の最大行数
-    var nameLineLimit: Int {
-        switch self {
-        case .threeLines:
-            return 3
-        case .twoLines:
-            return 2
-        case .oneLine, .minimal, .extraSmall:
-            return 1
-        }
+    // MARK: 行の表示（1行目は常に「名称・重量（・数量）」。アイテム行・グループ行で共通）
+
+    /// アイテム行の2行目にタグを出すか（タグ付き・タグ・メモ付き）
+    var itemShowsTagLine: Bool {
+        self == .twoLines || self == .threeLines
     }
 
-    /// memo 部分の最大行数（0で非表示にする）
-    var memoLineLimit: Int {
-        switch self {
-        case .threeLines:
-            return 3
-        case .twoLines:
-            return 2
-        case .oneLine:
-            return 1
-        case .minimal, .extraSmall:
-            return 0
-        }
-    }
-
-    /// 重量計や数量カプセルをname行に寄せるかどうか
-    var placeAccessoryOnNameLine: Bool {
-        self == .minimal || self == .extraSmall
+    /// メモの行を出すか（タグ・メモ付き）。アイテム行は3行目、グループ行は2行目
+    var itemShowsMemoLine: Bool {
+        self == .threeLines
     }
 
     /// アイテム行だけをさらに詰める極小表示かどうか

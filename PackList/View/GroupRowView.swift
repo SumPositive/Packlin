@@ -55,10 +55,16 @@ struct GroupRowView: View {
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // 行数設定をまとめた補助値
-    private var nameLineLimit: Int { rowTextLines.nameLineLimit }
-    private var memoLineLimit: Int { rowTextLines.memoLineLimit }
-    private var showMemo: Bool { 0 < memoLineLimit }
-    private var showWeightOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
+    // アイテム行とそろえて「1行目：名称・重量」を基本にし、「タグ・メモ付き」の設定のときだけ2行目にメモを足す
+    // （グループにはタグが無いので、「タグ付き」は名称のみと同じ）
+    private var nameLineLimit: Int { 1 }
+    private var memoLineLimit: Int { 1 }
+    private var showMemo: Bool {
+        guard rowTextLines.itemShowsMemoLine else { return false }
+        // 初心者で名称・メモとも空のときは、メモ行に説明を出す
+        return !group.memo.isEmpty || (isBeginnerMode && group.name.isEmpty)
+    }
+    private var showWeightOnNameLine: Bool { true }
     private var limitedName: String {
         // 改行を基準に上限行だけ残し、末尾は標準のトランケートに任せる
         group.name.limitedByNewlines(maxLines: nameLineLimit)

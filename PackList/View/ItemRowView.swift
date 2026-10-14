@@ -36,21 +36,34 @@ struct ItemRowView: View {
     // 説明文を出すかどうかのフラグを共通にまとめる
     private var isBeginnerMode: Bool { displayMode == .beginner }
     // 行数設定をまとめた補助値
-    private var nameLineLimit: Int { rowTextLines.nameLineLimit }
-    private var memoLineLimit: Int { rowTextLines.memoLineLimit }
-    private var showMemo: Bool { 0 < memoLineLimit }
-    private var showQuantityOnNameLine: Bool { rowTextLines.placeAccessoryOnNameLine }
-    private var isExtraSmallRow: Bool { rowTextLines.usesExtraSmallItemRow }
-    private var itemRowHeight: CGFloat { isExtraSmallRow ? appExtraSmallRowHeight(fontScale) : rowHeight }
-    // 文字サイズに合わせて上下余白を広げる（極小モードは 0 のまま）
-    private var contentVerticalPadding: CGFloat {
-        appItemContentVerticalPadding(fontScale, isExtraSmall: isExtraSmallRow)
+    // アイテム行は「1行目：名称・重量・数量」を基本にし、2行の設定で2行目にタグ、3行の設定で3行目にメモを足す
+    private var nameLineLimit: Int { 1 }
+    private var memoLineLimit: Int { 1 }
+    private var showTagLine: Bool { rowTextLines.itemShowsTagLine && !item.tags.isEmpty }
+    private var showMemo: Bool {
+        guard rowTextLines.itemShowsMemoLine else { return false }
+        // 初心者で名称・メモとも空のときは、メモ行に説明を出す
+        return !item.memo.isEmpty || (isBeginnerMode && item.name.isEmpty)
     }
-    private var checkTopPadding: CGFloat { isExtraSmallRow ? 0 : 8 }
-    private var checkBottomPadding: CGFloat { isExtraSmallRow ? 0 : 12 }
+    private var showQuantityOnNameLine: Bool { true }
+    private var isExtraSmallRow: Bool { rowTextLines.usesExtraSmallItemRow }
+    /// 最小は、上下の余白を1行と極小の中間にする（どちらも1行目だけの表示なので、詰め具合で差を付ける）
+    private var isMinimalRow: Bool { rowTextLines == .minimal }
+    private var itemRowHeight: CGFloat {
+        if isExtraSmallRow { return appExtraSmallRowHeight(fontScale) }
+        if isMinimalRow { return appMinimalRowHeight(fontScale) }
+        return rowHeight
+    }
+    // 文字サイズに合わせて上下余白を広げる（極小モードは 0 のまま、最小は1行の半分）
+    private var contentVerticalPadding: CGFloat {
+        let padding = appItemContentVerticalPadding(fontScale, isExtraSmall: isExtraSmallRow)
+        return isMinimalRow ? padding / 2 : padding
+    }
+    private var checkTopPadding: CGFloat { isExtraSmallRow ? 0 : (isMinimalRow ? 4 : 8) }
+    private var checkBottomPadding: CGFloat { isExtraSmallRow ? 0 : (isMinimalRow ? 6 : 12) }
     private var checkTrailingPadding: CGFloat { isExtraSmallRow ? 5 : 8 }
     private var quantityHorizontalPadding: CGFloat { isExtraSmallRow ? 4 : 5 }
-    private var quantityVerticalPadding: CGFloat { isExtraSmallRow ? 0 : 3 }
+    private var quantityVerticalPadding: CGFloat { isExtraSmallRow ? 0 : (isMinimalRow ? 2 : 3) }
     private var quantityLeadingPadding: CGFloat { isExtraSmallRow ? 5 : 8 }
     private var itemIconScale: Image.Scale { .large }
     private var nameFont: Font { FONT_NAME }
@@ -63,14 +76,8 @@ struct ItemRowView: View {
         item.memo.limitedByNewlines(maxLines: memoLineLimit)
     }
     private var detailRowNeeded: Bool {
-        // memo行か数量行を残す必要があるかを判定する
-        if showMemo {
-            return true
-        }
-        if showQuantityOnNameLine {
-            return false
-        }
-        return true
+        // 数量は常に1行目なので、メモ行を出すときだけ必要
+        showMemo
     }
 
     
@@ -176,6 +183,19 @@ struct ItemRowView: View {
                     }
                 }
 
+                // 2行目：タグ（1行に収まらない分は右端で切る）
+                if showTagLine {
+                    HStack(spacing: 0) {
+                        // インデント
+                        Rectangle()
+                            .frame(width: 30, height: 1)
+                            .foregroundStyle(.clear)
+                        tagLineView
+                    }
+                    .padding(.bottom, 2)
+                }
+
+                // 3行目：メモ
                 if detailRowNeeded {
                     HStack(spacing: 0) {
                         // インデント
@@ -287,6 +307,29 @@ private extension ItemRowView {
             return .orange
         }
         return item.need == 0 ? .secondary : .accentColor
+    }
+
+    /// タグ行。選択中のタグボタンと同じ色の小さなカプセルを横に並べる
+    var tagLineView: some View {
+        HStack(spacing: 4) {
+            ForEach(item.tags, id: \.self) { tag in
+                Text(tag)
+                    .font(.caption)
+                    .foregroundStyle(COLOR_TAG_TEXT)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule().fill(COLOR_TAG.opacity(0.16))
+                    )
+            }
+        }
+        .padding(.leading, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .clipped()
+        // タグのカプセルが大きくなりすぎないよう「大」までで頭打ち
+        .cappedAtLargeFontSize()
     }
 
     /// 名前テキスト（ViewThatFits の両レイアウトで共通利用するため切り出し）

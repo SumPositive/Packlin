@@ -80,6 +80,11 @@ func appRowHeight(_ fontScale: FontScale) -> CGFloat {
     }
 }
 
+/// 最小モード時のアイテム行の高さ（1行と極小の中間）
+func appMinimalRowHeight(_ fontScale: FontScale) -> CGFloat {
+    (appRowHeight(fontScale) + appExtraSmallRowHeight(fontScale)) / 2
+}
+
 /// 極小モード時の行高さも fontScale に応じて調整する
 func appExtraSmallRowHeight(_ fontScale: FontScale) -> CGFloat {
     switch fontScale {

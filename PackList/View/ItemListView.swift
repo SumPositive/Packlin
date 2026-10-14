@@ -163,7 +163,9 @@ struct ItemListView: View {
                 .environment(\.defaultMinListRowHeight,
                              rowTextLines.usesExtraSmallItemRow
                                 ? appExtraSmallRowHeight(fontScale)
-                                : appRowHeight(fontScale))
+                                : rowTextLines == .minimal
+                                    ? appMinimalRowHeight(fontScale)
+                                    : appRowHeight(fontScale))
                 .navigationBarBackButtonHidden(true)
                 .onChange(of: scrollTargetItemID) { _, _ in
                     scrollToNewItemIfReady(scrollProxy)

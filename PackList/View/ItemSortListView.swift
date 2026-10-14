@@ -263,7 +263,8 @@ struct ItemSortListView: View {
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
-                .environment(\.defaultMinListRowHeight, rowTextLines.usesExtraSmallItemRow ? 38 : 44)
+                .environment(\.defaultMinListRowHeight,
+                             rowTextLines.usesExtraSmallItemRow ? 38 : (rowTextLines == .minimal ? 41 : 44))
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
