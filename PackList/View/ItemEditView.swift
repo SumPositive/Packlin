@@ -34,8 +34,6 @@ struct ItemEditView: View {
     let onDismiss: () -> Void
     let onSelectItem: (M3Item) -> Void
     let adjacentItemProvider: ((M3Item, Int) -> M3Item?)?
-    /// シートの中に出しているか（タグ式のアイテムシート）。左上の戻るボタンを下向きにする
-    let isInSheet: Bool
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var history: UndoStackService
@@ -64,6 +62,8 @@ struct ItemEditView: View {
     @State private var keepSourceItem = false
     @State private var moveInsertPosition: MoveInsertPosition = .end
     @State private var isDraggingInsideQuantitySection = false
+    /// タグ一覧を出すか。画面遷移を速く始めるため、開いた直後は出さず、遷移が終わる頃に出す
+    @State private var showsTagEditor = false
     /// 数量の操作をダイアルにするか（既定はステッパ）。右上のボタンでタップの都度切り替える
     @AppStorage(AppStorageKey.itemQuantityUsesDial) private var quantityUsesDial = false
     @State private var isShowingDialSettings = false
@@ -282,15 +282,13 @@ struct ItemEditView: View {
          item: M3Item,
          onDismiss: @escaping () -> Void,
          onSelectItem: @escaping (M3Item) -> Void,
-         adjacentItemProvider: ((M3Item, Int) -> M3Item?)? = nil,
-         isInSheet: Bool = false) {
+         adjacentItemProvider: ((M3Item, Int) -> M3Item?)? = nil) {
         self.pack = pack
         self.group = group
         self._item = Bindable(item)
         self.onDismiss = onDismiss
         self.onSelectItem = onSelectItem
         self.adjacentItemProvider = adjacentItemProvider
-        self.isInSheet = isInSheet
         self._selectedPackID = State(initialValue: pack.id)
         self._selectedGroupID = State(initialValue: group.id)
     }
@@ -484,7 +482,23 @@ struct ItemEditView: View {
                 }
                 // タグ（パック内のタグから複数選択。無ければ追加）
                 EditorSection(title: "tags", helpText: "help.tags") {
-                    ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius)
+                    if showsTagEditor {
+                        ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius)
+                            .transition(.opacity)
+                    } else {
+                        // 出るまでの間は同じ形の枠だけ置いて、下の余白が跳ねないようにする
+                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                            .fill(COLOR_BACK_INPUT)
+                            .frame(height: 120)
+                    }
+                }
+                .task {
+                    // 画面遷移のアニメーション（約0.35秒）が終わる頃にタグ一覧を作る
+                    guard !showsTagEditor else { return }
+                    try? await Task.sleep(for: .milliseconds(350))
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        showsTagEditor = true
+                    }
                 }
             }
             .padding(.horizontal, contentHorizontalPadding)
@@ -506,21 +520,14 @@ struct ItemEditView: View {
                 HStack(spacing: 0) {
                     // 戻る＋説明
                     VStack(spacing: 6) {
-                        if isInSheet {
-                            // シートの中では、アイテムシートの閉じるボタンと同じ丸い下向きボタンにする
-                            SheetCircleButton(systemImage: "chevron.down",
-                                              accessibilityLabel: "close.sheet",
-                                              action: onDismiss)
-                        } else {
-                            Button {
-                                onDismiss()
-                            } label: {
-                                Image(systemName: "chevron.backward")
-                                    .imageScale(.large)
-                                    .symbolRenderingMode(.hierarchical)
-                            }
-                            .buttonStyle(.borderless)
+                        Button {
+                            onDismiss()
+                        } label: {
+                            Image(systemName: "chevron.backward")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
                         }
+                        .buttonStyle(.borderless)
 
                         if isBeginnerMode {
                             Text("back.items")
@@ -1092,7 +1099,9 @@ struct ItemQuickEditView: View {
             ItemQuantityEditor(item: item)
         }
         .padding(8)
-        .frame(width: 300)
+        // ダイアル（最小幅80pt）が3列ゆったり収まる幅にする。最大460pt、最低300pt
+        // 吹き出しの内側の余白（左右8pt）と画面端の余白（左右16pt）を引いて、画面からはみ出さないようにする
+        .frame(width: max(300, min(UIScreen.main.bounds.width - 48, 460)))
         .onAppear {
             // === Fix 7: lifecycle 不均衡対策 ===
             // 二重 onAppear（ポップアップ再描画時など）でも 1 回だけ begin する
@@ -1136,6 +1145,8 @@ struct ItemQuantityEditor: View {
     @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
     /// ダイアルのみ／ステッパのみを切り替える（既定はステッパ）
     @AppStorage(AppStorageKey.itemQuantityUsesDial) private var usesDial = false
+    /// ステッパ・ダイアルを出すか。画面遷移を速く始めるため、開いた直後は出さず、遷移が終わる頃に出す
+    @State private var showsControls = false
 
     init(item: M3Item) {
         self._item = Bindable(item)
@@ -1282,7 +1293,12 @@ struct ItemQuantityEditor: View {
             // 入力欄の下に、ダイアルのみ／ステッパのみのどちらかを列幅いっぱいで置く
             GridRow {
                 ForEach(Array(fields.enumerated()), id: \.offset) { _, field in
-                    if usesDial {
+                    if !showsControls {
+                        // 出るまでの間は同じ高さだけ空けて、下の欄が跳ねないようにする
+                        Color.clear
+                            .frame(maxWidth: .infinity)
+                            .frame(height: usesDial ? 44 : 32)
+                    } else if usesDial {
                         GeometryReader { geo in
                             AZDialView(
                                 value: field.binding,
@@ -1305,6 +1321,14 @@ struct ItemQuantityEditor: View {
             }
         }
         .padding(8)
+        .task {
+            // 画面遷移のアニメーション（約0.35秒）が終わる頃にステッパ・ダイアルを作る
+            guard !showsControls else { return }
+            try? await Task.sleep(for: .milliseconds(350))
+            withAnimation(.easeOut(duration: 0.15)) {
+                showsControls = true
+            }
+        }
         // クレメモの金額テンキー（簡易電卓付き）を流用。背面を薄く暗くして画面下部に固定表示する
         .fullScreenCover(isPresented: Binding(
             get: { activeFieldIndex != nil },

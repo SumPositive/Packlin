@@ -54,12 +54,6 @@ struct ItemSortListView: View {
     @State private var isConfirmingBulkDelete = false
     /// まとめて操作の結果（コピー完了など）
     @State private var bulkResultMessage: String?
-    /// タグ式でシートに出しているアイテム
-    @State private var detailItem: M3Item?
-    /// シートで表示中のアイテム（前へ・次へで変わる）。一覧の行を強調表示する
-    @State private var highlightedItemID: M3Item.ID?
-    /// シートを最初から広げて開くか（新しいアイテムを追加したとき）
-    @State private var detailStartsExpanded = false
     /// 並べ替え条件プルダウンの展開状態
     @State private var isSortPickerExpanded = false
     /// 逆順にしている並べ替え条件。同じ条件をもう一度選ぶと切り替わり、別の条件を選ぶと正順へ戻す
@@ -193,32 +187,26 @@ struct ItemSortListView: View {
                 // アイテムを検索
                 searchHeader
                 // 並べ替え一覧
-                ScrollViewReader { listProxy in
                 List {
                     Section {
                         ForEach(filteredItems) { item in
                             if let group = item.parent {
                                 Group {
-                                    if isTagMode {
-                                        // タグ式は画面を移らず、シートで最小限の詳細を出す（広げると全部を編集）
-                                        // 数量カプセルのタップも同じシートを開く（数量はシートで変える）
-                                        // 「まとめて」選択中は、行のタップで選択を切り替える
+                                    if isTagMode && isBulkMode {
+                                        // 「まとめて」選択中は、行のタップで選択を切り替える（画面遷移しないので > は出さない）
                                         Button {
-                                            if isBulkMode {
-                                                toggleBulkSelection(item)
-                                            } else {
-                                                openDetailSheet(item, expanded: false)
-                                            }
+                                            toggleBulkSelection(item)
                                         } label: {
                                             ItemRowView(item: item,
-                                                        isBulkMoveMode: isBulkMode,
-                                                        isBulkMoveSelected: selectedBulkIDs.contains(item.id)) { selected, _ in
-                                                openDetailSheet(selected, expanded: false)
+                                                        isBulkMoveMode: true,
+                                                        isBulkMoveSelected: selectedBulkIDs.contains(item.id)) { _, _ in
                                             } onToggleBulkMoveSelection: {
                                                 toggleBulkSelection(item)
                                             }
                                         }
                                     } else {
+                                        // グループ式・タグ式とも：行のタップは詳細編集へ画面遷移、
+                                        // 数量部分のタップはグループ式のアイテム一覧と同じ数量パネル（ポップアップ）
                                         NavigationLink(
                                             value: AppDestination.itemEdit(
                                                 packID: pack.id,
@@ -235,18 +223,6 @@ struct ItemSortListView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
-                                // シートで開いているアイテムの行を、薄いアクセント色と左端の帯で示す
-                                .overlay {
-                                    if highlightedItemID == item.id {
-                                        ZStack(alignment: .leading) {
-                                            Color.accentColor.opacity(0.10)
-                                            Color.accentColor
-                                                .frame(width: 4)
-                                        }
-                                        .allowsHitTesting(false)
-                                    }
-                                }
-                                .id(item.id)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 .listRowBackground(COLOR_ROW_BACK)
@@ -288,14 +264,6 @@ struct ItemSortListView: View {
                 .padding(.leading, 0)
                 .padding(.trailing, 8)
                 .environment(\.defaultMinListRowHeight, rowTextLines.usesExtraSmallItemRow ? 38 : 44)
-                // シートで開いた行が下のシートに隠れないよう、画面の上寄りまでスクロールする
-                .onChange(of: highlightedItemID) { _, newID in
-                    guard let newID else { return }
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        listProxy.scrollTo(newID, anchor: UnitPoint(x: 0.5, y: 0.2))
-                    }
-                }
-                }
             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
@@ -528,18 +496,6 @@ struct ItemSortListView: View {
         )) {
             Button("OK", role: .cancel) {}
         }
-        .sheet(item: $detailItem, onDismiss: { highlightedItemID = nil }) { item in
-            ItemDetailSheet(pack: pack,
-                            item: item,
-                            startsExpanded: detailStartsExpanded,
-                            adjacentItemProvider: { current, offset in
-                                adjacentDisplayedItem(from: current, offset: offset)
-                            },
-                            onCurrentItemChange: { current in
-                                highlightedItemID = current.id
-                            })
-            .appFontScale(fontScale)
-        }
         .contentShape(Rectangle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 30, coordinateSpace: .local)
@@ -560,7 +516,7 @@ struct ItemSortListView: View {
         )
     }
 
-    /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して、広げたアイテムシートで開く
+    /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して、詳細編集へ画面遷移する
     /// 縦覧は並べ替え表示なので、ヘッダーと末尾セルのどちらから追加しても同じ動きにする
     private func addItemAndNavigate(source: String) {
         GALogger.log(.operation(name: "add", target: "item", source: source, detail: "tail", count: nil))
@@ -582,9 +538,9 @@ struct ItemSortListView: View {
             newItem = item
         }
 
-        // 新しいアイテムは名称から入力するので、シートを最初から広げて開く
+        // 新しいアイテムは名称から入力するので、詳細編集へ画面遷移する
         if let newItem {
-            openDetailSheet(newItem, expanded: true)
+            openItemDetail(newItem)
         }
     }
 
@@ -820,20 +776,17 @@ struct ItemSortListView: View {
         endBulkMode()
     }
 
-    /// タグ式のアイテムシートを開く
-    private func openDetailSheet(_ item: M3Item, expanded: Bool) {
-        detailStartsExpanded = expanded
-        detailItem = item
-        highlightedItemID = item.id
-    }
-
-    /// シートの前へ・次へでたどる隣のアイテム（縦覧に表示中の並び・絞り込みのまま）
-    private func adjacentDisplayedItem(from current: M3Item, offset: Int) -> M3Item? {
-        guard offset != 0 else { return nil }
-        let items = filteredItems
-        guard let index = items.firstIndex(where: { $0.id == current.id }) else { return nil }
-        let destination = index + offset
-        return items.indices.contains(destination) ? items[destination] : nil
+    /// 詳細編集を開く（グループ式と同じくアイテム詳細へ画面遷移する。前へ・次へは今の並べ替えの順）
+    private func openItemDetail(_ item: M3Item) {
+        guard let group = item.parent else { return }
+        navigationStore.path.append(
+            AppDestination.itemEdit(
+                packID: pack.id,
+                groupID: group.id,
+                itemID: item.id,
+                sort: sortOption
+            )
+        )
     }
 
     // タグ一覧のレイアウト定数

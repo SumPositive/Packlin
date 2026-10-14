@@ -27,6 +27,8 @@ struct ItemRowView: View {
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
 
     @State private var rowFrame: CGRect?
+    /// 数量カプセルの位置（グローバル座標）。数量パネルの吹き出しの先をここへ向ける
+    @State private var quantityFrame: CGRect?
 
     private var rowHeight: CGFloat { appRowHeight(fontScale) }
     private var isNamePlaceholder: Bool { item.name.isEmpty }
@@ -308,11 +310,12 @@ private extension ItemRowView {
     @ViewBuilder
     func quantityButton() -> some View {
         Button {
-            // 行全体のフレーム中心を渡してポップアップ位置を決める
-            guard let rf = rowFrame else { return }
-            let po = CGPoint(x: rf.width / 2.0,
-                             y: rf.minY)
-            onEdit(item, po)
+            // 数量カプセルの中心を渡し、吹き出しの先をそこへ向ける（測れていなければ行の中心）
+            if let qf = quantityFrame {
+                onEdit(item, CGPoint(x: qf.midX, y: qf.midY))
+            } else if let rf = rowFrame {
+                onEdit(item, CGPoint(x: rf.midX, y: rf.midY))
+            }
         } label: {
             HStack(spacing: 4) {
                 if let weightLabelText {
@@ -322,6 +325,9 @@ private extension ItemRowView {
             }
             // 数量表示は折り返さず、収まらない時は親の2段レイアウトへ逃がす
             .fixedSize(horizontal: true, vertical: false)
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+                quantityFrame = frame
+            }
             // カプセル間の隙間も含め、少し広めに数量編集のタップ対象にする
             .padding(.horizontal, 4)
             .padding(.vertical, 4)

@@ -174,6 +174,15 @@ let COLOR_TAG_TEXT: Color = Color(UIColor { traitCollection in
 })
 // まとめて操作（選択モード）の色。行頭の選択丸と同じオレンジで、開始ボタン・下部の帯をそろえる
 let COLOR_BULK: Color = .orange
+// 数量パネル（吹き出し）の地の色。淡いクリーム色
+// 青（チェック・操作）・緑（追加）・赤（削除）・オレンジ（まとめて操作）・ラベンダー（タグ）のどれとも重ならない色にしている
+let COLOR_POPUP_BALLOON: Color = Color(UIColor { traitCollection in
+    if traitCollection.userInterfaceStyle == .dark {
+        return UIColor(red: 0.23, green: 0.21, blue: 0.16, alpha: 1.0)
+    } else {
+        return UIColor(red: 1.00, green: 0.97, blue: 0.88, alpha: 1.0)
+    }
+})
 
 // View背景
 let COLOR_BACK_VIEW: Color = Color(.systemGroupedBackground)
