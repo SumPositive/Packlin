@@ -36,14 +36,15 @@ struct ItemSortListView: View {
     /// selectedTag とは同時に選ばない
     @State private var isUntaggedSelected = false
 
-    /// タグ一覧の表示行数（1〜tagMaxRows）。ハンドルの上下ドラッグで変更し永続化する
-    @AppStorage(AppStorageKey.itemBrowseTagRows) private var tagRows: Int = 2
+    /// タグ一覧の表示高さ（pt）。ハンドルの上下ドラッグで滑らかに変え、離したときに保存する（0 は既定の2行ぶん）
+    @AppStorage(AppStorageKey.itemBrowseTagAreaHeight) private var storedTagAreaHeight: Double = 0
     /// タグボタン1行分の実測高さ（0 は未測定）
     @State private var tagChipHeight: CGFloat = 0
     /// タグ一覧全体の実測高さ（0 は未測定）
     @State private var tagContentHeight: CGFloat = 0
-    /// ドラッグ開始時の行数（ドラッグ中だけ値を持つ）
-    @State private var tagRowsAtDragStart: Int?
+    /// ドラッグ開始時の高さと、ドラッグ中の高さ（ドラッグ中だけ値を持つ）
+    @State private var tagHeightAtDragStart: CGFloat?
+    @State private var liveTagAreaHeight: CGFloat?
     /// タグ式の「まとめて」選択モード
     @State private var isBulkMode = false
     @State private var selectedBulkIDs: Set<M3Item.ID> = []
@@ -850,36 +851,54 @@ struct ItemSortListView: View {
     }
 
     /// 実際に見せる高さ。タグが少なければ中身の高さまで縮める
-    private var tagAreaVisibleHeight: CGFloat {
-        let limit = tagAreaHeight(for: tagRows)
-        guard 0 < tagContentHeight else { return tagAreaHeight(for: 1) }
-        return min(tagContentHeight, limit)
+    /// 高さの下限（1行ぶん。中身がそれより少なければ中身の高さ）
+    private var tagAreaMinHeight: CGFloat {
+        let oneRow = tagAreaHeight(for: 1)
+        guard 0 < tagContentHeight else { return oneRow }
+        return min(tagContentHeight, oneRow)
     }
 
-    /// タグ一覧の高さを変えるハンドル。上下ドラッグで行数を1〜tagMaxRowsに増減する
+    /// 高さの上限（tagMaxRows 行ぶん。中身がそれより少なければ中身の高さ）
+    private var tagAreaMaxHeight: CGFloat {
+        let maxRows = tagAreaHeight(for: tagMaxRows)
+        guard 0 < tagContentHeight else { return maxRows }
+        return max(tagAreaMinHeight, min(tagContentHeight, maxRows))
+    }
+
+    private var tagAreaVisibleHeight: CGFloat {
+        let preferred = liveTagAreaHeight
+            ?? (0 < storedTagAreaHeight ? CGFloat(storedTagAreaHeight) : tagAreaHeight(for: 2))
+        return min(max(preferred, tagAreaMinHeight), tagAreaMaxHeight)
+    }
+
+    /// タグ一覧の高さを変えるハンドル。上下ドラッグで指に合わせて滑らかに伸び縮みする（1行〜tagMaxRows行）
     /// グローバル座標で指の移動量を測るので、ハンドル自身が動いても指との連動が崩れない
     private var tagResizeHandle: some View {
         Capsule()
             .fill(Color(.tertiaryLabel))
-            .frame(width: 40, height: 5)
-            .frame(maxWidth: .infinity)   // 中央寄せ＋タップ領域を横いっぱいに
-            .padding(.vertical, 6)
+            .frame(width: 44, height: 5)
+            // 掴みやすいよう、つまみの上下を広めに取ってタッチ範囲を横いっぱいにする
+            .frame(maxWidth: .infinity, minHeight: 28)
             .contentShape(Rectangle())
             .gesture(
-                DragGesture(minimumDistance: 2, coordinateSpace: .global)
+                DragGesture(minimumDistance: 0, coordinateSpace: .global)
                     .onChanged { value in
-                        let start = tagRowsAtDragStart ?? tagRows
-                        if tagRowsAtDragStart == nil { tagRowsAtDragStart = start }
-                        // 開始行数＋（移動量÷1行分）を四捨五入して目標行数にする
-                        let delta = Int((value.translation.height / (tagRowHeight + tagRowSpacing)).rounded())
-                        let target = min(max(start + delta, 1), tagMaxRows)
-                        if target != tagRows {
-                            tagRows = target
+                        let start = tagHeightAtDragStart ?? tagAreaVisibleHeight
+                        if tagHeightAtDragStart == nil { tagHeightAtDragStart = start }
+                        let target = min(max(start + value.translation.height, tagAreaMinHeight), tagAreaMaxHeight)
+                        // 端に当たった瞬間だけ軽く知らせる
+                        if let live = liveTagAreaHeight, live != target,
+                           target == tagAreaMinHeight || target == tagAreaMaxHeight {
                             UISelectionFeedbackGenerator().selectionChanged()
                         }
+                        liveTagAreaHeight = target
                     }
                     .onEnded { _ in
-                        tagRowsAtDragStart = nil
+                        if let liveTagAreaHeight {
+                            storedTagAreaHeight = Double(liveTagAreaHeight)
+                        }
+                        liveTagAreaHeight = nil
+                        tagHeightAtDragStart = nil
                     }
             )
             .accessibilityLabel(Text("tag.list.resize.a11y"))
@@ -991,7 +1010,6 @@ struct ItemSortListView: View {
                     }
                     .frame(height: tagAreaVisibleHeight)
                     .scrollIndicators(.hidden)
-                    .animation(.easeOut(duration: 0.18), value: tagRows)
 
                     // 1行に収まらないときだけハンドルを出す
                     if tagAreaHeight(for: 1) + 1 < tagContentHeight {
