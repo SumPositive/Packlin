@@ -31,7 +31,8 @@ struct AZFlowLayout: Layout {
 
     /// subview を行（index の配列）に振り分ける。availableWidth を超えない範囲で、
     /// packToFill のときは行末の余白に収まる後方要素を繰り上げて詰める。
-    private func makeRows(sizes: [CGSize], availableWidth: CGFloat) -> [[Int]] {
+    /// 単体テストから行分けを確かめられるよう、private にしない
+    func makeRows(sizes: [CGSize], availableWidth: CGFloat) -> [[Int]] {
         let n = sizes.count
         guard n > 0 else { return [] }
         // 幅が未確定（0 や無限大）のときは全体を1行にして測定に委ねる
@@ -71,6 +72,14 @@ struct AZFlowLayout: Layout {
         return rows
     }
 
+    /// 配置するときに行分けに使う幅。sizeThatFits と同じ幅（提案された幅）で分ける
+    /// sizeThatFits は一番長い行の幅に縮んだ大きさを返すので、bounds.width だけで分け直すと
+    /// 本来入るはずの後方の要素が次の行へ落ちてしまう
+    static func placementWidth(boundsWidth: CGFloat, proposalWidth: CGFloat?) -> CGFloat {
+        let proposed = proposalWidth.flatMap { $0.isFinite ? $0 : nil } ?? boundsWidth
+        return max(boundsWidth, proposed)
+    }
+
     func sizeThatFits(
         proposal: ProposedViewSize,
         subviews: Subviews,
@@ -100,11 +109,9 @@ struct AZFlowLayout: Layout {
         cache: inout ()
     ) {
         let s = sizes(subviews)
-        // 行分けは sizeThatFits と同じ幅で行う。
-        // sizeThatFits は一番長い行の幅に縮んだ大きさを返すため、bounds.width で行分けし直すと
-        // 提案幅より狭い幅で詰め直すことになり、本来入るはずの後方タグが次の行へ落ちてしまう
-        let proposedWidth = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? bounds.width
-        let rows = makeRows(sizes: s, availableWidth: max(bounds.width, proposedWidth))
+        // 行分けは sizeThatFits と同じ幅で行う（理由は placementWidth を参照）
+        let rows = makeRows(sizes: s, availableWidth: Self.placementWidth(boundsWidth: bounds.width,
+                                                                          proposalWidth: proposal.width))
         var y = bounds.minY
 
         for row in rows {
