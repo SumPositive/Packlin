@@ -1,4 +1,10 @@
-- Added pack publishing. Save your packs to the cloud and publish them, and import packs shared by other users.
-- Your AI tickets and pack publishing ID are now backed up to iCloud. With iCloud enabled, they're restored when you switch devices.
-- Refreshed the app icon.
+- Added Tags. Attach several tags to an item and filter by tag. Choose Tags or Groups for each pack; new packs start with Tags.
+- In Item browse, you can now switch between ascending and descending order, and see the total weight of the items shown.
+- Added Bulk edit. Select items and add or remove tags, copy them to another pack, or delete them, all at once.
+- Choose between a stepper and a dial to adjust counts, and the keypad now has a built-in calculator.
+- Per-item weights can now be shown in kg from 1,000 g.
+- Added share links for public packs, and packs using Tags can now be published.
+- Added German, Spanish, French, Italian, Korean, and Traditional Chinese.
+- Reworked the Settings screen, and the "Auto" text size that follows your device setting is now recommended.
+- Adjusted the color of the app icon.
 - Minor display tweaks and stability improvements.

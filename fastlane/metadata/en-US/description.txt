@@ -1,19 +1,31 @@
-Packlin is a checklist app that organizes what you bring for trips, business travel, camping, and more in three layers: Pack (bag), Group (pouch), and Item.
+Packlin is a packing list app that helps you get ready for trips, business travel, camping, and more by checking things off as you go. For each pack, choose Tags to sort items freely, or Groups to organize them in layers.
+
+■ Tags and Groups
+With Tags, all items sit in one list and you sort them loosely by attaching tags. One item can have several tags.
+With Groups, you sort strictly in three layers: Pack (bag), Group (pouch), and Item.
+New packs start with Tags, and you can switch at any time. When you switch from Groups to Tags, each group name is attached to its items as a tag.
+
+■ Filter by tag
+In Item browse, choose a tag to narrow down the list, or search by tag and item name. Sort by unchecked, shortage count, shortage weight, or stock weight, in ascending or descending order. The total weight of the items shown is always at a glance.
+
+■ Bulk edit
+Select items and add or remove tags, copy them to another pack, or delete them, all at once.
 
 ■ Checking and quantity management
-Check off each item and record required and stock counts. Add a per-item weight (g) and the app automatically totals the weight of your whole load.
-
-■ Item overview
-See every item in a pack across all groups in one list. Sort by unchecked, shortage count, shortage weight, or stock weight. Perfect for a final check before departure or for reviewing an overweight bag. Keyword search is supported.
-
-■ Quantity input
-Drag the dial left or right to adjust counts intuitively. Tap the number to type directly with a dedicated keypad. The dial's style and sensitivity are customizable.
+Check off each item and record required and stock counts. Add a per-item weight (g) and the app automatically totals the weight of your whole load. Weights of 1,000 g or more can be shown in kg.
+Adjust counts with a stepper or a dial, or tap a number to type it on a keypad with a built-in calculator.
 
 ■ Undo / Redo
 No confirmation dialogs and no Save button, so you can work fast. Made a mistake? Undo up to 10 steps back.
 
+■ Public packs
+Publish your packs, and import packs published by other users. You can search by tag name too.
+
 ■ Sharing and backup
 Export a single pack as a .packlin file and share it via AirDrop or email. Back up and restore all packs at once, so switching devices is worry-free.
 
-■ AI "Chappy" (optional, paid)
-Just enter your destination or purpose, and the AI suggests the entire contents of a pack. You can also ask it to add to or revise an existing pack. Each generation requires one AI ticket, available by purchase or by watching a video ad.
+■ AI "Chappy" (optional)
+Just enter your destination or purpose, and the AI suggests the entire contents of a pack. You can also ask it to add to or revise an existing pack. You can also send a request by watching a video ad.
+
+■ 8 languages
+Available in English, Japanese, German, Spanish, French, Italian, Korean, and Traditional Chinese.

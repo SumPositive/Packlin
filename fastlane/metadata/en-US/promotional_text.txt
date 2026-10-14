@@ -1,1 +1,1 @@
-Organize gear in three layers: bag, pouch, item. Check off with counts and weight to avoid forgotten items and overpacking. AI suggests a full pack. Share and back up.
+Sort gear freely with tags, or in layers of bag, pouch, and item. Check off counts and weight to avoid forgotten items and overpacking. Filter by tag and bulk edit.
