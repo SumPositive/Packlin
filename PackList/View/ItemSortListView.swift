@@ -1045,6 +1045,10 @@ struct ItemSortListView: View {
     }
 
     private func refreshDisplayedItems(forceReset: Bool = false, forceResort: Bool = false) {
+        // 表示順を共有し、ここから開いたアイテム詳細の前へ・次へを一覧の並びどおりにする
+        defer {
+            navigationStore.browseOrder = ItemBrowseOrder(packID: pack.id, itemIDs: cachedItems.map(\.id))
+        }
         let items = baseSortedItems
 
         // 指示されたときは最新順に戻す

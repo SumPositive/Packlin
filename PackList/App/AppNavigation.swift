@@ -175,7 +175,9 @@ struct ItemEditScene: View {
     private var availableItems: [M3Item] {
         if let sort, let pack = packs.first {
             // 縦覧で逆順にしていれば、前後移動も同じ並びでたどる
-            let items = sort.sortedItems(from: pack, reversed: sort.isReversedInBrowse).filter { $0.parent != nil }
+            let sorted = sort.sortedItems(from: pack, reversed: sort.isReversedInBrowse).filter { $0.parent != nil }
+            // 縦覧は数量などを変えても行を動かさないので、前後移動も縦覧に表示中の並びでたどる
+            let items = navigationStore.browseOrder.arranged(sorted, packID: pack.id)
             // 縦覧で絞り込んでいれば、前後移動も絞り込んだアイテムだけをたどる
             // （編集でタグを外すなどして表示中のアイテムが条件から外れたときは、迷子にならないよう絞り込まない）
             let filter = navigationStore.browseFilter

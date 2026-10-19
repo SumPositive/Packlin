@@ -28,6 +28,25 @@ struct ItemBrowseFilter: Equatable {
     }
 }
 
+/// アイテム縦覧の表示順
+/// 縦覧は数量などを変えても行を動かさないので、アイテム詳細の前へ・次へも同じ並びをたどる
+struct ItemBrowseOrder {
+    /// 並びを記録したパック（ほかのパックのアイテム詳細には使わない）
+    var packID: M1Pack.ID?
+    var itemIDs: [M3Item.ID] = []
+
+    /// 最新順のアイテムを、縦覧に表示中の並びに合わせる
+    /// 縦覧と同じく、削除されたものは除き、新しく増えたものは末尾に付ける
+    func arranged(_ items: [M3Item], packID: M1Pack.ID) -> [M3Item] {
+        guard self.packID == packID, !itemIDs.isEmpty else { return items }
+        let map = Dictionary(items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var arranged = itemIDs.compactMap { map[$0] }
+        let existingIDs = Set(itemIDs)
+        arranged.append(contentsOf: items.filter { !existingIDs.contains($0.id) })
+        return arranged
+    }
+}
+
 /// NavigationStackのパスを共有するシンプルなストア
 final class NavigationStore: ObservableObject {
     @Published var path = NavigationPath()
@@ -36,6 +55,8 @@ final class NavigationStore: ObservableObject {
     /// アイテム縦覧の絞り込み条件。縦覧から開いたアイテム詳細の前へ・次へを、絞り込みどおりにたどるために使う
     /// （画面の再描画には関わらないので @Published にしない）
     var browseFilter = ItemBrowseFilter()
+    /// アイテム縦覧の表示順。縦覧から開いたアイテム詳細の前へ・次へを、一覧の見た目どおりにたどるために使う
+    var browseOrder = ItemBrowseOrder()
 
     /// 直近の画面を差し替えて、不要なスタック増加を防ぐ
     func replaceLast(with destination: AppDestination) {
