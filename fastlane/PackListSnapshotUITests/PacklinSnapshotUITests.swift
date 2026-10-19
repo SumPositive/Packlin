@@ -65,7 +65,7 @@ final class PacklinSnapshotUITests: XCTestCase {
         snapshot("02ItemBrowse")
 
         // 03: 先頭アイテムの数量部分 → 数量パネル（吹き出し）
-        if tap(app, "itemRow_quantity", timeout: 3) {
+        if tapFirstQuantity(app) {
             sleep(1)
             snapshot("03QuantityPanel")
             // 吹き出しの外（画面上部）をタップして閉じる
@@ -183,6 +183,25 @@ final class PacklinSnapshotUITests: XCTestCase {
             return true
         }
         return false
+    }
+
+    /// 先頭アイテムの数量部分をタップする。
+    /// itemRow_quantity は全行にあり、さらに行全体のボタン（ラベル＝名称）にも同じ identifier が伝わるため、
+    /// app.buttons["itemRow_quantity"] は複数一致で失敗する。数量のラベル（「1.2kg、0、/、1」のように / を含む）で先頭を選ぶ。
+    @MainActor
+    @discardableResult
+    private func tapFirstQuantity(_ app: XCUIApplication) -> Bool {
+        let matches = app.buttons.matching(identifier: "itemRow_quantity")
+        let quantity = matches.matching(NSPredicate(format: "label CONTAINS %@", "/")).firstMatch
+        // ラベルで取れないときは、行のボタンの次に並ぶ数量ボタン（2番目）を使う
+        let target = quantity.waitForExistence(timeout: 3) ? quantity : matches.element(boundBy: 1)
+        guard target.exists else { return false }
+        if target.isHittable {
+            target.tap()
+        } else {
+            target.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
+        return true
     }
 
     /// パック一覧（ルート）まで戻る。

@@ -57,6 +57,9 @@ final class NavigationStore: ObservableObject {
     var browseFilter = ItemBrowseFilter()
     /// アイテム縦覧の表示順。縦覧から開いたアイテム詳細の前へ・次へを、一覧の見た目どおりにたどるために使う
     var browseOrder = ItemBrowseOrder()
+    /// アイテム詳細でコピーしたアイテムを、縦覧でコピー元の直下に並べるための依頼（コピーしたID → コピー元ID）
+    /// 縦覧は表示順を固定しているので、依頼が無いと新しいアイテムは末尾に付く
+    var pendingDuplicateSources: [M3Item.ID: M3Item.ID] = [:]
 
     /// 直近の画面を差し替えて、不要なスタック増加を防ぐ
     func replaceLast(with destination: AppDestination) {

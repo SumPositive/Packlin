@@ -15,6 +15,8 @@ struct ItemRowView: View {
     let isBulkMoveSelected: Bool
     let onEdit: (M3Item, CGPoint) -> Void
     let onToggleBulkMoveSelection: () -> Void
+    /// スワイプの「コピー」で複製したとき、複製したアイテムを渡す（縦覧でコピー元の直下に並べるため）
+    let onDuplicated: (M3Item) -> Void
 
     @Environment(\.modelContext) private var modelContext
 
@@ -85,12 +87,14 @@ struct ItemRowView: View {
          isBulkMoveMode: Bool = false,
          isBulkMoveSelected: Bool = false,
          onEdit: @escaping (M3Item, CGPoint) -> Void,
-         onToggleBulkMoveSelection: @escaping () -> Void = {}) {
+         onToggleBulkMoveSelection: @escaping () -> Void = {},
+         onDuplicated: @escaping (M3Item) -> Void = { _ in }) {
         self.item = item
         self.isBulkMoveMode = isBulkMoveMode
         self.isBulkMoveSelected = isBulkMoveSelected
         self.onEdit = onEdit
         self.onToggleBulkMoveSelection = onToggleBulkMoveSelection
+        self.onDuplicated = onDuplicated
     }
     private var weightLabelText: String? {
         guard 0 < item.weight else { return nil }
@@ -278,7 +282,9 @@ struct ItemRowView: View {
                 .disabled(item.parent == nil)
                 // アイテム複製
                 Button {
-                    item.duplicate()
+                    if let copied = item.duplicate() {
+                        onDuplicated(copied)
+                    }
                 } label: {
                     Label("copy", systemImage: "plus.square.on.square")
                 }

@@ -218,6 +218,8 @@ struct ItemSortListView: View {
                                             ItemRowView(item: item) { selected, point in
                                                 editingItem = selected
                                                 popupAnchor = point
+                                            } onDuplicated: { copied in
+                                                insertDuplicatedItem(copied, below: item)
                                             }
                                         }
                                     }
@@ -1044,6 +1046,19 @@ struct ItemSortListView: View {
         }
     }
 
+    /// スワイプの「コピー」で増えたアイテムを、末尾ではなくコピー元の直下に並べる
+    /// （表示順は固定なので、何もしないと新しいアイテムは末尾に付く）
+    private func insertDuplicatedItem(_ copied: M3Item, below source: M3Item) {
+        cachedItems.removeAll { $0.id == copied.id }
+        if let index = cachedItems.firstIndex(where: { $0.id == source.id }) {
+            cachedItems.insert(copied, at: index + 1)
+        } else {
+            cachedItems.append(copied)
+        }
+        // アイテム詳細の前へ・次へも同じ並びにする
+        navigationStore.browseOrder = ItemBrowseOrder(packID: pack.id, itemIDs: cachedItems.map(\.id))
+    }
+
     private func refreshDisplayedItems(forceReset: Bool = false, forceResort: Bool = false) {
         // 表示順を共有し、ここから開いたアイテム詳細の前へ・次へを一覧の並びどおりにする
         defer {
@@ -1052,13 +1067,9 @@ struct ItemSortListView: View {
         let items = baseSortedItems
 
         // 指示されたときは最新順に戻す
-        if forceResort {
-            cachedItems = items
-            return
-        }
-
-        if forceReset || cachedItems.isEmpty {
-            cachedItems = items
+        // （アイテム詳細から戻ったときもここを通るので、詳細でコピーしたものはコピー元の直下へ移す）
+        if forceResort || forceReset || cachedItems.isEmpty {
+            cachedItems = placingPendingDuplicates(items)
             return
         }
 
@@ -1068,7 +1079,27 @@ struct ItemSortListView: View {
         let appended = items.filter { !existingIDs.contains($0.id) }
         updated.append(contentsOf: appended)
 
-        cachedItems = updated
+        cachedItems = placingPendingDuplicates(updated)
+    }
+
+    /// アイテム詳細でコピーしたアイテムを、コピー元の直下へ移す
+    /// 依頼は一覧に現れた時点で使い切る（コピー元が見つからないものは、今の位置のまま）
+    private func placingPendingDuplicates(_ items: [M3Item]) -> [M3Item] {
+        let pending = navigationStore.pendingDuplicateSources
+        guard !pending.isEmpty else { return items }
+        var arranged = items
+        for (copiedID, sourceID) in pending {
+            // まだ一覧に現れていなければ、依頼を残して次の更新で並べる
+            guard let copiedIndex = arranged.firstIndex(where: { $0.id == copiedID }) else { continue }
+            navigationStore.pendingDuplicateSources.removeValue(forKey: copiedID)
+            let copied = arranged.remove(at: copiedIndex)
+            if let sourceIndex = arranged.firstIndex(where: { $0.id == sourceID }) {
+                arranged.insert(copied, at: sourceIndex + 1)
+            } else {
+                arranged.insert(copied, at: copiedIndex)
+            }
+        }
+        return arranged
     }
 }
 

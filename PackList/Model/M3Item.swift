@@ -86,11 +86,13 @@ final class M3Item {
     /// 衝突する可能性があり、`normalizeItemOrder` 後の並びが id タイブレークで
     /// 不定になる事故があった。詳細は M1Pack.duplicate() のコメント参照。
     /// 新版は `sparseOrderForInsertion` で「自分と次の Item の中間」を計算する。
-    func duplicate() {
-        guard let mc = modelContext else {return}
-        guard let parent = self.parent else { return }
+    /// - Returns: 複製したアイテム（複製できなかったときは nil）
+    @discardableResult
+    func duplicate() -> M3Item? {
+        guard let mc = modelContext else { return nil }
+        guard let parent = self.parent else { return nil }
         // パック全体の上限に達していたら複製しない
-        guard parent.parent?.canAddItems() == true else { return }
+        guard parent.parent?.canAddItems() == true else { return nil }
 
         // === Step 1: 親グループ配下の Item を order でソートして並び順を確定 ===
         // parent.child は SwiftData リレーションシップで順序が保証されないため、
@@ -129,6 +131,7 @@ final class M3Item {
         // 長期運用で order が大きな値になり過ぎるのを防ぐため正規化を実行。
         // （Fix 6 適用後は実質的に「ハウスキーピング」目的だが、副作用なく安全）
         parent.normalizeItemOrder()
+        return newItem
     }
 
     /// タグを安全な形にそろえる（前後の空白を除き、空・重複を捨て、文字数と個数を制限する）

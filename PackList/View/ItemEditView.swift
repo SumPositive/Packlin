@@ -131,7 +131,11 @@ struct ItemEditView: View {
 
     private func copyItemButton(width buttonWidth: CGFloat) -> some View {
         Button {
-            item.duplicate()
+            if let copied = item.duplicate(), adjacentItemProvider != nil {
+                // 縦覧から開いたときだけ、戻ったときにコピー元の直下へ並べる
+                // （グループ式のアイテム一覧は order どおりなので、もともと直下に並ぶ）
+                navigationStore.pendingDuplicateSources[copied.id] = item.id
+            }
             onDismiss()
         } label: {
             actionButtonContent("copy", systemImage: "plus.square.on.square")
