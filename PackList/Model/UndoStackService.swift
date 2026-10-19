@@ -41,6 +41,9 @@ final class UndoStackService: ObservableObject {
             let name: String
             let memo: String
             let createdAt: Date
+            // 分類方式とタグ式グループも戻せるよう記録する（空のパックの切り替えも履歴に残る）
+            let classifyModeRaw: String?
+            let tagModeGroupID: String?
             let groups: [Group]
         }
 
@@ -348,6 +351,8 @@ final class UndoStackService: ObservableObject {
                 name: pack.name,
                 memo: pack.memo,
                 createdAt: pack.createdAt,
+                classifyModeRaw: pack.classifyModeRaw,
+                tagModeGroupID: pack.tagModeGroupID,
                 groups: groups
             )
         }
@@ -456,6 +461,8 @@ final class UndoStackService: ObservableObject {
             pack.memo = packSnapshot.memo
             pack.createdAt = packSnapshot.createdAt
             pack.order = packSnapshot.order
+            pack.classifyModeRaw = packSnapshot.classifyModeRaw
+            pack.tagModeGroupID = packSnapshot.tagModeGroupID
             // === Fix 8: グローバル辞書を渡して updateGroups を呼ぶ ===
             updateGroups(
                 of: pack,
