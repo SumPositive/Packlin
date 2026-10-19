@@ -806,8 +806,9 @@ struct ItemEditView: View {
                 // order のみを整え、child 配列を並べ替えない
                 normalizeSparseOrders(items)
             }
-            // 新しいアイテム
+            // 新しいアイテム（続けて同じ分類のアイテムを入れやすいよう、直前のタグ選択を引き継ぐ）
             let newItem = M3Item(name: "",
+                                 tags: item.tags,
                                  order: newOrder,
                                  parent: group)
             // DB追加
