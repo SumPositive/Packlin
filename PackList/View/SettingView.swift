@@ -591,6 +591,9 @@ struct SettingView: View {
                         let data = try encoder.encode(backup)
 
                         let formatter = DateFormatter()
+                        // ファイル名は端末の言語・暦設定に左右されず、西暦の数字で付ける
+                        formatter.locale = Locale(identifier: "en_US_POSIX")
+                        formatter.calendar = Calendar(identifier: .gregorian)
                         formatter.dateFormat = "yyyyMMdd_HHmmss"
                         let dateStr = formatter.string(from: Date())
                         let url = FileManager.default.temporaryDirectory

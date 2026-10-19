@@ -138,6 +138,8 @@ struct PublicPackGalleryView: View {
     private static let publishedAtFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale.current
+        // 端末の暦設定（和暦・仏暦など）に左右されず、西暦で表示する
+        f.calendar = Calendar(identifier: .gregorian)
         f.dateFormat = "yyyy/MM/dd HH:mm"
         return f
     }()
@@ -649,6 +651,8 @@ private struct PublicPackDetailSheet: View {
     private static let publishedAtFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
+        // 端末の暦設定（和暦・仏暦など）に左右されず、西暦で表示する
+        formatter.calendar = Calendar(identifier: .gregorian)
         formatter.dateFormat = "yyyy/MM/dd HH:mm"
         return formatter
     }()
