@@ -17,6 +17,7 @@
 //    - 文字列長：name / memo は APP_MAX_NAME_LEN / APP_MAX_MEMO_LEN に切り詰め
 //    - 数値範囲：weight / stock / need は 0…MAX のクランプ
 //    - 件数：既存の超過データを失わないよう切り捨てない
+//            （新規取り込みは呼び出し側で validateLimits を通し、超過ならエラー表示する）
 //
 //  サニタイズしないと以下のような事故が起こり得る：
 //    - 数十万文字の name で UI レンダリングがフリーズ
@@ -30,9 +31,39 @@
 import Foundation
 import SwiftData
 
+/// 新規取り込みで件数上限を超えたときのエラー
+enum PackImportLimitError: LocalizedError, Equatable {
+    case tooManyGroups
+    case tooManyItems
+
+    var errorDescription: String? {
+        switch self {
+        case .tooManyGroups:
+            return String(format: String(localized: "import.limit.groups"), APP_MAX_PART_ROWS)
+        case .tooManyItems:
+            return String(format: String(localized: "import.limit.items"), APP_MAX_PACK_ITEMS)
+        }
+    }
+}
+
 struct PackImporter {
 
     // MARK: - Public API
+
+    /// 単体パック・公開パックなど外から新しく入ってくるパックが、件数上限に収まっているか確かめる
+    /// - バックアップ復元は既存データを失わないよう全件保持するので、ここを通さない
+    /// - 通常グループは APP_MAX_PART_ROWS 件まで（タグ式グループは別枠）、アイテムはパック全体で APP_MAX_PACK_ITEMS 個まで
+    static func validateLimits(of dto: PackJsonDTO) throws {
+        // タグ式グループの印は、取り込み時と同じく最初の1つだけを別枠にする
+        let tagModeGroupCount = dto.groups.contains { $0.isTagModeGroup == true } ? 1 : 0
+        if APP_MAX_PART_ROWS < dto.groups.count - tagModeGroupCount {
+            throw PackImportLimitError.tooManyGroups
+        }
+        let itemCount = dto.groups.reduce(0) { $0 + $1.items.count }
+        if APP_MAX_PACK_ITEMS < itemCount {
+            throw PackImportLimitError.tooManyItems
+        }
+    }
 
     /// 新規にパックを取り込む（同名/同 ID パックが既存に無い場合）
     /// - すべての入力は `SanitizedDTO` 経由でクランプされる

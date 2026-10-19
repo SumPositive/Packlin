@@ -274,6 +274,8 @@ struct AppMain: App {
                   dto.version == PACK_JSON_DTO_VERSION else {
                 throw AzukiAPIError.decoding
             }
+            // 件数上限を超えるパックは取り込まない
+            try PackImporter.validateLimits(of: dto)
 
             let context = container.mainContext
             // 取込失敗時のロールバックで既存編集を失わないよう先に保存する

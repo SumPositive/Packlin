@@ -748,6 +748,8 @@ struct SettingView: View {
         private func importSinglePack(data: Data) throws -> ImportAlert {
             let dto = try JSONDecoder().decode(PackJsonDTO.self, from: data)
             try validateHeader(productName: dto.productName, copyright: dto.copyright, version: dto.version)
+            // 単体パックは外から新しく入ってくるので、件数上限を超えていれば取り込まない（バックアップ復元は全件保持）
+            try PackImporter.validateLimits(of: dto)
 
             // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
             var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())

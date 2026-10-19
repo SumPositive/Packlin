@@ -516,6 +516,8 @@ struct PublicPackGalleryView: View {
         do {
             let userId = creditStore.regenerateUserIdIfNeeded()
             let dto = try await AzukiApi.shared.importPublicPack(publishedId: item.id, userId: userId)
+            // 件数上限を超えるパックは取り込まない
+            try PackImporter.validateLimits(of: dto)
             insert(dto: dto)
             // 取込成功をカウント（次回の広告ゲート判定に使う）。広告なしスキップ時は進めない。
             if countsTowardAdGate {
@@ -525,6 +527,9 @@ struct PublicPackGalleryView: View {
                                              errorDomain: nil, errorCode: nil, message: nil))
             // 完了表示は少し見せてから自動で消し、再取り込みできる状態へ戻す
             setRowState(item.id, .done(String(localized: "public.pack.imported")), autoClearAfter: 1.8)
+        } catch let limitError as PackImportLimitError {
+            logPublicPackError(action: "import", limitError)
+            setRowState(item.id, .error(limitError.errorDescription ?? String(localized: "import.failed")), autoClearAfter: 4.0)
         } catch let apiError as AzukiAPIError {
             logPublicPackError(action: "import", apiError)
             setRowState(item.id, .error(apiError.errorDescription ?? String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)

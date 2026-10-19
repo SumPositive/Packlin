@@ -200,6 +200,44 @@ struct ImportSanitizerTests {
         #expect(!pack.canAddItems())
     }
 
+    // MARK: - 新規取り込みの件数上限
+
+    @Test("新規取り込みは通常グループ30件とタグ式グループまで許可する")
+    func validateLimitsAllowsRegularGroupLimitWithTagModeGroup() throws {
+        var groups = (0..<APP_MAX_PART_ROWS).map { i in
+            makeGroupDTO(name: "G\(i)")
+        }
+        var tagGroup = makeGroupDTO(name: "タグ式グループ")
+        tagGroup.isTagModeGroup = true
+        groups.append(tagGroup)
+
+        try PackImporter.validateLimits(of: makePackDTO(groups: groups))
+    }
+
+    @Test("新規取り込みは通常グループ31件をエラーにする")
+    func validateLimitsRejectsTooManyGroups() {
+        let groups = (0..<(APP_MAX_PART_ROWS + 1)).map { i in
+            makeGroupDTO(name: "G\(i)")
+        }
+        #expect(throws: PackImportLimitError.tooManyGroups) {
+            try PackImporter.validateLimits(of: makePackDTO(groups: groups))
+        }
+    }
+
+    @Test("新規取り込みはアイテム3000個まで許可し、3001個をエラーにする")
+    func validateLimitsChecksItemCountAcrossGroups() throws {
+        // アイテム数はグループごとではなくパック全体で数える
+        let half = APP_MAX_PACK_ITEMS / 2
+        let first = makeGroupDTO(items: (0..<half).map { makeItemDTO(name: "A\($0)") })
+        let second = makeGroupDTO(items: (0..<(APP_MAX_PACK_ITEMS - half)).map { makeItemDTO(name: "B\($0)") })
+        try PackImporter.validateLimits(of: makePackDTO(groups: [first, second]))
+
+        let extra = makeGroupDTO(items: [makeItemDTO(name: "C")])
+        #expect(throws: PackImportLimitError.tooManyItems) {
+            try PackImporter.validateLimits(of: makePackDTO(groups: [first, second, extra]))
+        }
+    }
+
     // MARK: - 日付クランプ
 
     @Test("1990年以前の createdAt は現在時刻にフォールバックされる")
