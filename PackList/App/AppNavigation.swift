@@ -93,7 +93,8 @@ struct GroupListScene: View {
             // タグ式はグループ一覧の代わりにアイテム縦覧を出す
             // パンくずの「パック」も groupList へ戻すので、ここで切り替えれば全経路が揃う
             if pack.classifyMode == .tag {
-                ItemSortListView(pack: pack, sortOption: .unchecked)
+                // タグ式の縦覧は指定順から始める（並べ替え条件のプルダウンで切り替えられる）
+                ItemSortListView(pack: pack, sortOption: .manual)
             } else {
                 GroupListView(pack: pack)
             }

@@ -132,6 +132,51 @@ final class M1Pack {
         return group
     }
 
+    /// 指定順（グループの順 → グループ内のアイテムの順）の全アイテム
+    var itemsInManualOrder: [M3Item] {
+        child.sorted { $0.order < $1.order }
+            .flatMap { group in group.child.sorted { $0.order < $1.order } }
+    }
+
+    /// 指定順でアイテムをドラッグ移動する（アイテム縦覧のタグ式）
+    /// - Parameters:
+    ///   - visible: 縦覧に見えているアイテム（絞り込み後、指定順）。source / destination はこの並びでの位置
+    /// - 絞り込み中は見えている行だけを並べ替えたことになるので、「見えている直前の行の直後」へ入れる
+    ///   （先頭へ動かしたときは「見えている先頭の行の直前」）。見えない行どうしの順番は変えない
+    /// - 移動したアイテムは、入れた位置の直前のアイテムのグループへ移る（先頭なら直後のアイテムのグループ）
+    ///   グループ式に戻したときも、見た目の並びがそのまま保たれる
+    func moveItemsInManualOrder(visible: [M3Item], from source: IndexSet, to destination: Int) {
+        let moving = source.sorted().compactMap { visible.indices.contains($0) ? visible[$0] : nil }
+        guard !moving.isEmpty else { return }
+        let movingIDs = Set(moving.map(\.id))
+        let remainingVisible = visible.filter { !movingIDs.contains($0.id) }
+        // 動かすアイテムを除いた見えている行での、落とした位置
+        let dropIndex = destination - source.filter { $0 < destination }.count
+
+        // 指定順の全アイテムから、動かすアイテムを除いた並び
+        var ordered = itemsInManualOrder.filter { !movingIDs.contains($0.id) }
+        let insertIndex: Int
+        if 0 < dropIndex, remainingVisible.indices.contains(dropIndex - 1) {
+            let previous = remainingVisible[dropIndex - 1]
+            guard let index = ordered.firstIndex(where: { $0.id == previous.id }) else { return }
+            insertIndex = index + 1
+        } else if let next = remainingVisible.first {
+            guard let index = ordered.firstIndex(where: { $0.id == next.id }) else { return }
+            insertIndex = index
+        } else {
+            return
+        }
+        guard let targetGroup = (0 < insertIndex ? ordered[insertIndex - 1].parent : nil)
+                ?? (insertIndex < ordered.count ? ordered[insertIndex].parent : nil) else { return }
+
+        ordered.insert(contentsOf: moving, at: insertIndex)
+        for item in moving where item.parent?.id != targetGroup.id {
+            item.parent = targetGroup
+        }
+        // 入れた先のグループの順序を、指定順の並びどおりに振り直す
+        normalizeSparseOrders(ordered.filter { $0.parent?.id == targetGroup.id })
+    }
+
     /// グループ式からタグ式へ変えたとき、グループ名をタグにして配下のアイテムに付ける
     /// - 「タグ式グループ」は元々タグ式で足したアイテムの入れ物なので対象外
     /// - 名前が空のグループは付けるタグが無いので対象外

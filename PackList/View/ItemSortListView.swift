@@ -56,9 +56,22 @@ struct ItemSortListView: View {
     @State private var bulkResultMessage: String?
     /// 並べ替え条件プルダウンの展開状態
     @State private var isSortPickerExpanded = false
+    /// 並べ替え条件のヘルプシート（指定順のときの (?) から開く）
+    @State private var isShowingManualOrderHelp = false
     /// 逆順にしている並べ替え条件。同じ条件をもう一度選ぶと切り替わり、別の条件を選ぶと正順へ戻す
     @AppStorage(AppStorageKey.itemBrowseReversedSort) private var reversedSortRaw = ""
-    private var isSortReversed: Bool { reversedSortRaw == sortOption.rawValue }
+    private var isSortReversed: Bool { !isManualOrder && reversedSortRaw == sortOption.rawValue }
+
+    /// 指定順（グループ式と同じアイテムの順序をそのまま使う）。並びは常に最新で、ドラッグで並べ替えられる
+    private var isManualOrder: Bool { sortOption == .manual }
+
+    /// ドラッグで並べ替えられるか（タグ式の指定順だけ。まとめて選択中は選択操作を優先する）
+    private var canReorderByDrag: Bool { isManualOrder && isTagMode && !isBulkMode }
+
+    /// 並べ替え条件の選択肢。指定順はタグ式だけに出す
+    private var sortOptions: [ItemSortOption] {
+        ItemSortOption.allCases.filter { $0 != .manual || isTagMode || sortOption == .manual }
+    }
 
     private var baseSortedItems: [M3Item] {
         sortOption.sortedItems(from: pack, reversed: isSortReversed).filter { $0.parent != nil }
@@ -70,7 +83,9 @@ struct ItemSortListView: View {
     /// 表示中の並びが、今の並べ替え条件の最新順からずれているか
     /// ずれていれば並べ替え条件をグレーにして、タップで並べ直せることを示す
     private var isSortOutdated: Bool {
-        cachedItems.map(\.id) != baseSortedItemIDs
+        // 指定順は常に最新の並びで表示するので、古くならない
+        guard !isManualOrder else { return false }
+        return cachedItems.map(\.id) != baseSortedItemIDs
     }
 
     private var trimmedSearchText: String {
@@ -230,6 +245,8 @@ struct ItemSortListView: View {
                                 .listRowBackground(COLOR_ROW_BACK)
                             }
                         }
+                        // 指定順だけドラッグで並べ替える（ほかの条件はソート結果なので動かせない）
+                        .onMove(perform: canReorderByDrag ? moveItems : nil)
 
                         // タグ式はグループ一覧が無いので、ここからアイテムを追加する
                         if isTagMode {
@@ -463,6 +480,10 @@ struct ItemSortListView: View {
                 bulkFooter
             }
         }
+        // 並べ替え条件の説明
+        .helpTextSheet(isPresented: $isShowingManualOrderHelp,
+                       text: "item.sort.manual.help",
+                       fontScale: fontScale)
         .sheet(isPresented: $isShowingBulkTagSheet) {
             BulkTagSheet(pack: pack, items: selectedBulkItems, mode: .add) { tags in
                 applyBulkTags(tags)
@@ -533,12 +554,7 @@ struct ItemSortListView: View {
         var newItem: M3Item?
 
         history.perform(context: modelContext) {
-            let group = pack.groupForNewItem()
-            let items = group.child.sorted { $0.order < $1.order }
-            let newOrder = sparseOrderForInsertion(items: items, index: items.count) {
-                // order のみを整え、child 配列を並べ替えない
-                normalizeSparseOrders(items)
-            }
+            let (group, newOrder) = newItemPlacement()
             // 絞り込み中のタグがあれば最初から付けておく（追加直後に一覧から消えないように）
             let item = M3Item(name: "",
                               tags: selectedTag.map { [$0] } ?? [],
@@ -552,6 +568,33 @@ struct ItemSortListView: View {
         if let newItem {
             openItemDetail(newItem)
         }
+    }
+
+    /// 新しいアイテムの入れ先
+    /// 指定順で「今の絞り込みに合う最後のアイテム」の直後に入れる。絞り込みを解除しても、同じタグの仲間の近くに並ぶ
+    /// 合うものが無ければ（空のパックなど）、タグ式グループの末尾に入れる
+    private func newItemPlacement() -> (group: M2Group, order: Int) {
+        let ordered = pack.itemsInManualOrder
+        let filter = currentFilter
+        let anchor = filter.isActive ? ordered.last(where: filter.matches) : ordered.last
+        let group = anchor?.parent ?? pack.groupForNewItem()
+        let items = group.child.sorted { $0.order < $1.order }
+        let index = anchor.flatMap { anchor in items.firstIndex { $0.id == anchor.id } }.map { $0 + 1 } ?? items.count
+        let order = sparseOrderForInsertion(items: items, index: index) {
+            // order のみを整え、child 配列を並べ替えない
+            normalizeSparseOrders(items)
+        }
+        return (group, order)
+    }
+
+    /// 指定順のドラッグ移動（タグ式）。入れる位置とグループの決め方は M1Pack.moveItemsInManualOrder を参照
+    private func moveItems(from source: IndexSet, to destination: Int) {
+        let visible = filteredItems
+        GALogger.log(.operation(name: "move", target: "item", source: "item_browse_manual", detail: nil, count: source.count))
+        history.perform(context: modelContext) {
+            pack.moveItemsInManualOrder(visible: visible, from: source, to: destination)
+        }
+        refreshDisplayedItems()
     }
 
     /// 表示中（絞り込み後）のアイテムの合計重量。パック行と同じ表記で末尾追加の行の右端に出す
@@ -870,12 +913,29 @@ struct ItemSortListView: View {
             .accessibilityLabel(Text("tag.list.resize.a11y"))
     }
 
+    /// 並べ替え条件の右の丸ボタン（昇順/降順、指定順の (?)）。プルダウンと同じ見た目の真円で囲む
+    private func sortSideCircle(_ icon: some View, color: Color) -> some View {
+        icon
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(color)
+            .frame(width: 36, height: 36)
+            .background(
+                Circle().fill(AZPickerStyle.form.panelBackground)
+            )
+            .overlay(
+                Circle().strokeBorder(Color.secondary.opacity(AZPickerStyle.form.borderOpacity), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(AZPickerStyle.form.shadowOpacity),
+                    radius: AZPickerStyle.form.shadowRadius, x: 0, y: AZPickerStyle.form.shadowY)
+            .contentShape(Circle())
+    }
+
     /// タグとアイテムを検索
     private var searchHeader: some View {
         VStack(spacing: 6) {
             // 左に並べ替え条件、右に検索欄
             HStack(spacing: 8) {
-                AZDropdownPicker(options: ItemSortOption.allCases,
+                AZDropdownPicker(options: sortOptions,
                                  selection: sortSelection,
                                  isExpanded: sortPickerExpansion,
                                  minWidth: 100,
@@ -884,27 +944,28 @@ struct ItemSortListView: View {
                 }
                 .cappedAtLargeFontSize()
 
-                // 昇順/降順（クレメモの決済一覧と同じアイコン）。条件のプルダウンとは別にタップで切り替える
-                Button(action: toggleSortDirection) {
-                    Image(systemName: "line.3.horizontal.decrease")
-                        .scaleEffect(x: 1, y: isSortReversed ? -1 : 1)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(isSortOutdated ? Color.secondary : Color.accentColor)
-                        .frame(width: 36, height: 36)
-                        // 並べ替え条件のプルダウンと同じ見た目の真円で囲む
-                        .background(
-                            Circle().fill(AZPickerStyle.form.panelBackground)
-                        )
-                        .overlay(
-                            Circle().strokeBorder(Color.secondary.opacity(AZPickerStyle.form.borderOpacity), lineWidth: 1)
-                        )
-                        .shadow(color: Color.black.opacity(AZPickerStyle.form.shadowOpacity),
-                                radius: AZPickerStyle.form.shadowRadius, x: 0, y: AZPickerStyle.form.shadowY)
-                        .contentShape(Circle())
+                if isManualOrder {
+                    // 指定順は昇順/降順を持たないので、同じ位置に (?) を置いてヘルプシートで並べ替え条件を説明する
+                    Button {
+                        isSearchFocused = false
+                        isShowingManualOrderHelp = true
+                    } label: {
+                        sortSideCircle(Image(systemName: "questionmark"), color: .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("item.sort.manual.help.a11y"))
+                    .cappedAtLargeFontSize()
+                } else {
+                    // 昇順/降順（クレメモの決済一覧と同じアイコン）。条件のプルダウンとは別にタップで切り替える
+                    Button(action: toggleSortDirection) {
+                        sortSideCircle(Image(systemName: "line.3.horizontal.decrease")
+                                           .scaleEffect(x: 1, y: isSortReversed ? -1 : 1),
+                                       color: isSortOutdated ? Color.secondary : Color.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("sort.direction.toggle.a11y"))
+                    .cappedAtLargeFontSize()
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("sort.direction.toggle.a11y"))
-                .cappedAtLargeFontSize()
 
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
@@ -1068,7 +1129,8 @@ struct ItemSortListView: View {
 
         // 指示されたときは最新順に戻す
         // （アイテム詳細から戻ったときもここを通るので、詳細でコピーしたものはコピー元の直下へ移す）
-        if forceResort || forceReset || cachedItems.isEmpty {
+        // 指定順は並びがアイテムの順序そのものなので、常に最新順で表示する
+        if forceResort || forceReset || cachedItems.isEmpty || isManualOrder {
             cachedItems = placingPendingDuplicates(items)
             return
         }
@@ -1106,6 +1168,8 @@ struct ItemSortListView: View {
 /// 並べ替え一覧メニュー定義
 enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     // 以下の順に表示される
+    /// 指定順（グループ式と同じアイテムの順序。タグ式だけで使い、ドラッグで並べ替えられる）
+    case manual
     case unchecked
     case lackCount
     case lackWeight
@@ -1116,6 +1180,8 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     // Row.タイトル
     var title: String {
         switch self {
+            case .manual:
+                return String(localized: "item.sort.manual")
             case .unchecked:
                 return String(localized: "unchecked.first")
             case .lackCount:
@@ -1130,6 +1196,8 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     /// フッターボタン用の短い2行タイトル
     var footerTitle: String {
         switch self {
+            case .manual:
+                return String(localized: "item.sort.manual.footerTitle")
             case .unchecked:
                 return String(localized: "item.sort.unchecked.footerTitle")
             case .lackCount:
@@ -1144,6 +1212,8 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     /// 初心者向けの説明文
     var beginnerGuide: String {
         switch self {
+            case .manual:
+                return String(localized: "item.sort.manual.guide")
             case .unchecked:
                 return String(localized: "use.final.check")
             case .lackCount:
@@ -1162,7 +1232,8 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
     /// - Parameter reversed: true なら逆順（アイテム縦覧で同じ条件をもう一度選んだとき）
     func sortedItems(from pack: M1Pack, reversed: Bool) -> [M3Item] {
         let items = sortedItems(from: pack)
-        return reversed ? Array(items.reversed()) : items
+        // 指定順は昇順/降順を持たない
+        return reversed && self != .manual ? Array(items.reversed()) : items
     }
 
     /// 縦覧で逆順にしている条件か（設定値を直接読む。前後移動など縦覧の外で並びを揃えるため）
@@ -1179,6 +1250,9 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
         }
         
         switch self {
+            case .manual:
+                // グループの順 → グループ内のアイテムの順（グループ式と同じ並び）
+                return items
             case .lackCount:
                 return items.sorted(by: { ll, rr in
                     compare(ll: ll,
