@@ -209,6 +209,7 @@ struct GroupListView: View {
                                     Label("copy", systemImage: "plus.square.on.square")
                                 }
                                 .tint(.blue)
+                                .disabled(!pack.canAddRegularGroup || !pack.canAddItems(group.child.count))
                             }
                         }
                         .onMove(perform: moveGroup)
@@ -218,6 +219,8 @@ struct GroupListView: View {
                                            showsText: isBeginnerMode) {
                             addGroupAtEndAndEdit()
                         }
+                        .disabled(!pack.canAddRegularGroup)
+                        .opacity(pack.canAddRegularGroup ? 1 : 0.45)
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
@@ -356,7 +359,7 @@ struct GroupListView: View {
                                     .foregroundStyle(COLOR_ADD_ACTION)
                             }
                             .buttonStyle(.borderless)
-                            .disabled(isShowingPopup)
+                            .disabled(isShowingPopup || !pack.canAddRegularGroup)
 
                             if isBeginnerMode {
                                 Text("add.new.group")
@@ -478,6 +481,8 @@ struct GroupListView: View {
     }
 
     private func addGroup() {
+        // 通常グループ30件に達したら追加しない
+        guard pack.canAddRegularGroup else { return }
         // 新規追加の位置設定ごとの利用頻度を匿名で集計する
         GALogger.log(.operation(name: "add", target: "group", source: "header", detail: insertionPosition.rawValue, count: nil))
         var newGroupID: M2Group.ID?
@@ -514,6 +519,8 @@ struct GroupListView: View {
 
     /// 末尾追加セル用：常に末尾へ追加して編集シートを開く
     private func addGroupAtEndAndEdit() {
+        // タグ式グループは別枠として数え、通常グループだけを制限する
+        guard pack.canAddRegularGroup else { return }
         // 末尾追加専用セルの利用頻度を集計する
         GALogger.log(.operation(name: "add", target: "group", source: "append_end_row", detail: "tail", count: nil))
         var newGroup: M2Group?

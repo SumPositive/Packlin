@@ -25,7 +25,7 @@ Publish your packs, and import packs published by other users. You can search by
 Export a single pack as a .packlin file and share it via AirDrop or email. Back up and restore all packs at once, so switching devices is worry-free.
 
 ■ AI "Chappy" (optional)
-Just enter your destination or purpose, and the AI suggests the entire contents of a pack. You can also ask it to add to or revise an existing pack. You can also send a request by watching a video ad.
+Just enter your destination or purpose, and the AI suggests the entire contents of a pack. You can also ask it to add to or revise an existing pack. You can send a request by watching a video ad.
 
 ■ 8 languages
 Available in English, Japanese, German, Spanish, French, Italian, Korean, and Traditional Chinese.

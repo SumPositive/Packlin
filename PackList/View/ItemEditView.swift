@@ -143,6 +143,7 @@ struct ItemEditView: View {
                         .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
                 )
         }
+        .disabled(!pack.canAddItems())
         .accessibilityLabel(Text("copy"))
     }
 
@@ -340,6 +341,7 @@ struct ItemEditView: View {
                                             )
                                     }
                                     .accessibilityLabel(Text("top"))
+                                    .disabled(!pack.canAddItems())
                             
                                     // 複製
                                     copyItemButton(width: buttonWidth)
@@ -367,6 +369,7 @@ struct ItemEditView: View {
                                             )
                                     }
                                     .accessibilityLabel(Text("bottom"))
+                                    .disabled(!pack.canAddItems())
 
                                     // 移動
                                     Button {
@@ -619,6 +622,7 @@ struct ItemEditView: View {
                                 .foregroundStyle(COLOR_ADD_ACTION)
                         }
                         .buttonStyle(.borderless)
+                        .disabled(!pack.canAddItems())
 
                         if isBeginnerMode {
                             Text("add.new.item")
@@ -707,7 +711,11 @@ struct ItemEditView: View {
                 selectedGroupID: $selectedGroupID,
                 keepOriginal: $keepSourceItem,
                 insertPosition: $moveInsertPosition,
-                disableConfirm: selectedDestinationGroup == nil,
+                disableConfirm: selectedDestinationGroup.map { destination in
+                    // 同じパック内の移動だけは総数を増やさない
+                    !(destination.parent?.id == pack.id && !keepSourceItem) &&
+                    destination.parent?.canAddItems() != true
+                } ?? true,
                 onConfirm: handleMoveConfirmation,
                 onCancel: { isShowingMoveSheet = false }
             )
@@ -790,6 +798,8 @@ struct ItemEditView: View {
 
     /// 指定位置にアイテムを追加し、そのアイテムを編集状態にする
     private func addItemEdit(at position: InsertionPosition) {
+        // 直前のタグを引き継いでも、パック全体の件数上限を超えないようにする
+        guard pack.canAddItems() else { return }
         // 履歴サービスを利用して新規追加を1つのアクションとして記録する
         history.perform(context: modelContext) {
             let items = group.child.sorted { $0.order < $1.order }
@@ -943,6 +953,9 @@ struct ItemEditView: View {
     }
     /// 移動 or 複写を実行する
     private func performMoveOrCopy(to destinationGroup: M2Group, copy: Bool) {
+        // 同一パック内の移動だけは総数が変わらない
+        guard let destinationPack = destinationGroup.parent,
+              (!copy && destinationPack.id == pack.id) || destinationPack.canAddItems() else { return }
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
         defer {

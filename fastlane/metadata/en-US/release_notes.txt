@@ -1,10 +1,33 @@
-- Added Tags. Attach several tags to an item and filter by tag. Choose Tags or Groups for each pack; new packs start with Tags.
-- In Item browse, you can now switch between ascending and descending order, and see the total weight of the items shown.
-- Added Bulk edit. Select items and add or remove tags, copy them to another pack, or delete them, all at once.
-- Choose between a stepper and a dial to adjust counts, and the keypad now has a built-in calculator.
-- Per-item weights can now be shown in kg from 1,000 g.
-- Added share links for public packs, and packs using Tags can now be published.
-- Added German, Spanish, French, Italian, Korean, and Traditional Chinese.
-- Reworked the Settings screen, and the "Auto" text size that follows your device setting is now recommended.
-- Adjusted the color of the app icon.
-- Minor display tweaks and stability improvements.
+■ New "Tags" sorting style
+You can now choose between the classic "Groups" and the new "Tags" for each pack.
+- Groups: sort items strictly in layers of Pack, Group, and Item
+- Tags: keep all items in one flat list and sort them loosely with tags
+Attach several tags to an item and filter by tag. New packs start with Tags.
+
+■ Bulk edit
+Select items and add or remove tags, copy them to another pack, or delete them, all at once.
+
+■ Share public packs with a link
+Paste a share link (URL) into an email or social post and send it.
+When the recipient taps the link, the public pack is imported into Packlin.
+Packs using Tags can now be published too.
+
+■ Easier input
+- The keypad now has a built-in calculator
+- Enter weights and counts with either a dial or a stepper
+- Tapping outside the keyboard now closes it throughout the app
+
+■ Easier to read
+- In Item browse, switch the sort order between ascending and descending
+- See the total weight of the items shown
+- Per-item weights can now be shown in kg from 1,000 g
+- Reworked the Settings screen, and the "Auto" text size that follows your device setting is now recommended
+- Adjusted the color of the app icon
+
+■ 6 new languages
+Added German, Spanish, French, Italian, Korean, and Traditional Chinese.
+
+■ Other
+- Supports iOS 27
+- Chappy: AI tickets are no longer sold. Tickets you already have can still be used. Without tickets, you can send a request by watching a video ad. We plan to offer a new AI service in the future.
+- Minor display tweaks and stability improvements

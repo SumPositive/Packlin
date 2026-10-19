@@ -162,30 +162,32 @@ struct ImportSanitizerTests {
         #expect(importedItem?.stock == APP_MAX_STOCK_NUM)
     }
 
-    // MARK: - 件数クランプ
+    // MARK: - 件数を失わない取り込み
 
-    @Test("APP_MAX_PART_ROWS を超えるグループは先頭から切り捨てられる")
-    func excessiveGroupsAreTruncated() throws {
+    @Test("通常グループ30件とタグ式グループをすべて復元する")
+    func tagModeGroupBeyondRegularLimitIsPreserved() throws {
         let fx = try makeFixture()
-        // 50件のグループを用意（上限 30 を超える）
-        let groups = (0..<50).map { i in
+        // タグ式グループは通常グループの末尾に置く
+        var groups = (0..<APP_MAX_PART_ROWS).map { i in
             makeGroupDTO(name: "G\(i)")
         }
+        var tagGroup = makeGroupDTO(name: "タグ式グループ")
+        tagGroup.isTagModeGroup = true
+        groups.append(tagGroup)
         let dto = makePackDTO(groups: groups)
 
         let pack = PackImporter.insertPack(from: dto, into: fx.context, order: 0)
         try fx.context.save()
-        #expect(pack.child.count == APP_MAX_PART_ROWS)
-        // 先頭から切り出されている（G0 が含まれる）
-        let names = pack.child.sorted { $0.order < $1.order }.map(\.name)
-        #expect(names.first == "G0")
+        #expect(pack.child.count == APP_MAX_PART_ROWS + 1)
+        #expect(pack.regularGroupCount == APP_MAX_PART_ROWS)
+        #expect(pack.child.contains { $0.id == pack.tagModeGroupID })
     }
 
-    @Test("APP_MAX_ITEM_ROWS を超えるアイテムは先頭から切り捨てられる")
-    func excessiveItemsAreTruncated() throws {
+    @Test("既存の3000件超のアイテムも全件復元する")
+    func existingItemsBeyondNewLimitArePreserved() throws {
         let fx = try makeFixture()
-        // 200件のアイテムを持つグループ（上限 100 を超える）
-        let items = (0..<200).map { i in
+        // 新しい上限を超える旧データもバックアップから失わない
+        let items = (0..<(APP_MAX_PACK_ITEMS + 1)).map { i in
             makeItemDTO(name: "I\(i)")
         }
         let group = makeGroupDTO(items: items)
@@ -194,7 +196,8 @@ struct ImportSanitizerTests {
         let pack = PackImporter.insertPack(from: dto, into: fx.context, order: 0)
         try fx.context.save()
         let importedGroup = pack.child.first
-        #expect(importedGroup?.child.count == APP_MAX_ITEM_ROWS)
+        #expect(importedGroup?.child.count == APP_MAX_PACK_ITEMS + 1)
+        #expect(!pack.canAddItems())
     }
 
     // MARK: - 日付クランプ

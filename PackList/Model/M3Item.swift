@@ -89,6 +89,8 @@ final class M3Item {
     func duplicate() {
         guard let mc = modelContext else {return}
         guard let parent = self.parent else { return }
+        // パック全体の上限に達していたら複製しない
+        guard parent.parent?.canAddItems() == true else { return }
 
         // === Step 1: 親グループ配下の Item を order でソートして並び順を確定 ===
         // parent.child は SwiftData リレーションシップで順序が保証されないため、
@@ -141,4 +143,3 @@ final class M3Item {
         return result
     }
 }
-

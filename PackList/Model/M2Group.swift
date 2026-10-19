@@ -151,6 +151,8 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
         guard let mc = modelContext else {return}
         // 親 Pack が無いグループは複製不可（通常は起こらないが、防御的に return）
         guard let parent = self.parent else { return }
+        // 通常グループ数とパック全体のアイテム数を増やせる場合だけ複製する
+        guard parent.canAddRegularGroup, parent.canAddItems(child.count) else { return }
 
         // === Step 1: 親パック配下の Group を order でソートして並び順を確定 ===
         // parent.child は SwiftData リレーションシップで順序が保証されないため、
@@ -209,4 +211,3 @@ final class M2Group {  // "Group"ではSwiftUI.Groupと競合するため"M2"を
     }
 
 }
-

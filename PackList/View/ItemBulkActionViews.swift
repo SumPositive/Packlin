@@ -196,6 +196,9 @@ struct BulkCopyPackSheet: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        // コピー先で全件を受け入れられる場合だけ選べる
+                        .disabled(!pack.canAddItems(itemCount) ||
+                                  (pack.classifyMode == .group && !pack.canAddRegularGroup))
                     }
                 } header: {
                     Text(String(format: String(localized: "bulk.copy.message"), itemCount))

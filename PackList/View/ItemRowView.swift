@@ -283,6 +283,7 @@ struct ItemRowView: View {
                     Label("copy", systemImage: "plus.square.on.square")
                 }
                 .tint(.blue)
+                .disabled(item.parent?.parent?.canAddItems() != true)
             }
         }
     }

@@ -16,17 +16,15 @@
 //  サニタイズ対象:
 //    - 文字列長：name / memo は APP_MAX_NAME_LEN / APP_MAX_MEMO_LEN に切り詰め
 //    - 数値範囲：weight / stock / need は 0…MAX のクランプ
-//    - 件数：groups は APP_MAX_PART_ROWS、items は APP_MAX_ITEM_ROWS で切り捨て
+//    - 件数：既存の超過データを失わないよう切り捨てない
 //
 //  サニタイズしないと以下のような事故が起こり得る：
 //    - 数十万文字の name で UI レンダリングがフリーズ
 //    - 負数の need で重量集計が暴走（lack = need - stock が巨大負数）
 //    - Int.max に近い weight で overflow → 集計クラッシュ
-//    - 数千件のグループで List スクロールが極端に重くなる
 //
 //  なお、レガシー V2 → V3 マイグレーション（MigratingFromV2toV3）は数値だけ
-//  max(value, 0) で防御していたが、文字列長や件数は未対応だった。
-//  本ファイルのサニタイズはマイグレーションよりも厳格で、両方の入口を覆える。
+//  max(value, 0) で防御していた。ここでは文字列と数値を正規化し、件数は保持する。
 //
 
 import Foundation
@@ -38,10 +36,10 @@ struct PackImporter {
 
     /// 新規にパックを取り込む（同名/同 ID パックが既存に無い場合）
     /// - すべての入力は `SanitizedDTO` 経由でクランプされる
-    /// - 件数が APP_MAX_PART_ROWS / APP_MAX_ITEM_ROWS を超える場合は先頭から切り捨て
+    /// - 既存の上限超過データも全件復元する
     @discardableResult
     static func insertPack(from dto: PackJsonDTO, into context: ModelContext, order: Int) -> M1Pack {
-        // === 文字列・数値・件数を一括サニタイズ ===
+        // === 文字列と数値を正規化し、件数は保持する ===
         // ここで安全な値に正規化することで、以降の処理は信頼された前提で書ける
         let sanitized = SanitizedDTO(from: dto)
 
@@ -55,7 +53,7 @@ struct PackImporter {
         pack.classifyModeRaw = sanitized.classifyMode?.rawValue
         context.insert(pack)
 
-        // sanitized.groups は既に order/index で安定ソート＆件数クランプ済み
+        // sanitized.groups は order/index で安定ソート済み
         for (groupIndex, sanitizedGroup) in sanitized.groups.enumerated() {
             let group = M2Group(
                 name: sanitizedGroup.name,
@@ -96,7 +94,7 @@ struct PackImporter {
     /// - パックの `id` と現在の `order` は元の値を保持する
     @discardableResult
     static func overwrite(pack: M1Pack, with dto: PackJsonDTO, in context: ModelContext) -> M1Pack {
-        // === 文字列・数値・件数を一括サニタイズ ===
+        // === 文字列と数値を正規化し、件数は保持する ===
         let sanitized = SanitizedDTO(from: dto)
 
         // === 既存パックの属性を上書き ===
@@ -138,7 +136,7 @@ struct PackImporter {
         // 同期前の場合に備えて確実にクリアしておく。
         pack.child = []
 
-        // sanitized.groups は既に order/index で安定ソート＆件数クランプ済み
+        // sanitized.groups は order/index で安定ソート済み
         for (groupIndex, sanitizedGroup) in sanitized.groups.enumerated() {
             let group = M2Group(
                 name: sanitizedGroup.name,
@@ -210,18 +208,18 @@ private extension PackImporter {
             let tags: [String]
         }
 
-        /// PackJsonDTO から構築。すべてのフィールドをクランプ・切り詰めする
+        /// PackJsonDTO から構築。文字列と数値を正規化し、件数は保持する
         init(from dto: PackJsonDTO) {
             self.name = Sanitizer.clampedName(dto.name)
             self.memo = Sanitizer.clampedMemo(dto.memo)
             self.createdAt = Sanitizer.clampedDate(dto.createdAt)
             self.classifyMode = dto.classifyMode.flatMap(PackClassifyMode.init(rawValue:))
 
-            // === グループのソート＋件数制限 ===
+            // === グループとアイテムを安定ソート ===
             // 1. 入力配列を index 付きにして order/index で安定ソート
             //    （order があれば order で、なければ元の index で比較。
             //    同値時は index でタイブレークすることで JSON の並びを忠実に再現する）
-            // 2. 件数を APP_MAX_PART_ROWS に制限（超過分は単純に切り捨て）
+            // 2. 既存バックアップの超過データを失わないよう全件保持
             // 3. 各グループ内の Item も同様にサニタイズ
             let sortedGroups = dto.groups
                 .enumerated()
@@ -234,7 +232,6 @@ private extension PackImporter {
                     return leftOrder < rightOrder
                 }
                 .map { $0.element }
-                .prefix(APP_MAX_PART_ROWS)
 
             self.groups = sortedGroups.map { groupDTO in
                 let items = groupDTO.items
@@ -248,7 +245,6 @@ private extension PackImporter {
                         return leftOrder < rightOrder
                     }
                     .map { $0.element }
-                    .prefix(APP_MAX_ITEM_ROWS)
                     .map { item in
                         SanitizedItem(
                             name: Sanitizer.clampedName(item.name),

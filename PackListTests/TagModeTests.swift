@@ -182,6 +182,41 @@ struct TagModeTests {
         #expect(brush.tags.isEmpty)
     }
 
+    @Test("タグ式グループは通常グループ30件の枠を使わない")
+    func tagModeGroupDoesNotUseRegularGroupLimit() throws {
+        let f = try makeFixture()
+        let pack = M1Pack(name: "P")
+        f.context.insert(pack)
+        for index in 0..<APP_MAX_PART_ROWS {
+            f.context.insert(M2Group(name: "G\(index)", order: index * ORDER_SPARSE, parent: pack))
+        }
+        #expect(!pack.canAddRegularGroup)
+
+        // 通常グループが満杯でも、タグ式グループは1件作れる
+        let tagGroup = pack.groupForNewItem()
+        #expect(pack.child.count == APP_MAX_PART_ROWS + 1)
+        #expect(pack.regularGroupCount == APP_MAX_PART_ROWS)
+        #expect(pack.groupForNewItem().id == tagGroup.id)
+    }
+
+    @Test("アイテム上限はグループをまたいで3000件")
+    func itemLimitIsPerPack() throws {
+        let f = try makeFixture()
+        let pack = M1Pack(name: "P")
+        f.context.insert(pack)
+        let first = M2Group(name: "A", parent: pack)
+        let second = M2Group(name: "B", parent: pack)
+        f.context.insert(first)
+        f.context.insert(second)
+        for index in 0..<APP_MAX_PACK_ITEMS {
+            let parent = index < APP_MAX_PACK_ITEMS / 2 ? first : second
+            f.context.insert(M3Item(name: "I\(index)", parent: parent))
+        }
+        #expect(pack.itemCount == APP_MAX_PACK_ITEMS)
+        #expect(!pack.canAddItems())
+        #expect(pack.canAddItems(0))
+    }
+
     // MARK: - タグ一覧の詰め込み（AZFlowLayout）
 
     private func sizes(_ widths: [CGFloat]) -> [CGSize] {

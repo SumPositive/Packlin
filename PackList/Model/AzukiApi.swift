@@ -71,9 +71,9 @@ enum AzukiAPIError: LocalizedError {
             case .publishQuotaExceeded: // 公開上限に達した
                 return String(localized: "publish.quota.exceeded",
                               defaultValue: "公開できる上限に達しました。不要な公開パックを削除してから、もう一度お試しください")
-            case .publishPayloadTooLarge: // 1パックが大きすぎる
+            case .publishPayloadTooLarge: // 公開上限とファイル書き出し可能なことを案内する
                 return String(localized: "publish.payload.too.large",
-                              defaultValue: "このパックはサイズが大きすぎるため公開できません")
+                              defaultValue: "このパックは公開上限の256KiBを超えているため公開できません。ファイルへの書き出しはできます。公開する場合はアイテムやメモを減らしてください")
             case .packNotFound: // 公開パックが見つからない
                 return String(localized: "public.pack.not.found",
                               defaultValue: "このパックは見つかりませんでした。削除された可能性があります")

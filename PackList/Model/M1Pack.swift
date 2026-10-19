@@ -46,6 +46,24 @@ final class M1Pack {
     var stockWeight: Int { child.reduce(0) { $0 + $1.stockWeight } }
     var needWeight: Int { child.reduce(0) { $0 + $1.needWeight } }
 
+    /// タグ式グループを除く通常グループの件数
+    var regularGroupCount: Int {
+        child.filter { $0.id != tagModeGroupID }.count
+    }
+
+    /// 通常グループは30件、タグ式グループは別枠で扱う
+    var canAddRegularGroup: Bool { regularGroupCount < APP_MAX_PART_ROWS }
+
+    /// アイテム数はグループごとではなくパック全体で制限する
+    func canAddItems(_ count: Int = 1) -> Bool {
+        // 既存の超過データでも、件数を増やさない操作は許可する
+        guard 0 <= count else { return false }
+        return count == 0 || itemCount <= APP_MAX_PACK_ITEMS - count
+    }
+
+    /// 既存の超過データも含めた実際のアイテム件数
+    var itemCount: Int { child.reduce(0) { $0 + $1.child.count } }
+
     /// パック内のアイテムに付いているタグの一覧（重複なし・名前順）
     /// タグは独立したデータを持たず、アイテムで使われているものを集めて一覧にする
     var allTags: [String] {
@@ -456,4 +474,3 @@ func assignSparseOrders<T: SparseOrderable>(
         }
     }
 }
-

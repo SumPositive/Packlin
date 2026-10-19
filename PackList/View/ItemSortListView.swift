@@ -238,8 +238,8 @@ struct ItemSortListView: View {
                                                leadingAccessory: isBulkMode ? nil : AnyView(bulkStartButton)) {
                                 addItemAndNavigate(source: "item_browse_append_end_row")
                             }
-                            .disabled(isBulkMode)
-                            .opacity(isBulkMode ? 0.45 : 1.0)
+                            .disabled(isBulkMode || !pack.canAddItems())
+                            .opacity(isBulkMode || !pack.canAddItems() ? 0.45 : 1.0)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                             .listRowBackground(COLOR_ROW_BACK)
@@ -376,7 +376,7 @@ struct ItemSortListView: View {
                                         .foregroundStyle(COLOR_ADD_ACTION)
                                 }
                                 .buttonStyle(.borderless)
-                                .disabled(isShowingPopup || isBulkMode)
+                                .disabled(isShowingPopup || isBulkMode || !pack.canAddItems())
 
                                 if isBeginnerMode {
                                     Text("add.new.item")
@@ -525,6 +525,8 @@ struct ItemSortListView: View {
     /// タグ式のアイテム追加：「タグ式グループ」の末尾へ追加して、詳細編集へ画面遷移する
     /// 縦覧は並べ替え表示なので、ヘッダーと末尾セルのどちらから追加しても同じ動きにする
     private func addItemAndNavigate(source: String) {
+        // タグ式でもパック全体の3000件上限を守る
+        guard pack.canAddItems() else { return }
         GALogger.log(.operation(name: "add", target: "item", source: source, detail: "tail", count: nil))
         var newItem: M3Item?
 
@@ -738,6 +740,9 @@ struct ItemSortListView: View {
     private func copyBulkItems(to destination: M1Pack) {
         let items = selectedBulkItems
         guard !items.isEmpty else { return }
+        // コピー先の件数と通常グループ数を先に確認し、途中までのコピーを防ぐ
+        guard destination.canAddItems(items.count),
+              destination.classifyMode == .tag || destination.canAddRegularGroup else { return }
         GALogger.log(.operation(name: "copy", target: "item", source: "bulk_action", detail: destination.classifyMode.rawValue, count: items.count))
         history.perform(context: modelContext) {
             let group: M2Group

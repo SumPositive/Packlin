@@ -126,8 +126,8 @@ struct ItemListView: View {
                                            showsText: isBeginnerMode) {
                             addItemAtEndAndNavigate()
                         }
-                        .disabled(isBulkMoveMode)
-                        .opacity(isBulkMoveMode ? 0.45 : 1.0)
+                        .disabled(isBulkMoveMode || !pack.canAddItems())
+                        .opacity(isBulkMoveMode || !pack.canAddItems() ? 0.45 : 1.0)
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .listRowBackground(COLOR_ROW_BACK)
@@ -281,7 +281,7 @@ struct ItemListView: View {
                                     .foregroundStyle(COLOR_ADD_ACTION)
                             }
                             .buttonStyle(.borderless)
-                            .disabled(isShowingPopup)
+                            .disabled(isShowingPopup || !pack.canAddItems())
 
                             if isBeginnerMode {
                                 Text("add.new.item")
@@ -384,7 +384,12 @@ struct ItemListView: View {
                 selectedGroupID: $selectedMoveGroupID,
                 keepOriginal: $keepSourceItems,
                 insertPosition: $moveInsertPosition,
-                disableConfirm: selectedDestinationGroup == nil || selectedBulkItems.isEmpty,
+                disableConfirm: selectedDestinationGroup.map { destination in
+                    // 同一パック内の移動以外は移動先の空きを確認する
+                    selectedBulkItems.isEmpty ||
+                    (!(destination.parent?.id == pack.id && !keepSourceItems) &&
+                     destination.parent?.canAddItems(selectedBulkItems.count) != true)
+                } ?? true,
                 onConfirm: handleBulkMoveConfirmation,
                 onCancel: { isShowingBulkMoveSheet = false }
             )
@@ -625,6 +630,9 @@ struct ItemListView: View {
     private func performBulkMoveOrCopy(to destinationGroup: M2Group, copy: Bool) {
         let movingItems = selectedBulkItems
         guard !movingItems.isEmpty else { return }
+        // 同一パック内の移動以外は、移動先に全件が収まる場合だけ実行する
+        guard let destinationPack = destinationGroup.parent,
+              (!copy && destinationPack.id == pack.id) || destinationPack.canAddItems(movingItems.count) else { return }
 
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
@@ -677,6 +685,8 @@ struct ItemListView: View {
 
     /// アイテム追加
     func addItem() {
+        // グループ内の件数に関係なくパック全体で判定する
+        guard pack.canAddItems() else { return }
         // 新規追加の位置設定ごとの利用頻度を匿名で集計する
         GALogger.log(.operation(name: "add", target: "item", source: "header", detail: insertionPosition.rawValue, count: nil))
         var newItemID: M3Item.ID?
@@ -716,6 +726,8 @@ struct ItemListView: View {
 
     /// 末尾追加セル用：常に末尾へ追加して編集画面へ遷移する
     private func addItemAtEndAndNavigate() {
+        // 既存の超過データは残し、新しいアイテムの追加だけを止める
+        guard pack.canAddItems() else { return }
         // 末尾追加専用セルの利用頻度を集計する
         GALogger.log(.operation(name: "add", target: "item", source: "append_end_row", detail: "tail", count: nil))
         var newItem: M3Item?

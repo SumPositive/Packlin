@@ -11835,49 +11835,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses Pack ist zu groß zum Veröffentlichen."
+            "value" : "Dieses Pack überschreitet die Grenze von 256 KiB und kann nicht veröffentlicht werden. Du kannst es weiterhin als Datei exportieren. Kürze Artikel oder Notizen, um es zu veröffentlichen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This pack is too large to publish."
+            "value" : "This pack exceeds the 256 KiB publishing limit and can't be published. You can still export it as a file. Shorten its items or notes to publish it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este pack es demasiado grande para publicarlo."
+            "value" : "Este pack supera el límite de publicación de 256 KiB y no se puede publicar. Aún puedes exportarlo como archivo. Reduce los artículos o las notas para publicarlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ce pack est trop volumineux pour être publié."
+            "value" : "Ce pack dépasse la limite de publication de 256 Kio et ne peut pas être publié. Vous pouvez toujours l’exporter dans un fichier. Réduisez les articles ou les notes pour le publier."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo pack è troppo grande per essere pubblicato."
+            "value" : "Questo pack supera il limite di pubblicazione di 256 KiB e non può essere pubblicato. Puoi comunque esportarlo come file. Riduci gli articoli o le note per pubblicarlo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このパックはサイズが大きすぎるため公開できません"
+            "value" : "このパックは公開上限の256KiBを超えているため公開できません。ファイルへの書き出しはできます。公開する場合はアイテムやメモを減らしてください"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 팩은 크기가 너무 커서 공개할 수 없습니다."
+            "value" : "이 팩은 공개 용량 제한인 256KiB를 초과하여 공개할 수 없습니다. 파일로 내보내기는 가능합니다. 공개하려면 아이템이나 메모를 줄여 주세요."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此行李包過大，無法公開"
+            "value" : "此行李包超過 256 KiB 的公開上限，無法公開。仍可將其匯出為檔案。如需公開，請減少物品或備註"
           }
         }
       }

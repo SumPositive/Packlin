@@ -145,7 +145,11 @@ struct GroupEditView: View {
                                selectedPackID: $selectedPackID,
                                keepOriginal: $keepSourceGroup,
                                insertPosition: $moveInsertPosition,
-                               disableConfirm: selectedPack == nil,
+                               disableConfirm: selectedPack.map { destination in
+                                   // 同じパック内の移動以外は両方の上限を確認する
+                                   !(destination.id == group.parent?.id && !keepSourceGroup) &&
+                                   (!destination.canAddRegularGroup || !destination.canAddItems(group.child.count))
+                               } ?? true,
                                onConfirm: handleMoveConfirmation,
                                onCancel: { isShowingMoveSheet = false })
                 .appFontScale(fontScale)
@@ -209,6 +213,7 @@ struct GroupEditView: View {
                                 tint: .accentColor) {
                 group.duplicate()
             }
+            .disabled(group.parent.map { !$0.canAddRegularGroup || !$0.canAddItems(group.child.count) } ?? true)
 
             compactActionButton(title: "move",
                                 systemImage: "hand.point.up.left.and.text",
@@ -375,6 +380,10 @@ struct GroupEditView: View {
 
     /// Groupを移動または複製する
     private func performMoveOrCopy(to destinationPack: M1Pack, copy: Bool) {
+        // 同一パック内の移動以外は、通常グループ数と総アイテム数を確認する
+        guard let sourcePack = group.parent,
+              (!copy && destinationPack.id == sourcePack.id) ||
+              (destinationPack.canAddRegularGroup && destinationPack.canAddItems(group.child.count)) else { return }
         // Undo grouping BEGIN
         modelContext.undoManager?.groupingBegin()
         defer {

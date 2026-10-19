@@ -120,7 +120,7 @@ let IPAD_WINDOW_CONTROL_INSET : CGFloat = 64.0
 
 let APP_MAX_PACK_ROWS : Int = 30
 let APP_MAX_PART_ROWS : Int = 30
-let APP_MAX_ITEM_ROWS : Int = 100
+let APP_MAX_PACK_ITEMS : Int = 3000
 
 let APP_MAX_NAME_LEN : Int = 200     // .name 文字数
 let APP_MAX_MEMO_LEN : Int = 200     // .memo 文字数
