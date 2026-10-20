@@ -112,6 +112,25 @@ final class M1Pack {
         return group
     }
 
+    /// タグの名前を変える。このパックで同じタグが付いたアイテムすべてに反映する
+    /// 変更後の名前が既にあるときは1つのタグにまとまる
+    func renameTag(_ oldTag: String, to newTag: String) {
+        for group in child {
+            for item in group.child where item.tags.contains(oldTag) {
+                item.tags = M3Item.sanitizedTags(item.tags.map { $0 == oldTag ? newTag : $0 })
+            }
+        }
+    }
+
+    /// タグを、このパックのすべてのアイテムから外す
+    func removeTag(_ tag: String) {
+        for group in child {
+            for item in group.child where item.tags.contains(tag) {
+                item.tags.removeAll { $0 == tag }
+            }
+        }
+    }
+
     /// 指定順のタグの並び：指定順の並びで先に出てくるアイテムのタグから並べる
     /// 1つのアイテムに新しいタグが複数あるときは、付いているアイテム数の多い順（同数はアイテムでの並びどおり）
     /// アイテムを並べ替えると、タグの並びも付いてくる

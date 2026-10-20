@@ -6049,49 +6049,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mit Tags ordnest du deine Objekte\n\nGib oben etwas ein, um einen Tag zu suchen\n\nWird er nicht gefunden, tippe auf „Hinzufügen“, um ihn als neuen Tag zu vergeben\n\nTippe auf einen Tag, um ihn zu vergeben oder zu entfernen, und du kannst mehrere Tags vergeben\n\nHalte einen Tag gedrückt, um ihn umzubenennen oder zu löschen, und Objekte in diesem Pack mit demselben Tag ändern sich mit\n\nWähle unter „Objekte durchsuchen“ einen Tag, um nur Objekte mit diesem Tag anzuzeigen"
+            "value" : "Mit Tags ordnest du deine Objekte\n\nGib oben etwas ein, um einen Tag zu suchen\n\nWird er nicht gefunden, tippe auf „Hinzufügen“, um ihn als neuen Tag zu vergeben\n\nTippe auf einen Tag, um ihn zu vergeben oder zu entfernen, und du kannst mehrere Tags vergeben\n\nTippe auf „Bearbeiten“, um alle Tags dieses Packs zu sehen und sie umzubenennen oder zu löschen\n\nWähle unter „Objekte durchsuchen“ einen Tag, um nur Objekte mit diesem Tag anzuzeigen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tags help you sort your items\n\nType in the field above to find a tag\n\nIf it is not found, tap \"Add\" to attach it as a new tag\n\nTap a tag to attach or remove it, and you can attach several tags\n\nPress and hold a tag to rename or delete it, and items in this pack with the same tag change too\n\nIn Item browse, choose a tag to show only items with that tag"
+            "value" : "Tags help you sort your items\n\nType in the field above to find a tag\n\nIf it is not found, tap \"Add\" to attach it as a new tag\n\nTap a tag to attach or remove it, and you can attach several tags\n\nTap \"Edit\" to see all the tags in this pack, where you can rename or delete them\n\nIn Item browse, choose a tag to show only items with that tag"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las etiquetas sirven para clasificar tus ítems\n\nEscribe en el campo de arriba para buscar una etiqueta\n\nSi no aparece, toca «Añadir» para ponerla como etiqueta nueva\n\nToca una etiqueta para ponerla o quitarla, y puedes poner varias etiquetas\n\nMantén pulsada una etiqueta para renombrarla o eliminarla, y los ítems de este pack con la misma etiqueta también cambian\n\nEn Explorar ítems, elige una etiqueta para mostrar solo los ítems que la tienen"
+            "value" : "Las etiquetas sirven para clasificar tus ítems\n\nEscribe en el campo de arriba para buscar una etiqueta\n\nSi no aparece, toca «Añadir» para ponerla como etiqueta nueva\n\nToca una etiqueta para ponerla o quitarla, y puedes poner varias etiquetas\n\nToca «Editar» para ver todas las etiquetas de este pack y renombrarlas o eliminarlas\n\nEn Explorar ítems, elige una etiqueta para mostrar solo los ítems que la tienen"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tags servent à classer vos éléments\n\nSaisissez dans le champ ci-dessus pour chercher un tag\n\nS’il est introuvable, touchez « Ajouter » pour l’attribuer comme nouveau tag\n\nTouchez un tag pour l’attribuer ou le retirer, et vous pouvez en attribuer plusieurs\n\nMaintenez un tag appuyé pour le renommer ou le supprimer, et les éléments de ce pack ayant le même tag changent aussi\n\nDans Parcourir les éléments, choisissez un tag pour n’afficher que les éléments qui l’ont"
+            "value" : "Les tags servent à classer vos éléments\n\nSaisissez dans le champ ci-dessus pour chercher un tag\n\nS’il est introuvable, touchez « Ajouter » pour l’attribuer comme nouveau tag\n\nTouchez un tag pour l’attribuer ou le retirer, et vous pouvez en attribuer plusieurs\n\nTouchez « Modifier » pour voir tous les tags de ce pack, puis les renommer ou les supprimer\n\nDans Parcourir les éléments, choisissez un tag pour n’afficher que les éléments qui l’ont"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I tag servono a classificare i tuoi elementi\n\nScrivi nel campo in alto per cercare un tag\n\nSe non lo trovi, tocca «Aggiungi» per assegnarlo come nuovo tag\n\nTocca un tag per assegnarlo o toglierlo, e puoi assegnarne più di uno\n\nTieni premuto un tag per rinominarlo o eliminarlo, e cambiano anche gli elementi di questo pack con lo stesso tag\n\nIn Sfoglia elementi, scegli un tag per mostrare solo gli elementi che lo hanno"
+            "value" : "I tag servono a classificare i tuoi elementi\n\nScrivi nel campo in alto per cercare un tag\n\nSe non lo trovi, tocca «Aggiungi» per assegnarlo come nuovo tag\n\nTocca un tag per assegnarlo o toglierlo, e puoi assegnarne più di uno\n\nTocca «Modifica» per vedere tutti i tag di questo pack e rinominarli o eliminarli\n\nIn Sfoglia elementi, scegli un tag per mostrare solo gli elementi che lo hanno"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タグはアイテムの分類に使います\n\n上の欄に入力すると、タグを探せます\n\n見つからないときは「追加」を押すと、新しいタグとして付けられます\n\nタグを押すと付け外しでき、複数のタグを付けられます\n\nタグを長押しすると名前の変更や削除ができ、このパックで同じタグが付いたアイテムもまとめて変わります\n\nアイテム縦覧でタグを選ぶと、そのタグのアイテムだけに絞り込めます"
+            "value" : "タグはアイテムの分類に使います\n\n上の欄に入力すると、タグを探せます\n\n見つからないときは「追加」を押すと、新しいタグとして付けられます\n\nタグを押すと付け外しでき、複数のタグを付けられます\n\n「編集」を押すと、パックのタグを一覧にして、名前の変更や削除ができます\n\nアイテム縦覧でタグを選ぶと、そのタグのアイテムだけに絞り込めます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "태그는 항목을 분류하는 데 사용합니다\n\n위 칸에 입력하면 태그를 찾을 수 있습니다\n\n찾지 못하면 ‘추가’를 눌러 새 태그로 붙일 수 있습니다\n\n태그를 누르면 붙이거나 뗄 수 있으며, 여러 태그를 붙일 수 있습니다\n\n태그를 길게 누르면 이름을 바꾸거나 삭제할 수 있고, 이 팩에서 같은 태그가 붙은 항목도 함께 바뀝니다\n\n항목 둘러보기에서 태그를 고르면 그 태그가 붙은 항목만 표시됩니다"
+            "value" : "태그는 항목을 분류하는 데 사용합니다\n\n위 칸에 입력하면 태그를 찾을 수 있습니다\n\n찾지 못하면 ‘추가’를 눌러 새 태그로 붙일 수 있습니다\n\n태그를 누르면 붙이거나 뗄 수 있으며, 여러 태그를 붙일 수 있습니다\n\n‘편집’을 누르면 이 팩의 태그를 목록으로 보고, 이름을 바꾸거나 삭제할 수 있습니다\n\n항목 둘러보기에서 태그를 고르면 그 태그가 붙은 항목만 표시됩니다"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "標籤可用來分類物品\n\n在上方欄位輸入即可尋找標籤\n\n找不到時，點按「新增」即可加上新標籤\n\n點按標籤可加上或移除，也可以加上多個標籤\n\n長按標籤可變更名稱或刪除，這個行李包中有相同標籤的物品也會一起變更\n\n在物品瀏覽中選擇標籤，即可只顯示有該標籤的物品"
+            "value" : "標籤可用來分類物品\n\n在上方欄位輸入即可尋找標籤\n\n找不到時，點按「新增」即可加上新標籤\n\n點按標籤可加上或移除，也可以加上多個標籤\n\n點按「編輯」可列出這個行李包的所有標籤，並變更名稱或刪除\n\n在物品瀏覽中選擇標籤，即可只顯示有該標籤的物品"
           }
         }
       }
@@ -14083,59 +14083,6 @@
         }
       }
     },
-    "tag.delete.button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tag löschen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete tag"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar etiqueta"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer le tag"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elimina tag"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タグを削除"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "태그 삭제"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "刪除標籤"
-          }
-        }
-      }
-    },
     "tag.delete.confirm.message" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -14562,49 +14509,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tag suchen (oder neu hinzufügen)"
+            "value" : "Suchen, sonst hinzufügen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Find a tag (or add a new one)"
+            "value" : "Search, or add if not found"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar etiqueta (o añadir una nueva)"
+            "value" : "Busca o añade si no existe"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chercher un tag (ou en ajouter un)"
+            "value" : "Chercher, sinon ajouter"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerca un tag (o aggiungine uno)"
+            "value" : "Cerca o aggiungi se manca"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タグを探す（無ければ追加）"
+            "value" : "探して無ければ追加"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "태그 찾기(없으면 추가)"
+            "value" : "찾고 없으면 추가"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尋找標籤（沒有就新增）"
+            "value" : "搜尋，沒有就新增"
           }
         }
       }
@@ -17434,6 +17381,324 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "關於排序方式"
+          }
+        }
+      }
+    },
+    "tag.manage.button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "편집"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯"
+          }
+        }
+      }
+    },
+    "tag.manage.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Tags"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar etiquetas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier les tags"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグの編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그 편집"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯標籤"
+          }
+        }
+      }
+    },
+    "tag.manage.footer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe auf einen Tag, um ihn umzubenennen oder zu löschen. Die Zahl rechts zeigt, wie viele Objekte den Tag haben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a tag to rename or delete it. The number on the right is how many items have the tag."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca una etiqueta para renombrarla o eliminarla. El número de la derecha indica cuántos ítems tienen la etiqueta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touchez un tag pour le renommer ou le supprimer. Le nombre à droite indique combien d’éléments ont ce tag."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca un tag per rinominarlo o eliminarlo. Il numero a destra indica quanti elementi hanno il tag."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップすると名前の変更や削除ができます。右の数字は、タグが付いているアイテムの数です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "탭하면 이름을 바꾸거나 삭제할 수 있습니다. 오른쪽 숫자는 태그가 붙은 항목 수입니다."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點按可變更名稱或刪除。右側數字是有此標籤的物品數"
+          }
+        }
+      }
+    },
+    "tag.rename.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag umbenennen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renombrar etiqueta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renommer le tag"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タグの名前を変更"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "태그 이름 변경"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "變更標籤名稱"
+          }
+        }
+      }
+    },
+    "tag.rename.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekte in diesem Pack mit demselben Tag ändern sich mit.\n\nWählst du einen bereits vorhandenen Namen, werden beide Tags zu einem zusammengeführt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Items in this pack with the same tag change too.\n\nIf you use a name that already exists, the two tags are merged into one."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los ítems de este pack con la misma etiqueta también cambian.\n\nSi usas un nombre que ya existe, las dos etiquetas se unen en una."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments de ce pack ayant le même tag changent aussi.\n\nSi vous choisissez un nom qui existe déjà, les deux tags sont fusionnés en un seul."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiano anche gli elementi di questo pack con lo stesso tag.\n\nSe usi un nome già esistente, i due tag vengono uniti in uno solo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このパックで同じタグが付いたアイテムも、まとめて変わります\n\n既にある名前にすると、1つのタグにまとまります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 팩에서 같은 태그가 붙은 항목도 함께 바뀝니다.\n\n이미 있는 이름으로 바꾸면 하나의 태그로 합쳐집니다."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個行李包中有相同標籤的物品也會一起變更\n\n改成已有的名稱時，會合併為一個標籤"
+          }
+        }
+      }
+    },
+    "tag.delete.this" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diesen Tag löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete This Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar esta etiqueta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer ce tag"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina questo tag"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このタグを削除する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 태그 삭제"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除這個標籤"
           }
         }
       }

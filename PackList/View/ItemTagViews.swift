@@ -13,18 +13,13 @@ struct TagChip: View {
     let title: String
     let isSelected: Bool
     var isDisabled: Bool = false
-    /// 名前を編集中（長押し中のタグ）
-    var isEditing: Bool = false
     /// 「タグなし」など普通のタグと区別したいボタン（文字を控えめにし、背景を薄いグレーにする）
     var isSpecial: Bool = false
-    /// 長押ししたときの処理。nil のときは長押しを受けない
-    var onLongPress: (() -> Void)? = nil
     let action: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
 
     private var borderColor: Color {
-        if isEditing { return Color.orange }
         // ダークでは背景が暗くタグ色が沈むので、枠を濃くする
         return isSelected ? COLOR_TAG.opacity(colorScheme == .dark ? 0.9 : 0.62) : Color.secondary.opacity(0.25)
     }
@@ -50,35 +45,17 @@ struct TagChip: View {
             )
             .overlay(
                 Capsule(style: .continuous)
-                    .strokeBorder(borderColor, lineWidth: (isSelected || isEditing) ? 1.5 : 1)
+                    .strokeBorder(borderColor, lineWidth: isSelected ? 1.5 : 1)
             )
             .contentShape(Capsule())
     }
 
     var body: some View {
-        Group {
-            if let onLongPress {
-                // タップで選択、長押しで編集。Button だと長押し後にタップも走るのでジェスチャーで分ける
-                chipLabel
-                    .onTapGesture {
-                        guard !isDisabled else { return }
-                        action()
-                    }
-                    .onLongPressGesture(minimumDuration: 0.4) {
-                        onLongPress()
-                    }
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityAction(named: Text("tag.rename.button")) {
-                        onLongPress()
-                    }
-            } else {
-                Button(action: action) {
-                    chipLabel
-                }
-                .buttonStyle(.plain)
-                .disabled(isDisabled)
-            }
+        Button(action: action) {
+            chipLabel
         }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
         .opacity(isDisabled ? 0.4 : 1)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
@@ -87,42 +64,38 @@ struct TagChip: View {
 /// アイテム詳細の下部に置くタグ選択
 /// - 上の欄で一覧を探し、一致するタグが無ければその文字で追加できる
 /// - タグは複数選べる
-/// - タグを長押しすると検索欄で名前を編集でき、パック内の同じタグがまとめて変わる
+/// - タグの名前の変更・削除は、タグ欄の「編集」から開くシート（TagManageSheet）で行う
 struct ItemTagEditor: View {
     let pack: M1Pack
     @Bindable var item: M3Item
     var backgroundColor: Color = COLOR_BACK_INPUT
     var cornerRadius: CGFloat = 12
+    /// 入力欄からタグ一覧の2行目までを覆う目印の ID（親の画面がここまでスクロールして、キーボードの上に見せる）
+    var scrollAnchorID: String? = nil
+    /// タグの入力欄にフォーカスが入った／外れたとき（親の画面が検索結果の見える位置へスクロールするため）
+    var onSearchFocusChange: (Bool) -> Void = { _ in }
 
     @State private var searchText: String = ""
+    /// タグ一覧の上端（この枠の中の位置）と、タグ1つの高さ。スクロールの目印の高さを決めるために測る
+    @State private var tagListTop: CGFloat = 0
+    @State private var tagChipHeight: CGFloat = 0
     /// 表示するタグ一覧（縦覧のタグ一覧と同じ指定順）
     /// 選択を外したタグがその場で一覧から消えず、押すたびに並びが動かないよう、開いた時点の一覧を保持して追加分を末尾に足していく
     @State private var knownTags: [String] = []
-    /// 名前を編集中のタグ（長押しで設定）。nil のときは通常の検索・追加
-    @State private var editingTag: String?
     @FocusState private var isSearchFocused: Bool
-    /// 削除の確認を出しているタグ
-    @State private var deletingTag: String?
 
     private var keyword: String {
         String(searchText.trimmingCharacters(in: .whitespacesAndNewlines).prefix(APP_MAX_TAG_LEN))
     }
 
     private var visibleTags: [String] {
-        // 編集中は入力欄にタグ名が入るので、一覧は絞り込まずに全部出す
-        guard !keyword.isEmpty, editingTag == nil else { return knownTags }
+        guard !keyword.isEmpty else { return knownTags }
         return knownTags.filter { $0.localizedCaseInsensitiveContains(keyword) }
     }
 
     /// 入力した文字のタグがまだ無いときだけ「追加」を出す
     private var canAddKeyword: Bool {
-        editingTag == nil && !keyword.isEmpty && !knownTags.contains(keyword)
-    }
-
-    /// 編集中で、名前が変わっているときだけ「変更」を押せる
-    private var canRename: Bool {
-        guard let editingTag else { return false }
-        return !keyword.isEmpty && keyword != editingTag
+        !keyword.isEmpty && !knownTags.contains(keyword)
     }
 
     private var isTagLimitReached: Bool {
@@ -141,37 +114,14 @@ struct ItemTagEditor: View {
                     .textInputAutocapitalization(.never)
                     .submitLabel(.done)
                     .focused($isSearchFocused)
+                    .onChange(of: isSearchFocused) { _, focused in
+                        onSearchFocusChange(focused)
+                    }
                     .onSubmit {
-                        if editingTag != nil {
-                            commitRename()
-                        } else if canAddKeyword {
+                        if canAddKeyword {
                             addKeywordTag()
                         }
                     }
-                // 編集中は「追加」の代わりに「変更」を出す
-                if editingTag != nil {
-                    Button {
-                        commitRename()
-                    } label: {
-                        Label("tag.rename.button", systemImage: "checkmark.circle.fill")
-                            .font(.subheadline.weight(.semibold))
-                            .lineLimit(1)
-                            .fixedSize()
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(!canRename)
-
-                    // 編集中のタグを、このパックのすべてのアイテムから外す（確認あり）
-                    Button {
-                        deletingTag = editingTag
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.red)
-                    }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel(Text("tag.delete.button"))
-                }
                 // 入力した文字のタグが無いときだけ、消去ボタンの左に「追加」を出す
                 if canAddKeyword {
                     Button {
@@ -185,10 +135,9 @@ struct ItemTagEditor: View {
                     .buttonStyle(.borderless)
                     .disabled(isTagLimitReached)
                 }
-                if !searchText.isEmpty || editingTag != nil {
+                if !searchText.isEmpty {
                     Button {
-                        // 編集中なら編集をやめる
-                        endEditing()
+                        searchText = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.tertiary)
@@ -204,60 +153,55 @@ struct ItemTagEditor: View {
                     .fill(Color(uiColor: .secondarySystemBackground))
             )
 
-            if visibleTags.isEmpty {
-                if knownTags.isEmpty && !canAddKeyword {
-                    Text("tag.empty")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                // 左寄せで並べ、行末に空きがあれば後ろの収まるタグを繰り上げる（アイテム縦覧のタグ一覧と同じ）
-                AZFlowLayout(spacing: 8, rowSpacing: 8, alignment: .leading, packToFill: true) {
-                    ForEach(visibleTags, id: \.self) { tag in
-                        let isSelected = item.tags.contains(tag)
-                        TagChip(title: tag,
-                                isSelected: isSelected,
-                                isDisabled: !isSelected && isTagLimitReached,
-                                isEditing: tag == editingTag,
-                                onLongPress: { beginEditing(tag) }) {
-                            // 選択を切り替えたら編集はやめる
-                            if editingTag != nil {
-                                endEditing()
+            // タグ一覧。入力中は2行ぶんの高さを確保し、絞り込みで一覧が減っても枠が縮んで画面が詰まらないようにする
+            VStack(alignment: .leading, spacing: 0) {
+                if visibleTags.isEmpty {
+                    if knownTags.isEmpty && !canAddKeyword {
+                        Text("tag.empty")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    // 左寄せで並べ、行末に空きがあれば後ろの収まるタグを繰り上げる（アイテム縦覧のタグ一覧と同じ）
+                    AZFlowLayout(spacing: 8, rowSpacing: 8, alignment: .leading, packToFill: true) {
+                        ForEach(visibleTags, id: \.self) { tag in
+                            let isSelected = item.tags.contains(tag)
+                            TagChip(title: tag,
+                                    isSelected: isSelected,
+                                    isDisabled: !isSelected && isTagLimitReached) {
+                                toggle(tag)
                             }
-                            toggle(tag)
+                            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                                tagChipHeight = height
+                            }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.coordinateSpaceName)).minY } action: { top in
+                        tagListTop = top
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .frame(minHeight: reservedTagListHeight, alignment: .top)
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(backgroundColor)
         )
-        .alert("tag.delete.confirm.title",
-               isPresented: Binding(get: { deletingTag != nil },
-                                    set: { if !$0 { deletingTag = nil } })) {
-            Button("delete", role: .destructive) {
-                if let deletingTag {
-                    deleteTag(deletingTag)
-                }
-                deletingTag = nil
-            }
-            Button("cancel", role: .cancel) {
-                deletingTag = nil
-            }
-        } message: {
-            if let deletingTag {
-                Text(String(format: String(localized: "tag.delete.confirm.message"),
-                            deletingTag, itemCount(with: deletingTag)))
+        // 入力欄からタグ一覧の2行目まで（タグが無ければ枠全体）を覆う透明な目印
+        .background(alignment: .top) {
+            if let scrollAnchorID {
+                Color.clear
+                    .frame(height: scrollAnchorHeight)
+                    .frame(maxHeight: scrollAnchorHeight == nil ? .infinity : nil, alignment: .top)
+                    .id(scrollAnchorID)
             }
         }
+        .coordinateSpace(.named(Self.coordinateSpaceName))
         // 前後のアイテムへ切り替えたときも、そのアイテムで一覧を作り直す
         .task(id: item.id) {
             searchText = ""
-            editingTag = nil
             reloadKnownTags()
         }
     }
@@ -270,72 +214,27 @@ struct ItemTagEditor: View {
         knownTags = tags
     }
 
+    private static let coordinateSpaceName = "ItemTagEditor"
+
+    /// 入力中にタグ一覧へ確保する高さ（2行ぶん）。入力していないときや、まだ測れていないときは nil
+    private var reservedTagListHeight: CGFloat? {
+        guard isSearchFocused, 0 < tagChipHeight else { return nil }
+        return tagChipHeight * 2 + 8
+    }
+
+    /// スクロールの目印の高さ：タグ一覧の上端 + 2行ぶん（行間 8）+ 枠の下の余白 12
+    /// タグ一覧が出ていない（測れていない）ときは nil で枠全体にする
+    private var scrollAnchorHeight: CGFloat? {
+        guard !visibleTags.isEmpty, 0 < tagListTop, 0 < tagChipHeight else { return nil }
+        return tagListTop + tagChipHeight * 2 + 8 + 12
+    }
+
     private func toggle(_ tag: String) {
         if let index = item.tags.firstIndex(of: tag) {
             item.tags.remove(at: index)
         } else {
             item.tags = M3Item.sanitizedTags(item.tags + [tag])
         }
-    }
-
-    /// 長押ししたタグの名前を検索欄に入れて編集を始める
-    private func beginEditing(_ tag: String) {
-        editingTag = tag
-        searchText = tag
-        isSearchFocused = true
-    }
-
-    private func endEditing() {
-        editingTag = nil
-        searchText = ""
-    }
-
-    /// 編集中のタグ名を変更する。パック内でそのタグが付いたアイテムすべてに反映する
-    /// 変更後の名前が既にあるときは1つのタグにまとまる
-    private func commitRename() {
-        guard let oldTag = editingTag, canRename else { return }
-        let newTag = keyword
-        for group in pack.child {
-            for target in group.child where target.tags.contains(oldTag) {
-                let renamed = target.tags.map { $0 == oldTag ? newTag : $0 }
-                target.tags = M3Item.sanitizedTags(renamed)
-            }
-        }
-        // 開いているアイテムがパック外（移動直後など）でも反映する
-        if item.tags.contains(oldTag) {
-            item.tags = M3Item.sanitizedTags(item.tags.map { $0 == oldTag ? newTag : $0 })
-        }
-        // 並びはそのままで名前だけ差し替える（既にある名前に変えたときは1つにまとめる）
-        if knownTags.contains(newTag) {
-            knownTags.removeAll { $0 == oldTag }
-        } else {
-            knownTags = knownTags.map { $0 == oldTag ? newTag : $0 }
-        }
-        endEditing()
-        isSearchFocused = false
-    }
-
-    /// パック内でそのタグが付いているアイテム数（開いているアイテムがパック外でも数える）
-    private func itemCount(with tag: String) -> Int {
-        var count = pack.tagItemCounts[tag] ?? 0
-        if item.parent?.parent?.id != pack.id, item.tags.contains(tag) {
-            count += 1
-        }
-        return count
-    }
-
-    /// タグをパック内のすべてのアイテムから外し、一覧からも消す（元に戻すで戻せる）
-    private func deleteTag(_ tag: String) {
-        for group in pack.child {
-            for target in group.child where target.tags.contains(tag) {
-                target.tags.removeAll { $0 == tag }
-            }
-        }
-        // 開いているアイテムがパック外（移動直後など）でも外す
-        item.tags.removeAll { $0 == tag }
-        knownTags.removeAll { $0 == tag }
-        endEditing()
-        isSearchFocused = false
     }
 
     /// 入力した文字でタグを作り、このアイテムに付ける

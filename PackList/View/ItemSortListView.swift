@@ -56,6 +56,8 @@ struct ItemSortListView: View {
     @State private var bulkResultMessage: String?
     /// 並べ替え条件プルダウンの展開状態
     @State private var isSortPickerExpanded = false
+    /// タグの編集シート（タグ一覧の下端の「編集」から開く）
+    @State private var isShowingTagManager = false
     /// 並べ替え条件のヘルプシート（指定順のときの (?) から開く）
     /// 一覧の先頭に置いたヘッダー（並べ替え条件・検索・タグ一覧）の下端（グローバル座標）
     /// 検索中に一覧をタップしてキーボードを閉じる覆いを、ヘッダーより下だけにするため
@@ -495,6 +497,11 @@ struct ItemSortListView: View {
             if isBulkMode {
                 bulkFooter
             }
+        }
+        // パックのタグを一覧で名前の変更・削除する
+        .sheet(isPresented: $isShowingTagManager) {
+            TagManageSheet(pack: pack)
+                .appFontScale(fontScale)
         }
         // 並べ替え条件の説明
         .helpTextSheet(isPresented: $isShowingManualOrderHelp,
@@ -1054,15 +1061,31 @@ struct ItemSortListView: View {
                     .frame(height: tagAreaVisibleHeight)
                     .scrollIndicators(.hidden)
 
-                    // 1行に収まらないときだけハンドルを出す
-                    if tagAreaHeight(for: 1) + 1 < tagContentHeight {
-                        tagResizeHandle
+                    // 下端の行：中央にハンドル（1行に収まらないときだけ）、右端にタグの「編集」
+                    ZStack(alignment: .trailing) {
+                        if tagAreaHeight(for: 1) + 1 < tagContentHeight {
+                            tagResizeHandle
+                        } else {
+                            Color.clear.frame(height: 28)
+                        }
+                        Button {
+                            isSearchFocused = false
+                            isShowingTagManager = true
+                        } label: {
+                            // Label だとアイコンと文字の間が広いので、HStack で詰める
+                            HStack(spacing: 2) {
+                                Image(systemName: "square.and.pencil")
+                                Text("tag.manage.button")
+                            }
+                        }
+                        .font(.footnote)
+                        .buttonStyle(.borderless)
+                        .padding(.trailing, 4)
                     }
                 }
                 // ハンドルを含めたタグ一覧を1枚のパネルとして見せる（タグボタンの白が映える薄いグレー）
                 .padding(.horizontal, 10)
                 .padding(.top, 8)
-                .padding(.bottom, tagAreaHeight(for: 1) + 1 < tagContentHeight ? 0 : 8)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(Color(uiColor: .secondarySystemBackground))

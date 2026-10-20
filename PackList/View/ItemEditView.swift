@@ -80,6 +80,12 @@ struct ItemEditView: View {
     @AppStorage(PacklinDialSettings.tuningKey) private var dialTuningData = Data()
 
     private let sectionCornerRadius: CGFloat = 12
+    /// タグの編集シート（タグ欄の「編集」から開く）
+    @State private var isShowingTagManager = false
+    /// タグの編集シートを閉じたら、タグ欄を作り直して名前の変更・削除を反映する
+    @State private var tagEditorRevision = 0
+    /// タグ欄の入力欄からタグ一覧の2行目まで（入力欄にフォーカスが入ったら、ここがキーボードの上に来るまでスクロールする）
+    private let tagScrollAnchorID = "itemEdit.tagScrollAnchor"
 
     /// アクションボタンの理想幅
     private var idealActionButtonWidth: CGFloat {
@@ -299,221 +305,245 @@ struct ItemEditView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                //    // 見出し
-                //    VStack(alignment: .leading, spacing: 4) {
-                //        // パック名 表示
-                //        pack.name.placeholderText("新しいパック")
-                //            .font(.caption)
-                //            .foregroundStyle(.secondary)
-                //        // グループ名 表示
-                //        group.name.placeholderText("新しいグループ")
-                //            .font(.headline)
-                //    }
-                // 操作
-                EditorSection(title: "actions") {
-                    GeometryReader { proxy in
-                        let buttonWidth = actionButtonWidth(for: proxy.size.width)
-                        if pack.classifyMode == .tag {
-                            // タグ式はグループを見せないので、先頭/末尾追加・移動・消すを省いて1段にする
-                            HStack(spacing: actionButtonSpacing) {
-                                previousItemButton(width: buttonWidth)
-                                nextItemButton(width: buttonWidth)
-                                copyItemButton(width: buttonWidth)
-                                deleteItemButton(width: buttonWidth)
-                            }
-                            .frame(width: proxy.size.width, alignment: .leading)
-                        } else {
-                            VStack {
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    //    // 見出し
+                    //    VStack(alignment: .leading, spacing: 4) {
+                    //        // パック名 表示
+                    //        pack.name.placeholderText("新しいパック")
+                    //            .font(.caption)
+                    //            .foregroundStyle(.secondary)
+                    //        // グループ名 表示
+                    //        group.name.placeholderText("新しいグループ")
+                    //            .font(.headline)
+                    //    }
+                    // 操作
+                    EditorSection(title: "actions") {
+                        GeometryReader { proxy in
+                            let buttonWidth = actionButtonWidth(for: proxy.size.width)
+                            if pack.classifyMode == .tag {
+                                // タグ式はグループを見せないので、先頭/末尾追加・移動・消すを省いて1段にする
                                 HStack(spacing: actionButtonSpacing) {
-                                    // 上・前へ
                                     previousItemButton(width: buttonWidth)
-
-                                    // 先頭に追加
-                                    Button {
-                                        addItemEdit(at: .head)
-                                    } label: {
-                                        actionButtonContent("top", systemImage: "plus.circle")
-                                            .foregroundStyle(COLOR_ADD_ACTION)
-                                            .frame(width: buttonWidth, height: 44)
-                                            .background(COLOR_BACK_INPUT)
-                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                            )
-                                    }
-                                    .accessibilityLabel(Text("top"))
-                                    .disabled(!pack.canAddItems())
-                            
-                                    // 複製
+                                    nextItemButton(width: buttonWidth)
                                     copyItemButton(width: buttonWidth)
-                            
-                                    // 削除
                                     deleteItemButton(width: buttonWidth)
                                 }
-                                // 2段目
-                                HStack(spacing: actionButtonSpacing) {
-                                    // 下・次へ
-                                    nextItemButton(width: buttonWidth)
+                                .frame(width: proxy.size.width, alignment: .leading)
+                            } else {
+                                VStack {
+                                    HStack(spacing: actionButtonSpacing) {
+                                        // 上・前へ
+                                        previousItemButton(width: buttonWidth)
 
-                                    // 末尾に追加
-                                    Button {
-                                        addItemEdit(at: .tail)
-                                    } label: {
-                                        actionButtonContent("bottom", systemImage: "plus.circle")
-                                            .foregroundStyle(COLOR_ADD_ACTION)
-                                            .frame(width: buttonWidth, height: 44)
-                                            .background(COLOR_BACK_INPUT)
-                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                            )
+                                        // 先頭に追加
+                                        Button {
+                                            addItemEdit(at: .head)
+                                        } label: {
+                                            actionButtonContent("top", systemImage: "plus.circle")
+                                                .foregroundStyle(COLOR_ADD_ACTION)
+                                                .frame(width: buttonWidth, height: 44)
+                                                .background(COLOR_BACK_INPUT)
+                                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                                )
+                                        }
+                                        .accessibilityLabel(Text("top"))
+                                        .disabled(!pack.canAddItems())
+                                
+                                        // 複製
+                                        copyItemButton(width: buttonWidth)
+                                
+                                        // 削除
+                                        deleteItemButton(width: buttonWidth)
                                     }
-                                    .accessibilityLabel(Text("bottom"))
-                                    .disabled(!pack.canAddItems())
+                                    // 2段目
+                                    HStack(spacing: actionButtonSpacing) {
+                                        // 下・次へ
+                                        nextItemButton(width: buttonWidth)
 
-                                    // 移動
-                                    Button {
-                                        prepareMoveSheet()
-                                        isShowingMoveSheet = true
-                                    } label: {
-                                        actionButtonContent("move", systemImage: "hand.point.up.left.and.text")
-                                            .frame(width: buttonWidth, height: 44)
-                                            .background(COLOR_BACK_INPUT)
-                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                            )
-                                    }
-                                    .accessibilityLabel(Text("move"))
+                                        // 末尾に追加
+                                        Button {
+                                            addItemEdit(at: .tail)
+                                        } label: {
+                                            actionButtonContent("bottom", systemImage: "plus.circle")
+                                                .foregroundStyle(COLOR_ADD_ACTION)
+                                                .frame(width: buttonWidth, height: 44)
+                                                .background(COLOR_BACK_INPUT)
+                                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                                )
+                                        }
+                                        .accessibilityLabel(Text("bottom"))
+                                        .disabled(!pack.canAddItems())
 
-                                    // 消す
-                                    Button(role: .destructive) {
-                                        // アイテムを初期値にリセット
-                                        resetItemToInitialState()
-                                    } label: {
-                                        actionButtonContent("erase", systemImage: "eraser")
-                                            .frame(width: buttonWidth, height: 44)
-                                            .background(COLOR_BACK_INPUT)
-                                            .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                                                    .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
-                                            )
+                                        // 移動
+                                        Button {
+                                            prepareMoveSheet()
+                                            isShowingMoveSheet = true
+                                        } label: {
+                                            actionButtonContent("move", systemImage: "hand.point.up.left.and.text")
+                                                .frame(width: buttonWidth, height: 44)
+                                                .background(COLOR_BACK_INPUT)
+                                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                                )
+                                        }
+                                        .accessibilityLabel(Text("move"))
+
+                                        // 消す
+                                        Button(role: .destructive) {
+                                            // アイテムを初期値にリセット
+                                            resetItemToInitialState()
+                                        } label: {
+                                            actionButtonContent("erase", systemImage: "eraser")
+                                                .frame(width: buttonWidth, height: 44)
+                                                .background(COLOR_BACK_INPUT)
+                                                .clipShape(RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                                        .strokeBorder(COLOR_BACK_POPUP, lineWidth: 1)
+                                                )
+                                        }
+                                        .accentColor(Color(.systemPink))
+                                        .accessibilityLabel(Text("erase"))
                                     }
-                                    .accentColor(Color(.systemPink))
-                                    .accessibilityLabel(Text("erase"))
                                 }
+                                .frame(width: proxy.size.width, alignment: .leading)
                             }
-                            .frame(width: proxy.size.width, alignment: .leading)
                         }
+                        .frame(height: pack.classifyMode == .tag ? 44 : 100)
+                        // 固定枠ボタンの文字が欠けないよう「大」までで頭打ち
+                        .cappedAtLargeFontSize()
                     }
-                    .frame(height: pack.classifyMode == .tag ? 44 : 100)
-                    // 固定枠ボタンの文字が欠けないよう「大」までで頭打ち
-                    .cappedAtLargeFontSize()
-                }
-                // 名称
-                EditorSection(title: "name") {
-                    PacklinMemoEditor(
-                        placeholder: "new.item",
-                        text: $item.name,
-                        isFocused: focusBinding(for: .name),
-                        maxLength: APP_MAX_NAME_LEN,
-                        backgroundColor: COLOR_BACK_INPUT,
-                        cornerRadius: sectionCornerRadius
-                    )
-                }
+                    // 名称
+                    EditorSection(title: "name") {
+                        PacklinMemoEditor(
+                            placeholder: "new.item",
+                            text: $item.name,
+                            isFocused: focusBinding(for: .name),
+                            maxLength: APP_MAX_NAME_LEN,
+                            backgroundColor: COLOR_BACK_INPUT,
+                            cornerRadius: sectionCornerRadius
+                        )
+                    }
 
-                // 数量
-                EditorSection {
-                    HStack(spacing: 8) {
-                        // 数量
-                        Text("quantity")
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                        quantityCheckButton
-                        Spacer()
-                        // ダイアル設定はダイアル表示のときだけ出す
-                        if quantityUsesDial {
+                    // 数量
+                    EditorSection {
+                        HStack(spacing: 8) {
+                            // 数量
+                            Text("quantity")
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.secondary)
+                            quantityCheckButton
+                            Spacer()
+                            // ダイアル設定はダイアル表示のときだけ出す
+                            if quantityUsesDial {
+                                Button {
+                                    isShowingDialSettings = true
+                                } label: {
+                                    Label("item.quantity.dialSettings", systemImage: "slider.horizontal.3")
+                                        .font(.caption.weight(.semibold))
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                            // ダイアル／ステッパの切り替え。ボタンには「切り替え先」を出す
                             Button {
-                                isShowingDialSettings = true
+                                withAnimation(.easeInOut(duration: 0.18)) {
+                                    quantityUsesDial.toggle()
+                                }
                             } label: {
-                                Label("item.quantity.dialSettings", systemImage: "slider.horizontal.3")
+                                Label(quantityUsesDial ? "item.quantity.mode.stepper" : "item.quantity.mode.dial",
+                                      systemImage: quantityUsesDial ? "plus.forwardslash.minus" : "dial.medium")
                                     .font(.caption.weight(.semibold))
                             }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
-                        // ダイアル／ステッパの切り替え。ボタンには「切り替え先」を出す
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.18)) {
-                                quantityUsesDial.toggle()
+                        ItemQuantityEditor(item: item)
+                    }
+                    // ダイアル操作中は右スワイプで閉じないよう、数量欄でのドラッグを記録する
+                    // minimumDistance を 0 にするとタップまで奪い、ステッパ（UIKit）が反応しなくなるので 1 にする
+                    // （閉じるスワイプの判定は 30pt からなので、それより先にここが立つ）
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 1)
+                            .onChanged { _ in
+                                isDraggingInsideQuantitySection = true
                             }
-                        } label: {
-                            Label(quantityUsesDial ? "item.quantity.mode.stepper" : "item.quantity.mode.dial",
-                                  systemImage: quantityUsesDial ? "plus.forwardslash.minus" : "dial.medium")
-                                .font(.caption.weight(.semibold))
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                    }
-                    ItemQuantityEditor(item: item)
-                }
-                // ダイアル操作中は右スワイプで閉じないよう、数量欄でのドラッグを記録する
-                // minimumDistance を 0 にするとタップまで奪い、ステッパ（UIKit）が反応しなくなるので 1 にする
-                // （閉じるスワイプの判定は 30pt からなので、それより先にここが立つ）
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 1)
-                        .onChanged { _ in
-                            isDraggingInsideQuantitySection = true
-                        }
-                        .onEnded { _ in
-                            isDraggingInsideQuantitySection = false
-                        }
-                )
-
-                // メモ
-                EditorSection(title: "memo") {
-                    PacklinMemoEditor(
-                        placeholder: nil,
-                        text: $item.memo,
-                        isFocused: focusBinding(for: .memo),
-                        maxLength: APP_MAX_MEMO_LEN,
-                        backgroundColor: COLOR_BACK_INPUT,
-                        cornerRadius: sectionCornerRadius
+                            .onEnded { _ in
+                                isDraggingInsideQuantitySection = false
+                            }
                     )
-                }
-                // タグ（パック内のタグから複数選択。無ければ追加）
-                EditorSection(title: "tags", helpText: "help.tags") {
-                    if showsTagEditor {
-                        ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius)
+
+                    // メモ
+                    EditorSection(title: "memo") {
+                        PacklinMemoEditor(
+                            placeholder: nil,
+                            text: $item.memo,
+                            isFocused: focusBinding(for: .memo),
+                            maxLength: APP_MAX_MEMO_LEN,
+                            backgroundColor: COLOR_BACK_INPUT,
+                            cornerRadius: sectionCornerRadius
+                        )
+                    }
+                    // タグ（パック内のタグから複数選択。無ければ追加）
+                    // 見出しの右端の「編集」で、パックのタグを一覧で名前の変更・削除する
+                    EditorSection(title: "tags", helpText: "help.tags",
+                                  actionTitle: "tag.manage.button",
+                                  actionSystemImage: "square.and.pencil",
+                                  action: { isShowingTagManager = true }) {
+                        if showsTagEditor {
+                            ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius,
+                                          scrollAnchorID: tagScrollAnchorID) { focused in
+                                guard focused else { return }
+                                // キーボードで検索結果が隠れないよう、入力欄からタグ一覧の2行目までをキーボードの上に出す
+                                // （キーボードが出て表示領域が縮んでから動かす）
+                                Task { @MainActor in
+                                    try? await Task.sleep(for: .milliseconds(300))
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        scrollProxy.scrollTo(tagScrollAnchorID, anchor: .bottom)
+                                    }
+                                }
+                            }
+                            // 編集シートで名前の変更・削除をしたら作り直して反映する
+                            .id(tagEditorRevision)
                             .transition(.opacity)
-                    } else {
-                        // 出るまでの間は同じ形の枠だけ置いて、下の余白が跳ねないようにする
-                        RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
-                            .fill(COLOR_BACK_INPUT)
-                            .frame(height: 120)
+                        } else {
+                            // 出るまでの間は同じ形の枠だけ置いて、下の余白が跳ねないようにする
+                            RoundedRectangle(cornerRadius: sectionCornerRadius, style: .continuous)
+                                .fill(COLOR_BACK_INPUT)
+                                .frame(height: 120)
+                        }
+                    }
+                    .task {
+                        // 画面遷移のアニメーション（約0.35秒）が終わる頃にタグ一覧を作る
+                        guard !showsTagEditor else { return }
+                        try? await Task.sleep(for: .milliseconds(350))
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            showsTagEditor = true
+                        }
                     }
                 }
-                .task {
-                    // 画面遷移のアニメーション（約0.35秒）が終わる頃にタグ一覧を作る
-                    guard !showsTagEditor else { return }
-                    try? await Task.sleep(for: .milliseconds(350))
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        showsTagEditor = true
-                    }
-                }
+                .padding(.horizontal, contentHorizontalPadding)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, contentHorizontalPadding)
-            .padding(.vertical, 12)
         }
         // スクロール位置表示は全画面で出さない
         .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
+        // パックのタグを一覧で名前の変更・削除する
+        .sheet(isPresented: $isShowingTagManager, onDismiss: { tagEditorRevision += 1 }) {
+            TagManageSheet(pack: pack)
+                .appFontScale(fontScale)
+        }
         .background(COLOR_ROW_GROUP)
         //.navigationTitle("アイテム編集")
         .navigationBarBackButtonHidden(true)
@@ -1541,14 +1571,25 @@ private struct EditorSection<Content: View>: View {
     private let title: LocalizedStringKey?
     /// 指定するとタイトルの右に (?) を置き、押すとこの説明をシートで出す
     private let helpText: LocalizedStringKey?
+    /// 指定するとタイトル行の右端にボタンを置く（タグの「編集」など）
+    private let actionTitle: LocalizedStringKey?
+    /// 右寄せボタンの先頭に付けるアイコン（SF Symbols 名）
+    private let actionSystemImage: String?
+    private let action: (() -> Void)?
     private let content: Content
     @State private var showHelp = false
 
     init(title: LocalizedStringKey? = nil,
          helpText: LocalizedStringKey? = nil,
+         actionTitle: LocalizedStringKey? = nil,
+         actionSystemImage: String? = nil,
+         action: (() -> Void)? = nil,
          @ViewBuilder content: () -> Content) {
         self.title = title
         self.helpText = helpText
+        self.actionTitle = actionTitle
+        self.actionSystemImage = actionSystemImage
+        self.action = action
         self.content = content()
     }
 
@@ -1564,6 +1605,22 @@ private struct EditorSection<Content: View>: View {
                         HelpQuestionButton(accessibilityLabel: title) {
                             showHelp = true
                         }
+                    }
+                    if let actionTitle, let action {
+                        Spacer(minLength: 8)
+                        Button(action: action) {
+                            if let actionSystemImage {
+                                // Label だとアイコンと文字の間が広いので、HStack で詰める
+                                HStack(spacing: 2) {
+                                    Image(systemName: actionSystemImage)
+                                    Text(actionTitle)
+                                }
+                            } else {
+                                Text(actionTitle)
+                            }
+                        }
+                            .font(.footnote)
+                            .buttonStyle(.borderless)
                     }
                 }
             }
