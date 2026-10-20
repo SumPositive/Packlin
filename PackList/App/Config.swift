@@ -36,7 +36,7 @@ let APP_HEIGHT_MIN : CGFloat = 150     // 最小（入力行と履歴1行が見�
 let APP_HEIGHT_MAX : CGFloat = 9999    // Free
 
 // 行の下線太さ
-let LIST_SEPARATOR_THICKNESS: CGFloat = 0.8 // List区切り線の太さ
+let LIST_SEPARATOR_THICKNESS: CGFloat = 0.5 // List区切り線の太さ
 // ヘッダーの高さ（初心者モード時の初心者ヘルプを欠けさせないよう、文字サイズに応じて高くする）
 // 初心者ヘルプは最大3行まで折り返し+必要に応じて縮小するため、3行ぶんの余白を見込む
 let APP_HEADER_HEIGHT_BEG : CGFloat = 110.0  // 初心者モード（標準・自動）
@@ -208,9 +208,9 @@ let COLOR_ROW_GROUP: Color = Color(UIColor { traitCollection in
 // 行の下線色
 let COLOR_LIST_SEPARATOR: Color = Color(UIColor { traitCollection in
     if traitCollection.userInterfaceStyle == .dark {
-        return UIColor(white: 1.0, alpha: 0.6)
+        return UIColor(white: 1.0, alpha: 0.4)
     } else {
-        return UIColor(white: 0.0, alpha: 0.3)
+        return UIColor(white: 0.0, alpha: 0.2)
     }
 })
 

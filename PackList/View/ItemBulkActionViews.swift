@@ -136,12 +136,13 @@ struct BulkTagSheet: View {
         .onAppear {
             switch mode {
             case .add:
-                knownTags = pack.tagsByItemCount
+                knownTags = pack.tagsInManualOrder
             case .remove:
-                // 選んだアイテムのどれかに付いているタグだけ（並びはパック内のアイテム数の多い順）
+                // 選んだアイテムのどれかに付いているタグだけ（並びは縦覧のタグ一覧と同じ指定順）
                 let used = Set(items.flatMap(\.tags))
-                knownTags = pack.tagsByItemCount.filter { used.contains($0) }
-                    + used.subtracting(pack.tagsByItemCount).sorted()
+                let ordered = pack.tagsInManualOrder
+                knownTags = ordered.filter { used.contains($0) }
+                    + used.subtracting(ordered).sorted()
             }
         }
     }

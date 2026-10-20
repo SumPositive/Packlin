@@ -74,6 +74,28 @@ struct ManualOrderTests {
         #expect(names(ItemSortOption.manual.sortedItems(from: f.pack, reversed: true)) == ["A", "B", "C", "D"])
     }
 
+    @Test("指定順のタグは、先に出てくるアイテムのタグから並び、アイテムを動かすと付いてくる")
+    func tagsFollowManualItemOrder() throws {
+        let f = try makeFixture()
+        #expect(f.pack.tagsInManualOrder == ["x", "y"])
+
+        // D(y) を先頭へ動かすと、y が先頭になる
+        f.pack.moveItemsInManualOrder(visible: visible(f.pack, tag: nil), from: [3], to: 0)
+        #expect(f.pack.tagsInManualOrder == ["y", "x"])
+    }
+
+    @Test("1つのアイテムに新しいタグが複数あるときは、アイテム数の多い順に並ぶ")
+    func tagsOnSameItemFollowItemCount() throws {
+        let f = try makeFixture()
+        // 先頭の A に「少」「多」を足す。「多」は B にも付けて2件にする
+        let items = f.pack.itemsInManualOrder
+        items[0].tags = ["少", "多", "x"]
+        items[1].tags = ["y", "多"]
+
+        // A の新しいタグは x(2件)・多(2件)・少(1件)。同数の x と 多 は A での並び（多 → x）のまま
+        #expect(f.pack.tagsInManualOrder == ["多", "x", "少", "y"])
+    }
+
     // MARK: - 絞り込みなし
 
     @Test("先頭へ動かすと、直後のアイテムのグループに入る")

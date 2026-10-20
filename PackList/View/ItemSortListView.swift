@@ -57,6 +57,9 @@ struct ItemSortListView: View {
     /// 並べ替え条件プルダウンの展開状態
     @State private var isSortPickerExpanded = false
     /// 並べ替え条件のヘルプシート（指定順のときの (?) から開く）
+    /// 一覧の先頭に置いたヘッダー（並べ替え条件・検索・タグ一覧）の下端（グローバル座標）
+    /// 検索中に一覧をタップしてキーボードを閉じる覆いを、ヘッダーより下だけにするため
+    @State private var searchHeaderBottom: CGFloat = 0
     @State private var isShowingManualOrderHelp = false
     /// 逆順にしている並べ替え条件。同じ条件をもう一度選ぶと切り替わり、別の条件を選ぶと正順へ戻す
     @AppStorage(AppStorageKey.itemBrowseReversedSort) private var reversedSortRaw = ""
@@ -109,7 +112,8 @@ struct ItemSortListView: View {
     /// 検索欄の下に出すタグ一覧
     /// 入力中はその文字を含むタグに絞るが、選択中のタグは外せるよう常に残す
     private var visibleTags: [String] {
-        let tags = pack.tagsByItemCount
+        // 並べ替え条件に関係なく、指定順（アイテムの並び）で出して位置を変えない
+        let tags = pack.tagsInManualOrder
         let keyword = trimmedSearchText
         guard !keyword.isEmpty else { return tags }
         return tags.filter { $0 == selectedTag || $0.localizedCaseInsensitiveContains(keyword) }
@@ -199,10 +203,19 @@ struct ItemSortListView: View {
     var body: some View {
         ZStack {
             VStack {
-                // アイテムを検索
-                searchHeader
                 // 並べ替え一覧
                 List {
+                    // 並べ替え条件・検索・タグ一覧は一覧の先頭の行に置き、スクロールで一緒に隠れるようにする
+                    searchHeader
+                        .padding(.bottom, 8)
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { bottom in
+                            searchHeaderBottom = bottom
+                        }
+                        .listRowSeparator(.hidden)
+                        // 左右の余白はヘッダー内の余白だけにする（右 8pt はアイテムの行にだけ付ける）
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
+
                     Section {
                         ForEach(filteredItems) { item in
                             if let group = item.parent {
@@ -241,7 +254,7 @@ struct ItemSortListView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 8))
                                 .listRowBackground(COLOR_ROW_BACK)
                             }
                         }
@@ -260,7 +273,7 @@ struct ItemSortListView: View {
                             .disabled(isBulkMode || !pack.canAddItems())
                             .opacity(isBulkMode || !pack.canAddItems() ? 0.45 : 1.0)
                             .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 8))
                             .listRowBackground(COLOR_ROW_BACK)
                             // 高さは AppendAtEndRowView 内側の padding(.vertical, 8) で自動調整される
                             .environment(\.defaultMinListRowHeight, 0)
@@ -271,17 +284,20 @@ struct ItemSortListView: View {
                 // 一覧をスクロールしたらキーボードを閉じる
                 .scrollDismissesKeyboard(.immediately)
                 // 入力中に一覧をタップしたら、行を開かずにキーボードだけ閉じる
+                // 先頭のヘッダー（検索欄・タグ）は操作できるよう、覆うのはヘッダーより下だけ
                 .overlay {
                     if isSearchFocused {
-                        Color.clear
-                            .contentShape(Rectangle())
-                            .onTapGesture { isSearchFocused = false }
+                        GeometryReader { geometry in
+                            Color.clear
+                                .contentShape(Rectangle())
+                                .onTapGesture { isSearchFocused = false }
+                                .padding(.top, max(searchHeaderBottom - geometry.frame(in: .global).minY, 0))
+                        }
                     }
                 }
                 .scrollIndicators(.hidden, axes: .vertical)
                 .listRowSeparator(.hidden)
                 .padding(.leading, 0)
-                .padding(.trailing, 8)
                 .environment(\.defaultMinListRowHeight,
                              rowTextLines.usesExtraSmallItemRow ? 38 : (rowTextLines == .minimal ? 41 : 44))
             }
@@ -995,7 +1011,7 @@ struct ItemSortListView: View {
                         .fill(Color(uiColor: .secondarySystemBackground))
                 )
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 8)
 
             // タグ一覧（選ぶとアイテムを絞り込む）。クレメモの「よくある決済」と同じく折り返して並べ、
             // 1行〜tagMaxRows 行の高さで表示する。溢れた行は縦スクロールで見せ、行数は下のハンドルで変える
@@ -1051,7 +1067,7 @@ struct ItemSortListView: View {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(Color(uiColor: .secondarySystemBackground))
                 )
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 8)
                 // タグの丸ボタンが大きくなりすぎないよう「大」までで頭打ち
                 .cappedAtLargeFontSize()
             }
@@ -1082,11 +1098,13 @@ struct ItemSortListView: View {
         .accessibilityIdentifier(tag == visibleTags.first ? "browseTag_first" : "")
     }
 
-    /// 「タグなし」もアイテム数の多い順の位置に入れる（同数のときは通常のタグの後ろ）
+    /// 「タグなし」は、指定順でタグの無いアイテムが最初に出てくる位置に入れる
+    /// （最初のタグなしアイテムより前に出てきたタグの後ろ）
     private func untaggedChipIndex(in tags: [String]) -> Int {
-        let counts = pack.tagItemCounts
-        let untaggedCount = pack.untaggedItemCount
-        return tags.firstIndex { (counts[$0] ?? 0) < untaggedCount } ?? tags.count
+        let items = pack.itemsInManualOrder
+        guard let firstUntagged = items.firstIndex(where: { $0.tags.isEmpty }) else { return tags.count }
+        let tagsBefore = Set(items[..<firstUntagged].flatMap(\.tags))
+        return tags.firstIndex { !tagsBefore.contains($0) } ?? tags.count
     }
 
     private func updateUndoRedo() {

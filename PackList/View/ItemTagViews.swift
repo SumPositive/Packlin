@@ -95,7 +95,7 @@ struct ItemTagEditor: View {
     var cornerRadius: CGFloat = 12
 
     @State private var searchText: String = ""
-    /// 表示するタグ一覧（開いた時点で、付いているタグを先頭に、それぞれアイテム数の多い順）
+    /// 表示するタグ一覧（縦覧のタグ一覧と同じ指定順）
     /// 選択を外したタグがその場で一覧から消えず、押すたびに並びが動かないよう、開いた時点の一覧を保持して追加分を末尾に足していく
     @State private var knownTags: [String] = []
     /// 名前を編集中のタグ（長押しで設定）。nil のときは通常の検索・追加
@@ -263,13 +263,11 @@ struct ItemTagEditor: View {
     }
 
     private func reloadKnownTags() {
-        var tags = pack.tagsByItemCount
+        // 縦覧のタグ一覧と同じ指定順で出し、アイテムを切り替えても位置を変えない
+        var tags = pack.tagsInManualOrder
         // パック外のアイテム（移動直後など）に付いているタグも出す
         tags.append(contentsOf: item.tags.filter { !tags.contains($0) })
-        // このアイテムに付いているタグを先頭にまとめる（それぞれの中はアイテム数の多い順のまま）
-        let selected = tags.filter { item.tags.contains($0) }
-        let others = tags.filter { !item.tags.contains($0) }
-        knownTags = selected + others
+        knownTags = tags
     }
 
     private func toggle(_ tag: String) {

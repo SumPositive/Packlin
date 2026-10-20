@@ -40,6 +40,8 @@ struct ItemRowView: View {
     // 行数設定をまとめた補助値
     // アイテム行は「1行目：名称・重量・数量」を基本にし、2行の設定で2行目にタグ、3行の設定で3行目にメモを足す
     private var nameLineLimit: Int { 1 }
+    /// 1行レイアウトで名前に最低限残す幅（これも取れないほど数量が幅を取るときは2行レイアウトにする）
+    private let itemNameMinWidth: CGFloat = 80
     private var memoLineLimit: Int { 1 }
     private var showTagLine: Bool { rowTextLines.itemShowsTagLine && !item.tags.isEmpty }
     private var showMemo: Bool {
@@ -157,12 +159,14 @@ struct ItemRowView: View {
                     .padding(.leading, 0)
                     .padding(.trailing, checkTrailingPadding)
 
-                    // 名前 + 数量バッジ：横幅に余裕があれば1行、被るときは2行レイアウトに切り替える
+                    // 名前 + 数量バッジ：1行に収め、長い名前は末尾を切る
+                    // 文字サイズが大きく、名前を少しも出せないほど数量が幅を取るときだけ2行レイアウトに切り替える
                     ViewThatFits(in: .horizontal) {
-                        // Layout 1: 1行レイアウト（従来通り）— 横幅に余裕があるとき
+                        // Layout 1: 1行レイアウト — 名前は数量の残りの幅で末尾を切る
                         HStack(spacing: 0) {
                             itemNameView
-                                .fixedSize(horizontal: true, vertical: false)
+                                // 理想幅を小さく見せて、長い名前でも1行レイアウトを選ばせる（実際は残りの幅いっぱいに出す）
+                                .frame(minWidth: 0, idealWidth: itemNameMinWidth, maxWidth: .infinity, alignment: .leading)
                             Spacer(minLength: 8)
                             if showQuantityOnNameLine {
                                 quantityButton()

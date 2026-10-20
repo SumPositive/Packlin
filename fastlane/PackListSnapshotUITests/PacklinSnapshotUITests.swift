@@ -74,7 +74,8 @@ final class PacklinSnapshotUITests: XCTestCase {
         }
 
         // 04: 先頭アイテムの行（名称のあたり）→ アイテム詳細
-        let firstItemRow = app.cells.element(boundBy: 0)
+        // 縦覧の先頭の行は並べ替え条件・検索・タグ一覧なので、数量ボタンを持つ行（アイテム）の先頭を選ぶ
+        let firstItemRow = app.cells.containing(.button, identifier: "itemRow_quantity").firstMatch
         if firstItemRow.waitForExistence(timeout: 3) {
             // 左端のチェック丸と右端の数量を避け、名称のあたりを叩く
             firstItemRow.coordinate(withNormalizedOffset: CGVector(dx: 0.35, dy: 0.5)).tap()

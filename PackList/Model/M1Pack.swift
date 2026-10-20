@@ -84,26 +84,6 @@ final class M1Pack {
         return counts
     }
 
-    /// タグが1つも付いていないアイテム数
-    var untaggedItemCount: Int {
-        child.reduce(0) { sum, group in
-            sum + group.child.filter { $0.tags.isEmpty }.count
-        }
-    }
-
-    /// パック内のタグを、付いているアイテム数の多い順に並べる（同数は名前順）
-    var tagsByItemCount: [String] {
-        let counts = tagItemCounts
-        return counts.keys.sorted { lhs, rhs in
-            let lhsCount = counts[lhs] ?? 0
-            let rhsCount = counts[rhs] ?? 0
-            if lhsCount != rhsCount {
-                return rhsCount < lhsCount
-            }
-            return lhs.localizedStandardCompare(rhs) == .orderedAscending
-        }
-    }
-
     init(id: ID = shortUUID(),
          name: String,
          memo: String = "",
@@ -130,6 +110,32 @@ final class M1Pack {
         modelContext?.insert(group)
         tagModeGroupID = group.id
         return group
+    }
+
+    /// 指定順のタグの並び：指定順の並びで先に出てくるアイテムのタグから並べる
+    /// 1つのアイテムに新しいタグが複数あるときは、付いているアイテム数の多い順（同数はアイテムでの並びどおり）
+    /// アイテムを並べ替えると、タグの並びも付いてくる
+    var tagsInManualOrder: [String] {
+        let counts = tagItemCounts
+        var seen = Set<String>()
+        var tags: [String] = []
+        for item in itemsInManualOrder {
+            let newTags = item.tags.filter { !seen.contains($0) }
+            guard !newTags.isEmpty else { continue }
+            // 同数のタグはアイテムでの並びのまま残す
+            let ordered = newTags.enumerated().sorted { lhs, rhs in
+                let lhsCount = counts[lhs.element] ?? 0
+                let rhsCount = counts[rhs.element] ?? 0
+                if lhsCount != rhsCount {
+                    return rhsCount < lhsCount
+                }
+                return lhs.offset < rhs.offset
+            }.map(\.element)
+            for tag in ordered where seen.insert(tag).inserted {
+                tags.append(tag)
+            }
+        }
+        return tags
     }
 
     /// 指定順（グループの順 → グループ内のアイテムの順）の全アイテム
