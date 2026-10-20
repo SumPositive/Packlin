@@ -118,7 +118,7 @@ struct ItemSortListView: View {
         let tags = pack.tagsInManualOrder
         let keyword = trimmedSearchText
         guard !keyword.isEmpty else { return tags }
-        return tags.filter { $0 == selectedTag || $0.localizedCaseInsensitiveContains(keyword) }
+        return tags.filter { $0 == selectedTag || $0.fuzzyContains(keyword) }
     }
 
     private var baseSortedItemIDs: [M3Item.ID] {

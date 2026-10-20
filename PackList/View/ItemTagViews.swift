@@ -90,7 +90,7 @@ struct ItemTagEditor: View {
 
     private var visibleTags: [String] {
         guard !keyword.isEmpty else { return knownTags }
-        return knownTags.filter { $0.localizedCaseInsensitiveContains(keyword) }
+        return knownTags.filter { $0.fuzzyContains(keyword) }
     }
 
     /// 入力した文字のタグがまだ無いときだけ「追加」を出す
@@ -112,16 +112,13 @@ struct ItemTagEditor: View {
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
-                    .submitLabel(.done)
+                    // 右下のキーは消せないので、完了（チェック）ではなく検索欄らしい「検索」にする（押してもキーボードを閉じるだけ）
+                    .submitLabel(.search)
                     .focused($isSearchFocused)
                     .onChange(of: isSearchFocused) { _, focused in
                         onSearchFocusChange(focused)
                     }
-                    .onSubmit {
-                        if canAddKeyword {
-                            addKeywordTag()
-                        }
-                    }
+                    // キーボードの確定では追加しない（追加は「追加」ボタンだけ。確定はキーボードを閉じるだけ）
                 // 入力した文字のタグが無いときだけ、消去ボタンの左に「追加」を出す
                 if canAddKeyword {
                     Button {

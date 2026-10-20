@@ -38,7 +38,7 @@ struct BulkTagSheet: View {
 
     private var visibleTags: [String] {
         guard !keyword.isEmpty else { return knownTags }
-        return knownTags.filter { $0.localizedCaseInsensitiveContains(keyword) }
+        return knownTags.filter { $0.fuzzyContains(keyword) }
     }
 
     private var canAddKeyword: Bool {
@@ -63,8 +63,9 @@ struct BulkTagSheet: View {
                             .textFieldStyle(.plain)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
-                            .submitLabel(.done)
-                            .onSubmit(addKeywordTag)
+                            // 右下のキーは消せないので、完了（チェック）ではなく検索欄らしい「検索」にする（押してもキーボードを閉じるだけ）
+                            .submitLabel(.search)
+                            // キーボードの確定では追加しない（追加は「追加」ボタンだけ）
                         if canAddKeyword {
                             Button(action: addKeywordTag) {
                                 Label("tag.add.button", systemImage: "plus.circle.fill")

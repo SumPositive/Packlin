@@ -22,9 +22,9 @@ struct ItemBrowseFilter: Equatable {
         if let tag, !item.tags.contains(tag) { return false }
         if isUntagged, !item.tags.isEmpty { return false }
         guard !keyword.isEmpty else { return true }
-        return item.name.localizedCaseInsensitiveContains(keyword) ||
-            item.memo.localizedCaseInsensitiveContains(keyword) ||
-            item.tags.contains { $0.localizedCaseInsensitiveContains(keyword) }
+        return item.name.fuzzyContains(keyword) ||
+            item.memo.fuzzyContains(keyword) ||
+            item.tags.contains { $0.fuzzyContains(keyword) }
     }
 }
 
