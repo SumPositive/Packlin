@@ -764,9 +764,14 @@ struct ItemEditView: View {
                     style: dialStyleBinding
                 )
                 .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("done") {
+                    // 閉じる（ほかのシートと同じ左上の下向きの山型。設定はその場で反映済み）
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
                             isShowingDialSettings = false
+                        } label: {
+                            Image(systemName: "chevron.down")
+                                .imageScale(.large)
+                                .symbolRenderingMode(.hierarchical)
                         }
                     }
                 }

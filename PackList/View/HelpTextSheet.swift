@@ -9,7 +9,7 @@
 import SwiftUI
 
 /// 説明文だけのヘルプシート
-/// - タイトルや閉じるボタンは置かず、説明だけを見せる（下へスワイプで閉じる）
+/// - タイトルは置かず、左上の閉じるボタン（下向き）と説明だけを見せる（下へスワイプでも閉じる）
 /// - 背面が透けないよう不透過にし、中身の高さぴったりで開く
 struct HelpTextSheet: View {
     /// 説明文（1文1段落、空行区切り）
@@ -19,12 +19,27 @@ struct HelpTextSheet: View {
     /// 中身の高さを親へ返す（シートを中身ぴったりの高さで開くため）
     var onMeasured: (CGFloat) -> Void = { _ in }
 
+    @Environment(\.dismiss) private var dismiss
+
     /// 測っていない部分の高さ（シート上端のつまみまわりの余白）
     private let chromeHeight: CGFloat = 24
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                // 閉じる（ほかのシートと同じ左上の下向きの山型）
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .imageScale(.large)
+                        .symbolRenderingMode(.hierarchical)
+                        .frame(width: 44, height: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                // 44pt のタップ範囲のうち上の余白ぶんを詰め、説明との間を空けすぎない
+                .padding(.vertical, -8)
                 Text(text)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

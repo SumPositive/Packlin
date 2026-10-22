@@ -46,13 +46,32 @@ struct AppendAtEndRowView: View {
                 Spacer(minLength: 0)
 
                 Button(action: action) {
-                    HStack(spacing: 8) {
-                        addIcon
-
+                    // 下の余白・背景をまとめて付けるため Group で包む
+                    Group {
                         if showsText {
-                            Text("append.to.end")
-                                .font(.footnote)
-                                .foregroundStyle(COLOR_ADD_ACTION)
+                            // 初心者ヘルプの文字は折り返さない。幅が足りなければ、アイコンの下に小さく2行まで→アイコンだけ、の順に切り替える
+                            // （左右に「まとめて」や合計重量が並ぶと、長い言語で1文字ずつ縦に崩れるため）
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 8) {
+                                    addIcon
+                                    helpText
+                                        .font(.footnote)
+                                        .lineLimit(1)
+                                        .fixedSize()
+                                }
+                                VStack(spacing: 0) {
+                                    addIcon
+                                    helpText
+                                        .font(.caption2)
+                                        .multilineTextAlignment(.center)
+                                        .lineLimit(2)
+                                        .frame(maxWidth: 120)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                addIcon
+                            }
+                        } else {
+                            addIcon
                         }
                     }
                     // アイコンと文字を含む左右40ptだけをタップ範囲にする（左右に添える表示があるときは詰める）
@@ -88,6 +107,12 @@ struct AppendAtEndRowView: View {
             COLOR_LIST_SEPARATOR
                 .frame(height: LIST_SEPARATOR_THICKNESS)
         }
+    }
+
+    /// 初心者モードで追加ボタンに添える文字
+    private var helpText: some View {
+        Text("append.to.end")
+            .foregroundStyle(COLOR_ADD_ACTION)
     }
 
     @ViewBuilder
