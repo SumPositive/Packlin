@@ -17,6 +17,8 @@ struct ItemRowView: View {
     let onToggleBulkMoveSelection: () -> Void
     /// スワイプの「コピー」で複製したとき、複製したアイテムを渡す（縦覧でコピー元の直下に並べるため）
     let onDuplicated: (M3Item) -> Void
+    /// 名前の字間を詰めて見える文字数を増やす（アイテム縦覧だけ）。明細表示が「最小」「極小」なら文字も小さくする
+    let compactsName: Bool
 
     @Environment(\.modelContext) private var modelContext
 
@@ -27,6 +29,9 @@ struct ItemRowView: View {
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.rowTextLines) private var rowTextLines: RowTextLines = .default
     @AppStorage(AppStorageKey.weightDisplayInKg) private var weightDisplayInKg: Bool = DEF_weightDisplayInKg
+
+    /// 名前の基準の文字サイズ（.title3 と同じ 20pt を、文字サイズ設定に合わせて拡大縮小する）
+    @ScaledMetric(relativeTo: .title3) private var nameBaseSize: CGFloat = 20
 
     @State private var rowFrame: CGRect?
     /// 数量カプセルの位置（グローバル座標）。数量パネルの吹き出しの先をここへ向ける
@@ -70,7 +75,36 @@ struct ItemRowView: View {
     private var quantityVerticalPadding: CGFloat { isExtraSmallRow ? 0 : (isMinimalRow ? 2 : 3) }
     private var quantityLeadingPadding: CGFloat { isExtraSmallRow ? 5 : 8 }
     private var itemIconScale: Image.Scale { .large }
-    private var nameFont: Font { FONT_NAME }
+    /// 名前を詰める倍率と字間（字間は文字サイズに対する割合。マイナスで詰める）
+    /// ふつう・タグ付きなど：1倍・字間 -5%、最小：0.9倍・字間 -5%、極小：0.8倍・字間 -7.5%
+    private var nameCompaction: (scale: CGFloat, tracking: CGFloat)? {
+        guard compactsName else { return nil }
+        if isExtraSmallRow { return (0.8, -0.075) }
+        if isMinimalRow { return (0.9, -0.05) }
+        return (1.0, -0.05)
+    }
+    private var nameFont: Font {
+        guard let nameCompaction else { return FONT_NAME }
+        // 英数字は幅の狭い字形にする（日本語の字形には効かないので、字間でも詰める）
+        return .system(size: nameBaseSize * nameCompaction.scale).width(.condensed)
+    }
+    /// 字間は全角の文字（日本語など）だけ詰める
+    /// 英数字は幅の狭い字形にしてあるので、さらに字間を詰めると文字同士が接して読みにくいため
+    private var trackedName: AttributedString {
+        var result = AttributedString()
+        for character in limitedName {
+            var piece = AttributedString(String(character))
+            if !character.isASCII {
+                piece.tracking = nameTracking
+            }
+            result.append(piece)
+        }
+        return result
+    }
+    private var nameTracking: CGFloat {
+        guard let nameCompaction else { return 0 }
+        return nameBaseSize * nameCompaction.scale * nameCompaction.tracking
+    }
     private var quantityFont: Font { FONT_WEIGHT }
     private var limitedName: String {
         // 改行数で切ってから標準の末尾トランケートに任せる
@@ -90,13 +124,15 @@ struct ItemRowView: View {
          isBulkMoveSelected: Bool = false,
          onEdit: @escaping (M3Item, CGPoint) -> Void,
          onToggleBulkMoveSelection: @escaping () -> Void = {},
-         onDuplicated: @escaping (M3Item) -> Void = { _ in }) {
+         onDuplicated: @escaping (M3Item) -> Void = { _ in },
+         compactsName: Bool = false) {
         self.item = item
         self.isBulkMoveMode = isBulkMoveMode
         self.isBulkMoveSelected = isBulkMoveSelected
         self.onEdit = onEdit
         self.onToggleBulkMoveSelection = onToggleBulkMoveSelection
         self.onDuplicated = onDuplicated
+        self.compactsName = compactsName
     }
     private var weightLabelText: String? {
         guard 0 < item.weight else { return nil }
@@ -349,8 +385,10 @@ private extension ItemRowView {
         Group {
             if item.name.isEmpty {
                 Text("new.item")
-            } else {
+            } else if nameTracking == 0 {
                 Text(verbatim: limitedName)
+            } else {
+                Text(trackedName)
             }
         }
         .font(nameFont)

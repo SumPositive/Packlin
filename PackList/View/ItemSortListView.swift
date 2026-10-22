@@ -229,10 +229,10 @@ struct ItemSortListView: View {
                                         } label: {
                                             ItemRowView(item: item,
                                                         isBulkMoveMode: true,
-                                                        isBulkMoveSelected: selectedBulkIDs.contains(item.id)) { _, _ in
-                                            } onToggleBulkMoveSelection: {
-                                                toggleBulkSelection(item)
-                                            }
+                                                        isBulkMoveSelected: selectedBulkIDs.contains(item.id),
+                                                        onEdit: { _, _ in },
+                                                        onToggleBulkMoveSelection: { toggleBulkSelection(item) },
+                                                        compactsName: true)
                                         }
                                     } else {
                                         // グループ式・タグ式とも：行のタップは詳細編集へ画面遷移、
@@ -245,12 +245,16 @@ struct ItemSortListView: View {
                                                 sort: sortOption
                                             )
                                         ) {
-                                            ItemRowView(item: item) { selected, point in
-                                                editingItem = selected
-                                                popupAnchor = point
-                                            } onDuplicated: { copied in
-                                                insertDuplicatedItem(copied, below: item)
-                                            }
+                                            // 縦覧は名前の字間を常に詰めて、見える文字数を増やす（「最小」「極小」では文字も小さくする）
+                                            ItemRowView(item: item,
+                                                        onEdit: { selected, point in
+                                                            editingItem = selected
+                                                            popupAnchor = point
+                                                        },
+                                                        onDuplicated: { copied in
+                                                            insertDuplicatedItem(copied, below: item)
+                                                        },
+                                                        compactsName: true)
                                         }
                                     }
                                 }

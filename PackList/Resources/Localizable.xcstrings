@@ -13254,49 +13254,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Name (Gewicht, Anzahl)"
+            "value" : "Standard"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Name (weight, count)"
+            "value" : "Standard"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nombre (peso, cantidad)"
+            "value" : "Estándar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nom (poids, quantité)"
+            "value" : "Standard"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nome (peso, quantità)"
+            "value" : "Standard"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "名称（重量・数量）"
+            "value" : "ふつう"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이름(무게·수량)"
+            "value" : "보통"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "名稱（重量・數量）"
+            "value" : "一般"
           }
         }
       }
