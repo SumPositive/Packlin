@@ -1,1 +1,1 @@
-Sort gear freely with tags, or in layers of bag, pouch, and item. Check off counts and weight to avoid forgotten items and overpacking. Filter by tag and bulk edit.
+Loosely sort your gear with multiple tags. Check off counts and weight to avoid forgotten items and overpacking. Filter by tag and bulk edit.

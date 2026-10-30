@@ -1,0 +1,31 @@
+Packlin es una app de lista de equipaje que te ayuda a prepararte para viajes, viajes de trabajo, camping y más, marcando cada cosa a medida que avanzas. Para cada pack, elige «Etiquetas» para clasificar los ítems libremente o «Grupos» para organizarlos por niveles.
+
+■ Etiquetas y grupos
+Con Etiquetas, todos los ítems están en una sola lista y los clasificas con flexibilidad añadiendo etiquetas. Un ítem puede tener varias etiquetas.
+Con Grupos, clasificas de forma estricta en tres niveles: Pack (bolsa), Grupo (neceser) e Ítem.
+Los packs nuevos empiezan con Etiquetas y puedes cambiar cuando quieras. Al pasar de Grupos a Etiquetas, el nombre de cada grupo se añade como etiqueta a sus ítems.
+
+■ Filtrar por etiqueta
+En la vista de ítems, elige una etiqueta para acotar la lista o busca por etiqueta y nombre del ítem. Ordena por no marcados, cantidad que falta, peso que falta o peso en stock, en orden ascendente o descendente. El peso total de los ítems mostrados se ve de un vistazo.
+
+■ Editar varios
+Selecciona ítems y añade o quita etiquetas, cópialos a otro pack o elimínalos, todo a la vez.
+
+■ Marcar y gestionar cantidades
+Marca cada ítem y registra la cantidad necesaria y la que tienes. Añade el peso por unidad (g) y la app suma automáticamente el peso de todo tu equipaje. Los pesos de 1.000 g o más pueden mostrarse en kg.
+Ajusta las cantidades con un stepper o un dial, o toca un número para escribirlo en un teclado con calculadora.
+
+■ Deshacer / Rehacer
+Sin diálogos de confirmación ni botón Guardar, para que trabajes rápido. ¿Te equivocaste? Deshaz hasta 10 pasos.
+
+■ Packs públicos
+Publica tus packs e importa los que han publicado otras personas. También puedes buscar por nombre de etiqueta.
+
+■ Compartir y copia de seguridad
+Exporta un pack como archivo .packlin y compártelo por AirDrop o correo. Haz copia de seguridad y restaura todos los packs a la vez para cambiar de dispositivo sin preocupaciones.
+
+■ IA «Chappy» (opcional)
+Solo introduce tu destino o propósito y la IA te propone todo el contenido de un pack. También puedes pedirle que amplíe o revise un pack existente. Puedes enviar una petición viendo un vídeo publicitario.
+
+■ 8 idiomas
+Disponible en español, inglés, japonés, alemán, francés, italiano, coreano y chino tradicional.

@@ -1,0 +1,33 @@
+■ Nouveau mode de classement « Tags »
+Vous pouvez désormais choisir pour chaque pack entre les « Groupes » classiques et les nouveaux « Tags ».
+- Groupes : classez les éléments de façon stricte en niveaux Pack, Groupe et Élément
+- Tags : gardez tous les éléments dans une liste à plat et classez-les en souplesse avec des tags
+Ajoutez plusieurs tags à un élément et filtrez par tag. Les nouveaux packs commencent avec les Tags.
+
+■ Modifier plusieurs
+Sélectionnez des éléments et ajoutez ou retirez des tags, copiez-les dans un autre pack ou supprimez-les, en une seule fois.
+
+■ Partagez les packs publics par lien
+Collez un lien de partage (URL) dans un e-mail ou une publication sur les réseaux sociaux, puis envoyez-le.
+Quand le destinataire touche le lien, le pack public est importé dans Packlin.
+Les packs avec Tags peuvent maintenant être publiés eux aussi.
+
+■ Saisie plus facile
+- Le pavé numérique intègre désormais une calculatrice
+- Saisissez poids et quantités avec une molette ou un stepper
+- Toucher en dehors du clavier le ferme désormais dans toute l'app
+
+■ Plus lisible
+- Dans la vue des éléments, basculez le tri entre croissant et décroissant
+- Voyez le poids total des éléments affichés
+- Le poids unitaire peut désormais s'afficher en kg à partir de 1 000 g
+- Écran Réglages revu ; la taille de texte « Auto », qui suit le réglage de l'appareil, est désormais recommandée
+- Couleur de l'icône de l'app ajustée
+
+■ 6 nouvelles langues
+Ajout de l'allemand, de l'espagnol, du français, de l'italien, du coréen et du chinois traditionnel.
+
+■ Autres
+- Compatible avec iOS 27
+- Chappy : les tickets IA ne sont plus vendus. Les tickets que vous possédez restent utilisables. Sans ticket, vous pouvez envoyer une demande en regardant une vidéo publicitaire. Nous prévoyons de proposer un nouveau service d'IA.
+- Petits ajustements d'affichage et amélioration de la stabilité

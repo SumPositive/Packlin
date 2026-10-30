@@ -1,7 +1,6 @@
 # fastlane snapshot 設定（Packlin / モチメモ）
 # ------------------------------------------------------------
-# まずは「少数カット × 2言語 × 1〜2デバイス」で仕組みを検証する構成。
-# 動作確認できたら languages / devices / カットを増やして本番展開する。
+# 5カット × 8言語 × iPhone/iPad で撮る構成
 #
 # App Store 必須サイズ:
 #   - iPhone 6.9": iPhone 17 Pro Max（1320x2868）
@@ -18,11 +17,11 @@ devices([
 # 片方だけ撮りたい場合はどちらかをコメントアウトする。
 
 # 言語コード = 出力フォルダ名（App Store のロケール名に一致させる）かつ -AppleLanguages。
-# 言語切替は SnapshotHelper が language.txt（=この値）で行う。値は Packlin の
-# .lproj 名と一致させること（Packlin は en / ja のみ対応）。
-# ※ App Store のロケール名は英語が "en-US"。SnapshotHelper は先頭2文字(en)で
-#    .lproj を解決するため、フォルダ名 en-US のままで言語切替は正しく効く。
-languages(["ja","en-US"])
+# 言語切替は SnapshotHelper が language.txt（=この値）で行う。
+# 8言語（ja/en/de/es/fr/it/ko/zh-Hant の .lproj）に対応。DialSplit と同じロケール名
+# ※ en-US / de-DE / es-ES / fr-FR は地域付きでも、iOS が先頭の言語(en/de/es/fr)で .lproj を解決する
+# ※ 繁体字は zh-Hant のまま渡す（zh-Hant-TW などにすると .lproj と一致せずフォールバックする）
+languages(["ja","en-US","de-DE","es-ES","fr-FR","it","ko","zh-Hant"])
 
 # 撮影対象スキーム
 scheme("Packlin")

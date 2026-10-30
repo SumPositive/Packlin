@@ -11,7 +11,7 @@ import SwiftUI
 /// セル高さは padding を含めて内容に応じて自動調整される
 let APPEND_AT_END_ROW_VERTICAL_PADDING: CGFloat = 8
 let APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING: CGFloat = 40
-let APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING: CGFloat = 2
+let APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING: CGFloat = 4
 let APPEND_AT_END_ROW_TOP_GAP: CGFloat = 20
 
 /// 一覧の末尾にだけ表示する追加専用セル
@@ -75,12 +75,9 @@ struct AppendAtEndRowView: View {
                         }
                     }
                     // アイコンと文字を含む左右40ptだけをタップ範囲にする（左右に添える表示があるときは詰める）
-                    .padding(.horizontal, hasAccessory ? 16 : APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
+                    .padding(.horizontal, hasAccessory ? 24 : APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
                     .padding(.vertical, APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
-                    .background(
-                        Capsule()
-                            .fill(COLOR_ADD_ACTION.opacity(0.05))
-                    )
+                    // 背景のカプセルは付けない（アイコンだけにする。押せる範囲は上の余白ぶん広いまま）
                     .padding(.vertical, APPEND_AT_END_ROW_VERTICAL_PADDING - APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
                     .contentShape(Rectangle())
                     // List のセクションフッター等によりセルが垂直方向に引き伸ばされて
@@ -120,18 +117,22 @@ struct AppendAtEndRowView: View {
         if usesPackAddIcon {
             // パック追加はヘッダーと同じカバン＋プラスの合成アイコンにする
             ZStack {
+                // ヘッダー右上のパック追加ボタンと同じ指定にする
                 Image(systemName: "case")
-                    .font(.system(size: 17, weight: .regular))
+                    .font(.body)
+                    .imageScale(.large)
                     .symbolRenderingMode(.hierarchical)
                 Image(systemName: "plus")
-                    .font(.system(size: 10, weight: .regular))
+                    .font(.system(size: 17, weight: .regular))
                     .symbolRenderingMode(.hierarchical)
-                    .padding(.top, 3)
+                    .padding(.top, 4)
             }
             .foregroundStyle(COLOR_ADD_ACTION)
         } else {
+            // ヘッダー右上の (+) と同じ指定（本文の大きさ×.large。文字サイズ設定にも追従する）
             Image(systemName: systemImage)
-                .font(.system(size: 17, weight: .regular))
+                .font(.body)
+                .imageScale(.large)
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(COLOR_ADD_ACTION)
         }

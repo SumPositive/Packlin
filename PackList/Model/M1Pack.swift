@@ -104,12 +104,27 @@ final class M1Pack {
            let group = child.first(where: { $0.id == tagModeGroupID }) {
             return group
         }
-        let group = M2Group(name: String(localized: "tag.mode.group.name"),
+        // 名前は空にする。グループ式へ切り替えたとき、ふつうの「新しいグループ」と同じに見えて、そのまま名前を付けられる
+        let group = M2Group(name: "",
                             order: nextGroupOrder(),
                             parent: self)
         modelContext?.insert(group)
         tagModeGroupID = group.id
         return group
+    }
+
+    /// 新しく作ったパックに、最初の中身を1つ入れておく（空のパックを開いて何をすればよいか迷わないように）
+    /// タグ式は新しいアイテム、グループ式は新しいグループ。名前は空で、一覧では「新しいアイテム」などと表示される
+    /// modelContext へ insert した後に呼ぶこと
+    func addInitialContent() {
+        switch classifyMode {
+        case .tag:
+            let item = M3Item(name: "", order: 0, parent: groupForNewItem())
+            modelContext?.insert(item)
+        case .group:
+            let group = M2Group(name: "", order: nextGroupOrder(), parent: self)
+            modelContext?.insert(group)
+        }
     }
 
     /// タグの名前を変える。このパックで同じタグが付いたアイテムすべてに反映する

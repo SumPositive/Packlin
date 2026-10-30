@@ -13517,49 +13517,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tags und Objekte suchen"
+            "value" : "Suchen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search tags and items"
+            "value" : "Search"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar etiquetas e ítems"
+            "value" : "Buscar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rechercher tags et éléments"
+            "value" : "Rechercher"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerca tag ed elementi"
+            "value" : "Cerca"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タグとアイテムを検索"
+            "value" : "探す"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "태그와 항목 검색"
+            "value" : "검색"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜尋標籤與物品"
+            "value" : "搜尋"
           }
         }
       }
@@ -14874,59 +14874,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "編輯標籤"
-          }
-        }
-      }
-    },
-    "tag.mode.group.name" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tag-Modus-Gruppe"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tag-mode group"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grupo modo etiquetas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Groupe mode tags"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gruppo modalità tag"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タグ式グループ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "태그식 그룹"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "標籤式群組"
           }
         }
       }

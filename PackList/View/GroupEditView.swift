@@ -127,7 +127,7 @@ struct GroupEditView: View {
             // 通常の編集開始時はここで Undo グループが 1 つ開かれ、
             // 編集内容全体が「1 つの Undo」として扱われる。
             beginUndoGroupingIfNeeded()
-            focusNameIfEmpty()
+            // 名前が空でも自動でフォーカスしない（キーボードで画面が隠れるため。入力欄をタップしたときだけ出す）
         }
         .onDisappear() {
             // === Fix 7: lifecycle 不均衡対策 ===
@@ -186,17 +186,6 @@ struct GroupEditView: View {
         guard isUndoGroupingActive else { return }
         modelContext.undoManager?.groupingEnd()
         isUndoGroupingActive = false
-    }
-
-    private func focusNameIfEmpty() {
-        guard group.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-        // シート表示直後はTextEditorの生成が遅れるため、表示確定後にNameへフォーカスする
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            if group.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                nameIsFocused = true
-            }
-        }
     }
 
     private var actionBar: some View {

@@ -1,0 +1,31 @@
+Packlin ist eine Packlisten-App, mit der du dich auf Reisen, Geschäftsreisen, Camping und mehr vorbereitest, indem du alles abhakst. Wähle für jedes Pack „Tags“, um Objekte frei zu ordnen, oder „Gruppen“, um sie in Ebenen zu gliedern.
+
+■ Tags und Gruppen
+Mit Tags stehen alle Objekte in einer Liste, und du ordnest sie locker mit Tags. Ein Objekt kann mehrere Tags haben.
+Mit Gruppen ordnest du genau in drei Ebenen: Pack (Tasche), Gruppe (Beutel) und Objekt.
+Neue Packs beginnen mit Tags, und du kannst jederzeit wechseln. Beim Wechsel von Gruppen zu Tags wird jeder Gruppenname als Tag an seine Objekte gehängt.
+
+■ Nach Tag filtern
+In der Objektübersicht wählst du einen Tag, um die Liste einzugrenzen, oder suchst nach Tag und Objektname. Sortiere nach nicht abgehakt, fehlender Anzahl, fehlendem Gewicht oder Bestandsgewicht, auf- oder absteigend. Das Gesamtgewicht der angezeigten Objekte siehst du auf einen Blick.
+
+■ Mehrere bearbeiten
+Wähle Objekte aus und füge Tags hinzu oder entferne sie, kopiere sie in ein anderes Pack oder lösche sie, alles auf einmal.
+
+■ Abhaken und Mengen verwalten
+Hake jedes Objekt ab und erfasse benötigte Anzahl und Bestand. Gib ein Einzelgewicht (g) ein, und die App summiert das Gewicht deines gesamten Gepäcks automatisch. Gewichte ab 1.000 g können in kg angezeigt werden.
+Ändere Mengen mit Stepper oder Drehregler, oder tippe auf eine Zahl, um sie auf einem Ziffernblock mit Rechner einzugeben.
+
+■ Rückgängig / Wiederholen
+Keine Bestätigungsdialoge und keine Sichern-Taste, damit du zügig arbeiten kannst. Vertippt? Mache bis zu 10 Schritte rückgängig.
+
+■ Öffentliche Packs
+Veröffentliche deine Packs und übernimm Packs, die andere veröffentlicht haben. Du kannst auch nach Tag-Namen suchen.
+
+■ Teilen und Sichern
+Exportiere ein einzelnes Pack als .packlin-Datei und teile es per AirDrop oder E-Mail. Sichere und stelle alle Packs auf einmal wieder her, damit der Gerätewechsel sorgenfrei ist.
+
+■ KI „Chappy“ (optional)
+Gib einfach dein Reiseziel oder deinen Zweck ein, und die KI schlägt den gesamten Inhalt eines Packs vor. Du kannst sie auch bitten, ein bestehendes Pack zu ergänzen oder zu überarbeiten. Eine Anfrage sendest du, indem du ein Werbevideo ansiehst.
+
+■ 8 Sprachen
+Verfügbar auf Deutsch, Englisch, Japanisch, Spanisch, Französisch, Italienisch, Koreanisch und traditionellem Chinesisch.

@@ -311,6 +311,10 @@ Packlin と azuki-api の詳細設計を DESIGN.md に目次を付けて書き�
 
 全てのシートの左上に原則として　閉じる（下向き）　ボタンを置きたい
 
+明細表示を　最小　極小　にした時、アイテム縦覧のアイテム名称だけフォントサイズを小さくしたい。最小0.8倍、極小はさらに0.8倍などにするか、見える文字数を増やしたいので文字間や幅だけを小さくして詰めることができれば尚良い
+
+
+
 ----------------------------------------------------------
 3.5.0 新機能
 - iOS27対応
@@ -362,6 +366,7 @@ fastlane upload_metadata
 npm run dev
 ngrok http 8787
 スクリーンショット作成（公開パック画面がある）
+cd /Users/sumpositive/GitLocal/Packlin
 fastlane screenshots
 fastlane upload_screenshots
 -----

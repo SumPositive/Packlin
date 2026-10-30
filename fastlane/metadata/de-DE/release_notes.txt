@@ -1,0 +1,33 @@
+■ Neue Ordnungsart „Tags“
+Du kannst jetzt für jedes Pack zwischen den klassischen „Gruppen“ und den neuen „Tags“ wählen.
+- Gruppen: Objekte genau in Ebenen aus Pack, Gruppe und Objekt ordnen
+- Tags: alle Objekte in einer flachen Liste halten und locker mit Tags ordnen
+Hänge mehrere Tags an ein Objekt und filtere nach Tag. Neue Packs beginnen mit Tags.
+
+■ Mehrere bearbeiten
+Wähle Objekte aus und füge Tags hinzu oder entferne sie, kopiere sie in ein anderes Pack oder lösche sie, alles auf einmal.
+
+■ Öffentliche Packs per Link teilen
+Füge einen Teilen-Link (URL) in eine E-Mail oder einen Social-Media-Beitrag ein und sende ihn.
+Tippt die empfangende Person auf den Link, wird das öffentliche Pack in Packlin übernommen.
+Packs mit Tags können jetzt ebenfalls veröffentlicht werden.
+
+■ Einfachere Eingabe
+- Der Ziffernblock hat jetzt einen eingebauten Rechner
+- Gewichte und Mengen per Drehregler oder Stepper eingeben
+- Ein Tippen außerhalb der Tastatur schließt sie jetzt in der ganzen App
+
+■ Übersichtlicher
+- In der Objektübersicht die Sortierung zwischen auf- und absteigend umschalten
+- Das Gesamtgewicht der angezeigten Objekte sehen
+- Einzelgewichte können jetzt ab 1.000 g in kg angezeigt werden
+- Einstellungen überarbeitet; empfohlen wird jetzt die Textgröße „Auto“, die deiner Geräteeinstellung folgt
+- Farbe des App-Symbols angepasst
+
+■ 6 neue Sprachen
+Deutsch, Spanisch, Französisch, Italienisch, Koreanisch und traditionelles Chinesisch hinzugefügt.
+
+■ Sonstiges
+- Unterstützt iOS 27
+- Chappy: KI-Tickets werden nicht mehr verkauft. Vorhandene Tickets bleiben nutzbar. Ohne Tickets kannst du eine Anfrage senden, indem du ein Werbevideo ansiehst. Wir planen künftig einen neuen KI-Dienst.
+- Kleinere Anzeigeverbesserungen und mehr Stabilität

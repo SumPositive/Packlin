@@ -1,0 +1,31 @@
+Packlin est une app de liste de bagages qui vous aide à préparer voyages, déplacements professionnels, camping et plus encore, en cochant au fur et à mesure. Pour chaque pack, choisissez « Tags » pour classer les éléments librement, ou « Groupes » pour les organiser en niveaux.
+
+■ Tags et groupes
+Avec les Tags, tous les éléments sont dans une seule liste et vous les classez en souplesse en leur ajoutant des tags. Un élément peut avoir plusieurs tags.
+Avec les Groupes, vous classez de façon stricte en trois niveaux : Pack (sac), Groupe (trousse) et Élément.
+Les nouveaux packs commencent avec les Tags, et vous pouvez changer à tout moment. En passant des Groupes aux Tags, le nom de chaque groupe est ajouté comme tag à ses éléments.
+
+■ Filtrer par tag
+Dans la vue des éléments, choisissez un tag pour affiner la liste, ou cherchez par tag et nom d'élément. Triez par non cochés, quantité manquante, poids manquant ou poids en stock, dans l'ordre croissant ou décroissant. Le poids total des éléments affichés se voit d'un coup d'œil.
+
+■ Modifier plusieurs
+Sélectionnez des éléments et ajoutez ou retirez des tags, copiez-les dans un autre pack ou supprimez-les, en une seule fois.
+
+■ Cocher et gérer les quantités
+Cochez chaque élément et notez les quantités nécessaires et en stock. Ajoutez un poids unitaire (g) et l'app calcule automatiquement le poids de tous vos bagages. Les poids de 1 000 g ou plus peuvent s'afficher en kg.
+Réglez les quantités avec un stepper ou une molette, ou touchez un nombre pour le saisir sur un pavé numérique avec calculatrice.
+
+■ Annuler / Rétablir
+Ni boîte de confirmation ni bouton Enregistrer : vous travaillez vite. Une erreur ? Annulez jusqu'à 10 étapes.
+
+■ Packs publics
+Publiez vos packs et importez ceux publiés par d'autres. Vous pouvez aussi chercher par nom de tag.
+
+■ Partage et sauvegarde
+Exportez un pack en fichier .packlin et partagez-le par AirDrop ou e-mail. Sauvegardez et restaurez tous les packs d'un coup pour changer d'appareil sans souci.
+
+■ IA « Chappy » (option)
+Indiquez simplement votre destination ou votre objectif, et l'IA propose tout le contenu d'un pack. Vous pouvez aussi lui demander de compléter ou de revoir un pack existant. Vous pouvez envoyer une demande en regardant une vidéo publicitaire.
+
+■ 8 langues
+Disponible en français, anglais, japonais, allemand, espagnol, italien, coréen et chinois traditionnel.

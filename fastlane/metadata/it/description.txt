@@ -1,0 +1,31 @@
+Packlin è un'app per la lista dei bagagli che ti aiuta a prepararti per viaggi, trasferte, campeggio e altro, spuntando le cose man mano. Per ogni pack scegli «Tag» per ordinare gli elementi liberamente, oppure «Gruppi» per organizzarli a livelli.
+
+■ Tag e gruppi
+Con i Tag, tutti gli elementi stanno in un'unica lista e li ordini in modo flessibile aggiungendo tag. Un elemento può avere più tag.
+Con i Gruppi, ordini in modo rigoroso su tre livelli: Pack (borsa), Gruppo (pochette) ed Elemento.
+I nuovi pack iniziano con i Tag e puoi cambiare in qualsiasi momento. Passando dai Gruppi ai Tag, il nome di ogni gruppo viene aggiunto come tag ai suoi elementi.
+
+■ Filtra per tag
+Nella vista elementi, scegli un tag per restringere la lista, oppure cerca per tag e nome dell'elemento. Ordina per non spuntati, quantità mancante, peso mancante o peso disponibile, in ordine crescente o decrescente. Il peso totale degli elementi mostrati è sempre a colpo d'occhio.
+
+■ Modifica multipla
+Seleziona gli elementi e aggiungi o rimuovi tag, copiali in un altro pack o eliminali, tutto in una volta.
+
+■ Spunta e gestione delle quantità
+Spunta ogni elemento e registra quantità necessaria e disponibile. Inserisci il peso unitario (g) e l'app calcola automaticamente il peso di tutto il bagaglio. I pesi da 1.000 g in su possono essere mostrati in kg.
+Regola le quantità con uno stepper o una ghiera, oppure tocca un numero per inserirlo su un tastierino con calcolatrice.
+
+■ Annulla / Ripeti
+Nessuna finestra di conferma e nessun pulsante Salva, così lavori in fretta. Hai sbagliato? Annulla fino a 10 passaggi.
+
+■ Pack pubblici
+Pubblica i tuoi pack e importa quelli pubblicati da altri. Puoi cercare anche per nome del tag.
+
+■ Condivisione e backup
+Esporta un singolo pack come file .packlin e condividilo via AirDrop o e-mail. Fai il backup e ripristina tutti i pack in una volta, per cambiare dispositivo senza pensieri.
+
+■ IA «Chappy» (opzionale)
+Inserisci solo la destinazione o lo scopo e l'IA propone l'intero contenuto di un pack. Puoi anche chiederle di integrare o rivedere un pack esistente. Puoi inviare una richiesta guardando un video pubblicitario.
+
+■ 8 lingue
+Disponibile in italiano, inglese, giapponese, tedesco, spagnolo, francese, coreano e cinese tradizionale.

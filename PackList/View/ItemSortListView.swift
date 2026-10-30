@@ -598,14 +598,13 @@ struct ItemSortListView: View {
     }
 
     /// 新しいアイテムの入れ先
-    /// 指定順で「今の絞り込みに合う最後のアイテム」の直後に入れる。絞り込みを解除しても、同じタグの仲間の近くに並ぶ
-    /// 合うものが無ければ（空のパックなど）、タグ式グループの末尾に入れる
+    /// 常にタグ式グループ（名前が空の「新しいグループ」）に入れる。グループ式から切り替えたパックでも、既存のグループには入れない
+    /// タグ式グループの中では「今の絞り込みに合う最後のアイテム」の直後に入れ、同じタグの仲間の近くに並べる。無ければ末尾
     private func newItemPlacement() -> (group: M2Group, order: Int) {
-        let ordered = pack.itemsInManualOrder
-        let filter = currentFilter
-        let anchor = filter.isActive ? ordered.last(where: filter.matches) : ordered.last
-        let group = anchor?.parent ?? pack.groupForNewItem()
+        let group = pack.groupForNewItem()
         let items = group.child.sorted { $0.order < $1.order }
+        let filter = currentFilter
+        let anchor = filter.isActive ? items.last(where: filter.matches) : items.last
         let index = anchor.flatMap { anchor in items.firstIndex { $0.id == anchor.id } }.map { $0 + 1 } ?? items.count
         let order = sparseOrderForInsertion(items: items, index: index) {
             // order のみを整え、child 配列を並べ替えない

@@ -437,6 +437,8 @@ struct PackListView: View {
             // 新規パックはタグ式で始める（既存パックはグループ式のまま）
             newPack.classifyMode = .tag
             modelContext.insert(newPack)
+            // 新しいアイテムを1つ入れておく（作成と同じ1アクションで、Undo でまとめて消える）
+            newPack.addInitialContent()
 
             // 追加後のスクロール対象として新規Pack IDだけ保持する
             newPackID = newPack.id
@@ -464,6 +466,8 @@ struct PackListView: View {
             // 新規パックはタグ式で始める（既存パックはグループ式のまま）
             pack.classifyMode = .tag
             modelContext.insert(pack)
+            // 新しいアイテムを1つ入れておく（作成と同じ1アクションで、Undo でまとめて消える）
+            pack.addInitialContent()
 
             newPack = pack
         }

@@ -103,6 +103,9 @@ struct PackEditView: View {
                     }
 
                     classifyModeRow
+
+                    // 公開保存（分類方式の下に置く。以前は右上のツールバー）
+                    publishRow
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -178,7 +181,7 @@ struct PackEditView: View {
             // 通常の編集開始時はここで Undo グループが 1 つ開かれ、
             // 編集内容全体が「1 つの Undo」として扱われる。
             beginUndoGroupingIfNeeded()
-            focusNameIfEmpty()
+            // 名前が空でも自動でフォーカスしない（キーボードで画面が隠れるため。入力欄をタップしたときだけ出す）
         }
         .onDisappear() {
             // === Fix 7: lifecycle 不均衡対策 ===
@@ -222,17 +225,6 @@ struct PackEditView: View {
             get: { memoIsFocused },
             set: { memoIsFocused = $0 }
         )
-    }
-
-    private func focusNameIfEmpty() {
-        guard pack.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-        // シート表示直後はTextEditorの生成が遅れるため、表示確定後にNameへフォーカスする
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            if pack.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                nameIsFocused = true
-            }
-        }
     }
 
     /// 分類方式（グループ式／タグ式）
@@ -413,39 +405,46 @@ struct PackEditView: View {
                     .symbolRenderingMode(.hierarchical)
             }
         }
-        ToolbarItem(placement: .navigationBarTrailing) {
-            // 公開保存（旧チャッピーボタンの位置）＋ 右にヘルプ(?)
-            HStack(spacing: 8) {
-                Button {
-                    startPublish()
-                } label: {
-                    HStack {
-                        // iOS26 などで追加されたシンボルが古いOSで空白にならないよう代替を用意
-                        Image(systemName: "square.and.arrow.up.on.square", fallback: "square.and.arrow.up")
-                            .symbolRenderingMode(.hierarchical)
-                        if isPublishing {
-                            ProgressView()
-                                .controlSize(.small)
-                        } else {
-                            Text("publish.save")
-                                .font(.body.weight(.regular))
-                        }
-                    }
-                }
-                .buttonStyle(.bordered)
-                .disabled(isPublishing)
+    }
 
-                Button {
+    /// 公開保存の行：項目名「公開パック」と (?)、右に公開保存ボタン
+    private var publishRow: some View {
+        AZAdaptiveControlRow {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("public.pack.gallery.title")
+                    .font(.callout)
+                HelpQuestionButton(accessibilityLabel: "publish.save") {
                     showPublishHelp = true
-                } label: {
-                    Image(systemName: "questionmark.circle")
-                        .imageScale(.large)
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .sheet(isPresented: $showPublishHelp) {
-                    publishHelpSheet
                 }
             }
+        } control: {
+            Button {
+                startPublish()
+            } label: {
+                HStack {
+                    // iOS26 などで追加されたシンボルが古いOSで空白にならないよう代替を用意
+                    Image(systemName: "square.and.arrow.up.on.square", fallback: "square.and.arrow.up")
+                        .symbolRenderingMode(.hierarchical)
+                    if isPublishing {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Text("publish.save")
+                            .font(.body.weight(.regular))
+                    }
+                }
+            }
+            .buttonStyle(.bordered)
+            .disabled(isPublishing)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .sheet(isPresented: $showPublishHelp) {
+            publishHelpSheet
         }
     }
 

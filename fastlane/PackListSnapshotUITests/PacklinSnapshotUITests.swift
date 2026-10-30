@@ -109,8 +109,9 @@ final class PacklinSnapshotUITests: XCTestCase {
             e.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             return true
         }
-        // ② ローカライズ文言で（ja/en）。public.pack.gallery.title の実文言。
-        for label in ["公開パックから取得", "Get from public packs"] {
+        // ② ローカライズ文言で（8言語）。public.pack.gallery.title の実文言
+        for label in ["公開パック", "Public packs", "Öffentliche Packs", "Packs públicos",
+                      "Packs publics", "Pack pubblici", "공개 팩", "公開行李包"] {
             let byLabel = app.buttons[label]
             if byLabel.waitForExistence(timeout: 1) {
                 byLabel.tap(); return true

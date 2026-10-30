@@ -718,7 +718,7 @@ struct ItemEditView: View {
             // === Fix 7: lifecycle 不均衡対策 ===
             // 二重 onAppear（戻り遷移時など）を考慮し、未開始のときだけ begin する
             beginUndoGroupingIfNeeded()
-            focusNameIfEmpty()
+            // 名前が空でも自動でフォーカスしない（キーボードで画面が隠れるため。入力欄をタップしたときだけ出す）
         }
         .onDisappear {
             // === Fix 7: lifecycle 不均衡対策 ===
@@ -784,9 +784,6 @@ struct ItemEditView: View {
             guard isShowingMoveSheet else { return }
             syncGroupSelection(useStoredPreference: false)
         }
-        .onChange(of: item.id) { _, _ in
-            focusNameIfEmpty()
-        }
     }
 
     private var moveSheetHeight: CGFloat {
@@ -817,17 +814,6 @@ struct ItemEditView: View {
         guard isUndoGroupingActive else { return }
         modelContext.undoManager?.groupingEnd()
         isUndoGroupingActive = false
-    }
-
-    private func focusNameIfEmpty() {
-        guard item.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-        // 画面遷移直後はTextEditorの生成が遅れるため、表示確定後にNameへフォーカスする
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            if item.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                focusedField = .name
-            }
-        }
     }
 
     /// アイテム追加し、そのアイテムを編集状態にする
