@@ -6050,49 +6050,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mit Tags ordnest du deine Objekte\n\nGib oben etwas ein, um einen Tag zu suchen\n\nWird er nicht gefunden, tippe auf „Hinzufügen“, um ihn als neuen Tag zu vergeben\n\nTippe auf einen Tag, um ihn zu vergeben oder zu entfernen, und du kannst mehrere Tags vergeben\n\nTippe auf „Bearbeiten“, um alle Tags dieses Packs zu sehen und sie umzubenennen oder zu löschen\n\nWähle unter „Objekte durchsuchen“ einen Tag, um nur Objekte mit diesem Tag anzuzeigen"
+            "value" : "Mit Tags ordnest du deine Objekte\n\nGib oben etwas ein, um einen Tag zu suchen\n\nWird er nicht gefunden, tippe auf „Hinzufügen“, um ihn als neuen Tag zu vergeben\n\nTippe auf einen Tag, um ihn zu vergeben oder zu entfernen, und du kannst mehrere Tags vergeben\n\nEin Tag mit gepunktetem Rahmen und rotem Schrägstrich hängt an keinem Objekt und verschwindet, wenn du diesen Bildschirm verlässt\n\nTippe auf „Bearbeiten“, um alle Tags dieses Packs zu sehen und sie umzubenennen oder zu löschen\n\nWähle unter „Objekte durchsuchen“ einen Tag, um nur Objekte mit diesem Tag anzuzeigen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tags help you sort your items\n\nType in the field above to find a tag\n\nIf it is not found, tap \"Add\" to attach it as a new tag\n\nTap a tag to attach or remove it, and you can attach several tags\n\nTap \"Edit\" to see all the tags in this pack, where you can rename or delete them\n\nIn Item browse, choose a tag to show only items with that tag"
+            "value" : "Tags help you sort your items\n\nType in the field above to find a tag\n\nIf it is not found, tap \"Add\" to attach it as a new tag\n\nTap a tag to attach or remove it, and you can attach several tags\n\nA tag with a dotted outline and a red slash isn’t on any item, so it disappears when you leave this screen\n\nTap \"Edit\" to see all the tags in this pack, where you can rename or delete them\n\nIn Item browse, choose a tag to show only items with that tag"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las etiquetas sirven para clasificar tus ítems\n\nEscribe en el campo de arriba para buscar una etiqueta\n\nSi no aparece, toca «Añadir» para ponerla como etiqueta nueva\n\nToca una etiqueta para ponerla o quitarla, y puedes poner varias etiquetas\n\nToca «Editar» para ver todas las etiquetas de este pack y renombrarlas o eliminarlas\n\nEn Explorar ítems, elige una etiqueta para mostrar solo los ítems que la tienen"
+            "value" : "Las etiquetas sirven para clasificar tus ítems\n\nEscribe en el campo de arriba para buscar una etiqueta\n\nSi no aparece, toca «Añadir» para ponerla como etiqueta nueva\n\nToca una etiqueta para ponerla o quitarla, y puedes poner varias etiquetas\n\nUna etiqueta con borde punteado y una línea roja no está en ningún ítem, así que desaparece al salir de esta pantalla\n\nToca «Editar» para ver todas las etiquetas de este pack y renombrarlas o eliminarlas\n\nEn Explorar ítems, elige una etiqueta para mostrar solo los ítems que la tienen"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tags servent à classer vos éléments\n\nSaisissez dans le champ ci-dessus pour chercher un tag\n\nS’il est introuvable, touchez « Ajouter » pour l’attribuer comme nouveau tag\n\nTouchez un tag pour l’attribuer ou le retirer, et vous pouvez en attribuer plusieurs\n\nTouchez « Modifier » pour voir tous les tags de ce pack, puis les renommer ou les supprimer\n\nDans Parcourir les éléments, choisissez un tag pour n’afficher que les éléments qui l’ont"
+            "value" : "Les tags servent à classer vos éléments\n\nSaisissez dans le champ ci-dessus pour chercher un tag\n\nS’il est introuvable, touchez « Ajouter » pour l’attribuer comme nouveau tag\n\nTouchez un tag pour l’attribuer ou le retirer, et vous pouvez en attribuer plusieurs\n\nUn tag au contour pointillé barré de rouge n’est sur aucun élément ; il disparaît quand vous quittez cet écran\n\nTouchez « Modifier » pour voir tous les tags de ce pack, puis les renommer ou les supprimer\n\nDans Parcourir les éléments, choisissez un tag pour n’afficher que les éléments qui l’ont"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I tag servono a classificare i tuoi elementi\n\nScrivi nel campo in alto per cercare un tag\n\nSe non lo trovi, tocca «Aggiungi» per assegnarlo come nuovo tag\n\nTocca un tag per assegnarlo o toglierlo, e puoi assegnarne più di uno\n\nTocca «Modifica» per vedere tutti i tag di questo pack e rinominarli o eliminarli\n\nIn Sfoglia elementi, scegli un tag per mostrare solo gli elementi che lo hanno"
+            "value" : "I tag servono a classificare i tuoi elementi\n\nScrivi nel campo in alto per cercare un tag\n\nSe non lo trovi, tocca «Aggiungi» per assegnarlo come nuovo tag\n\nTocca un tag per assegnarlo o toglierlo, e puoi assegnarne più di uno\n\nUn tag con il bordo tratteggiato e una barra rossa non è su nessun elemento, quindi scompare quando esci da questa schermata\n\nTocca «Modifica» per vedere tutti i tag di questo pack e rinominarli o eliminarli\n\nIn Sfoglia elementi, scegli un tag per mostrare solo gli elementi che lo hanno"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タグはアイテムの分類に使います\n\n上の欄に入力すると、タグを探せます\n\n見つからないときは「追加」を押すと、新しいタグとして付けられます\n\nタグを押すと付け外しでき、複数のタグを付けられます\n\n「編集」を押すと、パックのタグを一覧にして、名前の変更や削除ができます\n\nアイテム縦覧でタグを選ぶと、そのタグのアイテムだけに絞り込めます"
+            "value" : "タグはアイテムの分類に使います\n\n上の欄に入力すると、タグを探せます\n\n見つからないときは「追加」を押すと、新しいタグとして付けられます\n\nタグを押すと付け外しでき、複数のタグを付けられます\n\n点線と赤い斜線のタグはどのアイテムにも付いていないので、画面を離れると消えます\n\n「編集」を押すと、パックのタグを一覧にして、名前の変更や削除ができます\n\nアイテム縦覧でタグを選ぶと、そのタグのアイテムだけに絞り込めます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "태그는 항목을 분류하는 데 사용합니다\n\n위 칸에 입력하면 태그를 찾을 수 있습니다\n\n찾지 못하면 ‘추가’를 눌러 새 태그로 붙일 수 있습니다\n\n태그를 누르면 붙이거나 뗄 수 있으며, 여러 태그를 붙일 수 있습니다\n\n‘편집’을 누르면 이 팩의 태그를 목록으로 보고, 이름을 바꾸거나 삭제할 수 있습니다\n\n항목 둘러보기에서 태그를 고르면 그 태그가 붙은 항목만 표시됩니다"
+            "value" : "태그는 항목을 분류하는 데 사용합니다\n\n위 칸에 입력하면 태그를 찾을 수 있습니다\n\n찾지 못하면 ‘추가’를 눌러 새 태그로 붙일 수 있습니다\n\n태그를 누르면 붙이거나 뗄 수 있으며, 여러 태그를 붙일 수 있습니다\n\n점선과 빨간 사선이 있는 태그는 어떤 항목에도 붙어 있지 않아서, 이 화면을 나가면 사라집니다\n\n‘편집’을 누르면 이 팩의 태그를 목록으로 보고, 이름을 바꾸거나 삭제할 수 있습니다\n\n항목 둘러보기에서 태그를 고르면 그 태그가 붙은 항목만 표시됩니다"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "標籤可用來分類物品\n\n在上方欄位輸入即可尋找標籤\n\n找不到時，點按「新增」即可加上新標籤\n\n點按標籤可加上或移除，也可以加上多個標籤\n\n點按「編輯」可列出這個行李包的所有標籤，並變更名稱或刪除\n\n在物品瀏覽中選擇標籤，即可只顯示有該標籤的物品"
+            "value" : "標籤可用來分類物品\n\n在上方欄位輸入即可尋找標籤\n\n找不到時，點按「新增」即可加上新標籤\n\n點按標籤可加上或移除，也可以加上多個標籤\n\n虛線並有紅色斜線的標籤沒有加在任何物品上，離開這個畫面就會消失\n\n點按「編輯」可列出這個行李包的所有標籤，並變更名稱或刪除\n\n在物品瀏覽中選擇標籤，即可只顯示有該標籤的物品"
           }
         }
       }
@@ -17647,6 +17647,165 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "依重量確認時"
+          }
+        }
+      }
+    },
+    "tag.manage.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Pack hat noch keine Tags. Tags fügst du im Tag-Bereich eines Objekts hinzu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This pack has no tags yet. Add tags in the Tags section of an item."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este pack aún no tiene etiquetas. Añádelas en la sección de etiquetas de un ítem."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce pack n’a pas encore de tags. Ajoutez-en dans la section Tags d’un élément."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo pack non ha ancora tag. Aggiungili nella sezione Tag di un elemento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このパックにはまだタグがありません。タグはアイテム詳細のタグ欄で追加できます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 팩에는 아직 태그가 없습니다. 태그는 항목 상세의 태그 칸에서 추가할 수 있습니다."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個行李包還沒有標籤。可以在物品詳細資料的標籤欄新增"
+          }
+        }
+      }
+    },
+    "tag.manage.unused.header" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unbenutzte Tags"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unused tags"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiquetas sin usar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags inutilisés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag non usati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未使用タグ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미사용 태그"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未使用的標籤"
+          }
+        }
+      }
+    },
+    "tag.manage.unused.footer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Tags hängen an keinem Objekt und verschwinden, wenn du die Objektdetails verlässt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These tags aren’t on any item, so they disappear when you leave the item details screen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas etiquetas no están en ningún ítem, así que desaparecen al salir de la pantalla de detalles del ítem."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ces tags ne sont sur aucun élément ; ils disparaissent quand vous quittez l’écran de détails de l’élément."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questi tag non sono su nessun elemento, quindi scompaiono quando esci dalla schermata dei dettagli dell’elemento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どのアイテムにも付いていないので、アイテム詳細画面を離れると消えます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어떤 항목에도 붙어 있지 않아서, 항목 상세 화면을 나가면 사라집니다."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這些標籤沒有加在任何物品上，離開物品詳細資料畫面就會消失"
           }
         }
       }

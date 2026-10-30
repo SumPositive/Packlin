@@ -82,8 +82,16 @@ struct ItemEditView: View {
     private let sectionCornerRadius: CGFloat = 12
     /// タグの編集シート（タグ欄の「編集」から開く）
     @State private var isShowingTagManager = false
-    /// タグの編集シートを閉じたら、タグ欄を作り直して名前の変更・削除を反映する
-    @State private var tagEditorRevision = 0
+    /// タグの編集シートで行った名前の変更・削除（タグ欄は作り直さず、これだけを反映する）
+    /// 作り直すと、どのアイテムにも付いていないタグが一覧から消えてしまうため
+    @State private var tagManageEdits: [TagManageEdit] = []
+    /// タグ欄に出しているタグ（どのアイテムにも付いていないものを編集シートに出すため）
+    @State private var shownTags: [String] = []
+    /// タグ欄にあって、どのアイテムにも付いていないタグ
+    private var unusedShownTags: [String] {
+        let counts = pack.tagItemCounts
+        return shownTags.filter { (counts[$0] ?? 0) == 0 }
+    }
     /// タグ欄の入力欄からタグ一覧の2行目まで（入力欄にフォーカスが入ったら、ここがキーボードの上に来るまでスクロールする）
     private let tagScrollAnchorID = "itemEdit.tagScrollAnchor"
 
@@ -502,7 +510,9 @@ struct ItemEditView: View {
                                   action: { isShowingTagManager = true }) {
                         if showsTagEditor {
                             ItemTagEditor(pack: pack, item: item, cornerRadius: sectionCornerRadius,
-                                          scrollAnchorID: tagScrollAnchorID) { focused in
+                                          scrollAnchorID: tagScrollAnchorID,
+                                          tagManageEdits: tagManageEdits,
+                                          shownTags: $shownTags) { focused in
                                 guard focused else { return }
                                 // キーボードで検索結果が隠れないよう、入力欄からタグ一覧の2行目までをキーボードの上に出す
                                 // （キーボードが出て表示領域が縮んでから動かす）
@@ -513,8 +523,6 @@ struct ItemEditView: View {
                                     }
                                 }
                             }
-                            // 編集シートで名前の変更・削除をしたら作り直して反映する
-                            .id(tagEditorRevision)
                             .transition(.opacity)
                         } else {
                             // 出るまでの間は同じ形の枠だけ置いて、下の余白が跳ねないようにする
@@ -540,9 +548,11 @@ struct ItemEditView: View {
         .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
         // パックのタグを一覧で名前の変更・削除する
-        .sheet(isPresented: $isShowingTagManager, onDismiss: { tagEditorRevision += 1 }) {
-            TagManageSheet(pack: pack)
-                .appFontScale(fontScale)
+        .sheet(isPresented: $isShowingTagManager) {
+            TagManageSheet(pack: pack, unusedTags: unusedShownTags) { edit in
+                tagManageEdits.append(edit)
+            }
+            .appFontScale(fontScale)
         }
         .background(COLOR_ROW_GROUP)
         //.navigationTitle("アイテム編集")

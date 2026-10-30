@@ -15,6 +15,8 @@ struct TagChip: View {
     var isDisabled: Bool = false
     /// 「タグなし」など普通のタグと区別したいボタン（文字を控えめにし、背景を薄いグレーにする）
     var isSpecial: Bool = false
+    /// どのアイテムにも付いていないタグ（枠を点線にし赤い斜線を入れて、画面を離れると消えることを見せる）
+    var isUnused: Bool = false
     let action: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -24,17 +26,22 @@ struct TagChip: View {
         return isSelected ? COLOR_TAG.opacity(colorScheme == .dark ? 0.9 : 0.62) : Color.secondary.opacity(0.25)
     }
 
-    /// 選択中の塗り。ダークでは薄い塗りだとくすんで見えるので、濃いめにして明るく見せる
+    /// 選択中の塗り。薄い塗りだと未選択（白）との違いが分かりにくいので、タグ色でしっかり塗る
     private var selectedFill: Color {
-        COLOR_TAG.opacity(colorScheme == .dark ? 0.32 : 0.14)
+        COLOR_TAG
+    }
+
+    /// 選択中の文字色。濃い塗りの上で読めるよう、ライトは白・ダーク（明るいラベンダーの塗り）は黒にする
+    private var selectedTextColor: Color {
+        colorScheme == .dark ? .black : .white
     }
 
     private var chipLabel: some View {
         // 選択中も文字は太字にしない（幅が変わると折り返しの詰め込みが組み直され、並びが入れ替わる）
-        // 選択は背景・枠のタグ色と、濃いタグ色の文字で示す
+        // 選択はタグ色の塗りつぶしと白抜きの文字で示す（幅は変えない）
         Text(title)
             .font(.subheadline)
-            .foregroundStyle(isSelected ? COLOR_TAG_TEXT : (isSpecial ? Color.secondary : Color.primary))
+            .foregroundStyle(isSelected ? selectedTextColor : (isSpecial ? Color.secondary : Color.primary))
             .lineLimit(1)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -45,8 +52,24 @@ struct TagChip: View {
             )
             .overlay(
                 Capsule(style: .continuous)
-                    .strokeBorder(borderColor, lineWidth: isSelected ? 1.5 : 1)
+                    .strokeBorder(borderColor,
+                                  style: StrokeStyle(lineWidth: isSelected ? 1.5 : 1,
+                                                     dash: isUnused && !isSelected ? [4, 3] : []))
             )
+            // どのアイテムにも付いていないタグは、点線に加えて赤い斜線を入れて目立たせる（幅は変えない）
+            .overlay {
+                if isUnused && !isSelected {
+                    GeometryReader { geometry in
+                        Path { path in
+                            path.move(to: CGPoint(x: 0, y: geometry.size.height))
+                            path.addLine(to: CGPoint(x: geometry.size.width, y: 0))
+                        }
+                        .stroke(Color.red.opacity(0.7), lineWidth: 1.5)
+                    }
+                    .clipShape(Capsule(style: .continuous))
+                    .allowsHitTesting(false)
+                }
+            }
             .contentShape(Capsule())
     }
 
@@ -72,6 +95,10 @@ struct ItemTagEditor: View {
     var cornerRadius: CGFloat = 12
     /// 入力欄からタグ一覧の2行目までを覆う目印の ID（親の画面がここまでスクロールして、キーボードの上に見せる）
     var scrollAnchorID: String? = nil
+    /// タグの編集シートで行った名前の変更・削除（増えた分だけ一覧に反映する）
+    var tagManageEdits: [TagManageEdit] = []
+    /// 一覧に出しているタグを親へ知らせる（編集シートに未使用のタグも出すため）
+    var shownTags: Binding<[String]>? = nil
     /// タグの入力欄にフォーカスが入った／外れたとき（親の画面が検索結果の見える位置へスクロールするため）
     var onSearchFocusChange: (Bool) -> Void = { _ in }
 
@@ -82,6 +109,8 @@ struct ItemTagEditor: View {
     /// 表示するタグ一覧（縦覧のタグ一覧と同じ指定順）
     /// 選択を外したタグがその場で一覧から消えず、押すたびに並びが動かないよう、開いた時点の一覧を保持して追加分を末尾に足していく
     @State private var knownTags: [String] = []
+    /// tagManageEdits のうち反映済みの数
+    @State private var appliedEditCount = 0
     @FocusState private var isSearchFocused: Bool
 
     private var keyword: String {
@@ -160,12 +189,15 @@ struct ItemTagEditor: View {
                     }
                 } else {
                     // 左寄せで並べ、行末に空きがあれば後ろの収まるタグを繰り上げる（アイテム縦覧のタグ一覧と同じ）
+                    // どのアイテムにも付いていないタグを見分けるため、パック内の使用数を1回だけ数える
+                    let counts = pack.tagItemCounts
                     AZFlowLayout(spacing: 8, rowSpacing: 8, alignment: .leading, packToFill: true) {
                         ForEach(visibleTags, id: \.self) { tag in
                             let isSelected = item.tags.contains(tag)
                             TagChip(title: tag,
                                     isSelected: isSelected,
-                                    isDisabled: !isSelected && isTagLimitReached) {
+                                    isDisabled: !isSelected && isTagLimitReached,
+                                    isUnused: (counts[tag] ?? 0) == 0) {
                                 toggle(tag)
                             }
                             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
@@ -200,7 +232,36 @@ struct ItemTagEditor: View {
         .task(id: item.id) {
             searchText = ""
             reloadKnownTags()
+            appliedEditCount = tagManageEdits.count
         }
+        // 編集シートの名前の変更・削除は、一覧を作り直さずにその分だけ反映する（どこにも付いていないタグを残すため）
+        .onChange(of: tagManageEdits) { _, edits in
+            applyTagManageEdits(edits)
+        }
+        .onChange(of: knownTags, initial: true) { _, tags in
+            shownTags?.wrappedValue = tags
+        }
+    }
+
+    private func applyTagManageEdits(_ edits: [TagManageEdit]) {
+        guard appliedEditCount < edits.count else { return }
+        for edit in edits[appliedEditCount...] {
+            switch edit {
+            case .rename(let from, let to):
+                if knownTags.contains(to) {
+                    // 既にある名前にしたときは1つにまとまる
+                    knownTags.removeAll { $0 == from }
+                } else if let index = knownTags.firstIndex(of: from) {
+                    knownTags[index] = to
+                } else {
+                    // 一覧に無かったタグの変更でも、付いているタグが見えなくならないよう末尾に足す
+                    knownTags.append(to)
+                }
+            case .delete(let tag):
+                knownTags.removeAll { $0 == tag }
+            }
+        }
+        appliedEditCount = edits.count
     }
 
     private func reloadKnownTags() {

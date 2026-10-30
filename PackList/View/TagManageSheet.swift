@@ -9,8 +9,18 @@
 import SwiftUI
 import SwiftData
 
+/// タグの編集シートで行った変更（呼び出し元の表示に反映するため）
+enum TagManageEdit: Equatable {
+    case rename(from: String, to: String)
+    case delete(String)
+}
+
 struct TagManageSheet: View {
     let pack: M1Pack
+    /// アイテム詳細のタグ欄にある、どのアイテムにも付いていないタグ（画面を離れると消える）
+    var unusedTags: [String] = []
+    /// 名前の変更・削除をしたとき（アイテム詳細のタグ欄が、一覧を作り直さずに反映するため）
+    var onEdit: (TagManageEdit) -> Void = { _ in }
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var history: UndoStackService
@@ -33,11 +43,16 @@ struct TagManageSheet: View {
     var body: some View {
         NavigationStack(path: $path) {
             List {
-                if tags.isEmpty {
-                    Text("tag.empty")
+                if tags.isEmpty && unusedTags.isEmpty {
+                    // タグ欄の「上の欄に入力して…」はこのシートには入力欄が無く合わないので、専用の文言にする
+                    Text("tag.manage.empty")
                         .foregroundStyle(.secondary)
                 } else {
                     Section {
+                        if tags.isEmpty {
+                            Text("tag.manage.empty")
+                                .foregroundStyle(.secondary)
+                        }
                         ForEach(tags, id: \.self) { tag in
                             // 名前の変更は次の画面で行う（入力欄付きアラートはキーボード表示中のキャンセルが2回押しになるため）
                             NavigationLink(value: tag) {
@@ -55,6 +70,31 @@ struct TagManageSheet: View {
                         // 説明は一覧の上の余白に置く（下に置くと、一覧が長いときに見えない）
                         Text("tag.manage.footer")
                             .textCase(nil)
+                    }
+
+                    // どのアイテムにも付いていないタグ（アイテム詳細のタグ欄にだけあり、画面を離れると消える）
+                    if !unusedTags.isEmpty {
+                        Section {
+                            ForEach(unusedTags, id: \.self) { tag in
+                                NavigationLink(value: tag) {
+                                    HStack {
+                                        Text(tag)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        // 上のタグと同じ位置に件数（どのアイテムにも付いていないので 0）
+                                        Text(verbatim: "0")
+                                            .foregroundStyle(.secondary)
+                                            .monospacedDigit()
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text("tag.manage.unused.header")
+                                .textCase(nil)
+                        } footer: {
+                            // 消える理由とタイミングはフッターで説明する
+                            Text("tag.manage.unused.footer")
+                        }
                     }
                 }
             }
@@ -98,17 +138,29 @@ struct TagManageSheet: View {
 
     private func rename(_ oldTag: String, to newTag: String) {
         guard !newTag.isEmpty, newTag != oldTag else { return }
+        // 未使用のタグはパックのデータに無いので、タグ欄の表示だけ変える
+        if unusedTags.contains(oldTag) {
+            onEdit(.rename(from: oldTag, to: newTag))
+            return
+        }
         GALogger.log(.operation(name: "rename", target: "tag", source: "tag_manage_sheet", detail: nil, count: nil))
         history.perform(context: modelContext) {
             pack.renameTag(oldTag, to: newTag)
         }
+        onEdit(.rename(from: oldTag, to: newTag))
     }
 
     private func remove(_ tag: String) {
+        // 未使用のタグはパックのデータに無いので、タグ欄の表示から消すだけ
+        if unusedTags.contains(tag) {
+            onEdit(.delete(tag))
+            return
+        }
         GALogger.log(.operation(name: "delete", target: "tag", source: "tag_manage_sheet", detail: nil, count: nil))
         history.perform(context: modelContext) {
             pack.removeTag(tag)
         }
+        onEdit(.delete(tag))
     }
 }
 
@@ -147,7 +199,13 @@ private struct TagRenameView: View {
             // このタグを削除（このパックのすべてのアイテムから外す）
             Section {
                 Button(role: .destructive) {
-                    isConfirmingDelete = true
+                    if itemCount == 0 {
+                        // どのアイテムにも付いていないタグは外す先が無いので、確認せずに消す
+                        onDelete()
+                        dismiss()
+                    } else {
+                        isConfirmingDelete = true
+                    }
                 } label: {
                     // アイコンも文字も白にする（アイコンはアプリの色付けで青くなるため明示する）
                     Label {
