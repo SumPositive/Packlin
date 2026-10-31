@@ -8,6 +8,7 @@ struct PublicPackGalleryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var creditStore: CreditStore
+    @EnvironmentObject private var history: UndoStackService
     @AppStorage(AppStorageKey.fontScale) private var fontScale: FontScale = .default
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
 
@@ -556,6 +557,8 @@ struct PublicPackGalleryView: View {
             // 公開取消をローカルにも反映し、「公開中」バッジを消す。
             // publishedId が一致するローカルパックのフラグをクリアする。
             clearPublishedFlag(forPublishedId: item.id)
+            // 削除済みのパックは上で見つからないので、元に戻したときに「公開中」を付け直さないよう履歴にも伝える
+            history.markUnpublished(item.id)
             // セルは消さず、カバー上に「削除しました」を表示したままにする
             rowStatus[item.id] = .done(String(localized: "public.pack.deleted"))
         } catch let apiError as AzukiAPIError {

@@ -44,6 +44,8 @@ final class UndoStackService: ObservableObject {
             // 分類方式とタグ式グループも戻せるよう記録する（空のパックの切り替えも履歴に残る）
             let classifyModeRaw: String?
             let tagModeGroupID: String?
+            // 公開中のパックを削除して元に戻したとき「公開中」を失わないよう記録する（復元は作り直すときだけ。restore 参照）
+            let publishedId: String?
             let groups: [Group]
         }
 
@@ -66,6 +68,9 @@ final class UndoStackService: ObservableObject {
     private var transactionDepth: Int = 0
     private var transactionBefore: Snapshot?
     private var isRestoring: Bool = false
+    /// 公開パック一覧から公開を取り消した publishedId
+    /// 削除したパックを元に戻すとき、もう公開されていないのに「公開中」を付け直さないために使う
+    private var unpublishedIds: Set<String> = []
 
     init(maxStackSize: Int = 10) { // 最大スタック件数を指定する
         // 1件未満だと履歴が成立しないため、必ず1件以上にする
@@ -74,6 +79,11 @@ final class UndoStackService: ObservableObject {
         } else {
             self.maxStackSize = maxStackSize
         }
+    }
+
+    /// 公開を取り消したことを覚えておく（公開パック一覧の公開取消が成功したときに呼ぶ）
+    func markUnpublished(_ publishedId: String) {
+        unpublishedIds.insert(publishedId)
     }
 
     func perform(context: ModelContext, operation: () throws -> Void) rethrows {
@@ -353,6 +363,7 @@ final class UndoStackService: ObservableObject {
                 createdAt: pack.createdAt,
                 classifyModeRaw: pack.classifyModeRaw,
                 tagModeGroupID: pack.tagModeGroupID,
+                publishedId: pack.publishedId,
                 groups: groups
             )
         }
@@ -456,6 +467,12 @@ final class UndoStackService: ObservableObject {
                               createdAt: packSnapshot.createdAt,
                               order: packSnapshot.order)
                 context.insert(pack)
+                // 削除しても公開は取り消されない（サーバーに残る）ので、作り直すパックには公開中の印を戻す
+                // 既にあるパックは上書きしない。公開・公開取消は履歴の外で行うため、古い値で最新の状態を消さないように
+                // 削除後に公開を取り消していれば、もう公開されていないので戻さない
+                if let publishedId = packSnapshot.publishedId, !unpublishedIds.contains(publishedId) {
+                    pack.publishedId = publishedId
+                }
             }
             pack.name = packSnapshot.name
             pack.memo = packSnapshot.memo
