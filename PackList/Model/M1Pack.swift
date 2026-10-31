@@ -113,6 +113,17 @@ final class M1Pack {
         return group
     }
 
+    /// グループ式のパックへアイテムをコピーするときの入れ先にする、既にある同じ名前のグループ（無ければ nil）
+    /// 同じ名前が複数あれば一番下のもの。コピーのたびにグループが増えないようにする
+    func existingGroupForCopy(named name: String) -> M2Group? {
+        child.filter { $0.name == name }.max { $0.order < $1.order }
+    }
+
+    /// グループ式のパックがコピーを受け入れられるか（同じ名前のグループが無ければ、新しく作れること）
+    func canReceiveCopyIntoGroup(named name: String) -> Bool {
+        existingGroupForCopy(named: name) != nil || canAddRegularGroup
+    }
+
     /// 新しく作ったパックに、最初の中身を1つ入れておく（空のパックを開いて何をすればよいか迷わないように）
     /// タグ式は新しいアイテム、グループ式は新しいグループ。名前は空で、一覧では「新しいアイテム」などと表示される
     /// modelContext へ insert した後に呼ぶこと

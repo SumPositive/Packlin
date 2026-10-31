@@ -183,24 +183,27 @@ struct BulkCopyPackSheet: View {
                             onSelect(pack)
                         } label: {
                             HStack(spacing: 10) {
+                                // コピー先の分類方式も分かるよう、パック一覧と同じくタグ式はバッグにタグを下げる
                                 Image(systemName: "case")
+                                    .imageScale(.large)
                                     .symbolRenderingMode(.hierarchical)
                                     .foregroundStyle(Color.accentColor)
+                                    .overlay(alignment: .top) {
+                                        if pack.classifyMode == .tag {
+                                            // 縁取りは一覧の行の背景色にする
+                                            PackTagModeHangingIcon(outlineColor: Color(.secondarySystemGroupedBackground))
+                                        }
+                                    }
                                 pack.name.placeholderText("new.pack")
                                     .foregroundStyle(pack.name.isEmpty ? .secondary : .primary)
                                     .lineLimit(2)
                                 Spacer(minLength: 8)
-                                // コピー先の分類方式も分かるようにする
-                                if pack.classifyMode == .tag {
-                                    Image(systemName: "tag.fill")
-                                        .foregroundStyle(COLOR_TAG)
-                                }
                             }
                         }
                         .buttonStyle(.plain)
                         // コピー先で全件を受け入れられる場合だけ選べる
                         .disabled(!pack.canAddItems(itemCount) ||
-                                  (pack.classifyMode == .group && !pack.canAddRegularGroup))
+                                  (pack.classifyMode == .group && !pack.canReceiveCopyIntoGroup(named: sourcePack.name)))
                     }
                 } header: {
                     Text(String(format: String(localized: "bulk.copy.message"), itemCount))

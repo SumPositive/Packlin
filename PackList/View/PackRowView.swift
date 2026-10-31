@@ -94,7 +94,7 @@ struct PackRowView: View {
                     // タグ式はバッグの取っ手にタグがぶら下がった形にする
                     .overlay(alignment: .top) {
                         if isTagMode {
-                            tagModeIcon
+                            PackTagModeHangingIcon()
                         }
                     }
                     .overlay(alignment: .bottom) {
@@ -188,11 +188,15 @@ struct PackRowView: View {
 
 }
 
-private extension PackRowView {
-    /// タグ式パックの目印（グループ式は何も出さない）
-    /// 穴を上にして、取っ手の右端から少し傾いて垂れ下がるように置く
-    /// 位置や傾きを調整するときは offset と rotationEffect の値を変える
-    var tagModeIcon: some View {
+/// タグ式パックの目印。バッグ（case、imageScale .large）の上端にオーバーレイで重ねる
+/// パック一覧の行と、まとめて操作のコピー先パックの一覧で使う
+/// 穴を上にして、取っ手の右端から少し傾いて垂れ下がるように置く
+/// 位置や傾きを調整するときは offset と rotationEffect の値を変える
+struct PackTagModeHangingIcon: View {
+    /// タグの縁取りの色（置く場所の背景色に合わせる）
+    var outlineColor = Color(.systemBackground)
+
+    var body: some View {
         // 選択中のタグボタンと同じ見せ方にそろえる（薄いタグ色の塗り＋濃いタグ色の線）
         ZStack {
             Image(systemName: "tag.fill")
@@ -205,7 +209,7 @@ private extension PackRowView {
             .background(
                 Image(systemName: "tag.fill")
                     .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Color(.systemBackground))
+                    .foregroundStyle(outlineColor)
                     .scaleEffect(1.35)
             )
             // tag.fill は穴の側が右上を向いた斜めの形なので、左へ45°回すと穴が真上になる
@@ -215,7 +219,9 @@ private extension PackRowView {
             .offset(x: 8, y: 4)
             .allowsHitTesting(false)
     }
+}
 
+private extension PackRowView {
     /// 「公開中」を示す小さなバッジ。バッグアイコンの真下に控えめに表示する。
     /// 文字は折り返さず、極小フォントで幅を取らないようにする。
     @ViewBuilder

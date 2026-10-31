@@ -275,7 +275,8 @@ struct ItemSortListView: View {
                                                fontScale: fontScale,
                                                showsText: isBeginnerMode,
                                                trailingAccessory: AnyView(appendRowTrailing),
-                                               leadingAccessory: isBulkMode ? nil : AnyView(bulkStartButton),
+                                               // 行の右端（行の右の余白8＋内側8）と左右の余白を揃える
+                                               leadingAccessory: isBulkMode ? nil : AnyView(bulkStartButton.padding(.leading, 8)),
                                                showsCapsule: true) {
                                 addItemAndNavigate(source: "item_browse_append_end_row")
                             }
@@ -831,18 +832,21 @@ struct ItemSortListView: View {
 
     /// 選んだアイテムを別のパックへコピーする
     /// - タグ式のパックへは「タグ式グループ」に入れる
-    /// - グループ式のパックへは、コピー元のパック名で新しいグループを作って入れる（どこから来たか分かるように）
+    /// - グループ式のパックへは、コピー元のパック名のグループに入れる（どこから来たか分かるように）
+    ///   同じ名前のグループが既にあればそこへ足し、無ければ新しく作る（コピーのたびにグループが増えないように）
     private func copyBulkItems(to destination: M1Pack) {
         let items = selectedBulkItems
         guard !items.isEmpty else { return }
         // コピー先の件数と通常グループ数を先に確認し、途中までのコピーを防ぐ
         guard destination.canAddItems(items.count),
-              destination.classifyMode == .tag || destination.canAddRegularGroup else { return }
+              destination.classifyMode == .tag || destination.canReceiveCopyIntoGroup(named: pack.name) else { return }
         GALogger.log(.operation(name: "copy", target: "item", source: "bulk_action", detail: destination.classifyMode.rawValue, count: items.count))
         history.perform(context: modelContext) {
             let group: M2Group
             if destination.classifyMode == .tag {
                 group = destination.groupForNewItem()
+            } else if let existing = destination.existingGroupForCopy(named: pack.name) {
+                group = existing
             } else {
                 group = M2Group(name: pack.name, order: destination.nextGroupOrder(), parent: destination)
                 modelContext.insert(group)

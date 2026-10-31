@@ -247,16 +247,19 @@ struct GroupEditView: View {
                     }
                     .font(.caption.weight(.semibold))
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                     .multilineTextAlignment(.center)
                 } else {
+                    // 幅の狭い端末（SE など）で長い言語が入りきらないときは、はみ出さずに文字を縮める
+                    // （はみ出すとシートの中身ごと横に広がり、左右の余白が無くなるため）
                     Text(title)
                         .font(.caption.weight(.semibold))
                         .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
+                        .minimumScaleFactor(0.7)
                 }
             }
-            .frame(minWidth: 58)
-            .frame(width: fixedWidth)
+            // 幅に余裕があれば fixedWidth まで広げ、足りなければ縮める（チェックの文字切り替えでボタン幅が揺れないよう上限で揃える）
+            .frame(minWidth: 52, idealWidth: fixedWidth, maxWidth: fixedWidth)
             .padding(.vertical, 6)
             .padding(.horizontal, 6)
             .contentShape(Rectangle())
