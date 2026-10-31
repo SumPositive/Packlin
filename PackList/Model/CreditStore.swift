@@ -24,17 +24,19 @@ final class CreditStore: ObservableObject {
     private let keychainBalanceKey = "azuki.credit.balance"
     /// iCloud から userId が後から届いたときの通知の監視
     private var iCloudObserver: NSObjectProtocol?
+    /// 旧版で作られた userId を元の userId へ切り替えてよいか、サーバーで確かめている処理（重ねて走らせない）
+    private var legacyCheckTask: Task<Void, Never>?
 
     init(keychain: KeychainStorage = KeychainStorage()) {
         self.keychain = keychain
         // ユーザーIDは起動時に確定させる。広告用IDを別途管理する必要がなくなったため、userIdのみで統一
-        // 旧版で作られた userId が iCloud の元の userId と違うとき、残高が無ければ元の userId へ切り替える（loadOrCreate 参照）
+        // 旧版で作られた userId が iCloud の元の userId と違うときは、サーバーで確かめてから切り替える（checkLegacyUserId 参照）
         let hasLocalCredits = 0 < (keychain.loadInt(forKey: keychainBalanceKey) ?? 0)
         let resolved = AzukiUserIdentifier.loadOrCreate(keychain: keychain, hasLocalCredits: hasLocalCredits)
         self.userId = resolved.userId
         self.isUserIdConfirmed = AzukiUserIdentifier.isConfirmed(keychain: keychain)
         if resolved.didSwitchToICloud {
-            // 仮の userId（または旧版で作られた userId）から iCloud の元の userId へ戻ったので、前の userId 向けの残高・トークンは使わない
+            // 仮の userId から iCloud の元の userId へ戻ったので、前の userId 向けの残高・トークンは使わない
             keychain.deleteItem(forKey: keychainBalanceKey)
             AzukiApi.shared.clearAuthenticationStateForUserReset()
         }
@@ -53,6 +55,7 @@ final class CreditStore: ObservableObject {
 //            }
         }
         observeICloudUserId()
+        startLegacyUserIdCheckIfNeeded()
     }
 
     /// 新端末の初回起動で iCloud の userId がまだ届いておらず仮の userId を発行したあと、
@@ -76,14 +79,68 @@ final class CreditStore: ObservableObject {
                                                       isInitialSync: isInitialSync,
                                                       hasLocalCredits: 0 < credits) {
         case .switched(let restoredId):
-            // 前の userId 向けの残高・トークンは捨て、元の userId で次の通信時にサーバーから取り直す
-            keychain.deleteItem(forKey: keychainBalanceKey)
-            credits = 0
-            AzukiApi.shared.clearAuthenticationStateForUserReset()
-            userId = restoredId
+            switchUserId(to: restoredId)
         case .finalized, .unchanged:
             break
         }
+        isUserIdConfirmed = AzukiUserIdentifier.isConfirmed(keychain: keychain)
+        startLegacyUserIdCheckIfNeeded()
+    }
+
+    /// 前の userId 向けの残高・トークンは捨て、切り替え先の userId で次の通信時にサーバーから取り直す
+    private func switchUserId(to newId: String) {
+        keychain.deleteItem(forKey: keychainBalanceKey)
+        credits = 0
+        AzukiApi.shared.clearAuthenticationStateForUserReset()
+        userId = newId
+    }
+
+    private func startLegacyUserIdCheckIfNeeded() {
+        guard legacyCheckTask == nil, AzukiUserIdentifier.legacyCandidate(keychain: keychain) != nil else { return }
+        legacyCheckTask = Task { [weak self] in
+            await self?.checkLegacyUserId()
+            self?.legacyCheckTask = nil
+        }
+    }
+
+    /// 旧版で作られた userId（iCloud の元の userId と違うもの）に、切り替えると失う状態が無いかをサーバーで確かめる
+    /// 残高・広告利用券・公開中のパックがあれば、この端末はいまの userId を使い続ける（公開の取り消しなどは作者の認証が要るため）
+    /// どれも無ければ iCloud の元の userId へ切り替える
+    /// 通信できなければ判断を保留し、次の起動時や購入・公開などの前にもう一度確かめる（その間は userId を未確定として扱う）
+    private func checkLegacyUserId() async {
+        guard AzukiUserIdentifier.legacyCandidate(keychain: keychain) != nil else { return }
+        let currentId = userId
+        if 0 < credits {
+            keepLegacyUserId()
+            return
+        }
+        do {
+            // 認証トークンもここで取り直すので、続く公開パックの確認より先に呼ぶ
+            let status = try await AzukiApi.shared.fetchCreditStatus(userId: currentId)
+            guard userId == currentId else { return }
+            if 0 < status.balance || 0 < status.adRewardBalance {
+                overwrite(credits: status.balance)
+                keepLegacyUserId()
+                return
+            }
+            let published = try await AzukiApi.shared.fetchMyPublishedPacks()
+            guard userId == currentId else { return }
+            if published.isEmpty == false {
+                keepLegacyUserId()
+                return
+            }
+            // 失う状態が無いので、元の userId へ切り替える
+            if let restoredId = AzukiUserIdentifier.adoptLegacyCandidate(keychain: keychain) {
+                switchUserId(to: restoredId)
+            }
+            isUserIdConfirmed = AzukiUserIdentifier.isConfirmed(keychain: keychain)
+        } catch {
+            // 判断を保留する
+        }
+    }
+
+    private func keepLegacyUserId() {
+        AzukiUserIdentifier.keepLegacyUserId(keychain: keychain)
         isUserIdConfirmed = AzukiUserIdentifier.isConfirmed(keychain: keychain)
     }
 
@@ -93,6 +150,15 @@ final class CreditStore: ObservableObject {
     func ensureConfirmedUserId(timeout: TimeInterval = 5) async -> Bool {
         if isUserIdConfirmed { return true }
         let deadline = Date().addingTimeInterval(timeout)
+        if AzukiUserIdentifier.legacyCandidate(keychain: keychain) != nil {
+            // 旧版で作られた userId は、サーバーで確かめ終わるのを期限まで待つ
+            // 期限を過ぎたら未確定として返す（確認は裏で続け、終われば isUserIdConfirmed に反映される）
+            startLegacyUserIdCheckIfNeeded()
+            while legacyCheckTask != nil, Date() < deadline {
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
+            return isUserIdConfirmed
+        }
         while Date() < deadline {
             NSUbiquitousKeyValueStore.default.synchronize()
             // 通知を待たずに正式なキーの到着も確かめる（届いていれば切り替える）
@@ -213,13 +279,18 @@ private enum AzukiUserIdentifier {
     /// 正式なキーへ書くと、同期が遅れているだけの元の userId を上書きして失うため、こちらへ控える
     /// 端末故障などで仮のまま失っても、同じ Apple ID の新端末で復元できるようにする
     fileprivate static let provisionalBackupKey = "azuki.api.userId.provisionalBackup"
+    /// 旧版で作られた userId から切り替える候補（Keychain）。値があれば、サーバーで切り替えてよいか確かめるまで userId を未確定として扱う
+    private static let legacyCandidateKey = "azuki.api.userId.legacyCandidate"
+    /// 旧版で作られた userId を使い続けると決めたときの候補（Keychain）。同じ候補なら次から確かめない
+    private static let legacyKeptKey = "azuki.api.userId.legacyKept"
 
     /// userId を解決する。優先順位は以下（端末故障後も同じ Apple ID で復元できるようにする）:
     ///   1. Keychain にあればそれを採用（現役の残高・トークンとの整合を最優先）。
     ///      このとき iCloud 側が未設定なら iCloud にも写して、既存ユーザーも次回以降復元可能にする。
-    ///      iCloud に別の userId があり、この端末に残高が無ければ、iCloud の元の userId へ切り替える。
+    ///      iCloud に別の userId があれば、切り替え候補として控える（markLegacyCandidate）。
     ///      旧版は iCloud の同期前に新しい userId を発行して Keychain を優先していたため、元の userId が後から届いても使えずにいた端末を救う。
-    ///      残高があれば切り替えない（iCloud 対応より前から複数端末で別々のアカウントを使い、購入済みの場合に残高を失わないため）。
+    ///      ただし、いまの userId に残高・公開中のパックなどがあれば切り替えない（iCloud 対応より前から複数端末で別々のアカウントを使っていた場合）。
+    ///      その確認はサーバーが要るので、ここでは切り替えず、CreditStore.checkLegacyUserId で行う。
     ///      ただし仮の userId なら iCloud の正式なキーへは写さない。正式なキーに別の userId があれば、そちらが元のアカウントなので切り替える。
     ///   2. Keychain に無く iCloud の正式なキーにあれば、それを採用して Keychain へ書き戻す（機種変更後の復元）。
     ///   3. 正式なキーに無く控えのキーにあれば、それを仮の userId として採用する（仮のまま端末を替えた場合）。
@@ -230,7 +301,7 @@ private enum AzukiUserIdentifier {
     /// - Parameters:
     ///   - keychain: アプリ再インストール後も維持したい本来の保存先
     ///   - iCloud: 端末をまたいで userId を引き継ぐための iCloud Key-Value Store
-    ///   - hasLocalCredits: この端末に残高があるか（確定済みの userId を iCloud の userId へ切り替えてよいかの判断に使う）
+    ///   - hasLocalCredits: この端末に残高があるか（あれば確定済みの userId を切り替え候補にしない）
     /// - Returns: APIへ渡すuserIdと、iCloud の userId へ切り替えたか
     static func loadOrCreate(keychain: KeychainStorage,
                              iCloud: ICloudKeyValueStore = ICloudKeyValueStore(),
@@ -253,11 +324,9 @@ private enum AzukiUserIdentifier {
                 backUpProvisional(storedInKeychain, iCloud: iCloud)
                 return (storedInKeychain, false)
             }
-            // 旧版で作られた userId が iCloud の元の userId と違う → 残高が無ければ元の userId へ切り替える
-            if let storedInICloud, storedInICloud != storedInKeychain, !hasLocalCredits {
-                adopt(storedInICloud, keychain: keychain)
-                return (storedInICloud, true)
-            }
+            // 旧版で作られた userId が iCloud の元の userId と違う → 切り替えてよいかは後でサーバーで確かめる
+            markLegacyCandidate(current: storedInKeychain, storedInICloud: storedInICloud,
+                                keychain: keychain, hasLocalCredits: hasLocalCredits)
             // 既存ユーザーの移行: iCloud 未設定なら写しておく（次回以降の復元に備える）
             if storedInICloud == nil {
                 iCloud.saveString(storedInKeychain, forKey: storageKey)
@@ -294,7 +363,7 @@ private enum AzukiUserIdentifier {
 
     /// iCloud の変更通知を受けたときに、iCloud の元の userId へ切り替えるか、仮の userId を正式にするかを決める
     /// - 仮の userId：元の userId が届けば切り替え、初回同期でも無ければ正式にする
-    /// - 確定済みの userId（旧版で作られたもの）：元の userId が別に届き、残高が無ければ切り替える（loadOrCreate と同じ判断）
+    /// - 確定済みの userId（旧版で作られたもの）：元の userId が別に届けば切り替え候補として控える（loadOrCreate と同じ判断）
     /// - Parameters:
     ///   - isInitialSync: 初回同期の通知か。初回同期を終えても正式なキーに無いときだけ、本当に無いとみなして正式にする
     ///   - hasLocalCredits: この端末に残高があるか
@@ -306,11 +375,8 @@ private enum AzukiUserIdentifier {
             return .unchanged
         }
         guard isUnconfirmed(keychain: keychain) else {
-            if let storedInICloud = iCloud.loadString(forKey: storageKey),
-               storedInICloud != current, !hasLocalCredits {
-                adopt(storedInICloud, keychain: keychain)
-                return .switched(storedInICloud)
-            }
+            markLegacyCandidate(current: current, storedInICloud: iCloud.loadString(forKey: storageKey),
+                                keychain: keychain, hasLocalCredits: hasLocalCredits)
             return .unchanged
         }
         if let storedInICloud = iCloud.loadString(forKey: storageKey) {
@@ -337,15 +403,50 @@ private enum AzukiUserIdentifier {
         keychain.loadString(forKey: provisionalKey) == unconfirmedValue
     }
 
-    /// userId が確定しているか（仮の userId でない）
+    /// userId が確定しているか（仮の userId でなく、旧版の userId の切り替え確認待ちでもない）
     static func isConfirmed(keychain: KeychainStorage) -> Bool {
-        !isUnconfirmed(keychain: keychain)
+        !isUnconfirmed(keychain: keychain) && legacyCandidate(keychain: keychain) == nil
+    }
+
+    /// 旧版で作られた userId から切り替える候補（iCloud の元の userId）。サーバーでの確認待ちのときだけ値がある
+    static func legacyCandidate(keychain: KeychainStorage) -> String? {
+        keychain.loadString(forKey: legacyCandidateKey)
+    }
+
+    /// 確定済みの userId が iCloud の userId と違えば、切り替え候補として控える
+    /// この端末に残高があるとき、または同じ候補で使い続けると決めたあとは控えない
+    private static func markLegacyCandidate(current: String,
+                                            storedInICloud: String?,
+                                            keychain: KeychainStorage,
+                                            hasLocalCredits: Bool) {
+        guard let storedInICloud, storedInICloud != current,
+              !hasLocalCredits,
+              keychain.loadString(forKey: legacyKeptKey) != storedInICloud else {
+            keychain.deleteItem(forKey: legacyCandidateKey)
+            return
+        }
+        keychain.saveString(storedInICloud, forKey: legacyCandidateKey)
+    }
+
+    /// サーバーで確かめて失う状態が無かったので、切り替え候補の userId を採用する
+    static func adoptLegacyCandidate(keychain: KeychainStorage) -> String? {
+        guard let candidate = legacyCandidate(keychain: keychain) else { return nil }
+        adopt(candidate, keychain: keychain)
+        return candidate
+    }
+
+    /// いまの userId を使い続けると決めた（同じ候補では、次から確かめない）
+    static func keepLegacyUserId(keychain: KeychainStorage) {
+        guard let candidate = legacyCandidate(keychain: keychain) else { return }
+        keychain.saveString(candidate, forKey: legacyKeptKey)
+        keychain.deleteItem(forKey: legacyCandidateKey)
     }
 
     /// iCloud の userId を採用する（それまでの userId を捨てる）
     private static func adopt(_ id: String, keychain: KeychainStorage) {
         keychain.saveString(id, forKey: storageKey)
         keychain.deleteItem(forKey: provisionalKey)
+        keychain.deleteItem(forKey: legacyCandidateKey)
     }
 
     /// 仮の userId を iCloud の控えのキーへ保存する（既に控えがあれば上書きしない。別端末の仮の userId を消さないため）
@@ -366,6 +467,8 @@ private enum AzukiUserIdentifier {
         // SecItemDeleteに任せ、存在しない場合でもエラーとしない
         keychain.deleteItem(forKey: storageKey)
         keychain.deleteItem(forKey: provisionalKey)
+        keychain.deleteItem(forKey: legacyCandidateKey)
+        keychain.deleteItem(forKey: legacyKeptKey)
         iCloud.removeValue(forKey: storageKey)
         iCloud.removeValue(forKey: provisionalBackupKey)
     }
@@ -381,6 +484,7 @@ private enum AzukiUserIdentifier {
                     iCloud: ICloudKeyValueStore = ICloudKeyValueStore()) {
         keychain.saveString(id, forKey: storageKey)
         keychain.deleteItem(forKey: provisionalKey)
+        keychain.deleteItem(forKey: legacyCandidateKey)
         iCloud.saveString(id, forKey: storageKey)
     }
     #endif
