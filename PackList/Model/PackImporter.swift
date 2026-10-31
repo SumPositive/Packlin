@@ -68,13 +68,16 @@ struct PackImporter {
     /// 新規にパックを取り込む（同名/同 ID パックが既存に無い場合）
     /// - すべての入力は `SanitizedDTO` 経由でクランプされる
     /// - 既存の上限超過データも全件復元する
+    /// - Parameter id: パックの ID。nil なら新しく採番する（単体パック・公開パックの取り込み）
+    ///   バックアップ復元はバックアップ内の ID を渡す。同じバックアップを再び復元したとき、ID で一致して上書きになり重複しないように
     @discardableResult
-    static func insertPack(from dto: PackJsonDTO, into context: ModelContext, order: Int) -> M1Pack {
+    static func insertPack(from dto: PackJsonDTO, into context: ModelContext, order: Int, id: M1Pack.ID? = nil) -> M1Pack {
         // === 文字列と数値を正規化し、件数は保持する ===
         // ここで安全な値に正規化することで、以降の処理は信頼された前提で書ける
         let sanitized = SanitizedDTO(from: dto)
 
         let pack = M1Pack(
+            id: id ?? shortUUID(),
             name: sanitized.name,
             memo: sanitized.memo,
             createdAt: sanitized.createdAt,

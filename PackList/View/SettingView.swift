@@ -859,7 +859,12 @@ struct SettingView: View {
             let newOrder = sparseOrderForInsertion(items: orderedPacks, index: insertionIndex) {
                 normalizeSparseOrders(orderedPacks)
             }
-            let newPack = PackImporter.insertPack(from: dto, into: modelContext, order: newOrder)
+            // バックアップ内の ID をそのまま使う（新しく採番すると、同じバックアップを再び復元したときに一致せず重複する）
+            // 空や長すぎる ID は壊れたデータとみなして新しく採番する
+            let restoredId = dto.id.flatMap { id in
+                (!id.isEmpty && id.count <= 64) ? id : nil
+            }
+            let newPack = PackImporter.insertPack(from: dto, into: modelContext, order: newOrder, id: restoredId)
             existingPacks.append(newPack)
             return (newPack, false)
         }
