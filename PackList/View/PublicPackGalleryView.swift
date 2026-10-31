@@ -513,6 +513,19 @@ struct PublicPackGalleryView: View {
     /// リワード広告ゲートを挟み、視聴完了後に取込する。それ以外はそのまま取込む。
     private func handleImportTapped(_ item: PublicPackSummary) {
         if rowStatus[item.id] != nil { return }
+        Task {
+            // 仮の userId のうちは取り込ませない（広告を見せる前に止める）
+            guard await creditStore.ensureConfirmedUserId() else {
+                showUserIdNotConfirmed(for: item)
+                return
+            }
+            startImport(item)
+        }
+    }
+
+    /// 取り込みを始める。3回ごとに広告ゲートを挟む
+    private func startImport(_ item: PublicPackSummary) {
+        if rowStatus[item.id] != nil { return }
         let nextCount = importCount + 1
         if nextCount % PUBLIC_PACK_IMPORT_AD_INTERVAL == 0 {
             // 3回ごと：広告ゲートを表示。視聴完了で pendingImportItem を取り込む
@@ -529,6 +542,11 @@ struct PublicPackGalleryView: View {
     @MainActor
     private func importPack(_ item: PublicPackSummary, countsTowardAdGate: Bool) async {
         if rowStatus[item.id] != nil { return }
+        // 送る直前にも確かめる（広告を見ている間などに状態が変わる経路を塞ぐ）
+        guard await creditStore.ensureConfirmedUserId() else {
+            showUserIdNotConfirmed(for: item)
+            return
+        }
         rowStatus[item.id] = .loading
         do {
             let userId = creditStore.regenerateUserIdIfNeeded()
@@ -584,6 +602,11 @@ struct PublicPackGalleryView: View {
             logPublicPackError(action: "delete", error)
             setRowState(item.id, .error(String(localized: "network.seems.down.please.try.again")), autoClearAfter: 2.5)
         }
+    }
+
+    /// userId が仮のまま確定しないので取り込めないことを、その行に表示する（もう一度押せば再試行）
+    private func showUserIdNotConfirmed(for item: PublicPackSummary) {
+        setRowState(item.id, .error(String(localized: "user.id.confirming.message")), autoClearAfter: 4.0)
     }
 
     /// 指定した publishedId を持つローカルパックの「公開中」フラグをクリアする。

@@ -265,6 +265,15 @@ struct AppMain: App {
             return false
         }
 
+        // 仮の userId のうちは取り込ませない（リンクをもう一度開けば再試行できる）
+        guard await creditStore.ensureConfirmedUserId() else {
+            publicPackLinkAlert = PublicPackLinkAlert(
+                title: String(localized: "user.id.confirming.title"),
+                message: String(localized: "user.id.confirming.message")
+            )
+            return false
+        }
+
         do {
             let userID = creditStore.regenerateUserIdIfNeeded()
             let dto = try await AzukiApi.shared.importPublicPack(publishedId: publishedID, userId: userID)

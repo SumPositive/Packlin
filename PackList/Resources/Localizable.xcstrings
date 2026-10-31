@@ -17861,6 +17861,214 @@
           }
         }
       }
+    },
+    "retry" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "もう一度試す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試一次"
+          }
+        }
+      }
+    },
+    "user.id.confirming.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konto wird geprüft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking your account"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando tu cuenta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification de votre compte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica dell’account in corso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アカウントを確認しています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계정을 확인하는 중입니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在確認帳號"
+          }
+        }
+      }
+    },
+    "user.id.confirming.message" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warte auf deine Kontodaten aus iCloud\n\nBitte warte einen Moment und versuche es erneut"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for your account info from iCloud\n\nPlease wait a moment and try again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando la información de tu cuenta desde iCloud\n\nEspera un momento y vuelve a intentarlo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente des informations de votre compte depuis iCloud\n\nPatientez un instant, puis réessayez"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In attesa delle informazioni dell’account da iCloud\n\nAttendi un momento e riprova"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud からアカウント情報が届くのを待っています\n\n少し待ってから、もう一度お試しください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud에서 계정 정보가 오기를 기다리고 있습니다\n\n잠시 후 다시 시도해 주세요"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待從 iCloud 取得帳號資訊\n\n請稍候再試一次"
+          }
+        }
+      }
+    },
+    "user.id.confirming.purchase.message" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Kauf ist eingegangen\n\nDie KI-Tickets werden gutgeschrieben, sobald deine Kontodaten aus iCloud da sind\n\nBitte warte einen Moment und versuche es erneut"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your purchase has been received\n\nYour AI tickets will be added once your account info arrives from iCloud\n\nPlease wait a moment and try again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hemos recibido tu compra\n\nTus tickets de IA se añadirán cuando llegue la información de tu cuenta desde iCloud\n\nEspera un momento y vuelve a intentarlo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre achat a bien été reçu\n\nVos tickets IA seront ajoutés dès que les informations de votre compte arriveront depuis iCloud\n\nPatientez un instant, puis réessayez"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tuo acquisto è stato ricevuto\n\nI ticket IA verranno aggiunti appena arrivano le informazioni dell’account da iCloud\n\nAttendi un momento e riprova"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入は受け付けています\n\niCloud からアカウント情報が届いたら、AI利用券に反映します\n\n少し待ってから、もう一度お試しください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구매가 접수되었습니다\n\niCloud에서 계정 정보가 오면 AI 이용권에 반영됩니다\n\n잠시 후 다시 시도해 주세요"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已收到你的購買\n\n從 iCloud 取得帳號資訊後，就會加到 AI 使用券\n\n請稍候再試一次"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

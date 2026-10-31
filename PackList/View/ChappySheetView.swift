@@ -522,7 +522,16 @@ struct ChappyView: View {
                 .stroke(Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.2), lineWidth: 0.5)
         )
         .alert(item: $alertState) { alert in
-            Alert(
+            if let retry = alert.retryAction {
+                // userId の確定待ち：もう一度試す／キャンセル
+                return Alert(
+                    title: Text(alert.title),
+                    message: Text(alert.message),
+                    primaryButton: .default(Text("retry"), action: retry),
+                    secondaryButton: .cancel(Text("cancel"))
+                )
+            }
+            return Alert(
                 title: Text(alert.title),
                 message: Text(alert.message),
                 dismissButton: .default(Text("OK"), action: {
@@ -557,8 +566,15 @@ struct ChappyView: View {
         // キーボードを閉じ、広告シートを提示する
         requirementFocus.wrappedValue = false
         inlineGenerationFeedback = nil
-        pendingRewardRequirement = trimmedRequirement
-        isPresentingAdRewardSheet = true
+        Task {
+            // 広告の報酬は userId に付くので、仮の userId のうちは見せない（後で元の userId へ切り替わると失うため）
+            guard await creditStore.ensureConfirmedUserId() else {
+                alertState = .userIdNotConfirmed(retry: { startRewardedGenerationFlow() })
+                return
+            }
+            pendingRewardRequirement = trimmedRequirement
+            isPresentingAdRewardSheet = true
+        }
     }
 
     /// 広告視聴完了後にGPT-4o-miniで送信を始める
@@ -595,6 +611,17 @@ struct ChappyView: View {
         // APIへは端末の言語コードをパラメータとして渡し、プロンプトの文面を汚さない
         let languageCode = deviceLanguageCode()
         Task {
+            // 仮の userId のうちはクレジットを消費させない（後で元の userId へ切り替わると、残高の整合が取れなくなるため）
+            guard await creditStore.ensureConfirmedUserId() else {
+                await MainActor.run {
+                    isGenerating = false
+                    isGeneratingFromReward = false
+                    alertState = .userIdNotConfirmed(retry: {
+                        generatePackWithOpenAI(requirementOverride: requirementOverride, isTrial: isTrial)
+                    })
+                }
+                return
+            }
             // サーバー送信前にuserIdの欠落を必ず埋め、デバッグ操作で消えた場合もここで再発行して連携を成功させる
             let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
             // deferで生成処理終了後の共通後片付け（ローカル残高の戻しとローディング解除）をまとめる
@@ -887,6 +914,10 @@ struct ChappyView: View {
             print("[AzukiApi] unexpected error while recovering via credit check: \(error)")
             #endif
         }
+        // 仮の userId のうちは購入履歴をサーバーへ送らない（仮の userId に購入分が付いてしまうため）
+        guard await creditStore.ensureConfirmedUserId() else {
+            return false
+        }
         var didAttemptVerification = false
         var didRecoverToken = false
 
@@ -993,6 +1024,16 @@ struct ChappyView: View {
                 await MainActor.run {
                     alertState = .purchaseBlockedByRemaining
                     processingProductId = nil
+                }
+                return
+            }
+
+            // 仮の userId のうちは購入を始めさせない（購入分はサーバーで userId に付くため、後で切り替わると使えなくなる）
+            await MainActor.run { processingProductId = productId }
+            guard await creditStore.ensureConfirmedUserId() else {
+                await MainActor.run {
+                    processingProductId = nil
+                    alertState = .userIdNotConfirmed(retry: { purchaseCredits(option: option) })
                 }
                 return
             }
@@ -1285,6 +1326,17 @@ struct ChappyView: View {
         // 1. StoreKitトランザクションの完了はサーバー検証の成功を確認してから行い、
         //    検証に失敗したケースではfinishを呼ばずに中断できるようにする
 
+        // 1.5 購入結果をサーバーへ送る直前にも userId の確定を確かめる（購入中に仮の userId のままだった経路を塞ぐ）
+        //     確定していなければ送らず、トランザクションも finish しない（次回起動時などに未完了の取引として拾い直す）
+        guard await creditStore.ensureConfirmedUserId() else {
+            await MainActor.run {
+                alertState = .userIdNotConfirmedPurchasePending(retry: {
+                    Task { await recoverUnfinishedTransactionsForPurchase() }
+                })
+            }
+            return
+        }
+
         // 2. サーバーへ送信するためのユーザーIDやレシートデータをMainActorから取り出す
         //    デバッグ操作などで一時的に空になっていても、ここで再発行してサーバー連携を確実に成功させる
         let userId = await MainActor.run { creditStore.regenerateUserIdIfNeeded() }
@@ -1524,6 +1576,20 @@ struct ChappyView: View {
         case requirementMissing
         /// AI利用券が不足して送信できない場合
         case creditRequired
+        /// userId が仮のまま確定しないので、購入・広告・生成を始められない場合（再試行できる）
+        case userIdNotConfirmed(retry: () -> Void)
+        /// 購入は済んだが userId が確定しないので、サーバーへの反映を待っている場合（再試行できる）
+        case userIdNotConfirmedPurchasePending(retry: () -> Void)
+
+        /// 再試行ボタンを出すときの処理
+        var retryAction: (() -> Void)? {
+            switch self {
+            case .userIdNotConfirmed(let retry), .userIdNotConfirmedPurchasePending(let retry):
+                return retry
+            default:
+                return nil
+            }
+        }
 
         var id: String {
             switch self {
@@ -1539,6 +1605,10 @@ struct ChappyView: View {
                 return "ai-requirementMissing"
             case .creditRequired:
                 return "ai-creditRequired"
+            case .userIdNotConfirmed:
+                return "ai-userIdNotConfirmed"
+            case .userIdNotConfirmedPurchasePending:
+                return "ai-userIdNotConfirmedPurchasePending"
             }
         }
 
@@ -1560,6 +1630,8 @@ struct ChappyView: View {
                     return AI_TICKET_PURCHASE_ENABLED
                         ? String(localized: "please.buy.ai.ticket")
                         : String(localized: "short.ai.tickets.watch.ad")
+                case .userIdNotConfirmed, .userIdNotConfirmedPurchasePending:
+                    return String(localized: "user.id.confirming.title")
             }
         }
 
@@ -1577,6 +1649,10 @@ struct ChappyView: View {
                     return "" //String(localized: "先に要望を入力してください")
                 case .creditRequired:
                     return "" //String(localized: "AI利用券を購入してください")
+                case .userIdNotConfirmed:
+                    return String(localized: "user.id.confirming.message")
+                case .userIdNotConfirmedPurchasePending:
+                    return String(localized: "user.id.confirming.purchase.message")
             }
         }
     }

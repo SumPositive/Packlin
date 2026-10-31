@@ -61,6 +61,8 @@ struct PackEditView: View {
     @State private var nicknameDraft = ""
     @State private var isPublishing = false
     @State private var showPublishResult = false
+    /// userId が仮のまま確定しないので公開できないときの案内（再試行できる）
+    @State private var showUserIdNotConfirmed = false
     @State private var publishResultMessage = ""
     @State private var showPublishHelp = false
 
@@ -161,6 +163,13 @@ struct PackEditView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(publishResultMessage)
+        }
+        // userId の確定待ち
+        .alert("user.id.confirming.title", isPresented: $showUserIdNotConfirmed) {
+            Button("retry") { startPublish() }
+            Button("cancel", role: .cancel) {}
+        } message: {
+            Text("user.id.confirming.message")
         }
         // 公開中は全画面プログレスを重ねて操作を遮断する
         .overlay {
@@ -563,11 +572,18 @@ struct PackEditView: View {
     /// 公開保存ボタン。ニックネーム未設定なら先に入力させ、設定済みなら確認へ進む
     private func startPublish() {
         if isPublishing { return }
-        if authorNicknameConfigured {
-            showPublishConfirm = true
-        } else {
-            nicknameDraft = authorNickname
-            showNicknamePrompt = true
+        Task {
+            // 仮の userId のうちは公開させない（後で元の userId へ切り替わると、公開したパックを取り消せなくなるため）
+            guard await creditStore.ensureConfirmedUserId() else {
+                showUserIdNotConfirmed = true
+                return
+            }
+            if authorNicknameConfigured {
+                showPublishConfirm = true
+            } else {
+                nicknameDraft = authorNickname
+                showNicknamePrompt = true
+            }
         }
     }
 
@@ -589,6 +605,11 @@ struct PackEditView: View {
         if isPublishing { return }
         isPublishing = true
         defer { isPublishing = false }
+        // 送る直前にも確かめる（確認ダイアログを出している間に状態が変わる経路を塞ぐ）
+        guard await creditStore.ensureConfirmedUserId() else {
+            showUserIdNotConfirmed = true
+            return
+        }
         do {
             let userId = creditStore.regenerateUserIdIfNeeded()
             // 認証必須エンドポイントのため、トークン未取得ならまず credit/check で発行する
