@@ -460,6 +460,7 @@ struct ItemEditView: View {
                                 } label: {
                                     Label("item.quantity.dialSettings", systemImage: "slider.horizontal.3")
                                         .font(.caption.weight(.semibold))
+                                        .iconOnlyLabel(displayMode == .expert)
                                 }
                                 .buttonStyle(.borderless)
                             }
@@ -472,6 +473,8 @@ struct ItemEditView: View {
                                 Label(quantityUsesDial ? "item.quantity.mode.stepper" : "item.quantity.mode.dial",
                                       systemImage: quantityUsesDial ? "plus.forwardslash.minus" : "dial.medium")
                                     .font(.caption.weight(.semibold))
+                                    // 達人はアイコンだけにする（文字は VoiceOver には読まれる）
+                                    .iconOnlyLabel(displayMode == .expert)
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -1630,5 +1633,17 @@ private struct EditorSection<Content: View>: View {
         .helpTextSheet(isPresented: $showHelp,
                        text: helpText ?? "",
                        fontScale: fontScale)
+    }
+}
+
+private extension View {
+    /// isOn のときラベルをアイコンだけにする
+    @ViewBuilder
+    func iconOnlyLabel(_ isOn: Bool) -> some View {
+        if isOn {
+            labelStyle(.iconOnly)
+        } else {
+            self
+        }
     }
 }

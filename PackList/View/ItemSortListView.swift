@@ -63,6 +63,8 @@ struct ItemSortListView: View {
     /// 検索中に一覧をタップしてキーボードを閉じる覆いを、ヘッダーより下だけにするため
     @State private var searchHeaderBottom: CGFloat = 0
     @State private var isShowingManualOrderHelp = false
+    /// 末尾追加の行（まとめて操作・追加・合計重量）の説明
+    @State private var isShowingAppendRowHelp = false
     /// 逆順にしている並べ替え条件。同じ条件をもう一度選ぶと切り替わり、別の条件を選ぶと正順へ戻す
     @AppStorage(AppStorageKey.itemBrowseReversedSort) private var reversedSortRaw = ""
     private var isSortReversed: Bool { !isManualOrder && reversedSortRaw == sortOption.rawValue }
@@ -272,8 +274,9 @@ struct ItemSortListView: View {
                             AppendAtEndRowView(systemImage: "plus.circle",
                                                fontScale: fontScale,
                                                showsText: isBeginnerMode,
-                                               trailingAccessory: AnyView(displayedWeightTotal),
-                                               leadingAccessory: isBulkMode ? nil : AnyView(bulkStartButton)) {
+                                               trailingAccessory: AnyView(appendRowTrailing),
+                                               leadingAccessory: isBulkMode ? nil : AnyView(bulkStartButton),
+                                               showsCapsule: true) {
                                 addItemAndNavigate(source: "item_browse_append_end_row")
                             }
                             .disabled(isBulkMode || !pack.canAddItems())
@@ -509,7 +512,13 @@ struct ItemSortListView: View {
         }
         // 並べ替え条件の説明
         .helpTextSheet(isPresented: $isShowingManualOrderHelp,
-                       text: "item.sort.manual.help",
+                       sectionedText: "item.sort.manual.help",
+                       fontScale: fontScale)
+        // 末尾追加の行の説明
+        .helpTextSheet(isPresented: $isShowingAppendRowHelp,
+                       sectionedText: "item.append.row.help",
+                       // まとめて操作・追加 (+)・合計重量の順
+                       sectionIcons: ["checklist", "plus.circle", "scalemass"],
                        fontScale: fontScale)
         .sheet(isPresented: $isShowingBulkTagSheet) {
             BulkTagSheet(pack: pack, items: selectedBulkItems, mode: .add) { tags in
@@ -623,6 +632,18 @@ struct ItemSortListView: View {
         refreshDisplayedItems()
     }
 
+    /// 末尾追加の行の右端：合計重量と、この行の説明を開く (?)
+    private var appendRowTrailing: some View {
+        HStack(spacing: 8) {
+            displayedWeightTotal
+            HelpQuestionButton(accessibilityLabel: "bulk.select") {
+                isShowingAppendRowHelp = true
+            }
+            // 行ごと無効になるまとめて選択中は押せないので出さない
+            .opacity(isBulkMode ? 0 : 1)
+        }
+    }
+
     /// 表示中（絞り込み後）のアイテムの合計重量。パック行と同じ表記で末尾追加の行の右端に出す
     private var displayedWeightTotal: some View {
         let items = filteredItems
@@ -639,8 +660,10 @@ struct ItemSortListView: View {
     /// 「まとめて」選択を始めるボタン（末尾追加の行の左端）
     private var bulkStartButton: some View {
         Button(action: beginBulkMode) {
-            Text("bulk.select")
-                .font(.footnote.weight(.semibold))
+            // 達人はアイコンだけにする（文字は VoiceOver には読まれる）
+            Label("bulk.select", systemImage: "checklist")
+                .labelStyle(BulkStartLabelStyle(showsTitle: isBeginnerMode))
+                .font(.caption)
                 .foregroundStyle(COLOR_BULK)
                 .lineLimit(1)
                 .fixedSize()
@@ -657,6 +680,7 @@ struct ItemSortListView: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(Text("bulk.select"))
         .disabled(filteredItems.isEmpty)
         .cappedAtLargeFontSize()
     }
@@ -1381,4 +1405,18 @@ enum ItemSortOption: String, CaseIterable, Identifiable, Codable {
 
 #Preview {
     ItemSortListView(pack: M1Pack(name: "", order: 0), sortOption: .lackCount)
+}
+
+/// 「まとめて操作」ボタンのラベル。アイコンと文字の間を詰め、達人はアイコンだけにする
+private struct BulkStartLabelStyle: LabelStyle {
+    let showsTitle: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 3) {
+            configuration.icon
+            if showsTitle {
+                configuration.title
+            }
+        }
+    }
 }

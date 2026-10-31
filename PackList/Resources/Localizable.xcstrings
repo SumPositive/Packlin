@@ -17809,6 +17809,58 @@
           }
         }
       }
+    },
+    "item.append.row.help" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Mehrere bearbeiten**\nWähle mehrere Objekte aus und bearbeite sie gemeinsam\n\nTippe darauf, um die Auswahl zu starten, und tippe dann auf die Zeilen\n\nDu kannst den ausgewählten Objekten Tags geben oder entfernen, sie duplizieren oder löschen\n\nTippe auf „Abbrechen“, um die Auswahl zu beenden\n\n**Am Ende hinzufügen**\nFügt ein neues Objekt am Ende hinzu und öffnet seine Details\n\nEs wird immer am Ende hinzugefügt, unabhängig von der Einstellung „Einfügeposition“\n\nBeim Filtern nach Tag bekommt das neue Objekt diesen Tag und wird hinter dem letzten passenden Objekt eingefügt\n\n**Gesamtgewicht**\nAddiert das Gewicht der angezeigten Objekte (Bestand × Gewicht pro Objekt)\n\nBeim Filtern zählen nur die angezeigten Objekte\n\nEs wird blau, wenn jedes Objekt die benötigte Anzahl erreicht"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Bulk edit**\nSelect several items and act on them at once\n\nTap it to start selecting, then tap rows to select them\n\nYou can add or remove tags, duplicate, or delete the selected items\n\nTap “Cancel” to stop selecting\n\n**Add to end**\nAdds a new item at the end and opens its details\n\nIt always adds to the end, whatever the “Insert position” setting\n\nWhile filtering by tag, the new item gets that tag and goes after the last matching item\n\n**Total weight**\nAdds up the weight of the items shown (stock × weight per item)\n\nWhile filtering, only the items shown are counted\n\nIt turns blue when every item reaches its required count"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Editar varios**\nSelecciona varios ítems y actúa sobre todos a la vez\n\nTócalo para empezar a seleccionar y luego toca las filas\n\nPuedes poner o quitar etiquetas, duplicar o eliminar los ítems seleccionados\n\nToca «Cancelar» para dejar de seleccionar\n\n**Añadir al final**\nAñade un ítem nuevo al final y abre sus detalles\n\nSiempre se añade al final, sea cual sea el ajuste «Posición de inserción»\n\nAl filtrar por etiqueta, el ítem nuevo lleva esa etiqueta y va después del último ítem que coincide\n\n**Peso total**\nSuma el peso de los ítems visibles (stock × peso por ítem)\n\nAl filtrar, solo cuenta los ítems visibles\n\nSe vuelve azul cuando todos los ítems llegan a la cantidad necesaria"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Modifier plusieurs**\nSélectionnez plusieurs éléments et agissez sur tous en même temps\n\nTouchez-le pour commencer la sélection, puis touchez les lignes\n\nVous pouvez ajouter ou retirer des tags, dupliquer ou supprimer les éléments sélectionnés\n\nTouchez « Annuler » pour arrêter la sélection\n\n**Ajouter à la fin**\nAjoute un nouvel élément à la fin et ouvre ses détails\n\nIl est toujours ajouté à la fin, quel que soit le réglage « Position d’insertion »\n\nLorsque vous filtrez par tag, le nouvel élément reçoit ce tag et se place après le dernier élément correspondant\n\n**Poids total**\nAdditionne le poids des éléments affichés (stock × poids unitaire)\n\nLors d’un filtrage, seuls les éléments affichés sont comptés\n\nIl devient bleu quand chaque élément atteint la quantité nécessaire"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Modifica multipla**\nSeleziona più elementi e agisci su tutti insieme\n\nToccalo per iniziare a selezionare, poi tocca le righe\n\nPuoi aggiungere o togliere tag, duplicare o eliminare gli elementi selezionati\n\nTocca «Annulla» per smettere di selezionare\n\n**Aggiungi in fondo**\nAggiunge un nuovo elemento in fondo e ne apre i dettagli\n\nViene sempre aggiunto in fondo, qualunque sia l’impostazione «Posizione di inserimento»\n\nQuando filtri per tag, il nuovo elemento riceve quel tag e va dopo l’ultimo elemento corrispondente\n\n**Peso totale**\nSomma il peso degli elementi visibili (scorte × peso unitario)\n\nQuando filtri, conta solo gli elementi visibili\n\nDiventa blu quando ogni elemento raggiunge la quantità necessaria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**まとめて操作**\n複数のアイテムを選んで、まとめて操作します\n\n押すと選択モードになり、行をタップして選べます\n\n選んだアイテムに、タグを付ける・外す、複製、削除ができます\n\n「キャンセル」を押すと、選択モードを終わります\n\n**末尾に追加**\n新しいアイテムを末尾に追加して、詳細画面を開きます\n\n設定の「挿入位置」に関わらず、いつも末尾に追加します\n\nタグで絞り込み中は、そのタグを付けて、絞り込みに合うアイテムの最後に追加します\n\n**合計重量**\n表示中のアイテムの重量（在庫数 × 個重量）を合計します\n\n絞り込み中は、見えているアイテムだけを合計します\n\nすべてのアイテムが必要数に届くと、青くなります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**한꺼번에 작업**\n여러 항목을 골라 한꺼번에 작업합니다\n\n누르면 선택 모드가 되고, 행을 탭해 고를 수 있습니다\n\n고른 항목에 태그 붙이기·떼기, 복제, 삭제를 할 수 있습니다\n\n‘취소’를 누르면 선택 모드를 끝냅니다\n\n**끝에 추가**\n새 항목을 끝에 추가하고 상세 화면을 엽니다\n\n설정의 ‘삽입 위치’와 관계없이 항상 끝에 추가합니다\n\n태그로 필터링 중에는 그 태그를 붙여, 필터에 맞는 마지막 항목 뒤에 추가합니다\n\n**합계 중량**\n표시된 항목의 무게(재고 수 × 개당 무게)를 합계합니다\n\n필터링 중에는 보이는 항목만 합계합니다\n\n모든 항목이 필요 수량에 도달하면 파란색이 됩니다"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**批次操作**\n選取多個物品，一次進行操作\n\n點按後進入選取模式，點按各列即可選取\n\n可為選取的物品加上或移除標籤、複製或刪除\n\n點按「取消」即可結束選取模式\n\n**加到末尾**\n在末尾新增物品並開啟詳細畫面\n\n無論「插入位置」設定為何，一律加到末尾\n\n以標籤篩選時，新物品會加上該標籤，並排在符合篩選的最後一個物品之後\n\n**總重量**\n加總顯示中物品的重量（庫存數 × 單件重量）\n\n篩選時只加總顯示的物品\n\n所有物品都達到需要數量時會變成藍色"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

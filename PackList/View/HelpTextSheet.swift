@@ -14,6 +14,8 @@ import SwiftUI
 struct HelpTextSheet: View {
     /// 説明文（1文1段落、空行区切り）
     let text: LocalizedStringKey
+    /// 見出しごとに区切った説明（並べ替え条件の説明など）。あれば text の代わりにカードで並べる
+    var sections: [HelpTextSection]? = nil
     /// 説明の下に置く下線付きリンク（「設定アプリで変更できます」など）
     var link: AttributedString? = nil
     /// 中身の高さを親へ返す（シートを中身ぴったりの高さで開くため）
@@ -40,10 +42,40 @@ struct HelpTextSheet: View {
                 .buttonStyle(.borderless)
                 // 44pt のタップ範囲のうち上の余白ぶんを詰め、説明との間を空けすぎない
                 .padding(.vertical, -8)
-                Text(text)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let sections {
+                    // 見出しとその範囲が分かるよう、見出しごとにカードで囲む
+                    ForEach(sections) { section in
+                        VStack(alignment: .leading, spacing: 8) {
+                            // 見出しの先頭に、画面上のボタンと同じアイコンを添える（あれば）
+                            HStack(spacing: 6) {
+                                if let systemImage = section.systemImage {
+                                    Image(systemName: systemImage)
+                                        .foregroundStyle(.tint)
+                                }
+                                Text(section.title)
+                                    .foregroundStyle(.primary)
+                            }
+                            .font(.headline)
+                            ForEach(section.paragraphs, id: \.self) { paragraph in
+                                Text(paragraph)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(.secondarySystemBackground))
+                        )
+                    }
+                } else {
+                    Text(text)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if let link {
                     Text(link)
                         .font(.subheadline)
@@ -63,10 +95,45 @@ struct HelpTextSheet: View {
     }
 }
 
+/// 見出しとその下の段落（ヘルプを見出しごとのカードで見せるため）
+struct HelpTextSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let paragraphs: [String]
+    /// 見出しの先頭に出すアイコン（SF Symbols の名前）
+    var systemImage: String? = nil
+
+    /// 「**見出し**\n本文」で始まる段落から次の見出しまでを1つにまとめる
+    /// 見出しの無い先頭の段落は、見出し空のまとまりにする
+    static func parse(_ text: String) -> [HelpTextSection] {
+        var result: [HelpTextSection] = []
+        var title = ""
+        var paragraphs: [String] = []
+        func flush() {
+            if !title.isEmpty || !paragraphs.isEmpty {
+                result.append(HelpTextSection(title: title, paragraphs: paragraphs))
+            }
+        }
+        for block in text.components(separatedBy: "\n\n") {
+            if block.hasPrefix("**"), let end = block.range(of: "**", range: block.index(block.startIndex, offsetBy: 2)..<block.endIndex) {
+                flush()
+                title = String(block[block.index(block.startIndex, offsetBy: 2)..<end.lowerBound])
+                let rest = block[end.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+                paragraphs = rest.isEmpty ? [] : [rest]
+            } else {
+                paragraphs.append(block)
+            }
+        }
+        flush()
+        return result
+    }
+}
+
 /// HelpTextSheet を中身の高さで開く
 private struct HelpTextSheetModifier: ViewModifier {
     @Binding var isPresented: Bool
     let text: LocalizedStringKey
+    var sections: [HelpTextSection]? = nil
     let link: AttributedString?
     let fontScale: FontScale
     /// 中身の高さ（実測）
@@ -81,7 +148,7 @@ private struct HelpTextSheetModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.sheet(isPresented: $isPresented) {
-            HelpTextSheet(text: text, link: link) { height in
+            HelpTextSheet(text: text, sections: sections, link: link) { height in
                 contentHeight = height
             }
             // シートは親の文字サイズを引き継がないので明示適用する
@@ -95,6 +162,22 @@ private struct HelpTextSheetModifier: ViewModifier {
 }
 
 extension View {
+    /// 「**見出し**」で区切った説明を、見出しごとのカードで出すヘルプシート
+    /// - sectionIcons: 見出しの先頭に出すアイコンを見出しの順に並べる（言語によらず同じ順なので順番で対応させる）
+    func helpTextSheet(isPresented: Binding<Bool>,
+                       sectionedText key: String.LocalizationValue,
+                       sectionIcons: [String] = [],
+                       fontScale: FontScale) -> some View {
+        let text = String(localized: key)
+        var sections = HelpTextSection.parse(text)
+        for index in sections.indices where index < sectionIcons.count {
+            sections[index].systemImage = sectionIcons[index]
+        }
+        return modifier(HelpTextSheetModifier(isPresented: isPresented, text: LocalizedStringKey(text),
+                                              sections: sections,
+                                              link: nil, fontScale: fontScale))
+    }
+
     /// 説明文だけのヘルプシートを出す
     func helpTextSheet(isPresented: Binding<Bool>,
                        text: LocalizedStringKey,

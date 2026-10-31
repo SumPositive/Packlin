@@ -26,6 +26,8 @@ struct AppendAtEndRowView: View {
     var trailingAccessory: AnyView? = nil
     /// 行の左端に添える操作（アイテム縦覧の「まとめて」など）。追加ボタンは中央のまま
     var leadingAccessory: AnyView? = nil
+    /// 追加ボタンを薄い塗りと枠のカプセルで囲む（アイテム縦覧で左の「まとめて操作」と見た目を揃える）
+    var showsCapsule = false
     let action: () -> Void
 
     private var hasAccessory: Bool { leadingAccessory != nil || trailingAccessory != nil }
@@ -48,7 +50,9 @@ struct AppendAtEndRowView: View {
                 Button(action: action) {
                     // 下の余白・背景をまとめて付けるため Group で包む
                     Group {
-                        if showsText {
+                        if showsCapsule {
+                            capsuleLabel
+                        } else if showsText {
                             // 初心者ヘルプの文字は折り返さない。幅が足りなければ、アイコンの下に小さく2行まで→アイコンだけ、の順に切り替える
                             // （左右に「まとめて」や合計重量が並ぶと、長い言語で1文字ずつ縦に崩れるため）
                             ViewThatFits(in: .horizontal) {
@@ -74,8 +78,8 @@ struct AppendAtEndRowView: View {
                             addIcon
                         }
                     }
-                    // アイコンと文字を含む左右40ptだけをタップ範囲にする（左右に添える表示があるときは詰める）
-                    .padding(.horizontal, hasAccessory ? 24 : APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING)
+                    // アイコンと文字を含む左右40ptだけをタップ範囲にする（左右に添える表示やカプセルがあるときは詰める）
+                    .padding(.horizontal, showsCapsule ? 8 : (hasAccessory ? 24 : APPEND_AT_END_ROW_HORIZONTAL_TAP_PADDING))
                     .padding(.vertical, APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
                     // 背景のカプセルは付けない（アイコンだけにする。押せる範囲は上の余白ぶん広いまま）
                     .padding(.vertical, APPEND_AT_END_ROW_VERTICAL_PADDING - APPEND_AT_END_ROW_CAPSULE_VERTICAL_PADDING)
@@ -104,6 +108,36 @@ struct AppendAtEndRowView: View {
             COLOR_LIST_SEPARATOR
                 .frame(height: LIST_SEPARATOR_THICKNESS)
         }
+    }
+
+    /// カプセルで囲む追加ボタン。左の「まとめて操作」と同じ文字の大きさ・余白にして高さと見た目を揃える
+    /// アイコンは丸の無い＋にする（丸付きだとカプセルの中で二重の枠になり、背も高くなるため）
+    private var capsuleLabel: some View {
+        // 文字が入りきらない長い言語では＋だけにする
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 3) {
+                Image(systemName: "plus")
+                if showsText {
+                    Text("append.to.end")
+                }
+            }
+            Image(systemName: "plus")
+        }
+        .font(.caption)
+        .foregroundStyle(COLOR_ADD_ACTION)
+        .lineLimit(1)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+            Capsule(style: .continuous)
+                .fill(COLOR_ADD_ACTION.opacity(0.10))
+        )
+        .overlay(
+            Capsule(style: .continuous)
+                .strokeBorder(COLOR_ADD_ACTION.opacity(0.5), lineWidth: 1)
+        )
+        .cappedAtLargeFontSize()
     }
 
     /// 初心者モードで追加ボタンに添える文字
