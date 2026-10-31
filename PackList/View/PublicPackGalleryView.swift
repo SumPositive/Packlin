@@ -121,6 +121,8 @@ struct PublicPackGalleryView: View {
     @State private var offset: Int = 0
     @State private var canLoadMore: Bool = false
     @State private var isLoading: Bool = false
+    /// 読み込みの世代。条件を変えて読み直すたびに進め、古い条件の結果が後から届いても捨てる
+    @State private var loadGeneration: Int = 0
     /// 一覧読み込み自体のエラー（画面上部に表示）
     @State private var errorMessage: String?
     /// 詳細シートへ表示する公開パック
@@ -466,9 +468,19 @@ struct PublicPackGalleryView: View {
 
     @MainActor
     private func fetchPage(reset: Bool) async {
-        if isLoading { return }
+        // 続きの読み込みは重ねない。読み直し（reset）は、読み込み中でも新しい条件で始め直す
+        if isLoading && !reset { return }
+        if reset {
+            loadGeneration += 1
+        }
+        let generation = loadGeneration
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            // 新しい読み込みが始まっていれば、そちらの読み込み中表示を消さない
+            if generation == loadGeneration {
+                isLoading = false
+            }
+        }
         do {
             let page = try await AzukiApi.shared.searchPublicPacks(
                 query: queryArg(),
@@ -477,6 +489,8 @@ struct PublicPackGalleryView: View {
                 offset: offset,
                 userId: creditStore.userId
             )
+            // 待っている間に条件が変わっていれば、古い条件の結果なので捨てる
+            guard generation == loadGeneration else { return }
             if reset {
                 items = page
             } else {
@@ -486,8 +500,10 @@ struct PublicPackGalleryView: View {
             // 取得件数がページサイズと同数なら、まだ続きがある可能性が高い
             canLoadMore = page.count == PUBLIC_PACK_PAGE_SIZE
         } catch let apiError as AzukiAPIError {
+            guard generation == loadGeneration else { return }
             errorMessage = apiError.errorDescription
         } catch {
+            guard generation == loadGeneration else { return }
             errorMessage = String(localized: "network.seems.down.please.try.again")
         }
     }
