@@ -117,6 +117,8 @@ final class AzukiApi {
     private let tokenRecoveryHandlerBox = TokenRecoveryHandlerBox()
     /// リフレッシュ API への同時アクセスを直列化する調整役
     private let refreshCoordinator = RefreshCoordinator()
+    /// 残高照会の同時実行を 1 本にまとめる調整役
+    private let creditCheckCoalescer = CreditCheckCoalescer()
     /// App Attest を介した端末識別情報を管理するアクタ
     private let deviceAuthenticator: AzukiDeviceAuthenticator
     /// userId だけでトークンを発行させないための、復旧用の秘密情報
@@ -242,6 +244,20 @@ final class AzukiApi {
     /// - Parameter userId: 照会対象のユーザーID
     /// - Returns: クレジット残高と広告特典フラグ
     func fetchCreditStatus(userId: String) async throws -> CreditStatus {
+        // 複数の画面から同時に呼ばれても、照会とトークン保存は 1 本にまとめる
+        // （重なると、サーバーが回転させた古いトークンを後から保存して失効させてしまうため）
+        try await creditCheckCoalescer.run(userId: userId) {
+            try await self.performCreditCheck(userId: userId)
+        }
+    }
+
+    private func performCreditCheck(userId: String) async throws -> CreditStatus {
+        // アクセストークンが切れていてもリフレッシュトークンがあれば、先に更新して本人のトークンで照会する
+        // （トークンなしで照会すると、サーバーが端末のトークンを回転させ、進行中の更新と競合するため）
+        if accessTokenStore.currentTokenIfValid() == nil, refreshTokenStore.currentTokenIfValid() != nil {
+            _ = try? await refreshAccessTokenIfPossible()
+        }
+
         struct CreditCheckResponse: Decodable {
             let balance: Int
             let adRewardBalance: Int?
@@ -888,7 +904,7 @@ final class AzukiApi {
                         stageTwoBody = try self.encoder.encode(
                             StageTwoRequest(
                                 refreshToken: refreshToken,
-                                deviceId: identity.deviceId,
+                                deviceId: deviceId,
                                 challengeId: challenge.challengeId,
                                 nonce: challenge.nonce,
                                 signature: signaturePayload.signature,
@@ -1531,6 +1547,25 @@ private actor TokenRecoveryHandlerBox {
 }
 
 /// リフレッシュ API の多重実行を防ぎ、最新トークンを一貫して配布するためのアクタ
+/// 同じ userId の残高照会が重なったら、進行中の照会の結果を共有する
+private actor CreditCheckCoalescer {
+    private var inFlight: [String: Task<AzukiApi.CreditStatus, Error>] = [:]
+
+    func run(userId: String, operation: @escaping () async throws -> AzukiApi.CreditStatus) async throws -> AzukiApi.CreditStatus {
+        if let task = inFlight[userId] {
+            return try await task.value
+        }
+        let task = Task {
+            try await operation()
+        }
+        inFlight[userId] = task
+        defer {
+            inFlight[userId] = nil
+        }
+        return try await task.value
+    }
+}
+
 private actor RefreshCoordinator {
     /// 進行中のリフレッシュ処理を共有するための Task
     private var currentTask: Task<String?, Error>?
