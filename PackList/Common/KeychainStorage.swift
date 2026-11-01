@@ -13,8 +13,12 @@ import Security
 struct KeychainStorage {
     /// Keychainに保存する際のサービス名。Bundle IDがあればそれを、無ければ固定文字列を使用する
     private let service: String
+    /// true なら iCloud キーチェーンで同じ Apple ID の端末へ同期する項目として扱う
+    /// 同期しない項目とは別の項目になる（同じキーでも互いに読み書きしない）
+    private let synchronizable: Bool
 
-    init(bundleIdentifier: String? = Bundle.main.bundleIdentifier) {
+    init(bundleIdentifier: String? = Bundle.main.bundleIdentifier, synchronizable: Bool = false) {
+        self.synchronizable = synchronizable
         if let identifier = bundleIdentifier, identifier.isEmpty == false {
             self.service = identifier
         } else {
@@ -30,12 +34,17 @@ struct KeychainStorage {
     func saveString(_ value: String, forKey key: String) {
         // 既存エントリの有無に関係なく確実に更新できるよう削除→追加の順で処理する
         deleteItem(forKey: key)
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
             kSecValueData as String: Data(value.utf8)
         ]
+        if synchronizable {
+            query[kSecAttrSynchronizable as String] = kCFBooleanTrue
+            // 同期する項目は「この端末のみ」の属性を使えないため、初回ロック解除後に読める設定にする
+            query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        }
         let status = SecItemAdd(query as CFDictionary, nil)
         if status != errSecSuccess {
             log(.error, "SecItemAdd failed: key=\(key) status=\(status)")
@@ -46,13 +55,16 @@ struct KeychainStorage {
     /// - Parameter key: 取得したい値のキー
     /// - Returns: 保存済みであればその文字列、存在しなければnil
     func loadString(forKey key: String) -> String? {
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
+        if synchronizable {
+            query[kSecAttrSynchronizable as String] = kCFBooleanTrue
+        }
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if status == errSecSuccess,
@@ -85,11 +97,14 @@ struct KeychainStorage {
     /// 指定したキーの値を削除する
     /// - Parameter key: 削除対象のキー
     func deleteItem(forKey key: String) {
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key
         ]
+        if synchronizable {
+            query[kSecAttrSynchronizable as String] = kCFBooleanTrue
+        }
         let status = SecItemDelete(query as CFDictionary)
         if status != errSecSuccess && status != errSecItemNotFound {
             log(.error, "SecItemDelete failed: key=\(key) status=\(status)")

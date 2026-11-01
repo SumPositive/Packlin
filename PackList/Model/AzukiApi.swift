@@ -29,6 +29,8 @@ enum AzukiAPIError: LocalizedError {
     case publishQuotaExceeded
     case publishPayloadTooLarge
     case packNotFound
+    /// 復旧用の秘密情報が要るが、この端末にまだ無い（iCloud キーチェーンの同期待ちなど）
+    case recoveryRequired
 
     var errorDescription: String? {
         switch self {
@@ -77,6 +79,9 @@ enum AzukiAPIError: LocalizedError {
             case .packNotFound: // 公開パックが見つからない
                 return String(localized: "public.pack.not.found",
                               defaultValue: "このパックは見つかりませんでした。削除された可能性があります")
+            case .recoveryRequired: // 復旧用の秘密情報がまだ届いていない
+                log(.error, "401-recoveryRequired")
+                return String(localized: "account.recovery.required")
         }
         
         /// アプリユーザに見せるメッセージ
@@ -114,6 +119,8 @@ final class AzukiApi {
     private let refreshCoordinator = RefreshCoordinator()
     /// App Attest を介した端末識別情報を管理するアクタ
     private let deviceAuthenticator: AzukiDeviceAuthenticator
+    /// userId だけでトークンを発行させないための、復旧用の秘密情報
+    private let recoverySecretStore = AzukiRecoverySecretStore()
 
     /// リクエストごとの認証要件
     private enum AuthorizationRequirement {
@@ -257,20 +264,102 @@ final class AzukiApi {
 
         // refresh API 経由での再送は不要なため、明示的にリフレッシュリトライを抑止する
         // 401 が返った場合だけ Authorization を外して再送する意図
-        do {
-            let data = try await send(request: request, allowRetryAfterRefresh: false)
-            return try decodeCreditStatus(from: data)
-        } catch let apiError as AzukiAPIError {
-            // 期限切れや無効なAuthorizationヘッダを送ってしまった場合でも、ヘッダを外して再試行し新規発行を促す
-            if case .unauthorized = apiError {
+        func sendCheck() async throws -> CreditStatus {
+            do {
+                let data = try await send(request: request, allowRetryAfterRefresh: false)
+                return try decodeCreditStatus(from: data)
+            } catch AzukiAPIError.unauthorized {
+                // 期限切れや無効なAuthorizationヘッダを送ってしまった場合でも、ヘッダを外して再試行し新規発行を促す
                 var retryRequest = request
                 retryRequest.setValue(nil, forHTTPHeaderField: "Authorization")
                 let data = try await send(request: retryRequest, allowRetryAfterRefresh: false)
                 return try decodeCreditStatus(from: data)
             }
-            throw apiError
+        }
+
+        let status: CreditStatus
+        do {
+            status = try await sendCheck()
+        } catch AzukiAPIError.recoveryRequired {
+            // 復旧用の秘密情報を登録済みのユーザーは、userId だけではトークンを受け取れない
+            // リフレッシュトークンか、同期済みの秘密情報でトークンを取り直してから照会し直す
+            let refreshed = try? await refreshAccessTokenIfPossible()
+            if (refreshed ?? nil) == nil {
+                try await recoverTokens(userId: userId)
+            }
+            var authorizedRequest = request
+            if let token = accessTokenStore.currentTokenIfValid() {
+                authorizedRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            let data = try await send(request: authorizedRequest, allowRetryAfterRefresh: false)
+            status = try decodeCreditStatus(from: data)
+        }
+        // 本人のトークンを持っている今のうちに、復旧用の秘密情報を登録しておく（失敗しても照会結果は返す）
+        await registerRecoverySecretIfNeeded(userId: userId)
+        return status
+    }
+
+    /// 復旧用の秘密情報でトークンを取り直す
+    /// - Throws: 秘密情報がこの端末に無い（同期待ち）か、サーバーで一致しなければ recoveryRequired
+    private func recoverTokens(userId: String) async throws {
+        struct RecoverRequest: Encodable {
+            let userId: String
+            let secret: String
+        }
+        struct RecoverResponse: Decodable {
+            let accessToken: String?
+            let accessTokenExpiresAt: Double?
+            let refreshToken: String?
+            let refreshTokenExpiresAt: Double?
+        }
+        guard let secret = recoverySecretStore.secret(for: userId) else {
+            throw AzukiAPIError.recoveryRequired
+        }
+        guard let url = makeURL(path: "/api/auth/recover") else {
+            throw AzukiAPIError.invalidURL
+        }
+        let data: Data
+        do {
+            data = try await sendJSONRequest(url: url, body: RecoverRequest(userId: userId, secret: secret), authorization: .none)
+        } catch AzukiAPIError.unauthorized {
+            // 同期済みの値がサーバーの値と違う（別端末で入れ替わった直後など）。同期を待って再試行してもらう
+            throw AzukiAPIError.recoveryRequired
+        }
+        let response: RecoverResponse
+        do {
+            response = try decoder.decode(RecoverResponse.self, from: data)
         } catch {
-            throw error
+            throw AzukiAPIError.decoding
+        }
+        storeTokensIfProvided(
+            accessToken: response.accessToken,
+            accessTokenExpiresAt: response.accessTokenExpiresAt,
+            refreshToken: response.refreshToken,
+            refreshTokenExpiresAt: response.refreshTokenExpiresAt
+        )
+        // 照合が通った値なので、登録済みとして扱う
+        recoverySecretStore.markRegistered(secret, for: userId)
+    }
+
+    /// 復旧用の秘密情報をサーバーへ登録する（未登録か、同期で値が入れ替わったときだけ）
+    /// 本人のトークンが要るので、トークンを受け取った直後に呼ぶ。失敗しても次の照会時にやり直す
+    private func registerRecoverySecretIfNeeded(userId: String) async {
+        struct RegisterRequest: Encodable {
+            let userId: String
+            let secret: String
+        }
+        guard userId.isEmpty == false,
+              accessTokenStore.currentTokenIfValid() != nil,
+              let secret = recoverySecretStore.secretCreatingIfNeeded(for: userId),
+              recoverySecretStore.isRegistered(secret, for: userId) == false,
+              let url = makeURL(path: "/api/auth/recovery-secret") else {
+            return
+        }
+        do {
+            _ = try await sendJSONRequest(url: url, body: RegisterRequest(userId: userId, secret: secret), authorization: .required)
+            recoverySecretStore.markRegistered(secret, for: userId)
+        } catch {
+            log(.error, "recovery secret registration failed: \(error)")
         }
     }
 
@@ -875,6 +964,15 @@ final class AzukiApi {
                     // 端末側の鍵ペアに問題があると判断できるため、再アテステーションを促す
                     refreshTokenStore.clear()
                     await deviceAuthenticator.invalidateIdentity()
+                }
+                if serverErrorCode == "recovery_required" {
+                    // userId だけではトークンを受け取れないユーザー。呼び出し側で復旧用の秘密情報を使って取り直す
+                    logApiFailure(request: request,
+                                  statusCode: status,
+                                  serverErrorCode: serverErrorCode,
+                                  error: AzukiAPIError.recoveryRequired,
+                                  retryCount: retryCount)
+                    throw AzukiAPIError.recoveryRequired
                 }
                 if serverErrorCode == "token_expired" {
                     logApiFailure(request: request,

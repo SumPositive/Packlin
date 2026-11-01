@@ -18069,6 +18069,58 @@
           }
         }
       }
+    },
+    "account.recovery.required" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Konto kann auf diesem Gerät nicht bestätigt werden\n\nBitte warte, bis der iCloud-Schlüsselbund synchronisiert ist, und versuche es dann erneut\n\nPrüfe in den Einstellungen unter iCloud, ob „Passwörter und Schlüsselbund“ aktiviert ist"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We can’t verify your account on this device\n\nPlease wait for iCloud Keychain to sync, then try again\n\nIn Settings, check that “Passwords and Keychain” is turned on under iCloud"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede verificar tu cuenta en este dispositivo\n\nEspera a que se sincronice el Llavero de iCloud y vuelve a intentarlo\n\nEn Ajustes, comprueba que «Contraseñas y llavero» esté activado en iCloud"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de vérifier votre compte sur cet appareil\n\nAttendez la synchronisation du trousseau iCloud, puis réessayez\n\nDans Réglages, vérifiez que « Mots de passe et trousseau » est activé dans iCloud"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile verificare l’account su questo dispositivo\n\nAttendi la sincronizzazione del portachiavi iCloud, poi riprova\n\nIn Impostazioni, controlla che «Password e portachiavi» sia attivo in iCloud"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この端末でアカウントを確認できません\n\niCloud キーチェーンが同期されるまで、少し待ってからもう一度お試しください\n\n設定の iCloud で「パスワードとキーチェーン」がオンになっているか確認してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기에서 계정을 확인할 수 없습니다\n\niCloud 키체인이 동기화될 때까지 잠시 기다린 후 다시 시도해 주세요\n\n설정의 iCloud에서 ‘암호 및 키체인’이 켜져 있는지 확인해 주세요"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法在這部裝置上確認你的帳號\n\n請稍候等 iCloud 鑰匙圈同步完成，再試一次\n\n請到「設定」的 iCloud 確認「密碼與鑰匙圈」已開啟"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
