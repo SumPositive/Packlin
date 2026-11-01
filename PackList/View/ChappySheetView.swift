@@ -669,7 +669,8 @@ struct ChappyView: View {
             do {
                 let basePackDTO = await exportBasePackIfAvailable()
                 // 同じ依頼の再試行なら前回と同じ依頼IDを送る（前回の応答を受け取れなかったとき、二重に消費しないため）
-                let requestId = GenerationRequestIdStore.requestId(requirement: trimmedRequirement,
+                let requestId = GenerationRequestIdStore.requestId(userId: userId,
+                                                                   requirement: trimmedRequirement,
                                                                    isTrial: isTrial,
                                                                    basePack: basePackDTO)
                 let dto = try await requestPackFromServer(

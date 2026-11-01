@@ -10,7 +10,8 @@ import CryptoKit
 
 /// AI生成の依頼IDを控え、同じ依頼の再試行で同じIDを送るためのヘルパ
 /// 生成後に通信が切れて応答を受け取れなくても、同じIDで送り直せばサーバーは消費せずに保存済みの結果を返す
-/// - 依頼の中身（要望・お試しかどうか・元のパック）が同じなら同じIDを使い、変わったら新しいIDにする
+/// - 同じユーザーで依頼の中身（要望・お試しかどうか・元のパック）が同じなら同じIDを使い、変わったら新しいIDにする
+///   ユーザーIDも照合に含める（iCloud の元の userId へ切り替わった後に旧ユーザーの依頼IDを送ると、サーバーが拒否するため）
 /// - 生成結果を受け取れたら消す（次の依頼は新しいIDにする）
 /// - アプリを終了しても再試行できるよう UserDefaults に保存する
 enum GenerationRequestIdStore {
@@ -24,9 +25,9 @@ enum GenerationRequestIdStore {
         let createdAt: Date
     }
 
-    /// 依頼の中身に対応する依頼IDを返す（控えと同じ中身なら控えのID、違えば新しく作って控える）
-    static func requestId(requirement: String, isTrial: Bool, basePack: PackJsonDTO?) -> String {
-        let fingerprint = makeFingerprint(requirement: requirement, isTrial: isTrial, basePack: basePack)
+    /// 依頼の中身に対応する依頼IDを返す（控えと同じユーザー・同じ中身なら控えのID、違えば新しく作って控える）
+    static func requestId(userId: String, requirement: String, isTrial: Bool, basePack: PackJsonDTO?) -> String {
+        let fingerprint = makeFingerprint(userId: userId, requirement: requirement, isTrial: isTrial, basePack: basePack)
         if let pending = load(),
            pending.fingerprint == fingerprint,
            Date().timeIntervalSince(pending.createdAt) < lifetime {
@@ -51,8 +52,8 @@ enum GenerationRequestIdStore {
     }
 
     /// 依頼の中身を要約した値（中身が同じかどうかの判定だけに使い、送信はしない）
-    private static func makeFingerprint(requirement: String, isTrial: Bool, basePack: PackJsonDTO?) -> String {
-        var source = "\(isTrial)|\(requirement)"
+    private static func makeFingerprint(userId: String, requirement: String, isTrial: Bool, basePack: PackJsonDTO?) -> String {
+        var source = "\(userId)|\(isTrial)|\(requirement)"
         if let basePack {
             let encoder = JSONEncoder()
             encoder.outputFormatting = .sortedKeys
