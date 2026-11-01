@@ -343,21 +343,34 @@ final class AzukiApi {
 
     /// 復旧用の秘密情報をサーバーへ登録する（未登録か、同期で値が入れ替わったときだけ）
     /// 本人のトークンが要るので、トークンを受け取った直後に呼ぶ。失敗しても次の照会時にやり直す
+    /// - 初回はサーバーが未登録のときだけ登録される（同期前に別端末が登録していれば競合になる）
+    /// - 同期で値が入れ替わったときは、この端末が登録した値を旧秘密情報として送り、一致したときだけ更新される
     private func registerRecoverySecretIfNeeded(userId: String) async {
         struct RegisterRequest: Encodable {
             let userId: String
             let secret: String
+            let currentSecret: String?
         }
-        guard userId.isEmpty == false,
-              accessTokenStore.currentTokenIfValid() != nil,
-              let secret = recoverySecretStore.secretCreatingIfNeeded(for: userId),
+        guard userId.isEmpty == false, accessTokenStore.currentTokenIfValid() != nil else { return }
+        recoverySecretStore.restoreSyncedIfMissing(for: userId)
+        guard let secret = recoverySecretStore.secretCreatingIfNeeded(for: userId),
               recoverySecretStore.isRegistered(secret, for: userId) == false,
               let url = makeURL(path: "/api/auth/recovery-secret") else {
             return
         }
+        let currentSecret = recoverySecretStore.registeredSecret(for: userId)
         do {
-            _ = try await sendJSONRequest(url: url, body: RegisterRequest(userId: userId, secret: secret), authorization: .required)
+            _ = try await sendJSONRequest(url: url,
+                                          body: RegisterRequest(userId: userId, secret: secret, currentSecret: currentSecret),
+                                          authorization: .required)
             recoverySecretStore.markRegistered(secret, for: userId)
+        } catch AzukiAPIError.serverError(let message) where message == "recovery_secret_conflict" {
+            // 別端末が先に別の値を登録していた。上書きせず、登録済みの値が同期で届くのを待つ
+            recoverySecretStore.markConflict(for: userId)
+            if currentSecret == nil {
+                // どこにも登録されていない値は、他端末へ広めないよう捨てる
+                recoverySecretStore.discardSynced(ifEquals: secret, for: userId)
+            }
         } catch {
             log(.error, "recovery secret registration failed: \(error)")
         }
