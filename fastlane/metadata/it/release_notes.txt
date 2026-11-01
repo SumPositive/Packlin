@@ -2,32 +2,19 @@
 Ora puoi scegliere per ogni pack tra i classici «Gruppi» e i nuovi «Tag».
 - Gruppi: ordina gli elementi in modo rigoroso su livelli di Pack, Gruppo ed Elemento
 - Tag: tieni tutti gli elementi in una lista piatta e ordinali in modo flessibile con i tag
-Aggiungi più tag a un elemento e filtra per tag. I nuovi pack iniziano con i Tag.
-
-■ Modifica multipla
-Seleziona gli elementi e aggiungi o rimuovi tag, copiali in un altro pack o eliminali, tutto in una volta.
 
 ■ Condividi i pack pubblici con un link
 Incolla un link di condivisione (URL) in un'e-mail o in un post sui social e invialo.
 Quando chi lo riceve tocca il link, il pack pubblico viene importato in Packlin.
-Ora si possono pubblicare anche i pack con i Tag.
 
 ■ Inserimento più facile
 - Il tastierino numerico ora ha una calcolatrice integrata
 - Inserisci pesi e quantità con una ghiera o uno stepper
 - Toccare fuori dalla tastiera ora la chiude in tutta l'app
 
-■ Più leggibile
-- Nella vista elementi, passa dall'ordine crescente a quello decrescente
-- Vedi il peso totale degli elementi mostrati
-- Il peso unitario ora può essere mostrato in kg da 1.000 g
-- Schermata Impostazioni rivista; ora è consigliata la dimensione del testo «Auto», che segue l'impostazione del dispositivo
-- Regolato il colore dell'icona dell'app
-
 ■ 6 nuove lingue
 Aggiunti tedesco, spagnolo, francese, italiano, coreano e cinese tradizionale.
 
 ■ Altro
 - Supporto per iOS 27
-- Chappy: i ticket IA non sono più in vendita. I ticket che hai già restano utilizzabili. Senza ticket, puoi inviare una richiesta guardando un video pubblicitario. Prevediamo di offrire un nuovo servizio di IA.
-- Piccole migliorie di visualizzazione e maggiore stabilità
+- Chappy: i ticket IA non sono più in vendita. Stiamo valutando un nuovo servizio di IA.

@@ -2,32 +2,19 @@
 Ahora puedes elegir para cada pack entre los clásicos «Grupos» y las nuevas «Etiquetas».
 - Grupos: clasifica los ítems de forma estricta en niveles de Pack, Grupo e Ítem
 - Etiquetas: mantén todos los ítems en una lista plana y clasifícalos con flexibilidad mediante etiquetas
-Añade varias etiquetas a un ítem y filtra por etiqueta. Los packs nuevos empiezan con Etiquetas.
-
-■ Editar varios
-Selecciona ítems y añade o quita etiquetas, cópialos a otro pack o elimínalos, todo a la vez.
 
 ■ Comparte packs públicos con un enlace
 Pega un enlace para compartir (URL) en un correo o una publicación en redes y envíalo.
 Cuando quien lo recibe toca el enlace, el pack público se importa en Packlin.
-Ahora también se pueden publicar packs con Etiquetas.
 
 ■ Más fácil de introducir
 - El teclado numérico ahora incluye calculadora
 - Introduce pesos y cantidades con un dial o con un stepper
 - Tocar fuera del teclado ahora lo cierra en toda la app
 
-■ Más fácil de leer
-- En la vista de ítems, cambia el orden entre ascendente y descendente
-- Ve el peso total de los ítems mostrados
-- El peso por unidad ya puede mostrarse en kg a partir de 1.000 g
-- Pantalla de Ajustes renovada; ahora se recomienda el tamaño de texto «Auto», que sigue el ajuste del dispositivo
-- Ajustado el color del icono de la app
-
 ■ 6 idiomas nuevos
 Añadidos alemán, español, francés, italiano, coreano y chino tradicional.
 
 ■ Otros
 - Compatible con iOS 27
-- Chappy: ya no se venden tickets de IA. Los tickets que ya tengas siguen siendo válidos. Sin tickets, puedes enviar una petición viendo un vídeo publicitario. Tenemos previsto ofrecer un nuevo servicio de IA.
-- Pequeños ajustes de visualización y mejoras de estabilidad
+- Chappy: ya no se venden tickets de IA. Estamos estudiando un nuevo servicio de IA.

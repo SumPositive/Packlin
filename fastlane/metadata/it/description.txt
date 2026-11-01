@@ -24,8 +24,5 @@ Pubblica i tuoi pack e importa quelli pubblicati da altri. Puoi cercare anche pe
 ■ Condivisione e backup
 Esporta un singolo pack come file .packlin e condividilo via AirDrop o e-mail. Fai il backup e ripristina tutti i pack in una volta, per cambiare dispositivo senza pensieri.
 
-■ IA «Chappy» (opzionale)
-Inserisci solo la destinazione o lo scopo e l'IA propone l'intero contenuto di un pack. Puoi anche chiederle di integrare o rivedere un pack esistente. Puoi inviare una richiesta guardando un video pubblicitario.
-
 ■ 8 lingue
 Disponibile in italiano, inglese, giapponese, tedesco, spagnolo, francese, coreano e cinese tradizionale.
