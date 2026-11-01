@@ -698,10 +698,9 @@ final class AzukiApi {
             guard let url = self.makeURL(path: "/api/auth/refresh") else {
                 throw AzukiAPIError.invalidURL
             }
-            // サーバーへ端末IDを提示できなければリフレッシュ要件を満たせないため、そのまま終了する
-            guard let identity = await self.deviceAuthenticator.currentIdentity() else {
-                return nil
-            }
+            // App Attest の端末IDを送る。まだ無い（購入前など）ときも更新を試す
+            // 残高照会・秘密情報による復旧で受け取ったトークンは論理デバイスに紐付いていて、サーバーは端末IDを照合しないため
+            let deviceId = await self.deviceAuthenticator.currentIdentity()?.deviceId ?? "logical-device"
 
             struct StageOneRequest: Encodable {
                 let refreshToken: String
@@ -711,7 +710,7 @@ final class AzukiApi {
             let firstPayload: Data
             do {
                 // 第1段階ではリフレッシュトークンと端末IDのみを送信し、チャレンジ発行を促す
-                firstPayload = try self.encoder.encode(StageOneRequest(refreshToken: refreshToken, deviceId: identity.deviceId))
+                firstPayload = try self.encoder.encode(StageOneRequest(refreshToken: refreshToken, deviceId: deviceId))
             } catch {
                 throw AzukiAPIError.encoding
             }
