@@ -12,6 +12,8 @@ struct PackListView: View {
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var history: UndoStackService
     @EnvironmentObject private var navigationStore: NavigationStore
+    /// AI利用券の残り（チャッピーの項目を出すかの判断に使う）
+    @EnvironmentObject private var creditStore: CreditStore
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // 表示モード（初心者／上級者）をAppStorageで永続化
@@ -265,6 +267,8 @@ struct PackListView: View {
                             ) {
                                 PackAddPopoverView(
                                     fontScale: fontScale,
+                                    // チャッピー（AI作成）は今後廃止する方向。AI利用券が残っている人にだけ出す
+                                    showsChappy: 0 < creditStore.credits,
                                     onChappy: {
                                         isShowingPackAddPopover = false
                                         // チャッピー(AI)に新しいパックを作ってもらうフローへ誘導
@@ -530,19 +534,22 @@ struct PackListView: View {
 
 private struct PackAddPopoverView: View {
     let fontScale: FontScale
+    let showsChappy: Bool
     let onChappy: () -> Void
     let onManual: () -> Void
     let onPublicGallery: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            optionButton(
-                title: "let.chappy.ai.make",
-                systemImage: "sparkles",
-                action: onChappy
-            )
+            if showsChappy {
+                optionButton(
+                    title: "let.chappy.ai.make",
+                    systemImage: "sparkles",
+                    action: onChappy
+                )
 
-            Divider()
+                Divider()
+            }
 
             optionButton(
                 title: "make.yourself",

@@ -12,6 +12,8 @@ struct GroupListView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var history: UndoStackService
     @EnvironmentObject private var navigationStore: NavigationStore
+    /// AI利用券の残り（チャッピーのボタンを出すかの判断に使う）
+    @EnvironmentObject private var creditStore: CreditStore
 
     @AppStorage(AppStorageKey.insertionPosition) private var insertionPosition: InsertionPosition = .default
     // 表示モード（初心者／上級者）をPackListと同じキーで共有し、ヘッダー表示を切り替える
@@ -90,51 +92,54 @@ struct GroupListView: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                VStack(spacing: 4) {
-                    Button {
-                        // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
-                        showAiCreateSheet = true
-                        GALogger.log(.feature_use(name: "ai_create", source: "group_list_footer", detail: "pack"))
-                    } label: {
-                        // チャッピー相談ボタンもカプセル風にし、短い文言で高さを抑える
-                        HStack(spacing: 10) {
-                            Image(systemName: "sparkles")
-                                .imageScale(.large)
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(Color.accentColor)
+                // チャッピー（AI作成）は今後廃止する方向。AI利用券が残っている人にだけ出す
+                if 0 < creditStore.credits {
+                    VStack(spacing: 4) {
+                        Button {
+                            // 現在のパック内容をチャッピーに知らせ、AI提案を受ける
+                            showAiCreateSheet = true
+                            GALogger.log(.feature_use(name: "ai_create", source: "group_list_footer", detail: "pack"))
+                        } label: {
+                            // チャッピー相談ボタンもカプセル風にし、短い文言で高さを抑える
+                            HStack(spacing: 10) {
+                                Image(systemName: "sparkles")
+                                    .imageScale(.large)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(Color.accentColor)
 
-                            Text(LocalizedStringKey("chappy"))
-                                // 同様に小さめ・軽めのフォントで縦幅を抑える
-                                .font(.footnote.weight(.regular))
-                                .foregroundStyle(Color.primary)
+                                Text(LocalizedStringKey("chappy"))
+                                    // 同様に小さめ・軽めのフォントで縦幅を抑える
+                                    .font(.footnote.weight(.regular))
+                                    .foregroundStyle(Color.primary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 1)
+                            // 右側ボタンも同じカプセル風の塗りと線を適用して統一感を出す
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color(.systemBackground).opacity(0.6))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
+                            )
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 1)
-                        // 右側ボタンも同じカプセル風の塗りと線を適用して統一感を出す
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.systemBackground).opacity(0.6))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.accentColor.opacity(0.4), lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
+                        .buttonStyle(.plain)
 
-                    if isBeginnerMode {
-                        // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
-                        Text(LocalizedStringKey("ask.chappy.ai.tweak"))
-                            .font(.caption2)
-                            .lineLimit(3)
-                            .minimumScaleFactor(0.7)
-                            .allowsTightening(true)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
+                        if isBeginnerMode {
+                            // AI依頼の流れはボタン外で丁寧に伝える（ボタンは短い文言で素早く押せるようにする）
+                            Text(LocalizedStringKey("ask.chappy.ai.tweak"))
+                                .font(.caption2)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 16)
             // フッターメニュー全体の上下余白を詰めて、画面占有を抑える
