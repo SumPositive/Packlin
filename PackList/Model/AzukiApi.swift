@@ -1231,6 +1231,9 @@ final class AzukiApi {
                 return ("AzukiAPIError", "publish_payload_too_large", apiError.localizedDescription)
             case .packNotFound:
                 return ("AzukiAPIError", "pack_not_found", apiError.localizedDescription)
+            case .recoveryRequired:
+                // 復旧用の秘密情報がまだこの端末に無い（iCloud キーチェーンの同期待ちなど）
+                return ("AzukiAPIError", "recovery_required", apiError.localizedDescription)
             }
         }
         return ("Error", "unknown", String(describing: error))
