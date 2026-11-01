@@ -658,13 +658,16 @@ struct SettingView: View {
                 switch result {
                 case .success(let urls):
                     guard let url = urls.first else { return }
+                    let data: Data
                     do {
-                        importAlert = try importFile(from: url)
+                        data = try readData(from: url)
                     } catch {
-                        // 取り込み失敗をAnalyticsへ送り、ファイル形式や読込問題の分析に使う
+                        // 読み込み失敗をAnalyticsへ送り、ファイル読込問題の分析に使う
                         logError(error, domain: "settings_import", message: "取り込み失敗")
                         importAlert = .failure(message: error.localizedDescription)
+                        return
                     }
+                    runImport(data: data)
                 case .failure(let error):
                     // ファイル選択失敗をAnalyticsへ送り、DocumentPickerまわりの問題分析に使う
                     logError(error, domain: "settings_file_importer", message: "ファイル選択失敗")
@@ -672,11 +675,38 @@ struct SettingView: View {
                 }
             }
             .alert(item: $importAlert) { alert in
-                Alert(
-                    title: Text(alert.title),
-                    message: Text(alert.message),
-                    dismissButton: .default(Text("OK"))
-                )
+                if let retryData = alert.retryData {
+                    // 保存に失敗したときは、読み込んだ内容のまま取り込みをやり直せるようにする
+                    Alert(
+                        title: Text(alert.title),
+                        message: Text(alert.message),
+                        primaryButton: .default(Text("retry")) {
+                            // アラートが閉じてから次のアラートを出す
+                            DispatchQueue.main.async { runImport(data: retryData) }
+                        },
+                        secondaryButton: .cancel()
+                    )
+                } else {
+                    Alert(
+                        title: Text(alert.title),
+                        message: Text(alert.message),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
+            }
+        }
+
+        /// 読み込んだデータを取り込み、結果のアラートを出す
+        private func runImport(data: Data) {
+            do {
+                importAlert = try importData(data)
+            } catch ImportError.saveFailed(let underlying) {
+                logError(underlying, domain: "settings_import_save", message: "取り込み後の保存失敗")
+                importAlert = .failure(message: ImportError.saveFailed(underlying).localizedDescription, retryData: data)
+            } catch {
+                // 取り込み失敗をAnalyticsへ送り、ファイル形式や読込問題の分析に使う
+                logError(error, domain: "settings_import", message: "取り込み失敗")
+                importAlert = .failure(message: error.localizedDescription)
             }
         }
 
@@ -686,8 +716,7 @@ struct SettingView: View {
         /// - `packs` キーを持つ → BackupJsonDTO（全パックバックアップ）
         /// - `groups` キーを持つ → PackJsonDTO（単体パック）
         /// - いずれも持たない → フォーマットエラー
-        private func importFile(from url: URL) throws -> ImportAlert {
-            let data = try readData(from: url)
+        private func importData(_ data: Data) throws -> ImportAlert {
             guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 throw ImportError.invalidFormat
             }
@@ -751,6 +780,8 @@ struct SettingView: View {
             // 単体パックは外から新しく入ってくるので、件数上限を超えていれば取り込まない（バックアップ復元は全件保持）
             try PackImporter.validateLimits(of: dto)
 
+            // 保存失敗時に取り込み分だけを破棄できるよう、それまでの編集を先に保存する
+            try saveBeforeImport()
             // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
             var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())
             // 取り込み全体を 1 つの Undo 操作にまとめる
@@ -759,13 +790,11 @@ struct SettingView: View {
                 // 関数を抜けるときに Undo グループを閉じる。
                 // 通常 return / throw のどちらでも必ず実行される。
                 modelContext.undoManager?.groupingEnd()
-                // === Fix 2: 取り込み直後の永続化 ===
-                // SwiftData の通常 save タイミング（背景遷移時）を待たず、
-                // インポート直後にクラッシュしても変更が消えないよう即時に書き出す。
-                persistAfterImport(domain: "import_single_save")
             }
 
             let (pack, wasOverwritten) = upsertPack(dto: dto, existingPacks: &existingPacks)
+            // SwiftData の通常 save タイミング（背景遷移時）を待たず、すぐに書き出す。失敗したら取込エラーにする
+            try persistAfterImport()
             return .success(packName: pack.name, wasOverwritten: wasOverwritten)
         }
 
@@ -782,17 +811,14 @@ struct SettingView: View {
             let backup = try JSONDecoder().decode(BackupJsonDTO.self, from: data)
             try validateHeader(productName: backup.productName, copyright: backup.copyright, version: backup.version)
 
+            // 保存失敗時に取り込み分だけを破棄できるよう、それまでの編集を先に保存する
+            try saveBeforeImport()
             // 既存パック取得失敗は取り込み失敗として呼び出し元でAnalytics送信する
             var existingPacks = try modelContext.fetch(FetchDescriptor<M1Pack>())
             // バックアップ全件の取り込みを 1 つの Undo 操作にまとめる
             modelContext.undoManager?.groupingBegin()
             defer {
                 modelContext.undoManager?.groupingEnd()
-                // === Fix 2: 取り込み直後の永続化 ===
-                // バックアップは件数が多くなる傾向があるが、ループ完了後にまとめて
-                // 1 度 save する。SwiftData はトランザクションを内部で扱うので
-                // 個別 save より効率的。
-                persistAfterImport(domain: "import_backup_save")
             }
 
             var added = 0, overwritten = 0
@@ -800,28 +826,38 @@ struct SettingView: View {
                 let (_, wasOverwritten) = upsertPack(dto: dto, existingPacks: &existingPacks)
                 if wasOverwritten { overwritten += 1 } else { added += 1 }
             }
+            // ループ完了後にまとめて 1 度保存する。失敗したら取込エラーにする
+            try persistAfterImport()
             return .successBatch(added: added, overwritten: overwritten)
         }
 
-        /// インポート完了直後の永続化ヘルパー
+        /// 取り込み前に、それまでの編集を保存しておく
+        /// 取り込みの保存に失敗したときの rollback で、取り込みと関係ない編集まで失わないようにする
+        private func saveBeforeImport() throws {
+            guard modelContext.hasChanges else { return }
+            do {
+                try modelContext.save()
+            } catch {
+                throw ImportError.saveFailed(error)
+            }
+        }
+
+        /// インポート直後の永続化ヘルパー
         ///
-        /// - 呼び出しタイミング: Undo グルーピング終了（`groupingEnd()`）の直後に呼ぶこと。
-        ///   グルーピング閉じる前に save すると、save 操作自体が Undo 履歴に
-        ///   含まれてしまう可能性があるため。
-        /// - エラー処理: save 失敗は UI からは復旧できないため、Analytics 送信のみ行う。
-        ///   ユーザーには成功扱いで通知されるが、実際は次回起動時に取り込み内容が
-        ///   消えている可能性がある。これは想定上きわめて稀（ディスク満杯 等）。
-        ///
-        /// - Parameter domain: Analytics ログのドメイン名
-        ///   ("import_single_save" / "import_backup_save")
-        private func persistAfterImport(domain: String) {
+        /// - 呼び出しタイミング: Undo グループを閉じる前（defer の groupingEnd より先）に呼ぶ。
+        ///   保存に失敗したら取り込み分を rollback するので、グループを閉じたときの差分は無くなり、
+        ///   取り込まれなかった操作が Undo 履歴に残らない
+        /// - エラー処理: 保存失敗は取込エラーとして投げ、呼び出し元で再試行できるアラートを出す。
+        ///   成功扱いにすると、次回起動時に取り込み内容が消えている
+        private func persistAfterImport() throws {
             // 変更が無ければ無駄な I/O を避ける
             guard modelContext.hasChanges else { return }
             do {
                 try modelContext.save()
             } catch {
-                // 保存失敗は Crashlytics/Analytics へ送り、傾向分析に使う
-                logError(error, domain: domain, message: "インポート後の context.save 失敗")
+                // 保存できなかった取り込み分だけを破棄する（画面に取り込まれたように見せない）
+                modelContext.rollback()
+                throw ImportError.saveFailed(error)
             }
         }
 
@@ -874,7 +910,8 @@ struct SettingView: View {
         private enum ImportAlert: Identifiable {
             case success(packName: String, wasOverwritten: Bool)
             case successBatch(added: Int, overwritten: Int)
-            case failure(message: String)
+            /// retryData があれば、同じ内容で取り込みをやり直せる（保存失敗のとき）
+            case failure(message: String, retryData: Data? = nil)
 
             var id: String {
                 switch self {
@@ -882,6 +919,11 @@ struct SettingView: View {
                 case .successBatch(let a, let o): return "batch-\(a)-\(o)"
                 case .failure: return "failure"
                 }
+            }
+
+            var retryData: Data? {
+                if case .failure(_, let retryData) = self { return retryData }
+                return nil
             }
 
             var title: String {
@@ -907,7 +949,7 @@ struct SettingView: View {
                         parts.append(String(format: String(localized: "count.overwritten"), overwritten))
                     }
                     return parts.joined(separator: "・")
-                case .failure(let message):
+                case .failure(let message, _):
                     return message
                 }
             }
@@ -915,9 +957,12 @@ struct SettingView: View {
 
         private enum ImportError: LocalizedError {
             case productNameMismatch, copyrightMismatch, versionMismatch, invalidFormat
+            /// 取り込んだ内容を端末へ保存できなかった
+            case saveFailed(Error)
 
             var errorDescription: String? {
                 switch self {
+                case .saveFailed:          return String(localized: "import.save.failed")
                 case .productNameMismatch: return "Product name mismatch."
                 case .copyrightMismatch:   return "Copyright mismatch."
                 case .versionMismatch:     return "Version mismatch."

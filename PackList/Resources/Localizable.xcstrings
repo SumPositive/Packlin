@@ -18121,6 +18121,58 @@
           }
         }
       }
+    },
+    "import.save.failed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die importierten Packs konnten nicht gespeichert werden\n\nPrüfe den freien Speicher deines Geräts und versuche es erneut"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t save the imported packs\n\nCheck your device’s free storage, then try again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron guardar los packs importados\n\nComprueba el espacio libre del dispositivo y vuelve a intentarlo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer les packs importés\n\nVérifiez l’espace libre de votre appareil, puis réessayez"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare i pack importati\n\nControlla lo spazio libero del dispositivo e riprova"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り込んだパックを保存できませんでした\n\n端末の空き容量を確認してから、もう一度お試しください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가져온 팩을 저장하지 못했습니다\n\n기기의 여유 공간을 확인한 후 다시 시도해 주세요"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法儲存匯入的行李包\n\n請確認裝置的可用空間，再試一次"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
