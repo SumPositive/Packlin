@@ -14,6 +14,8 @@ final class AzukiRefreshTokenStore {
     private let tokenKey = "com.azukid.azuki-api.refreshToken"
     /// リフレッシュトークンの有効期限(ミリ秒)を保存する際のキー
     private let expiryKey = "com.azukid.azuki-api.refreshTokenExpiry"
+    /// リフレッシュトークンの発行先の端末ID（更新時に同じIDを送る）
+    private let deviceIdKey = "com.azukid.azuki-api.refreshTokenDeviceId"
     /// 有効期限チェック時に設ける猶予秒数
     private let leewaySeconds: TimeInterval = 60
     /// Keychain へ実際にアクセスするためのユーティリティ
@@ -52,7 +54,8 @@ final class AzukiRefreshTokenStore {
     /// - Parameters:
     ///   - token: サーバーが払い出したリフレッシュトークン
     ///   - expiresAtMilliseconds: UNIX エポック基準の有効期限（ミリ秒）
-    func save(token: String, expiresAtMilliseconds: Double) {
+    ///   - deviceId: サーバーがこのトークンを発行した端末ID（分からなければ nil）
+    func save(token: String, expiresAtMilliseconds: Double, deviceId: String?) {
         let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             clear()
@@ -65,11 +68,23 @@ final class AzukiRefreshTokenStore {
         let normalizedExpiry = String(expiresAtMilliseconds)
         keychain.saveString(trimmed, forKey: tokenKey)
         keychain.saveString(normalizedExpiry, forKey: expiryKey)
+        if let deviceId, deviceId.isEmpty == false {
+            keychain.saveString(deviceId, forKey: deviceIdKey)
+        } else {
+            // 前のトークンの発行先を使い回さない
+            keychain.deleteItem(forKey: deviceIdKey)
+        }
+    }
+
+    /// 保存中のリフレッシュトークンの発行先の端末ID
+    func currentDeviceId() -> String? {
+        keychain.loadString(forKey: deviceIdKey)
     }
 
     /// Keychain からリフレッシュトークン情報を削除する
     func clear() {
         keychain.deleteItem(forKey: tokenKey)
         keychain.deleteItem(forKey: expiryKey)
+        keychain.deleteItem(forKey: deviceIdKey)
     }
 }

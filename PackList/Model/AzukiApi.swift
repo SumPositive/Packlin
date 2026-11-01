@@ -121,6 +121,20 @@ final class AzukiApi {
     private let deviceAuthenticator: AzukiDeviceAuthenticator
     /// userId だけでトークンを発行させないための、復旧用の秘密情報
     private let recoverySecretStore = AzukiRecoverySecretStore()
+    /// 論理デバイスを端末ごとに分けるための識別子の保存先（この端末だけ・iCloud で同期しない）
+    private let deviceKeyStore = KeychainStorage()
+
+    /// この端末（インストール）の識別子。初回に作って Keychain に保存する
+    /// 残高照会・秘密情報による復旧でサーバーへ送り、リフレッシュトークンを端末ごとに分けてもらう
+    private var logicalDeviceKey: String {
+        let key = "com.azukid.azuki-api.logicalDeviceKey"
+        if let existing = deviceKeyStore.loadString(forKey: key), existing.isEmpty == false {
+            return existing
+        }
+        let created = UUID().uuidString.lowercased()
+        deviceKeyStore.saveString(created, forKey: key)
+        return created
+    }
 
     /// リクエストごとの認証要件
     private enum AuthorizationRequirement {
@@ -235,9 +249,12 @@ final class AzukiApi {
             let accessTokenExpiresAt: Double?
             let refreshToken: String?
             let refreshTokenExpiresAt: Double?
+            let deviceId: String?
         }
 
-        let queryItems = [URLQueryItem(name: "userId", value: userId)]
+        // deviceKey: 論理デバイスを端末ごとに分けるための識別子（別端末の照会でトークンを失効させないため）
+        let queryItems = [URLQueryItem(name: "userId", value: userId),
+                          URLQueryItem(name: "deviceKey", value: logicalDeviceKey)]
 
         guard let url = makeURL(path: "/api/credit/check", queryItems: queryItems) else {
             throw AzukiAPIError.invalidURL
@@ -254,7 +271,8 @@ final class AzukiApi {
                     accessToken: response.accessToken,
                     accessTokenExpiresAt: response.accessTokenExpiresAt,
                     refreshToken: response.refreshToken,
-                    refreshTokenExpiresAt: response.refreshTokenExpiresAt
+                    refreshTokenExpiresAt: response.refreshTokenExpiresAt,
+                    deviceId: response.deviceId
                 )
                 return CreditStatus(balance: response.balance, adRewardBalance: response.adRewardBalance ?? 0)
             } catch {
@@ -305,12 +323,14 @@ final class AzukiApi {
         struct RecoverRequest: Encodable {
             let userId: String
             let secret: String
+            let deviceKey: String
         }
         struct RecoverResponse: Decodable {
             let accessToken: String?
             let accessTokenExpiresAt: Double?
             let refreshToken: String?
             let refreshTokenExpiresAt: Double?
+            let deviceId: String?
         }
         guard let secret = recoverySecretStore.secret(for: userId) else {
             throw AzukiAPIError.recoveryRequired
@@ -320,7 +340,7 @@ final class AzukiApi {
         }
         let data: Data
         do {
-            data = try await sendJSONRequest(url: url, body: RecoverRequest(userId: userId, secret: secret), authorization: .none)
+            data = try await sendJSONRequest(url: url, body: RecoverRequest(userId: userId, secret: secret, deviceKey: logicalDeviceKey), authorization: .none)
         } catch AzukiAPIError.unauthorized {
             // 同期済みの値がサーバーの値と違う（別端末で入れ替わった直後など）。同期を待って再試行してもらう
             throw AzukiAPIError.recoveryRequired
@@ -335,7 +355,8 @@ final class AzukiApi {
             accessToken: response.accessToken,
             accessTokenExpiresAt: response.accessTokenExpiresAt,
             refreshToken: response.refreshToken,
-            refreshTokenExpiresAt: response.refreshTokenExpiresAt
+            refreshTokenExpiresAt: response.refreshTokenExpiresAt,
+            deviceId: response.deviceId
         )
         // 照合が通った値なので、登録済みとして扱う
         recoverySecretStore.markRegistered(secret, for: userId)
@@ -530,11 +551,13 @@ final class AzukiApi {
             do {
                 let response = try decoder.decode(VerifyResponse.self, from: data)
                 // サーバーが返却するトークン群をまとめて保存し、後続の API リクエストに備える
+                // 購入検証のトークンは App Attest の端末に発行される
                 storeTokensIfProvided(
                     accessToken: response.accessToken,
                     accessTokenExpiresAt: response.accessTokenExpiresAt,
                     refreshToken: response.refreshToken,
-                    refreshTokenExpiresAt: response.refreshTokenExpiresAt
+                    refreshTokenExpiresAt: response.refreshTokenExpiresAt,
+                    deviceId: deviceId
                 )
                 let isDuplicate = response.duplicate ?? false
                 GALogger.log(
@@ -630,17 +653,19 @@ final class AzukiApi {
     ///   - accessTokenExpiresAt: アクセストークンの有効期限（ミリ秒）
     ///   - refreshToken: 新しいリフレッシュトークン（nil の場合はスキップ）
     ///   - refreshTokenExpiresAt: リフレッシュトークンの有効期限（ミリ秒）
+    ///   - deviceId: リフレッシュトークンの発行先の端末ID（更新時に同じIDを送るため保存する）
     private func storeTokensIfProvided(
         accessToken: String?,
         accessTokenExpiresAt: Double?,
         refreshToken: String?,
-        refreshTokenExpiresAt: Double?
+        refreshTokenExpiresAt: Double?,
+        deviceId: String?
     ) {
         if let token = accessToken, let expiresAt = accessTokenExpiresAt {
             accessTokenStore.save(token: token, expiresAtMilliseconds: expiresAt)
         }
         if let refresh = refreshToken, let refreshExpiresAt = refreshTokenExpiresAt {
-            refreshTokenStore.save(token: refresh, expiresAtMilliseconds: refreshExpiresAt)
+            refreshTokenStore.save(token: refresh, expiresAtMilliseconds: refreshExpiresAt, deviceId: deviceId)
         }
     }
 
@@ -698,9 +723,12 @@ final class AzukiApi {
             guard let url = self.makeURL(path: "/api/auth/refresh") else {
                 throw AzukiAPIError.invalidURL
             }
-            // App Attest の端末IDを送る。まだ無い（購入前など）ときも更新を試す
-            // 残高照会・秘密情報による復旧で受け取ったトークンは論理デバイスに紐付いていて、サーバーは端末IDを照合しないため
-            let deviceId = await self.deviceAuthenticator.currentIdentity()?.deviceId ?? "logical-device"
+            // トークンの発行先の端末IDを送る（発行時に保存したもの）
+            // 発行先を保存していない旧版のトークンは、App Attest の端末ID（無ければ仮の値）を送る
+            // 論理デバイスのトークンなら、サーバーは端末IDを照合しない
+            let storedDeviceId = self.refreshTokenStore.currentDeviceId()
+            let identityDeviceId = await self.deviceAuthenticator.currentIdentity()?.deviceId
+            let deviceId = storedDeviceId ?? identityDeviceId ?? "logical-device"
 
             struct StageOneRequest: Encodable {
                 let refreshToken: String
@@ -756,6 +784,7 @@ final class AzukiApi {
                 let accessTokenExpiresAt: Double
                 let refreshToken: String
                 let refreshTokenExpiresAt: Double
+                let deviceId: String?
             }
 
             struct RefreshChallengeEnvelope: Decodable {
@@ -775,7 +804,8 @@ final class AzukiApi {
                     accessToken: decoded.accessToken,
                     accessTokenExpiresAt: decoded.accessTokenExpiresAt,
                     refreshToken: decoded.refreshToken,
-                    refreshTokenExpiresAt: decoded.refreshTokenExpiresAt
+                    refreshTokenExpiresAt: decoded.refreshTokenExpiresAt,
+                    deviceId: decoded.deviceId ?? storedDeviceId
                 )
                 return decoded.accessToken
             }
