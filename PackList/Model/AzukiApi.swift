@@ -845,6 +845,14 @@ final class AzukiApi {
                                    error: logError,
                                    retryCount: 0)
                 if status == 401 || status == 400 {
+                    if serverErrorCode == "refresh_token_superseded" {
+                        // 残高照会・復旧で新しいトークンに置き換えられていた（競合）
+                        // 送ったトークンがまだ保存されているときだけ消す（置き換えで受け取った新しいトークンは残す）
+                        if self.refreshTokenStore.currentTokenIfValid() == refreshToken {
+                            self.refreshTokenStore.clear()
+                        }
+                        return self.accessTokenStore.currentTokenIfValid()
+                    }
                     if serverErrorCode == "invalid_refresh_token" || serverErrorCode == "refresh_token_expired" {
                         self.refreshTokenStore.clear()
                         self.accessTokenStore.clear()
