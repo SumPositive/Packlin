@@ -668,14 +668,21 @@ struct ChappyView: View {
 
             do {
                 let basePackDTO = await exportBasePackIfAvailable()
+                // 同じ依頼の再試行なら前回と同じ依頼IDを送る（前回の応答を受け取れなかったとき、二重に消費しないため）
+                let requestId = GenerationRequestIdStore.requestId(requirement: trimmedRequirement,
+                                                                   isTrial: isTrial,
+                                                                   basePack: basePackDTO)
                 let dto = try await requestPackFromServer(
                     userId: userId,
                     requirement: trimmedRequirement,
                     basePack: basePackDTO,
                     canAttemptRecovery: true,
                     useMiniModel: isTrial,
-                    languageCode: languageCode
+                    languageCode: languageCode,
+                    requestId: requestId
                 )
+                // 結果を受け取れたので、次の依頼は新しい依頼IDにする
+                GenerationRequestIdStore.clear(requestId: requestId)
                 // サーバー側ではすでにクレジットが消費済みとみなし、戻しは行わない
                 shouldRestoreCredits = false
                 do {
@@ -837,13 +844,15 @@ struct ChappyView: View {
                                        basePack: PackJsonDTO?,
                                        canAttemptRecovery: Bool,
                                        useMiniModel: Bool,
-                                       languageCode: String?) async throws -> PackJsonDTO {
+                                       languageCode: String?,
+                                       requestId: String) async throws -> PackJsonDTO {
         do {
             return try await AzukiApi.shared.generatePack(userId: userId,
                                                           requirement: requirement,
                                                           basePack: basePack,
                                                           isTrial: useMiniModel,
-                                                          languageCode: languageCode)
+                                                          languageCode: languageCode,
+                                                          requestId: requestId)
         } catch let apiError as AzukiAPIError {
             if canAttemptRecovery && shouldAttemptTokenRecovery(for: apiError) {
                 let recovered = await recoverAccessTokenByVerifyingLatestTransactions()
@@ -854,7 +863,8 @@ struct ChappyView: View {
                         basePack: basePack,
                         canAttemptRecovery: false,
                         useMiniModel: useMiniModel,
-                        languageCode: languageCode
+                        languageCode: languageCode,
+                        requestId: requestId
                     )
                 }
             }

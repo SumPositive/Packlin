@@ -180,12 +180,14 @@ final class AzukiApi {
     ///   - requirement: ユーザーが入力した要件
     ///   - basePack: 修正時、元になるPack
     ///   - isTrial: true=リワード広告視聴後の無料送信
+    ///   - requestId: 依頼ID。同じ依頼の再試行では同じIDを送り、サーバーは消費せずに保存済みの結果を返す
     /// - Returns: PackListへそのまま取り込めるDTO
     func generatePack(userId: String,
                      requirement: String,
                      basePack: PackJsonDTO?,
                      isTrial: Bool = false,
-                     languageCode: String?) async throws -> PackJsonDTO {
+                     languageCode: String?,
+                     requestId: String) async throws -> PackJsonDTO {
         struct GenerateRequest: Encodable {
             let userId: String
             let requirement: String
@@ -194,6 +196,8 @@ final class AzukiApi {
             let isTrial: Bool
             /// ユーザーの端末言語コード（プロンプトに埋め込まずパラメータで渡す）
             let languageCode: String?
+            /// 依頼ID（応答を受け取れずに再試行したとき、二重に消費しないため）
+            let requestId: String
         }
 
         guard let url = makeURL(path: "/api/openai") else {
@@ -204,11 +208,12 @@ final class AzukiApi {
                                           requirement: requirement,
                                           basePack: basePack,
                                           isTrial: isTrial,
-                                          languageCode: languageCode)
+                                          languageCode: languageCode,
+                                          requestId: requestId)
         let requestTokens = tokenLength(for: requirement)
         let data: Data
         do {
-            data = try await sendJSONRequest(url: url, body: requestBody, authorization: .required)
+            data = try await sendGenerationRequest(url: url, body: requestBody)
         } catch {
             // チャッピー送信の失敗を記録する（送信元も含める）
             logChappySendFailure(source: isTrial ? "ad_reward" : "credit",
@@ -237,6 +242,19 @@ final class AzukiApi {
                                  requestTokens: requestTokens,
                                  error: AzukiAPIError.decoding)
             throw AzukiAPIError.decoding
+        }
+    }
+
+    /// 生成の依頼を送る。同じ依頼IDの前の送信がまだサーバーで処理中なら、少し待って取り直す
+    /// （前の送信の応答を受け取れずに再試行したとき、終わるのを待てば消費せずに結果を受け取れる）
+    private func sendGenerationRequest<T: Encodable>(url: URL, body: T) async throws -> Data {
+        let deadline = Date().addingTimeInterval(90)
+        while true {
+            do {
+                return try await sendJSONRequest(url: url, body: body, authorization: .required)
+            } catch AzukiAPIError.serverError(let message) where message == "request_in_progress" && Date() < deadline {
+                try await Task.sleep(nanoseconds: 3_000_000_000)
+            }
         }
     }
 
