@@ -36,6 +36,7 @@ final class AzukiRecoverySecretStore {
 
     /// 秘密情報を返す。無ければ 32 バイトの乱数で作って保存する
     /// サーバーへ登録できるのは本人のトークンを持っているときだけなので、作るのもそのときに限る
+    /// 保存できなければ nil を返す（端末に残っていない値をサーバーへ登録すると、誰も復旧できないアカウントになるため）
     func secretCreatingIfNeeded(for userId: String) -> String? {
         if let existing = secret(for: userId) {
             return existing
@@ -48,7 +49,12 @@ final class AzukiRecoverySecretStore {
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
-        syncedKeychain.saveString(created, forKey: secretKey(userId))
+        // 保存の成否に加え、読み戻して同じ値が入っていることまで確かめてから返す
+        guard syncedKeychain.saveString(created, forKey: secretKey(userId)),
+              secret(for: userId) == created else {
+            log(.error, "recovery secret save failed")
+            return nil
+        }
         return created
     }
 

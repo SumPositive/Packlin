@@ -31,7 +31,9 @@ struct KeychainStorage {
     /// - Parameters:
     ///   - value: 保存したい文字列
     ///   - key: 値を紐づけるためのキー
-    func saveString(_ value: String, forKey key: String) {
+    /// - Returns: 保存できたら true（失敗を確かめたい呼び出し元のため）
+    @discardableResult
+    func saveString(_ value: String, forKey key: String) -> Bool {
         // 既存エントリの有無に関係なく確実に更新できるよう削除→追加の順で処理する
         deleteItem(forKey: key)
         var query: [String: Any] = [
@@ -48,7 +50,9 @@ struct KeychainStorage {
         let status = SecItemAdd(query as CFDictionary, nil)
         if status != errSecSuccess {
             log(.error, "SecItemAdd failed: key=\(key) status=\(status)")
+            return false
         }
+        return true
     }
 
     /// 指定したキーから文字列を読み出す
